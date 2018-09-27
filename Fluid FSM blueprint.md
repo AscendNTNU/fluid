@@ -1,7 +1,7 @@
 # Fluid FSM Blueprint
 
 ## How to read this document
-References to sources are given with e.g. (1, 2). Where the first number in the array is a reference to the source
+References to sources are given with e.g. (1, 2). Where the first number in the tuple is a reference to the source
 and the second number is a reference to the given page/slide/time of a video.
 
 
@@ -20,31 +20,32 @@ Mathematically one can define a finite state machine with the tuple (E, T, S, S0
 
 
 ### Transition
-As defined by the mathematical model the transition is defined by an input, a request, and an output, a response. In order to transition a request should be sent the the FSM. The FSM can either deny this request because the state
-transition doesn't make sense, or of course carry it out. Conversely, the response would encapsulate a success flag a
-and possibly some output data.
+The mathematical model for the transition function is defined by taking in an input state (S) and an argument (E), and
+returning an output state (S) and a response (T). Therfore, in order to transition, a request should be sent to the
+FSM. The FSM can either deny this request because the state transition doesn't make sense, or of course carry it out.
+Conversely, the response would encapsulate a success flag and possibly some output data.
 
-[fsm diagram]: https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Fsm_Moore_model_door_control.svg/512px-Fsm_Moore_model_door_control.svg.png "FSM Diagram"
+[fsm diagram]: https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Fsm_Moore_model_door_control.svg/512px-Fsm_Moore_model_door_control.svg.png
 
-As one can see from the illustration (2) a request should include a state input e.g. "close" or "open" and the current
-state. The FSM will determine based on the arguments and the current state whether that transition is valid or not.
+As one can see from the illustration (2), a request should include an argument, e.g. "close" or "open", and the current
+state. The FSM will determine based on the argument and the current state whether that transition is valid or not.
 
 
 ### TL;DR
-In short, what a state machine require is:
+In short, what the finite state machine requires:
 - States
-- A transition function which determines if a state change is valid based on an input. The output of the transition
+- A transition function which determines if a state change is valid based on input. The output from the transition
   function is a response with a completion flag and possibly some data.
 
 
 ## Technical implementation
 
 ### States
-In terms of ROS and the drone a state should - in its bare bones - consist of:
+Building on ROS and PX4, a state should encapsulate:
 - a pose
 - an action
 - callbacks for when a state begins execution and when a state is finished executing
-- Valid states to transition to (for the state graph)
+- Valid state transition (for the state graph)
 
 #### Different types of states (**TODO: Find out which other states we need** )
 - Manual (PX4: MANUAL/STABILIZED)
@@ -56,7 +57,7 @@ In terms of ROS and the drone a state should - in its bare bones - consist of:
 
 
 ### Transition
-A transition is just a state change, so the essentials would be:
+A transition is just a state change, so the essentials are:
 - Start state
 - End state
 - Completion callback with errors (if any)
@@ -64,33 +65,36 @@ A transition is just a state change, so the essentials would be:
 
 
 ### Operation
-The general object of the finite state machine would be to carry out a series of transitions to achieve some sort of
+The general object of the finite state machine is to carry out a series of transitions in order to achieve some sort of
 goal. Further in this document this goal will be called an **operation**. An operation consists of a series of
 transitions based on the current state. E.g. if the drone is stationary at the ground, and someone issues an operation
 to move to another point in space which also is stationary at the ground. The operation would have to consist of the
-following transitions:
-1. Elevate
-2. Move to x, y + elevated constant, z
-3. Land at x, y, z
+following five states and four transitions:
+1. Idle
+- Transition to elevate state
+2. Elevate
+- Transition to move state
+3. Move to x, y + elevated constant, z
+- Transition to land state
+4. Land at x, y, z
+- Transition to idle state
+5. Idle
 
 The FSM in its core will only handle state changes, but Fluid will consist of an extra layer outside this
-which implements a state graph for operations.
-
-For the actual implementation request and response will be named transition request and transition
-response in order to make it clearer what they actually do.
+which implements a state graph for operations. For the actual implementation request and response will be named
+transition request and transition response in order to make it clearer what they actually do.
 
 
 ##### Actionlib
 
-Since the operations might take some time and we might want to fire responses after a certain amount of time after
-a request, an asynchronous system for sending/receiving data is necessary. ROS actionlib (4) is sufficient for this.
-Fluid should therefore implement an **ActionServer**. The clients, which in our example is the state changers, has to
-implement **ActionClient**.
+Since the operations might take arbitrary amount of time, an asynchronous system for sending/receiving data is
+necessary. ROS actionlib (4) is sufficient for this. Fluid should therefore implement an **ActionServer**. The clients,
+which in our example are the operation callers, have to implement **ActionClient**.
 
 The action specification consists of:
-- Goal (the data of the transition. E.g. for a move transition this would be the set point)
+- Goal (the data of the operation. E.g. for a move operation this would be the set point)
 - Feedback (progress feedback from the server)
-- Result (the output of the transition, e.g. the final position)
+- Result (the output of the operation, e.g. the final position)
 
 Action files are placed within the ./action folder as example.action. An example of an action file:
 ```
@@ -127,9 +131,9 @@ Then the .msg files are generated with genaction.py.
 A transition is just a state change. In order to make this as flexible as possible it's natural to implement some sort
 of graph for the different states and run through this and check if a certain transition is allowed or not.
 
-It's important to notice in this design that the transitions don't care if the state change is valid or not. If PX4
+It's important to notice in this design the transitions don't care if the state change is valid or not. If PX4
 complains, the transition completion handler will return an error of course, but **the state graph is responsible
-for figuring out which transitions are valid and makes sense**. In short will transitions most likely be a private API
+for figuring out which transitions that are valid**. Therefore will transitions most likely be a private API
 for Fluid, while operations are public.
 
 
@@ -141,7 +145,7 @@ Fluid will have operations which you can call (using action lib) and these opera
 Transitions will take care of switching between different flight modes in PX4.
 
 ### Error handling
-If an error occurs it's the transition's job to pass this error further to the completion callback. In Fluid this will
+If an error occurs it's the transition's job to pass this error further to the completion handler. In Fluid this will
 end up at the operation. This should not happen of course, as the state graph should be designed in such a way that
 every valid transition in the graph is also valid in PX4. But if an error occurs, there should be a set of methods for
 dealing with them. E.g.:
