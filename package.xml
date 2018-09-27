@@ -1,33 +1,32 @@
 <?xml version="1.0"?>
 <package>
     <!-- CHANGE PACKAGE NAME HERE - MUST BE SAME AS IN CMakeLists.txt -->
-    <name>ros_pkg_template</name>
-    <version>0.0.0</version>
-    <description>The ros_pkg_template package</description> 
+    <name>fluid_fsm</name>
+    <version>0.0.1</version>
+    <description>Finite state machine built on top of PX4</description>
 
     <!-- One maintainer tag required, multiple allowed, one person per tag -->
     <!-- Example:  -->
     <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-    <maintainer email="youremail@mailprovider.com">YOUR NAME</maintainer> 
-  
+    <maintainer email="simen.gangstad@me.com">Simen Gangstad</maintainer>
 
     <!-- One license tag required, multiple allowed, one license per tag -->
     <!-- Commonly used license strings: -->
     <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-    <license>TODO</license> 
-  
+    <license>MIT</license>
+
 
     <!-- Url tags are optional, but multiple are allowed, one per tag -->
     <!-- Optional attribute type can be: website, bugtracker, or repository -->
     <!-- Example: -->
-    <!-- <url type="website">http://wiki.ros.org/ros_pkg_template</url> --> 
-  
+    <!-- <url type="website">http://wiki.ros.org/ros_pkg_template</url> -->
+
 
     <!-- Author tags are optional, multiple are allowed, one per tag -->
     <!-- Authors do not have to be maintainers, but could be -->
     <!-- Example: -->
-    <!-- <author email="jane.doe@example.com">Jane Doe</author> --> 
-  
+    <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+
 
     <!-- The *_depend tags are used to specify dependencies -->
     <!-- Dependencies can be catkin packages or system dependencies -->
@@ -46,12 +45,12 @@
     <build_depend>roscpp</build_depend>
     <run_depend>ascend_msgs</run_depend>
     <run_depend>geometry_msgs</run_depend>
-    <run_depend>roscpp</run_depend> 
-  
+    <run_depend>roscpp</run_depend>
+
 
     <!-- The export tag contains other, unspecified, tags -->
     <export>
-      <!-- Other tools can request additional information be placed here -->  
+      <!-- Other tools can request additional information be placed here -->
 
     </export>
 </package>

@@ -1,19 +1,16 @@
-# Finite state machine
+# Fluid FSM Blueprint
 
 ## Implementation
 - Ros actions
 - State requests
 	- State
 - State responses
-	- State 
+	- State
 - States
 	- Interface which defines a set of common terms for all states
 	- Callbacks for state began and ended
-	- The actual action for the state 
+	- The actual action for the state
 
 ## States
 - Idle
-- 
-
-
-
+-
