@@ -21,7 +21,7 @@ Mathematically one can define a finite state machine with the tuple (E, T, S, S0
 
 ### Transition
 The mathematical model for the transition function is defined by taking in an input state (S) and an argument (E), and
-returning an output state (S) and a response (T). Therfore, in order to transition, a request should be sent to the
+returning an output state (S) and a response (T). Therefore, in order to transition, a request should be sent to the
 FSM. The FSM can either deny this request because the state transition doesn't make sense, or of course carry it out.
 Conversely, the response would encapsulate a success flag and possibly some output data.
 
@@ -45,11 +45,11 @@ Building on ROS and PX4, a state should encapsulate:
 - a pose
 - an action
 - callbacks for when a state begins execution and when a state is finished executing
-- Valid state transition (for the state graph)
 
 #### Different types of states (**TODO: Find out which other states we need** )
 - Manual (PX4: MANUAL/STABILIZED)
-- Idle (hovers at current position, PX4: AUTO_LOITER)
+- PositionHold (hovers at current position, PX4: AUTO_LOITER)
+- Idle (armed, but stationary at ground)
 - Move (PX4: OFFBOARD)
 	- Take off
 - Land (lands at the current position, PX4: AUTO_RTL)
@@ -81,8 +81,7 @@ following five states and four transitions:
 5. Idle
 
 The FSM in its core will only handle state changes, but Fluid will consist of an extra layer outside this
-which implements a state graph for operations. For the actual implementation request and response will be named
-transition request and transition response in order to make it clearer what they actually do.
+which implements a state graph for operations.
 
 
 ##### Actionlib
@@ -151,7 +150,6 @@ every valid transition in the graph is also valid in PX4. But if an error occurs
 dealing with them. E.g.:
 - Wait and try after a short interval
 - **TODO: More here**
-
 
 ### Sources
 1. Marco Della Vedova, *Robotics Finite State Machines* - http://robot.unipv.it/toolleeo/teaching/docs_robotics/fsm.pdf

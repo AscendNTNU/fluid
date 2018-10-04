@@ -3,37 +3,42 @@ cmake_minimum_required(VERSION 2.8.3)
 project(fluid_fsm)
 
 
-add_compile_options(-std=c++14)
+#add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS
-    ascend_msgs
-    geometry_msgs
-    roscpp
-)
+#find_package(catkin REQUIRED COMPONENTS
+#    ascend_msgs
+#    geometry_msgs
+#    roscpp
+#)
 ## Includes headers in include folder
-catkin_package(
-    INCLUDE_DIRS include
-    CATKIN_DEPENDS ascend_msgs geometry_msgs roscpp
-)
+#catkin_package(
+#    INCLUDE_DIRS include
+#    CATKIN_DEPENDS ascend_msgs geometry_msgs roscpp
+#)
 ## Includes headers in include folder
-include_directories(
-include
-    ${catkin_INCLUDE_DIRS}
-)
+#include_directories(
+#include
+#    ${catkin_INCLUDE_DIRS}
+#)
 
 
 #########################################################################################
 
 ## Adds a ros node with name node_name
-add_executable(off_node src/off_node.cpp)
+#add_executable(off_node src/off_node.cpp)
 
 ## Adds a compilation dependency to node_name
-add_dependencies(off_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(off_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Links node_name together with other libraries
-target_link_libraries(off_node
-    ${catkin_LIBRARIES}
-)
+#target_link_libraries(off_node
+#    ${catkin_LIBRARIES}
+#)
 
 
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+
+set(SOURCE_FILES src/main.cpp include/state.h src/operation.cpp include/operation.h src/transition.cpp include/transition.h)
+add_executable(fluid_fsm ${SOURCE_FILES})
