@@ -30,7 +30,6 @@ private:
      */
     void stateFinished(const State &sender);
 
-
     /**
      * Gets fired when a transition completes.
      *
@@ -40,7 +39,8 @@ private:
 
 public:
 
-    std::vector<std::shared_ptr<State>> states_ = {}; ///< The states in the operation
+    // TODO: Should this be "states"?
+    std::vector<std::shared_ptr<State>> states = {}; ///< The states in the operation
 
     /**
      * Adds a state to the operation.

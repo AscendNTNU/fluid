@@ -53,11 +53,10 @@ public:
  *  \breif Handles state changes and the communication with the FSM in PX4.
  */
 class Transition {
-private:
-    const std::shared_ptr<State> start_state_p_;                    ///< Start state
-    const std::shared_ptr<State> end_state_p_;                      ///< End state
-
 public:
+    const std::shared_ptr<State> start_state_p;                    ///< Start state
+    const std::shared_ptr<State> end_state_p;                      ///< End state
+    
     std::weak_ptr<TransitionDelegate> transition_delegate_p; ///< The delegate which receive completion callback
 
     /**
@@ -67,7 +66,7 @@ public:
      * @param end_state_p The end state (pass a shared pointer)
      */
     Transition(std::shared_ptr<State> start_state_p,
-               std::shared_ptr<State> end_state_p) : start_state_p_(start_state_p), end_state_p_(end_state_p) {}
+               std::shared_ptr<State> end_state_p) : start_state_p(start_state_p), end_state_p(end_state_p) {}
 
     /**
      * Performs the transition between the start state and the end state.

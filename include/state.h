@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 
 struct Point {
     double x = 0.0, y = 0.0, z = 0.0;
@@ -52,15 +53,17 @@ public:
                                                    ///< The class of the object has to implement the StateDelegate
                                                    ///< interface.
 
+    const std::string identifier; ///< Identifier of the state
+    
     // TODO: switch to ros pose, this pose is here temporariliy for debugging purposes
     Pose pose; ///< The current pose of the state.
-
+    
     /**
      * Initializes state with a pose.
      *
      * @param pose The pose the state should appear at.
      */
-    State(Pose pose): pose(pose) {}
+    State(std::string identifier, Pose pose): identifier(identifier), pose(pose) {}
 
     /**
      * Performs the logic for the given state.

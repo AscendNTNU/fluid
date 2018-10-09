@@ -15,7 +15,7 @@ void Operation::stateFinished(const State &sender) {
 
 void Operation::addState(std::shared_ptr<State> state_p) {
     state_p->state_delegate_p = shared_from_this();
-    states_.push_back(state_p);
+    states.push_back(state_p);
 }
 
 void Operation::completed(TransitionError transition_error) {
@@ -25,13 +25,13 @@ void Operation::completed(TransitionError transition_error) {
 void Operation::perform() {
 
     // TODO: Dummy implementation, this should be based on an object graph
-    for (int index = 0; index < states_.size(); index++) {
-        auto state_p = states_[index];
+    for (int index = 0; index < states.size(); index++) {
+        auto state_p = states[index];
 
         state_p->perform();
 
-        if (index < states_.size() - 1) {
-            Transition transition(state_p, states_[index + 1]);
+        if (index < states.size() - 1) {
+            Transition transition(state_p, states[index + 1]);
             transition.transition_delegate_p = shared_from_this();
             transition.perform();
         }
