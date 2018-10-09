@@ -1,4 +1,4 @@
-#include <ros/ros.h>
+/*#include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
@@ -74,3 +74,4 @@ int main(int argc, char** argv) {
         rate.sleep();
     }
 }
+*/
