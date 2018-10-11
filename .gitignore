@@ -1,4 +1,5 @@
 .DS_STORE
+cmake-build-debug/
 
 # Prerequisites
 *.d

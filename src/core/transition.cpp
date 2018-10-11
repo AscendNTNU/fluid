@@ -2,7 +2,7 @@
 // Created by simengangstad on 04.10.18.
 //
 
-#include "../include/transition.h"
+#include "../../include/core/transition.h"
 #include <algorithm>
 
 void Transition::perform() {

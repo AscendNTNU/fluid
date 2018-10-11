@@ -5,7 +5,7 @@
 #ifndef FLUID_FSM_EDGE_H
 #define FLUID_FSM_EDGE_H
 
-#include "state.h"
+#include "../core/state.h"
 #include <memory>
 
 /** \class Edge

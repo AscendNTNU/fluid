@@ -7,8 +7,9 @@
 
 #include <memory>
 #include <vector>
-#include "state.h"
-#include "transition.h"
+#include "../core/state.h"
+#include "../core/transition.h"
+#include "state_graph.h"
 
 /** \class Operation
  *  \brief Manages the transitions between mutiple states
@@ -37,18 +38,12 @@ private:
      */
     void completed(TransitionError transition_error);
 
+protected:
+
+    static StateGraph state_graph; ///< Provides the states which the operation can consist of and how to transition
+                                   ///< between them
+
 public:
-
-    // TODO: Should this be "states"?
-    std::vector<std::shared_ptr<State>> states = {}; ///< The states in the operation
-
-    /**
-     * Adds a state to the operation.
-     *
-     * @param state_p The new state in the operation
-     */
-    void addState(std::shared_ptr<State> state_p);
-
 
     /** Performs the operation.
      *
