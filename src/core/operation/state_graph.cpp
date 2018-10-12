@@ -2,7 +2,7 @@
 // Created by simengangstad on 11.10.18.
 //
 
-#include "../../include/operation/state_graph.h"
+#include "../../../include/core/operation/state_graph.h"
 #include <vector>
 
 fluid::StateGraph::StateGraph(): Graph() {

@@ -2,7 +2,7 @@
 // Created by simengangstad on 04.10.18.
 //
 
-#include "../../include/operation/operation.h"
+#include "../../../include/core/operation/operation.h"
 #include <iostream>
 
 fluid::StateGraph fluid::Operation::state_graph;

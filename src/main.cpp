@@ -2,7 +2,7 @@
 // Created by simengangstad on 27.09.18.
 //
 
-#include "../include/operation/operation.h"
+#include "../include/core/operation/operation.h"
 
 int main(int argc, const char** argv) {
 

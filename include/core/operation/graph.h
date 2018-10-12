@@ -9,7 +9,7 @@
 #include <vector>
 #include <map>
 #include <string>
-#include "../core/state.h"
+#include "../state.h"
 #include "edge.h"
 
 namespace fluid {

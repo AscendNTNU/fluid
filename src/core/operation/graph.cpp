@@ -6,7 +6,7 @@
 //  Copyright © 2018 Simen Gangstad. All rights reserved.
 //
 
-#include "../../include/operation/graph.h"
+#include "../../../include/core/operation/graph.h"
 #include <iostream>
 #include <list>
 #include <iterator>

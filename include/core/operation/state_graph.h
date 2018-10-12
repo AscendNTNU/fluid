@@ -6,11 +6,11 @@
 #define FLUID_FSM_STATE_GRAPH_H
 
 #include "graph.h"
-#include "../states/hold_state.h"
-#include "../states/idle_state.h"
-#include "../states/land_state.h"
-#include "../states/move_state.h"
-#include "../states/take_off_state.h"
+#include "../../states/hold_state.h"
+#include "../../states/idle_state.h"
+#include "../../states/land_state.h"
+#include "../../states/move_state.h"
+#include "../../states/take_off_state.h"
 
 namespace fluid {
     /** \class StateGraph

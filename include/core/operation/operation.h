@@ -7,8 +7,8 @@
 
 #include <memory>
 #include <vector>
-#include "../core/state.h"
-#include "../core/transition.h"
+#include "../state.h"
+#include "../transition.h"
 #include "state_graph.h"
 
 namespace fluid {

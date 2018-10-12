@@ -5,7 +5,7 @@
 #ifndef FLUID_FSM_EDGE_H
 #define FLUID_FSM_EDGE_H
 
-#include "../core/state.h"
+#include "../state.h"
 #include <memory>
 
 namespace fluid {
