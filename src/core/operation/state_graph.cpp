@@ -5,7 +5,7 @@
 #include "../../include/operation/state_graph.h"
 #include <vector>
 
-StateGraph::StateGraph(): Graph() {
+fluid::StateGraph::StateGraph(): Graph() {
 
     Pose pose;
 

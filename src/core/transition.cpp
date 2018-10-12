@@ -5,7 +5,7 @@
 #include "../../include/core/transition.h"
 #include <algorithm>
 
-void Transition::perform() {
+void fluid::Transition::perform() {
 
     TransitionErrorCode transition_error_code = no_error;
 

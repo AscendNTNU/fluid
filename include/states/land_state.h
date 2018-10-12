@@ -7,24 +7,24 @@
 
 #include "../core/state.h"
 
-/** \class LandState
- *  \brief Represents the state where the drone is on ground, armed and spinning its rotors
- */
-class LandState: public State {
-public:
-
-    /** Initializes the land state with a pose.
-     *
-     * @param pose The pose for the land state.
+namespace fluid {
+    /** \class LandState
+     *  \brief Represents the state where the drone is on ground, armed and spinning its rotors
      */
-    LandState(Pose pose) : State("land", pose) {}
+    class LandState: public State {
+    public:
 
-    /**
-     * Performs the operation of landing the drone.
-     */
-    void perform();
-};
+        /** Initializes the land state with a pose.
+         *
+         * @param pose The pose for the land state.
+         */
+        LandState(Pose pose) : State("land", pose) {}
 
-
+        /**
+         * Performs the operation of landing the drone.
+         */
+        void perform();
+    };
+}
 
 #endif //FLUID_FSM_LAND_STATE_H

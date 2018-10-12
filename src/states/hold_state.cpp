@@ -5,7 +5,7 @@
 #include "../../include/states/hold_state.h"
 #include <iostream>
 
-void HoldState::perform() {
+void fluid::HoldState::perform() {
     if (auto state_delegate = state_delegate_p.lock()) {
         state_delegate->stateBegan(*this);
     }

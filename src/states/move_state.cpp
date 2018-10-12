@@ -5,7 +5,7 @@
 #include "../../include/states/move_state.h"
 #include <iostream>
 
-void MoveState::perform() {
+void fluid::MoveState::perform() {
     if (auto state_delegate = state_delegate_p.lock()) {
         state_delegate->stateBegan(*this);
     }

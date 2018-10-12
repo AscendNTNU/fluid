@@ -16,7 +16,7 @@ int main(int argc, const char** argv) {
     
     operation->perform();
 */
-    Operation operation;
+    fluid::Operation operation;
 
     operation.perform();
 

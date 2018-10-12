@@ -7,24 +7,26 @@
 
 #include "../core/state.h"
 
-/** \class HoldState
- *  \brief Keeps the drone hovering at a certain altitude
- */
-class HoldState: public State {
-
-public:
-
-    /**
-     * Initializes the hold state with a pose.
-     *
-     * @param pose The pose the drone should be hovering at.
+namespace fluid {
+    /** \class HoldState
+     *  \brief Keeps the drone hovering at a certain altitude
      */
-    HoldState(Pose pose) : State("hold", pose) {}
+    class HoldState: public State {
 
-    /**
-     * Publishes a stream of set points (the pose of the position hold state) to PX4.
-     */
-    void perform();
-};
+    public:
+
+        /**
+         * Initializes the hold state with a pose.
+         *
+         * @param pose The pose the drone should be hovering at.
+         */
+        HoldState(Pose pose) : State("hold", pose) {}
+
+        /**
+         * Publishes a stream of set points (the pose of the position hold state) to PX4.
+         */
+        void perform();
+    };
+}
 
 #endif //FLUID_FSM_HOLD_STATE_H

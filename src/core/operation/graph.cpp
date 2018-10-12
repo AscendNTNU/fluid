@@ -11,11 +11,11 @@
 #include <list>
 #include <iterator>
 
-Graph::Graph() {
+fluid::Graph::Graph() {
     adjacency_list = std::make_unique<AdjacencyList>();
 }
 
-void Graph::addEdges(std::vector<Edge> const &edges) {
+void fluid::Graph::addEdges(std::vector<Edge> const &edges) {
     for (auto edge: edges) {
         if (adjacency_list->find(edge.source->identifier) == adjacency_list->end()) {
             std::vector<Node> neighbors;
@@ -28,7 +28,7 @@ void Graph::addEdges(std::vector<Edge> const &edges) {
     }
 }
 
-std::vector<std::string> Graph::getPlanToEndState(std::string start_state_identifier, std::string end_state_identifier) {
+std::vector<std::string> fluid::Graph::getPlanToEndState(std::string start_state_identifier, std::string end_state_identifier) {
     std::map<std::string, bool> visited;
 
     for (auto const& item : *adjacency_list) {
@@ -50,7 +50,7 @@ std::vector<std::string> Graph::getPlanToEndState(std::string start_state_identi
             break;
         }
 
-        for(const auto neighborState : adjacency_list->at(start_state_identifier)) {
+        for(auto neighborState : adjacency_list->at(start_state_identifier)) {
 
             if(!visited[neighborState->identifier]) {
                 visited[neighborState->identifier] = true;
@@ -62,7 +62,7 @@ std::vector<std::string> Graph::getPlanToEndState(std::string start_state_identi
     return plan;
 }
 
-void Graph::print() {
+void fluid::Graph::print() {
     for (auto const& item : *adjacency_list) {
         std::cout << "\n Adjacency list of vertex " << item.first << "\n head ";
         

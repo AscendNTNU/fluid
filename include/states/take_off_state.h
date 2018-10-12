@@ -7,23 +7,25 @@
 
 #include "../core/state.h"
 
-/** \class TakeOffState
- *  \brief Represents the state where the drone is on taking off from ground straight up.
- */
-class TakeOffState: public State {
-public:
-
-    /** Initializes the take off state with a pose.
-     *
-     * @param pose The pose for the take off state.
+namespace fluid {
+    /** \class TakeOffState
+     *  \brief Represents the state where the drone is on taking off from ground straight up.
      */
-    TakeOffState(Pose pose) : State("take_off", pose) {}
+    class TakeOffState: public State {
+    public:
 
-    /**
-     * Performs the operation of taking off with the drone.
-     */
-    void perform();
-};
+        /** Initializes the take off state with a pose.
+         *
+         * @param pose The pose for the take off state.
+         */
+        TakeOffState(Pose pose) : State("take_off", pose) {}
+
+        /**
+         * Performs the operation of taking off with the drone.
+         */
+        void perform();
+    };
+}
 
 
 

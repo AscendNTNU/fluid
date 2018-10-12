@@ -5,7 +5,7 @@
 #include "../../include/states/idle_state.h"
 #include <iostream>
 
-void IdleState::perform() {
+void fluid::IdleState::perform() {
     if (auto state_delegate = state_delegate_p.lock()) {
         state_delegate->stateBegan(*this);
     }
