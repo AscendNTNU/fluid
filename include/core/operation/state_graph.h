@@ -22,7 +22,7 @@ namespace fluid {
         std::shared_ptr<State> current_state; ///< The current state of the state graph
         
         /**
-         * Initializes the state graph with a range of states.
+         * Initializes the state graph with a set of states.
          */
         StateGraph();
     };
