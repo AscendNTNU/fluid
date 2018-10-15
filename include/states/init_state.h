@@ -18,7 +18,7 @@ namespace fluid {
          *
          * @param pose The pose for the init state.
          */
-        TakeOffState(Pose pose) : State("init", pose) {}
+        InitState(Pose pose) : State(fluid::StateIdentifier::init, pose) {}
         
         /**
          * Performs the operation of intializing all required links.

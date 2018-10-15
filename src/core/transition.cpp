@@ -10,6 +10,7 @@ void fluid::Transition::perform() {
     TransitionErrorCode transition_error_code = no_error;
 
     // Copy pose to the new state
+    // TODO: Is this really copied, or referenced?
     end_state_p->pose = start_state_p->pose;
 
     // TODO: Communicate with PX4 and get errors (if any) and set them in the error code

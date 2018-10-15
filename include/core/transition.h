@@ -5,7 +5,6 @@
 #ifndef FLUID_FSM_TRANSITION_H
 #define FLUID_FSM_TRANSITION_H
 
-#include <iostream>
 #include <memory>
 #include "state.h"
 

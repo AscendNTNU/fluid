@@ -20,7 +20,7 @@ namespace fluid {
          *
          * @param pose The pose the drone should be hovering at.
          */
-        HoldState(Pose pose) : State("hold", pose) {}
+        HoldState(Pose pose) : State(fluid::StateIdentifier::hold, pose) {}
 
         /**
          * Publishes a stream of set points (the pose of the position hold state) to PX4.

@@ -18,7 +18,7 @@ namespace fluid {
          *
          * @param pose The pose for the land state.
          */
-        LandState(Pose pose) : State("land", pose) {}
+        LandState(Pose pose) : State(fluid::StateIdentifier::land, pose) {}
 
         /**
          * Performs the operation of landing the drone.

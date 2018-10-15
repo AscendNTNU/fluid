@@ -20,9 +20,7 @@ void fluid::Operation::completed(TransitionError transition_error) {
 }
 
 void fluid::Operation::perform() {
-
-    for (auto node: state_graph.getPlanToEndState("idle", "move")) {
-
-        std::cout << node << std::endl;
+    for (auto identifier: state_graph.getPlanToEndState(fluid::StateIdentifier::idle, fluid::StateIdentifier::move)) {
+        std::cout << identifier << std::endl;
     }
 }
