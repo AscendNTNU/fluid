@@ -18,7 +18,7 @@ namespace fluid {
          *
          * @param pose The pose for the take off state.
          */
-        TakeOffState(Pose pose) : State("take_off", pose) {}
+        TakeOffState(Pose pose) : State(fluid::StateIdentifier::take_off, pose) {}
 
         /**
          * Performs the operation of taking off with the drone.

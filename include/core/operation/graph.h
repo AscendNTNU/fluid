@@ -8,13 +8,13 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include <string>
 #include "../state.h"
 #include "edge.h"
+#include "../../states/state_identifier.h"
 
 namespace fluid {
     typedef std::shared_ptr<State> Node;
-    typedef std::map<std::string, std::vector<Node>> AdjacencyList;
+    typedef std::map<StateIdentifier, std::vector<Node>> AdjacencyList;
 
     /** \class Graph
      *  \brief Represents the graph of states and transitions.
@@ -46,7 +46,7 @@ namespace fluid {
          * @param end_state_identifier The identifier of the end state we want to transition to.
          * @return Vector of states one has to transition to in order to get to the final state.
          */
-        std::vector<std::string> getPlanToEndState(std::string start_state_identifier, std::string end_state_identifier);
+        std::vector<fluid::StateIdentifier> getPlanToEndState(fluid::StateIdentifier start_state_identifier, fluid::StateIdentifier end_state_identifier);
 
         /**
          * Prints the graph.
