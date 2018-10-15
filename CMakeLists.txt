@@ -40,5 +40,5 @@ project(fluid_fsm)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-set(SOURCE_FILES src/main.cpp include/state.h src/operation.cpp include/operation.h src/transition.cpp include/transition.h)
+set(SOURCE_FILES src/main.cpp src/operation/graph.cpp src/operation/operation.cpp src/core/transition.cpp include/operation/edge.h include/operation/graph.h include/core/state.h include/operation/operation.h include/core/transition.h include/states/idle_state.h src/states/idle_state.cpp include/states/move_state.h src/states/move_state.cpp include/states/hold_state.h src/states/hold_state.cpp include/operation/state_graph.h src/operation/state_graph.cpp include/states/take_off_state.h include/states/land_state.h src/states/take_off_state.cpp src/states/land_state.cpp)
 add_executable(fluid_fsm ${SOURCE_FILES})
