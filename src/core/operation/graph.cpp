@@ -28,17 +28,17 @@ void fluid::Graph::addEdges(std::vector<Edge> const &edges) {
     }
 }
 
-std::vector<std::string> fluid::Graph::getPlanToEndState(std::string start_state_identifier, std::string end_state_identifier) {
-    std::map<std::string, bool> visited;
+std::vector<fluid::StateIdentifier> fluid::Graph::getPlanToEndState(fluid::StateIdentifier start_state_identifier, fluid::StateIdentifier end_state_identifier) {
+    std::map<fluid::StateIdentifier, bool> visited;
 
     for (auto const& item : *adjacency_list) {
         visited[item.first] = false;
    }
 
-    std::list<std::string> queue;
+    std::list<fluid::StateIdentifier> queue;
     visited[start_state_identifier] = true;
     queue.push_back(start_state_identifier);
-    std::vector<std::string> plan;
+    std::vector<fluid::StateIdentifier> plan;
 
     while (!queue.empty()) {
 
@@ -64,6 +64,7 @@ std::vector<std::string> fluid::Graph::getPlanToEndState(std::string start_state
 
 void fluid::Graph::print() {
     for (auto const& item : *adjacency_list) {
+        
         std::cout << "\n Adjacency list of vertex " << item.first << "\n head ";
         
         for (auto neighbor : item.second) {

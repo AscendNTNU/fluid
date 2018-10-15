@@ -1,10 +1,10 @@
 #ifndef FLUID_FSM_STATE_H
 #define FLUID_FSM_STATE_H
 
+#include "../states/state_identifier.h"
 #include <memory>
 #include <vector>
 #include <string>
-
 
 namespace fluid {
     struct Point {
@@ -55,17 +55,18 @@ namespace fluid {
                                                        ///< The class of the object has to implement the StateDelegate
                                                        ///< interface.
 
-        const std::string identifier; ///< Identifier of the state
+        const fluid::StateIdentifier identifier; ///< Identifier of the state
         
         // TODO: switch to ros pose, this pose is here temporariliy for debugging purposes
         Pose pose; ///< The current pose of the state.
         
         /**
-         * Initializes state with a pose.
+         * Initializes state with an identifier and a pose.
          *
+         * @param identifier The identifier of the state.
          * @param pose The pose the state should appear at.
          */
-        State(std::string identifier, Pose pose): identifier(identifier), pose(pose) {}
+        State(fluid::StateIdentifier identifier, Pose pose): identifier(identifier), pose(pose) {}
 
         /**
          * Performs the logic for the given state.

@@ -23,7 +23,7 @@ namespace fluid {
          * @param set_point Set point pose
          */
         // TOOD: Change set_point to a more suitable variable?
-        MoveState(Pose pose, Pose set_point) : State("move", pose), set_point_(set_point) {}
+        MoveState(Pose pose, Pose set_point) : State(fluid::StateIdentifier::move, pose), set_point_(set_point) {}
 
         /**
          * Publishes a stream of set points (which is the set_point of the move state) to PX4.

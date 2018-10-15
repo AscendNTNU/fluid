@@ -18,7 +18,7 @@ namespace fluid {
          *
          * @param pose The pose for the idle state.
          */
-        IdleState(Pose pose) : State("idle", pose) {}
+        IdleState(Pose pose) : State(fluid::StateIdentifier::idle, pose) {}
 
         /**
          * Performs the operation of setting the rotors to start spinning at ground
