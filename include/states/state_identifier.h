@@ -8,6 +8,10 @@
 #include <ostream>
 
 namespace fluid {
+    /** \enum StateIdentifier
+     *  \brief Makes it easy to distinguish between different states.
+     *
+     */
     enum class StateIdentifier {
         init,
         idle,
@@ -18,6 +22,14 @@ namespace fluid {
     };
 }
 
+/**
+ * Outputs the state identifier as an output stream.
+ *
+ * @param os The output stream to output to.
+ * @param identifier The identifier to output.
+ *
+ * @return The output stream with the identifier appended.
+ */
 std::ostream& operator<<(std::ostream& os, const fluid::StateIdentifier identifier);
 
 #endif /* state_identifier_h */
