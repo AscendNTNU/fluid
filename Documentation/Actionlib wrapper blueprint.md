@@ -1,4 +1,4 @@
-# ROS Actionlib wrapper blueprint
+# Actionlib wrapper blueprint
 
 Fluid FSM needs a way to receive an operation request, perform a task which take an arbitrary amount of time, return 
 periodic feedback on the progress and respond when the operation has finished. This is where ROS actionlib comes into
