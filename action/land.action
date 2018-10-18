@@ -1,0 +1,8 @@
+# The action goal
+pose set_land_pose
+---
+# Action result
+pose final_land_pose
+---
+# Action feedback
+pose current_pose
