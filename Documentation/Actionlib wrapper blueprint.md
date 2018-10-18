@@ -31,7 +31,7 @@ move operation it will be:
 
 ```
 # The operation goal
-pose set_pose
+pose target_pose
 ---
 # Operation result
 pose final_pose

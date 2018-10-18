@@ -1,8 +1,8 @@
 # The action goal
-pose set_pose
+Pose set_pose
 ---
 # Action result
-pose final_pose
+Pose final_pose
 ---
 # Action feedback
-pose current_pose
+Pose current_pose
