@@ -5,7 +5,7 @@
 #ifndef FLUID_FSM_STATE_IDENTIFIER_H
 #define FLUID_FSM_STATE_IDENTIFIER_H
 
-#include <string>
+#include <ostream>
 
 namespace fluid {
     enum class StateIdentifier {
