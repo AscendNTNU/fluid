@@ -27,8 +27,8 @@ int main(int argc, char** argv) {
 */
 
     ros::init(argc, argv, "fluid_fsm");
-    fluid::ActionServer<fluid_fsm::MoveGoalConstPtr, fluid_fsm::MoveAction> move_server(fluid::OperationIdentifier::move);
-    fluid::ActionServer<fluid_fsm::LandGoalConstPtr, fluid_fsm::LandAction> land_server(fluid::OperationIdentifier::land);
+    fluid::ActionServer<fluid_fsm::MoveAction, fluid_fsm::MoveGoalConstPtr> move_server(fluid::OperationIdentifier::move);
+    fluid::ActionServer<fluid_fsm::LandAction, fluid_fsm::LandGoalConstPtr> land_server(fluid::OperationIdentifier::land);
     ros::spin();
 
 

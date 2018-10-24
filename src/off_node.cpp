@@ -12,6 +12,8 @@
 
 #include <actionlib/client/simple_action_client.h>
 #include <fluid_fsm/LandGoal.h>
+#include "../include/actionlib/action_client.h"
+#include "../include/core/state.h"
 
 /*
 mavros_msgs::State current_state;
@@ -28,7 +30,6 @@ int main(int argc, char** argv) {
     client.waitForServer();
 
     fluid_fsm::MoveGoal move_operation_goal;
-    // move_operation_goal.pose = set_point_goal
 
     client.sendGoal(move_operation_goal);
     client.waitForResult(ros::Duration(5.0));
@@ -42,22 +43,19 @@ int main(int argc, char** argv) {
 
 
 
-    actionlib::SimpleActionClient<fluid_fsm::LandAction> land_client("land", true);
-    land_client.waitForServer();
+    fluid::ActionClient<fluid_fsm::LandAction> action_client(fluid::OperationIdentifier::land, 20);
 
-    fluid_fsm::LandGoal land_operation_goal;
-    // move_operation_goal.pose = set_point_goal
+    geometry_msgs::Pose pose;
+    pose.position.x = 4;
 
-    land_client.sendGoal(land_operation_goal);
-    land_client.waitForResult(ros::Duration(5.0));
-
-    if (land_client.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        ROS_INFO_STREAM("Succeeded land");
-    }
-    else {
-        ROS_INFO_STREAM("Did not succeed");
-    }
-
+    action_client.requestOperationToTargetPoint(pose, [&](bool completed) {
+        if (completed) {
+            ROS_INFO_STREAM("Operation completed (callback)");
+        }
+        else {
+            ROS_INFO_STREAM("Operation failed (callback)");
+        }
+    });
 
 
     return 0;

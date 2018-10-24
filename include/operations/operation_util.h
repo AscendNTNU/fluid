@@ -5,7 +5,7 @@
 #ifndef FLUID_FSM_OPERATION_UTIL_H
 #define FLUID_FSM_OPERATION_UTIL_H
 
-#include <operation_identifier.h>
+#include "operation_identifier.h"
 
 namespace fluid {
 
@@ -13,6 +13,8 @@ namespace fluid {
      *  \brief Provide helper functions for operations and operation identifiers
      */
     class OperationUtil {
+
+    public:
 
         /**
          * Gets a description of the operation identifier.
