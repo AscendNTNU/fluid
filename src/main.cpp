@@ -6,7 +6,12 @@
 #include <ros/ros.h>
 #include <fluid_fsm/MoveGoal.h>
 #include <fluid_fsm/MoveAction.h>
+#include <fluid_fsm/LandAction.h>
+#include <fluid_fsm/LandGoal.h>
 #include "../include/actionlib/action_server.h"
+#include "../include/operations/operation_identifier.h"
+
+#include <actionlib/client/simple_action_client.h>
 
 int main(int argc, char** argv) {
 
@@ -18,18 +23,15 @@ int main(int argc, char** argv) {
     operation->addState(std::make_shared<MoveState>(pose));
     operation->addState(std::make_shared<IdleState>(pose));
 
-    operation->perform();
+    op eration->perform();
 */
 
-
-    fluid::ActionServer<fluid_fsm::MoveGoalConstPtr, fluid_fsm::MoveAction> actionServer(fluid::OperationIdentifier::take_off);
-
     ros::init(argc, argv, "fluid_fsm");
-    ros::start();
-
-    ROS_INFO_STREAM("Hello world");
-
+    fluid::ActionServer<fluid_fsm::MoveGoalConstPtr, fluid_fsm::MoveAction> move_server(fluid::OperationIdentifier::move);
+    fluid::ActionServer<fluid_fsm::LandGoalConstPtr, fluid_fsm::LandAction> land_server(fluid::OperationIdentifier::land);
     ros::spin();
+
+
 
     return 0;
 }

@@ -1,8 +1,8 @@
 # The action goal
-geometry_msgs/Pose target_land_pose
+geometry_msgs/Pose target_pose
 ---
 # Action result
-geometry_msgs/Pose final_land_pose
+geometry_msgs/Pose final_pose
 ---
 # Action feedback
 geometry_msgs/Pose current_pose

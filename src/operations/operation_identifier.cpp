@@ -16,7 +16,7 @@ std::ostream& operator<<(std::ostream& os, const fluid::OperationIdentifier iden
             description = "move";
             break;
 
-        case fluid::StateIdentifier::land:
+        case fluid::OperationIdentifier::land:
             description = "land";
             break;
 

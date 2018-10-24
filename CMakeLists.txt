@@ -24,11 +24,9 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
 )
 
-file(GLOB fluid_fsm_actionlib_SRC "src/actionlib/*.cpp")
 file(GLOB fluid_fsm_operation_SRC "src/core/operation/*.cpp")
 file(GLOB fluid_fsm_core_SRC "src/core/*.cpp")
 file(GLOB fluid_fsm_states_SRC "src/states/*.cpp")
-file(GLOB fluid_fsm_main_SRC "src/*.cpp")
 
 
 add_library(fluid_fsm_lib ${fluid_fsm_actionlib_SRC} ${fluid_fsm_operation_SRC} ${fluid_fsm_core_SRC} ${fluid_fsm_states_SRC} ${fluid_fsm_main_SRC})
@@ -50,9 +48,12 @@ target_link_libraries(fluid_fsm_lib ${catkin_LIBRARIES})
 #        include/states/state_identifier.h include/states/idle_state.h include/states/take_off_state.h include/states/land_state.h include/states/move_state.h include/states/hold_state.h include/states/init_state.h include/actionlib/action_server.h include/operations/operation_identifier.h)
 
 add_executable(fluid_fsm_main src/main.cpp)
+add_executable(action_interface_client src/off_node.cpp)
 
 target_link_libraries(fluid_fsm_main fluid_fsm_lib)
+target_link_libraries(action_interface_client ${catkin_LIBRARIES})
 
 ## Adds a compilation dependency to node_name
 add_dependencies(fluid_fsm_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(fluid_fsm_main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(action_interface_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

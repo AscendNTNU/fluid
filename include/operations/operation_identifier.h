@@ -29,5 +29,4 @@ namespace fluid {
  */
 std::ostream& operator<<(std::ostream& os, const fluid::OperationIdentifier identifier);
 
-
 #endif //FLUID_FSM_OPERATION_IDENTIFIER_H
