@@ -1,17 +1,12 @@
-#include <ros/ros.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
-#include "../include/core/operation/operation.h"
 #include <ros/ros.h>
-#include <fluid_fsm/MoveGoal.h>
-#include <fluid_fsm/MoveAction.h>
-#include <fluid_fsm/LandAction.h>
+#include <geometry_msgs/Pose.h>
+// #include <actionlib/client/simple_action_client.h>
 
-#include <actionlib/client/simple_action_client.h>
-#include <fluid_fsm/LandGoal.h>
+#include "../include/core/operation/operation.h"
 #include "../include/actionlib/action_client.h"
 #include "../include/core/state.h"
 
@@ -26,6 +21,7 @@ int main(int argc, char** argv) {
 
     ros::init(argc, argv, "client");
 
+    /*
     actionlib::SimpleActionClient<fluid_fsm::MoveAction> client("move", true);
     client.waitForServer();
 
@@ -41,19 +37,20 @@ int main(int argc, char** argv) {
         ROS_INFO_STREAM("Did not succeed");
     }
 
+*/
 
-
-    fluid::ActionClient<fluid_fsm::LandAction> action_client(fluid::OperationIdentifier::land, 20);
+    ROS_INFO("Initializing client");
+    fluid::ActionClient action_client(fluid::OperationIdentifier::move, 20);
 
     geometry_msgs::Pose pose;
     pose.position.x = 4;
 
     action_client.requestOperationToTargetPoint(pose, [&](bool completed) {
         if (completed) {
-            ROS_INFO_STREAM("Operation completed (callback)");
+            ROS_INFO("Operation completed (callback)");
         }
         else {
-            ROS_INFO_STREAM("Operation failed (callback)");
+            ROS_INFO("Operation failed (callback)");
         }
     });
 

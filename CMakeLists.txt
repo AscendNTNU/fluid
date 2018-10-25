@@ -27,9 +27,9 @@ include_directories(
 file(GLOB fluid_fsm_operation_SRC "src/core/operation/*.cpp")
 file(GLOB fluid_fsm_core_SRC "src/core/*.cpp")
 file(GLOB fluid_fsm_states_SRC "src/states/*.cpp")
+file(GLOB fluid_fsm_actionlib_SRC "src/actionlib/*.cpp")
 
-
-add_library(fluid_fsm_lib ${fluid_fsm_actionlib_SRC} ${fluid_fsm_operation_SRC} ${fluid_fsm_core_SRC} ${fluid_fsm_states_SRC} ${fluid_fsm_main_SRC})
+add_library(fluid_fsm_lib ${fluid_fsm_operation_SRC} ${fluid_fsm_core_SRC} ${fluid_fsm_states_SRC} ${fluid_fsm_actionlib_SRC})
 
 target_link_libraries(fluid_fsm_lib ${catkin_LIBRARIES})
 
@@ -51,7 +51,7 @@ add_executable(fluid_fsm_main src/main.cpp)
 add_executable(action_interface_client src/off_node.cpp)
 
 target_link_libraries(fluid_fsm_main fluid_fsm_lib)
-target_link_libraries(action_interface_client ${catkin_LIBRARIES})
+target_link_libraries(action_interface_client fluid_fsm_lib ${catkin_LIBRARIES})
 
 ## Adds a compilation dependency to node_name
 add_dependencies(fluid_fsm_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
