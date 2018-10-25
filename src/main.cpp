@@ -8,7 +8,7 @@
 #include <fluid_fsm/MoveAction.h>
 #include <fluid_fsm/LandAction.h>
 #include <fluid_fsm/LandGoal.h>
-#include "../include/actionlib/action_server.h"
+#include "actionlib/operation_server.h"
 #include "../include/operations/operation_identifier.h"
 
 #include <actionlib/client/simple_action_client.h>
@@ -27,8 +27,8 @@ int main(int argc, char** argv) {
 */
 
     ros::init(argc, argv, "fluid_fsm");
-    fluid::ActionServer<fluid_fsm::MoveAction, fluid_fsm::MoveGoalConstPtr> move_server(fluid::OperationIdentifier::move);
-    fluid::ActionServer<fluid_fsm::LandAction, fluid_fsm::LandGoalConstPtr> land_server(fluid::OperationIdentifier::land);
+    fluid::OperationServer<fluid_fsm::MoveAction, fluid_fsm::MoveGoalConstPtr> move_server(fluid::OperationIdentifier::move);
+    fluid::OperationServer<fluid_fsm::LandAction, fluid_fsm::LandGoalConstPtr> land_server(fluid::OperationIdentifier::land);
     ros::spin();
 
 

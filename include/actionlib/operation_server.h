@@ -12,36 +12,36 @@
 
 namespace fluid {
 
-    /** \class ActionServer
+    /** \class OperationServer
      *  \brief Encapsulates a ROS action server which performs operations based on requests.
      */
-    template<typename Action, typename GoalConstPtr> class ActionServer {
+    template<typename Action, typename GoalConstPtr> class OperationServer {
 
         typedef actionlib::SimpleActionServer<Action> Server;
 
     private:
 
-        ros::NodeHandle node_handle_;                    ///< The node handle for this action server
+        ros::NodeHandle node_handle_;                    ///< The node handle for this operation server
 
-        Server actionlib_action_server_;                 ///< Reference to the actionlib server which this action
+        Server actionlib_action_server_;                 ///< Reference to the ROS action server which this operation
                                                          ///< server class encapsulates
 
     public:
 
-        /** Initializes the action server with an operation identifier.
+        /** Initializes the operation server with an operation identifier.
          *
          * @param operation_identifier The operation identifier, which is essentially the domain this server provides
          *                             a service on.
          */
-        ActionServer(fluid::OperationIdentifier operation_identifier) :
+        OperationServer(fluid::OperationIdentifier operation_identifier) :
         actionlib_action_server_(node_handle_,
                                  fluid::OperationUtil::descriptionFromOperationIdentifier(operation_identifier),
-                                 boost::bind(&ActionServer::execute, this, _1), false) {
+                                 boost::bind(&OperationServer::execute, this, _1), false) {
             actionlib_action_server_.start();
         }
 
         /**
-        * Executes the action. This will perform the given operation with the operation identifier.
+        * Executes the operation. This will perform the given operation with the operation identifier.
         *
         * @param goal The goal of the action/operation, this will in most cases be a set point.
         */

@@ -2,7 +2,7 @@
 // Created by simengangstad on 25.10.18.
 //
 
-#include "../../include/actionlib/action_client.h"
+#include "actionlib/operation_client.h"
 #include "../../include/operations/operation_identifier.h"
 #include "../../include/operations/operation_util.h"
 
@@ -12,7 +12,7 @@
 #include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
 
-void fluid::ActionClient::requestOperationToTargetPoint(geometry_msgs::Pose target_pose, std::function<void (bool)> callback) {
+void fluid::OperationClient::requestOperationToTargetPoint(geometry_msgs::Pose target_pose, std::function<void (bool)> callback) {
 
     // This is not suitable, should've been broken into a generic way, but it's not possible as
     // actionlib's Goal objects doesn't have a superclass...

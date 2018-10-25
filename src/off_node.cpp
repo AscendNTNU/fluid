@@ -4,10 +4,9 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
-// #include <actionlib/client/simple_action_client.h>
 
 #include "../include/core/operation/operation.h"
-#include "../include/actionlib/action_client.h"
+#include "actionlib/operation_client.h"
 #include "../include/core/state.h"
 
 /*
@@ -40,12 +39,12 @@ int main(int argc, char** argv) {
 */
 
     ROS_INFO("Initializing client");
-    fluid::ActionClient action_client(fluid::OperationIdentifier::move, 20);
+    fluid::OperationClient operation_client(fluid::OperationIdentifier::move, 20);
 
     geometry_msgs::Pose pose;
     pose.position.x = 4;
 
-    action_client.requestOperationToTargetPoint(pose, [&](bool completed) {
+    operation_client.requestOperationToTargetPoint(pose, [&](bool completed) {
         if (completed) {
             ROS_INFO("Operation completed (callback)");
         }
