@@ -10,17 +10,23 @@
 #include <iostream>
 #include <list>
 #include <iterator>
+#include <algorithm>
 
 fluid::Graph::Graph() {
     adjacency_list = std::make_unique<AdjacencyList>();
+
 }
 
 void fluid::Graph::addEdges(std::vector<Edge> const &edges) {
     for (auto edge: edges) {
+        // If the state isn't added in the adjacency list
         if (adjacency_list->find(edge.source->identifier) == adjacency_list->end()) {
             std::vector<Node> neighbors;
             neighbors.push_back(edge.destination);
             adjacency_list->insert(std::make_pair(edge.source->identifier, neighbors));
+
+            // As this state didn't exist in the graph, we add it the list of states
+            states_.push_back(edge.source);
         }
         else {
             adjacency_list->at(edge.source->identifier).push_back(edge.destination);
@@ -28,7 +34,11 @@ void fluid::Graph::addEdges(std::vector<Edge> const &edges) {
     }
 }
 
-std::vector<fluid::StateIdentifier> fluid::Graph::getPlanToEndState(fluid::StateIdentifier start_state_identifier, fluid::StateIdentifier end_state_identifier) {
+std::vector<std::shared_ptr<fluid::State>> fluid::Graph::getStates() {
+    return states_;
+}
+
+std::vector<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(fluid::StateIdentifier start_state_identifier, fluid::StateIdentifier end_state_identifier) {
     std::map<fluid::StateIdentifier, bool> visited;
 
     for (auto const& item : *adjacency_list) {
@@ -59,7 +69,22 @@ std::vector<fluid::StateIdentifier> fluid::Graph::getPlanToEndState(fluid::State
         }
     }
 
-    return plan;
+
+    // Transform plan of state identifiers into a plan of states
+    std::vector<std::shared_ptr<fluid::State>> states_in_plan;
+
+    for (auto identifier : plan) {
+        // Get state with this identifier from the state vector
+        auto iterator = find_if(getStates().begin(), getStates().end(), [&identifier](const StateIdentifier & obj) {
+            return obj == identifier;
+        });
+
+        if (iterator != getStates().end()) {
+            states_in_plan.push_back(*iterator);
+        }
+    }
+
+    return states_in_plan;
 }
 
 void fluid::Graph::print() {

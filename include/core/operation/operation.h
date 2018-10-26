@@ -18,7 +18,7 @@ namespace fluid {
      * Stores a vector of states which it runs through when the operation is started
      */
     class Operation: public StateDelegate, public TransitionDelegate, public std::enable_shared_from_this<Operation> {
-    private:
+    protected:
 
         /** Gets fired whenever a state in the operation began performing.
          *
@@ -39,18 +39,19 @@ namespace fluid {
          */
         void completed(TransitionError transition_error);
 
-    protected:
-
-        static StateGraph state_graph; ///< Provides the states which the operation can consist of and how to transition
-                                       ///< between them
+        static StateGraph state_graph;                              ///< Provides the states which the operation can
+                                                                    ///< consist of and how to transition between them
 
     public:
 
         /** Performs the operation.
          *
          * Runs through the different states and performs the necessary transitions.
+         *
+         * @param completion_handler Callback function for whether the operation completed or not.
          */
-        void perform();
+         // TODO: Some sort of error attached in the callback?
+        void perform(std::function<void (bool)> completion_handler);
     };
 }
 

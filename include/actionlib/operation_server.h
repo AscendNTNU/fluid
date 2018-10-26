@@ -21,10 +21,13 @@ namespace fluid {
 
     private:
 
-        ros::NodeHandle node_handle_;                    ///< The node handle for this operation server
+        const fluid::OperationIdentifier operation_identifier_;      ///< Specifies the kind of operation the
+                                                                     ///< operation server responds to
 
-        Server actionlib_action_server_;                 ///< Reference to the ROS action server which this operation
-                                                         ///< server class encapsulates
+        ros::NodeHandle node_handle_;                                ///< The node handle for the operation server
+
+        Server actionlib_action_server_;                             ///< Reference to the ROS action server which the
+                                                                     ///< operation server class encapsulates
 
     public:
 
@@ -34,8 +37,9 @@ namespace fluid {
          *                             a service on.
          */
         OperationServer(fluid::OperationIdentifier operation_identifier) :
+        operation_identifier_(operation_identifier),
         actionlib_action_server_(node_handle_,
-                                 fluid::OperationUtil::descriptionFromOperationIdentifier(operation_identifier),
+                                 fluid::OperationUtil::descriptionFromOperationIdentifier(operation_identifier_),
                                  boost::bind(&OperationServer::execute, this, _1), false) {
             actionlib_action_server_.start();
         }
@@ -47,9 +51,33 @@ namespace fluid {
         */
         void execute(const GoalConstPtr &goal) {
 
-            // Send final pose in set succeeded
-            ROS_INFO_STREAM("Hello world");
-            actionlib_action_server_.setSucceeded();
+            switch (operation_identifier_) {
+                case fluid::OperationIdentifier::move: {
+
+
+
+                    actionlib_action_server_.setSucceeded();
+
+                    break;
+                }
+
+                case fluid::OperationIdentifier::land: {
+
+
+                    actionlib_action_server_.setSucceeded();
+
+                    break;
+                }
+
+                case fluid::OperationIdentifier::take_off: {
+
+
+                    actionlib_action_server_.setSucceeded();
+
+                    break;
+                }
+            }
+
         }
     };
 }

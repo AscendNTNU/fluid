@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <set>
 #include "../state.h"
 #include "edge.h"
 #include "../../states/state_identifier.h"
@@ -22,7 +23,9 @@ namespace fluid {
     class Graph {
     private:
 
-        std::unique_ptr<AdjacencyList> adjacency_list; ///< Vector containing all the connections in the graph
+        std::unique_ptr<AdjacencyList> adjacency_list;         ///< Vector containing all the connections in the graph
+
+        std::vector<std::shared_ptr<State>> states_;           ///< Vector of all the states in the state graph
 
     public:
 
@@ -40,13 +43,18 @@ namespace fluid {
         void addEdges(std::vector<Edge> const &edges);
 
         /**
+         * @return The states in the state graph.
+         */
+        std::vector<std::shared_ptr<fluid::State>> getStates();
+
+        /**
          * Finds the plan for going from the specified start state to the specified end state (bredth-first search).
          *
          * @param start_state_identifier The identifier of the start state we begin at.
          * @param end_state_identifier The identifier of the end state we want to transition to.
          * @return Vector of states one has to transition to in order to get to the final state.
          */
-        std::vector<fluid::StateIdentifier> getPlanToEndState(fluid::StateIdentifier start_state_identifier, fluid::StateIdentifier end_state_identifier);
+        std::vector<std::shared_ptr<fluid::State>> getPlanToEndState(fluid::StateIdentifier start_state_identifier, fluid::StateIdentifier end_state_identifier);
 
         /**
          * Prints the graph.
