@@ -14,63 +14,7 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
-class PosePublisher {
-    virtual void publish(geometry_msgs::PoseStamped pose_stamped) = 0;
-};
 
-ros::NodeHandle nh;
-
-class MavrosPublisher: public PosePublisher {
-private:
-    ros::Publisher local_position_publisher = nh.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 10); // Publish our local position
-public:
-
-    void publish(geometry_msgs::PoseStamped pose_stamped) {
-        local_position_publisher.publish(pose_stamped);
-    }
-};
-
-class MavrosStateSubscriber {
-
-public:
-    mavros_msgs::State current_state;
-
-    void state_callback(const mavros_msgs::State::ConstPtr& msg) {
-        current_state = *msg;
-    }
-
-    ros::Subscriber state_subscriber = nh.subscribe<mavros_msgs::State>("mavros/state", 10, &MavrosStateSubscriber::state_callback, this);
-};
-
-
-class MavrosStateSetter {
-public:
-
-    MavrosStateSubscriber state_subscriber;
-
-    ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("mavros/set_mode"); // Client for set mode
-
-    ros::Time last_request = ros::Time::now();
-
-    std::string mode;
-    mavros_msgs::SetMode set_mode;
-
-    MavrosStateSetter(std::string mode) : mode(mode) {
-        set_mode.request.custom_mode = mode;
-    }
-
-
-    void attemptToSetState() {
-        if (state_subscriber.current_state.mode != mode && (ros::Time::now() - last_request > ros::Duration(5.0))) {
-
-            if (set_mode_client.call(set_mode) && set_mode.response.mode_sent) {
-                ROS_INFO("%s enabled", mode.c_str());
-            }
-
-            last_request = ros::Time::now();
-        }
-    }
-};
 
 void fluid::InitState::perform() {
     if (auto state_delegate = state_delegate_p.lock()) {
