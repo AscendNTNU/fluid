@@ -1,9 +1,5 @@
 //
-//  state_identifier.cpp
-//  fluid_fsm
-//
 //  Created by Simen Gangstad on 15/10/2018.
-//  Copyright © 2018 Simen Gangstad. All rights reserved.
 //
 
 #include <ostream>

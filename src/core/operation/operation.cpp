@@ -19,8 +19,10 @@ void fluid::Operation::completed(TransitionError transition_error) {
     std::cout << "Transition completed" << std::endl;
 }
 
-void fluid::Operation::perform() {
+void fluid::Operation::perform(std::function<void (bool)> completion_handler) {
     for (auto identifier: state_graph.getPlanToEndState(fluid::StateIdentifier::idle, fluid::StateIdentifier::move)) {
         std::cout << identifier << std::endl;
     }
+
+    completion_handler(true);
 }
