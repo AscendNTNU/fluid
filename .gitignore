@@ -1,3 +1,6 @@
+.DS_STORE
+cmake-build-debug/
+
 # Prerequisites
 *.d
 
@@ -46,3 +49,7 @@ latex/
 
 #CMake files
 cmake-build-debug/
+
+# Xcode
+*.xcodeproj/
+DerivedData/

@@ -1,17 +1,62 @@
-#include <ros/ros.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
+#include <ros/ros.h>
+#include <geometry_msgs/Pose.h>
+
+#include "../include/core/operation/operation.h"
+#include "actionlib/operation_client.h"
+#include "../include/core/state.h"
+
+/*
 mavros_msgs::State current_state;
 
 void state_callback(const mavros_msgs::State::ConstPtr& msg) {
     current_state = *msg;
-}
+}*/
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "offboard_node");
+
+    ros::init(argc, argv, "client");
+
+    /*
+    actionlib::SimpleActionClient<fluid_fsm::MoveAction> client("move", true);
+    client.waitForServer();
+
+    fluid_fsm::MoveGoal move_operation_goal;
+
+    client.sendGoal(move_operation_goal);
+    client.waitForResult(ros::Duration(5.0));
+
+    if (client.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+        ROS_INFO_STREAM("Succeeded move");
+    }
+    else {
+        ROS_INFO_STREAM("Did not succeed");
+    }
+
+*/
+
+    ROS_INFO("Initializing client");
+    fluid::OperationClient operation_client(fluid::OperationIdentifier::move, 20);
+
+    geometry_msgs::Pose pose;
+    pose.position.x = 4;
+
+    operation_client.requestOperationToTargetPoint(pose, [&](bool completed) {
+        if (completed) {
+            ROS_INFO("Operation completed (callback)");
+        }
+        else {
+            ROS_INFO("Operation failed (callback)");
+        }
+    });
+
+
+    return 0;
+
+    /*ros::init(argc, argv, "offboard_node");
     ros::NodeHandle nh;
 
     // Subscribe to state changes in order to check connection, arming and offboard flags.
@@ -71,6 +116,7 @@ int main(int argc, char** argv) {
 
         local_position_publisher.publish(pose);
         ros::spinOnce();
-        rate.sleep();
-    }
+        rate.sleep();*/
+    //}
 }
+

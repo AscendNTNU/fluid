@@ -46,15 +46,15 @@ Building on ROS and PX4, a state should encapsulate:
 - an action
 - callbacks for when a state begins execution and when a state is finished executing
 
-#### Different types of states (**TODO: Find out which other states we need** )
+#### Different types of states
+
 - Manual (PX4: MANUAL/STABILIZED)
-- PositionHold (hovers at current position, PX4: AUTO_LOITER)
 - Idle (armed, but stationary at ground)
+- Take off (PX4: MIS_TAKEOFF_ALT)
+- Hold (hovers at current position, PX4: AUTO_LOITER)
 - Move (PX4: OFFBOARD)
-	- Take off
 - Land (lands at the current position, PX4: AUTO_RTL)
 - Kill (death switch for the judges)
-
 
 ### Transition
 A transition is just a state change, so the essentials are:
