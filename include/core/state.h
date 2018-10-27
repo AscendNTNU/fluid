@@ -5,73 +5,55 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include <ros/ros.h>
+#include <mavros/mavros_pose_publisher.h>
+#include <geometry_msgs/PoseStamped.h>
 
 namespace fluid {
-    struct Point {
-        double x = 0.0, y = 0.0, z = 0.0;
-    };
-
-    struct Quaternion {
-        double x = 0.0, y = 0.0, z = 0.0, w = 0.0;
-    };
-
-    struct Pose {
-        Point point;
-        Quaternion quaternion;
-    };
-
-    class State;
-
-    /** \class StateDelegate
-     *  \brief Interface for callbacks from states.
-     *
-     *  Implement this and set the delegate in the state object to retrieve information about when the state
-     *  began and finished.
-     */
-    class StateDelegate {
-    public:
-        /**
-         * Gets called when the state begins acting.
-         */
-        virtual void stateBegan(const State& sender) = 0;
-
-        /**
-         * Gets called when the state finished acting.
-         */
-        virtual void stateFinished(const State& sender) = 0;
-    };
-
 
     /** \class State
      *  \brief Interface for states within the finite state machine.
      *
      *  The state class is an interface which encapsulates an action, callbacks when the state started and
-     *  finished as well as which states the state can transition to.
+     *  finished as well as which states the state can transition to. It also handles pose publishing.
      */
     class State {
+    private:
+        static ros::NodeHandle node_handle_;                           ///< Handle for the mavros pose publisher.
+
+        const unsigned int refresh_rate_ = 20;                         ///< Refresh rate for ros loop.
+
     public:
 
-        std::weak_ptr<StateDelegate> state_delegate_p; ///< Delegation messages are sent to this object.
-                                                       ///< The class of the object has to implement the StateDelegate
-                                                       ///< interface.
+        const fluid::StateIdentifier identifier;                       ///< Identifier of the state
 
-        const fluid::StateIdentifier identifier; ///< Identifier of the state
-        
-        // TODO: switch to ros pose, this pose is here temporariliy for debugging purposes
-        Pose pose; ///< The current pose of the state.
+        static fluid::MavrosPosePublisher publisher;                   ///< Publishes poses to Pixhawk through mavros.
+
+        geometry_msgs::PoseStamped pose;                               ///< The current pose of the state.
         
         /**
-         * Initializes state with an identifier and a pose.
+         * Initializes state with an identifier and a refresh rate.
          *
          * @param identifier The identifier of the state.
-         * @param pose The pose the state should appear at.
+         * @param refresh_rate Refresh rate of the logic within the state.
          */
-        State(fluid::StateIdentifier identifier, Pose pose): identifier(identifier), pose(pose) {}
+        State(fluid::StateIdentifier identifier, unsigned int refresh_rate): identifier(identifier),
+                                                                             refresh_rate_(refresh_rate) {}
 
         /**
-         * Performs the logic for the given state.
+         * Performs the Ros loop for executing logic within this state given the refresh rate.
          */
-        virtual void perform() {}
+        void perform();
+
+        /**
+         * @return A flag determining whether the state has finished execution.
+         */
+        virtual bool hasFinishedExecution() = 0;
+
+        /**
+         * Executes logic at given refresh rate.
+         */
+        virtual void tick() = 0;
     };
 }
 #endif

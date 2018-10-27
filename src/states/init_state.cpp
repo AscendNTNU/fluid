@@ -20,10 +20,6 @@ void fluid::InitState::perform() {
     if (auto state_delegate = state_delegate_p.lock()) {
         state_delegate->stateBegan(*this);
     }
-
-    MavrosPublisher publisher;
-    MavrosStateSetter state_setter("OFFBOARD");
-
     ros::Rate rate(20); // Arbitrary number, must be higher than 2 Hz
 
     geometry_msgs::PoseStamped pose;
@@ -45,20 +41,6 @@ void fluid::InitState::perform() {
             ros::spinOnce();
             rate.sleep();
         }
-    }
-
-
-    // Generic state code
-    while(ros::ok()) {
-
-        // Attempt to set mode
-
-        state_setter.attemptToSetState();
-
-        publisher.publish(pose);
-
-        ros::spinOnce();
-        rate.sleep();
     }
 
 

@@ -68,11 +68,12 @@ namespace fluid {
 
         /**
          * Checks if the current state is the state we want the Pixhawk to be in. If not, this function will issue
-         * a state change command at a set interval (@see ::update_interval_) until it succeeds.
+         * a state change command at a set interval (@see ::update_interval_) until it gets a response.
          *
-         * @param completion_handler Called when the state change succeeds.
+         * @param completion_handler Called when the state change call is responded, will return with a flag whether
+         *                           the state change succeeded or not.
          */
-        void update(std::function<void (void)> completion_handler);
+        void attemptToSetState(std::function<void (bool)> completion_handler);
     };
 }
 

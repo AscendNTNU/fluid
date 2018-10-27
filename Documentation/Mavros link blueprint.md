@@ -4,8 +4,8 @@ In order to communicate with PX4 fluid will utilize Mavros. The key aspects of t
 and pose publishing.
 
 ## State setting
-State setting in fluid is done within the Transition class. It's therefore of course natural to manage state setting
-in that class. The key elements are:
+State setting in fluid is done within the Transition class. It's therefore of course natural to manage state setting on 
+PixHawk in that class. The key elements are:
 - State subscription, so that we know which state the finite state machine on the pixhawk currently has.
 - Set mode client, which makes it possible to issue set commands for states.
 

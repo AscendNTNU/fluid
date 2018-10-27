@@ -7,22 +7,21 @@
 
 fluid::StateGraph fluid::Operation::state_graph;
 
-void fluid::Operation::stateBegan(const State &sender) {
-    std::cout << "State " << typeid(sender).name() << " began." << std::endl;
-}
-
-void fluid::Operation::stateFinished(const State &sender) {
-    std::cout << "State " << typeid(sender).name() << " finshed." << std::endl;
-}
-
-void fluid::Operation::completed(TransitionError transition_error) {
-    std::cout << "Transition completed" << std::endl;
-}
-
 void fluid::Operation::perform(std::function<void (bool)> completion_handler) {
-    for (auto identifier: state_graph.getPlanToEndState(fluid::StateIdentifier::idle, fluid::StateIdentifier::move)) {
-        std::cout << identifier << std::endl;
+
+    // Check if it makes sense to carry out this operation given the current state.
+    if (!validateOperationFromCurrentState(state_graph.current_state)) {
+        completion_handler(false);
     }
+
+    // Get plan to the destination state.
+    std::vector<std::shared_ptr<State>> plan = state_graph.getPlanToEndState(state_graph.current_state->identifier,
+                                                                             destination_state_p_->identifier);
+
+    // When move state reports state finished we issue a state change to position hold and report that the operation
+    // has finished
+
+
 
     completion_handler(true);
 }

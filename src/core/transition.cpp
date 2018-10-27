@@ -6,68 +6,51 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
-#include <ros/ros.h>
-
+#include "../../include/states/state_util.h"
 #include "../../include/core/transition.h"
 #include <algorithm>
 
-/*
-mavros_msgs::State current_state;
+ros::NodeHandle fluid::Transition::node_handle_;
+fluid::MavrosStateSetter fluid::Transition::mavros_state_setter_(node_handle_, 1000, 5, "OFFBOARD");
 
-void state_callback(const mavros_msgs::State::ConstPtr& msg) {
-    current_state = *msg;
-}*/
+void fluid::Transition::perform(std::function<void (void)> completion_handler) {
 
-
-void fluid::Transition::perform() {
+    // The source state is the same as the destination state, we're done here!
+    if (source_state_p->identifier == destination_state_p->identifier) {
+        completion_handler();
+        return;
+    }
 
     TransitionErrorCode transition_error_code = no_error;
 
-    // Copy pose to the new state
-    // TODO: Is this really copied, or referenced?
-    end_state_p->pose = start_state_p->pose;
+    ros::Rate rate(temp_refresh_rate_);
 
-    // TODO: Communicate with PX4 and get errors (if any) and set them in the error code
+    // Get the px4 mode for the state we want to transition to and set that mode in our state setter
+    std::string mode = fluid::StateUtil::px4ModeForStateIdentifier(destination_state_p->identifier);
+    mavros_state_setter_.setMode(mode);
 
-    mavros_msgs::SetMode offboard_set_mode;
-    offboard_set_mode.request.custom_mode = "OFFBOARD";
+    bool state_is_set = false;
 
-    mavros_msgs::CommandBool arming_command;
-    arming_command.request.value = true;
+    // Go through the ros loop and try to set the state
+    while(ros::ok() && !state_is_set) {
+        mavros_state_setter_.attemptToSetState([&](bool succeeded) {
+            // State set succeeded, break from loop
+            ROS_INFO_STREAM("Attempt to set mode " << mode.c_str() << ", succeeded:" << succeeded);
+            state_is_set = succeeded;
+        });
 
-    ros::Time last_request = ros::Time::now();
+        // Publish poses continuously so PX4 won't complain
+        source_state_p->publisher.publish(source_state_p->pose);
 
-    while(ros::ok()) {
-        if (current_state.mode != "OFFBOARD" && (ros::Time::now() - last_request > ros::Duration(5.0))) {
-            if (set_mode_client.call(offboard_set_mode) && offboard_set_mode.response.mode_sent) {
-                ROS_INFO("Offboard enabled");
-            }
-
-            last_request = ros::Time::now();
-        } else {
-            if (!current_state.armed &&
-                (ros::Time::now() - last_request > ros::Duration(5.0))) {
-                if (arming_client.call(arming_command) && arming_command.response.success) {
-                    ROS_INFO("Vehicle armed");
-                }
-
-                last_request = ros::Time::now();
-            }
-        }
-
-        local_position_publisher.publish(pose);
         ros::spinOnce();
         rate.sleep();
     }
 
-    const std::type_info& start_state_type_info = typeid(start_state_p.get());
-    const std::type_info& end_state_type_info = typeid(end_state_p.get());
-
     TransitionError transition_error = {transition_error_code,
-                                        start_state_type_info.name(),
-                                        end_state_type_info.name()};
+                                        source_state_p->identifier,
+                                        destination_state_p->identifier};
 
-    if (auto transition_delegate = transition_delegate_p.lock()) {
-        transition_delegate->completed(transition_error);
-    }
+    // TODO: Currently we don't pass a error (if any) here, figure out which error we can get from the px4 state change
+    // TODO: Though will the loop try to set the state until it succeeds, so it might not be necessary
+    completion_handler();
 }
