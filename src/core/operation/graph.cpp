@@ -38,7 +38,8 @@ std::vector<std::shared_ptr<fluid::State>> fluid::Graph::getStates() {
     return states_;
 }
 
-std::vector<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(fluid::StateIdentifier start_state_identifier, fluid::StateIdentifier end_state_identifier) {
+std::list<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(fluid::StateIdentifier start_state_identifier,
+                                                                         fluid::StateIdentifier end_state_identifier) {
     std::map<fluid::StateIdentifier, bool> visited;
 
     for (auto const& item : *adjacency_list) {
@@ -60,7 +61,7 @@ std::vector<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(fluid
             break;
         }
 
-        for(auto neighborState : adjacency_list->at(start_state_identifier)) {
+        for(const auto neighborState : adjacency_list->at(start_state_identifier)) {
 
             if(!visited[neighborState->identifier]) {
                 visited[neighborState->identifier] = true;
@@ -71,7 +72,7 @@ std::vector<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(fluid
 
 
     // Transform plan of state identifiers into a plan of states
-    std::vector<std::shared_ptr<fluid::State>> states_in_plan;
+    std::list<std::shared_ptr<fluid::State>> states_in_plan;
 
     for (auto identifier : plan) {
         // Get state with this identifier from the state vector

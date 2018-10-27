@@ -52,9 +52,9 @@ namespace fluid {
          *
          * @param start_state_identifier The identifier of the start state we begin at.
          * @param end_state_identifier The identifier of the end state we want to transition to.
-         * @return Vector of states one has to transition to in order to get to the final state.
+         * @return Queue of states one has to transition to in order to get to the final state.
          */
-        std::vector<std::shared_ptr<fluid::State>> getPlanToEndState(fluid::StateIdentifier start_state_identifier, fluid::StateIdentifier end_state_identifier);
+        std::list<std::shared_ptr<fluid::State>> getPlanToEndState(fluid::StateIdentifier start_state_identifier, fluid::StateIdentifier end_state_identifier);
 
         /**
          * Prints the graph.
