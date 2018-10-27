@@ -1,7 +1,8 @@
+#include <utility>
+
 #ifndef FLUID_FSM_STATE_H
 #define FLUID_FSM_STATE_H
 
-#include "../states/state_identifier.h"
 #include <memory>
 #include <vector>
 #include <string>
@@ -19,15 +20,14 @@ namespace fluid {
      */
     class State {
     private:
-        static ros::NodeHandle node_handle_;                           ///< Handle for the mavros pose publisher.
 
         const unsigned int refresh_rate_ = 20;                         ///< Refresh rate for ros loop.
 
     public:
 
-        const fluid::StateIdentifier identifier;                       ///< Identifier of the state
+        const std::string identifier;                                  ///< Identifier of the state
 
-        static fluid::MavrosPosePublisher publisher;                   ///< Publishes poses to Pixhawk through mavros.
+        std::shared_ptr<fluid::PosePublisher> pose_publisher_p;        ///< Publishes poses.
 
         geometry_msgs::PoseStamped pose;                               ///< The current pose of the state.
         
@@ -37,8 +37,11 @@ namespace fluid {
          * @param identifier The identifier of the state.
          * @param refresh_rate Refresh rate of the logic within the state.
          */
-        State(fluid::StateIdentifier identifier, unsigned int refresh_rate): identifier(identifier),
-                                                                             refresh_rate_(refresh_rate) {}
+        State(  std::string identifier,
+                std::shared_ptr<fluid::PosePublisher> pose_publisher_p,
+                unsigned int refresh_rate) : identifier(std::move(identifier)), refresh_rate_(refresh_rate) {
+            this->pose_publisher_p = std::move(pose_publisher_p);
+        }
 
         /**
          * Performs the Ros loop for executing logic within this state given the refresh rate.

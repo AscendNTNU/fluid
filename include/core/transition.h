@@ -45,8 +45,7 @@ namespace fluid {
 
         static fluid::MavrosStateSetter mavros_state_setter_;                ///< Sets states within the Pixhawk.
 
-        // TODO: temp, pass in constructor?
-        unsigned int temp_refresh_rate_ = 20;
+        const unsigned int refresh_rate_;                                    ///< Refresh rate of the ros loop.
 
     public:
         const std::shared_ptr<State> source_state_p;                         ///< Source state of the transition
@@ -59,9 +58,12 @@ namespace fluid {
          * @param source_p The source state.
          * @param destination_p The destination state.
          */
-        Transition(std::shared_ptr<State> source_state_p, std::shared_ptr<State> destination_state_p) :
+        Transition(std::shared_ptr<State> source_state_p,
+                   std::shared_ptr<State> destination_state_p,
+                   unsigned int refresh_rate) :
                    source_state_p(source_state_p),
-                   destination_state_p(destination_state_p) {}
+                   destination_state_p(destination_state_p),
+                   refresh_rate_(refresh_rate) {}
 
         /**
          * Performs the transition between the source state and the destination state.

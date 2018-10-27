@@ -3,16 +3,11 @@
 //
 
 #include "../../include/states/move_state.h"
-#include <iostream>
 
-void fluid::MoveState::perform() {
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateBegan(*this);
-    }
+bool fluid::MoveState::hasFinishedExecution() {
 
-    std::cout << "Moving..." << std::endl;
+}
 
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateFinished(*this);
-    }
+void fluid::MoveState::tick() {
+
 }

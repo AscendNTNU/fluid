@@ -14,6 +14,8 @@ namespace fluid {
      *        for publishing.
      */
     class PosePublisher {
+
+    public:
         /**
          * Publishes a pose.
          *

@@ -5,26 +5,28 @@
 #ifndef FLUID_FSM_STATE_UTIL_H
 #define FLUID_FSM_STATE_UTIL_H
 
-#include "state_identifier.h"
+#include <string>
 
 namespace fluid {
     class StateUtil {
     public:
 
-        static std::string px4ModeForStateIdentifier(fluid::StateIdentifier state_identifier) {
-            switch (state_identifier) {
-                case fluid::StateIdentifier::idle:
-                    return "OFFBOARD";
-                case fluid::StateIdentifier::take_off:
-                    // Can't use the default AUTO.TAKEOFF mode as we haven't got a GPS on the drone, check this
-                    return "OFFBOARD";
-                case fluid::StateIdentifier::hold:
-                    // Can't use AUTO.LOITER as it requires GPS
-                    return "OFFBOARD";
-                case fluid::StateIdentifier::move:
-                    return "OFFBOARD";
-                case fluid::StateIdentifier::land:
-                    return "AUTO.LAND";
+        static std::string px4ModeForStateIdentifier(std::string state_identifier) {
+
+            if (state_identifier == "idle") {
+                return "OFFBOARD";
+            }
+            else if (state_identifier == "take_off") {
+                return "OFFBOARD";
+            }
+            else if (state_identifier == "hold") {
+                return "OFFBOARD";
+            }
+            else if (state_identifier == "move") {
+                return "OFFBOARD";
+            }
+            else if (state_identifier == "land") {
+                return "AUTO.LAND";
             }
         }
     };

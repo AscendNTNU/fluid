@@ -7,8 +7,8 @@
 
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
-#include "../operations/operation_identifier.h"
-#include "../operations/operation_util.h"
+#include "operations/operation_identifier.h"
+#include "operations/operation_util.h"
 
 namespace fluid {
 

@@ -5,23 +5,32 @@
 #ifndef FLUID_FSM_INIT_STATE_H
 #define FLUID_FSM_INIT_STATE_H
 
-#include "../core/state.h"
+#include "../mavros/mavros_state.h"
 
 namespace fluid {
+
     /** \class InitState
      *  \brief Makes sure everything is initialized (link to mavros and px4) before any further transitions are called.
      */
-    class InitState: public State {
+    class InitState: public MavrosState {
     public:
         
-        /** Initializes the init state with a pose.
-         *
-         * @param pose The pose for the init state.
+        /** Initializes the init state.
          */
-        InitState(Pose pose) : State(fluid::StateIdentifier::init, pose) {}
-        
+        InitState() : MavrosState("init") {}
+
         /**
-         * Performs the operation of intializing all required links.
+         * Overridden function. @see State::hasFinishedExecution
+         */
+        bool hasFinishedExecution();
+
+        /**
+         * Overridden function. @see State::tick
+         */
+        void tick();
+
+        /**
+         * Overridden function. @see State::perform
          */
         void perform();
     };

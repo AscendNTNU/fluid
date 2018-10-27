@@ -16,11 +16,18 @@
 
 
 
+bool fluid::InitState::hasFinishedExecution() {
+
+}
+
+void fluid::InitState::tick() {
+
+}
+
+
 void fluid::InitState::perform() {
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateBegan(*this);
-    }
-    ros::Rate rate(20); // Arbitrary number, must be higher than 2 Hz
+
+    /*ros::Rate rate(20); // Arbitrary number, must be higher than 2 Hz
 
     geometry_msgs::PoseStamped pose;
 
@@ -46,5 +53,5 @@ void fluid::InitState::perform() {
 
     if (auto state_delegate = state_delegate_p.lock()) {
         state_delegate->stateFinished(*this);
-    }
+    }*/
 }

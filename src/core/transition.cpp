@@ -23,7 +23,7 @@ void fluid::Transition::perform(std::function<void (void)> completion_handler) {
 
     TransitionErrorCode transition_error_code = no_error;
 
-    ros::Rate rate(temp_refresh_rate_);
+    ros::Rate rate(refresh_rate_);
 
     // Get the px4 mode for the state we want to transition to and set that mode in our state setter
     std::string mode = fluid::StateUtil::px4ModeForStateIdentifier(destination_state_p->identifier);
@@ -40,7 +40,7 @@ void fluid::Transition::perform(std::function<void (void)> completion_handler) {
         });
 
         // Publish poses continuously so PX4 won't complain
-        source_state_p->publisher.publish(source_state_p->pose);
+        source_state_p->pose_publisher_p->publish(source_state_p->pose);
 
         ros::spinOnce();
         rate.sleep();

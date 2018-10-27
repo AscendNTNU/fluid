@@ -15,7 +15,7 @@ void fluid::Operation::perform(std::function<void (bool)> completion_handler) {
     }
 
     // Get plan to the destination state.
-    std::list<std::shared_ptr<State>> plan = state_graph.getPlanToEndState(state_graph.current_state->identifier,
+    std::list<std::shared_ptr<State>> plan = state_graph.getPlanToEndState(state_graph.current_state_p->identifier,
                                                                            destination_state_p_->identifier);
 
 

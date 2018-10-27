@@ -5,7 +5,7 @@
 #ifndef FLUID_FSM_OPERATION_CLIENT_H
 #define FLUID_FSM_OPERATION_CLIENT_H
 
-#include "../operations/operation_identifier.h"
+#include "operations/operation_identifier.h"
 #include <geometry_msgs/Pose.h>
 #include <actionlib/client/simple_action_client.h>
 #include <fluid_fsm/MoveAction.h>

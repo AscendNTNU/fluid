@@ -5,25 +5,30 @@
 #ifndef FLUID_FSM_LAND_STATE_H
 #define FLUID_FSM_LAND_STATE_H
 
-#include "../core/state.h"
+#include "../mavros/mavros_state.h"
 
 namespace fluid {
+
     /** \class LandState
-     *  \brief Represents the state where the drone is on ground, armed and spinning its rotors
+     *  \brief Represents the state where the drone is landing.
      */
-    class LandState: public State {
+    class LandState: public MavrosState {
     public:
 
-        /** Initializes the land state with a pose.
-         *
-         * @param pose The pose for the land state.
+        /**
+         * Initializes the land state.
          */
-        LandState(Pose pose) : State(fluid::StateIdentifier::land, pose) {}
+        LandState() : MavrosState("land") {}
 
         /**
-         * Performs the operation of landing the drone.
+         * Overridden function. @see State::hasFinishedExecution
          */
-        void perform();
+        bool hasFinishedExecution();
+
+        /**
+         * Overridden function. @see State::tick
+         */
+        void tick();
     };
 }
 

@@ -5,30 +5,30 @@
 #ifndef FLUID_FSM_MOVE_STATE_H
 #define FLUID_FSM_MOVE_STATE_H
 
-#include "../core/state.h"
+#include "../mavros/mavros_state.h"
 
 namespace fluid {
+
     /** \class MoveState
      *  \brief Represents the state where the drone is moving from a to b.
      */
-    class MoveState: public State {
-    private:
-        const Pose set_point_; ///< The pose the drone will be moving to in the move state.
+    class MoveState: public MavrosState {
 
     public:
 
-        /** Initializes the move state with a current pose and a set point pose.
-         *
-         * @param pose Initial pose
-         * @param set_point Set point pose
+        /** Initializes the move state.
          */
-        // TOOD: Change set_point to a more suitable variable?
-        MoveState(Pose pose, Pose set_point) : State(fluid::StateIdentifier::move, pose), set_point_(set_point) {}
+        MoveState(std::string identifier) : MavrosState(identifier) {}
 
         /**
-         * Publishes a stream of set points (which is the set_point of the move state) to PX4.
+         * Overridden function. @see State::hasFinishedExecution
          */
-        void perform();
+        bool hasFinishedExecution();
+
+        /**
+         * Overridden function. @see State::tick
+         */
+        void tick();
     };
 }
 
