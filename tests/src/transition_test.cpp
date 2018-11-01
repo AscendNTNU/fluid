@@ -7,8 +7,9 @@
 #include "test_state_1.h"
 #include "test_state_2.h"
 #include "../../include/states/init_state.h"
-#include "../../include/states/init_state.h"
-#include "../../include/states/init_state.h"
+#include "../../include/states/take_off_state.h"
+#include "../../include/states/move_state.h"
+#include "../../include/core/state.h"
 #include "../../include/core/transition.h"
 
 #include <iostream>
@@ -18,10 +19,23 @@ int main(int argc, char** argv) {
 
     ros::init(argc, argv, "transition_test");
 
-    std::shared_ptr<fluid::InitState> init_state = std::make_shared<fluid::InitState>();
+    ros::NodeHandlePtr node_handle_p(new ros::NodeHandle);
+
+    std::shared_ptr<fluid::InitState> init_state = std::make_shared<fluid::InitState>(node_handle_p);
     init_state->perform();
 
-    std::
+    std::shared_ptr<fluid::TakeOffState> take_off_state = std::make_shared<fluid::TakeOffState>(node_handle_p);
+
+    fluid::Transition init_transition(node_handle_p, init_state, take_off_state, 20);
+
+    init_transition.perform([] {
+        ROS_INFO("Transitioned to take off");
+    });
+
+    take_off_state->pose.pose.position.z = 2.0;
+    take_off_state->perform();
+
+    ROS_INFO("Finished take off");
 
 
     /**

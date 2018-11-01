@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by simengangstad on 27.10.18.
 //
@@ -21,15 +23,12 @@ namespace fluid {
 
     private:
 
-        ros::NodeHandle node_handle_;                            ///< Node handle for the mavros pose publisher
 
-        ros::Subscriber pose_subscriber_ = node_handle_.subscribe("mavros/local_position/pose",
-                                                                  1000,
-                                                                  &MavrosState::poseCallback,
-                                                                  this);                        ///< Retrieves poses
-                                                                                                ///< from mavros
+        ros::Subscriber pose_subscriber_;                        ///< Retrieves poses from mavros
 
     protected:
+
+        ros::NodeHandlePtr node_handle_p;                        ///< Node handle for the mavros pose publisher
 
         geometry_msgs::PoseStamped current_position_;            ///< Keeps track of where the drone is during this
                                                                  ///< state in terms of mavros.
@@ -37,17 +36,23 @@ namespace fluid {
         /**
          * Gets fired when mavros publishes a pose on the topic "mavros/local_position/pose".
          */
-        void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
+        void poseCallback(geometry_msgs::PoseStampedConstPtr pose);
 
     public:
 
+
+        // TODO: Referencing the same node handle fails, has to use pointers
         /**
          * Initiializes the mavros state with an identifier.
          *
          * @param identifier The identifier of the state.
+         * @param node_handle_p Node handle to interact with ROS topics.
          */
-        MavrosState(std::string identifier) :
-        State(identifier, std::make_shared<fluid::MavrosPosePublisher>(node_handle_, 1000), 20) {}
+        MavrosState(ros::NodeHandlePtr node_handle_p, std::string identifier) :
+        State(std::move(identifier), std::make_shared<fluid::MavrosPosePublisher>(node_handle_p, 1000), 20),
+        node_handle_p(node_handle_p),
+        pose_subscriber_(node_handle_p->subscribe("mavros/local_position/pose", 1000, &MavrosState::poseCallback, this))
+        {}
     };
 }
 

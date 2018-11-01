@@ -28,19 +28,16 @@ void fluid::InitState::perform() {
 
     ros::Rate rate(refresh_rate_);
 
-    ros::NodeHandle node_handle;
-    fluid::MavrosStateSetter state_setter(node_handle, 1000, 2, "OFFBOARD");
-    ros::ServiceClient arming_client = node_handle.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
+    fluid::MavrosStateSetter state_setter(node_handle_p, 1000, 2, "OFFBOARD");
+    ros::ServiceClient arming_client = node_handle_p->serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
     mavros_msgs::CommandBool arm_command;
     arm_command.request.value = true;
-
 
     // Run until we achieve a connection with mavros
     while (ros::ok() && !state_setter.getCurrentState().connected) {
         ros::spinOnce();
         rate.sleep();
     }
-
 
     //send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within px4

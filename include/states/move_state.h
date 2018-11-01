@@ -6,6 +6,7 @@
 #define FLUID_FSM_MOVE_STATE_H
 
 #include "../mavros/mavros_state.h"
+#include <ros/ros.h>
 
 namespace fluid {
 
@@ -18,17 +19,17 @@ namespace fluid {
 
         /** Initializes the move state.
          */
-        MoveState() : MavrosState("move") {}
+        explicit MoveState(ros::NodeHandlePtr node_handle_p) : MavrosState(node_handle_p, "move") {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
          */
-        bool hasFinishedExecution();
+        bool hasFinishedExecution() override;
 
         /**
          * Overridden function. @see State::tick
          */
-        void tick();
+        void tick() override;
     };
 }
 

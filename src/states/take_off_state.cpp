@@ -8,7 +8,7 @@
 
 
 bool fluid::TakeOffState::hasFinishedExecution() {
-    return StateUtil::distanceBetween(current_position_, pose) < 0.05;
+    return StateUtil::distanceBetween(current_position_, pose) < 0.2;
 }
 
 void fluid::TakeOffState::tick() {

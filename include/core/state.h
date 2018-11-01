@@ -46,7 +46,7 @@ namespace fluid {
         /**
          * Performs the Ros loop for executing logic within this state given the refresh rate.
          */
-        void perform();
+        virtual void perform();
 
         /**
          * @return A flag determining whether the state has finished execution.

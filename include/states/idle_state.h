@@ -8,6 +8,8 @@
 #include "../core/state.h"
 #include "../mavros/mavros_state.h"
 
+#include <ros/ros.h>
+
 namespace fluid {
 
     /** \class IdleState
@@ -19,17 +21,17 @@ namespace fluid {
         /**
          * Initializes the idle state.
          */
-        IdleState() : MavrosState("idle") {}
+        explicit IdleState(ros::NodeHandlePtr node_handle_p) : MavrosState(node_handle_p, "idle") {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
          */
-        bool hasFinishedExecution();
+        bool hasFinishedExecution() override;
 
         /**
          * Overridden function. @see State::tick
          */
-        void tick();
+        void tick() override;
     };
 }
 

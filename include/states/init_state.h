@@ -19,24 +19,23 @@ namespace fluid {
 
     private:
 
-        ros::NodeHandle handle;
         bool armed = false;                                 ///< Tells whether the drone is armed or not.
 
     public:
         
         /** Initializes the init state.
          */
-        InitState() : MavrosState("init") {}
+        explicit InitState(ros::NodeHandlePtr node_handle_p) : MavrosState(node_handle_p, "init") {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
          */
-        bool hasFinishedExecution();
+        bool hasFinishedExecution() override;
 
         /**
          * Overridden function. @see State::tick
          */
-        void tick();
+        void tick() override;
 
         /**
          * Overridden function. @see State::perform

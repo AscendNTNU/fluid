@@ -7,6 +7,8 @@
 
 #include "../mavros/mavros_state.h"
 
+#include <ros/ros.h>
+
 namespace fluid {
 
     /** \class LandState
@@ -18,17 +20,17 @@ namespace fluid {
         /**
          * Initializes the land state.
          */
-        LandState() : MavrosState("land") {}
+        explicit LandState(ros::NodeHandlePtr node_handle_p) : MavrosState(node_handle_p, "land") {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
          */
-        bool hasFinishedExecution();
+        bool hasFinishedExecution() override;
 
         /**
          * Overridden function. @see State::tick
          */
-        void tick();
+        void tick() override;
     };
 }
 

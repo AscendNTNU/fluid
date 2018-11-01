@@ -22,8 +22,6 @@ void fluid::MavrosStateSetter::attemptToSetState(std::function<void (bool)> comp
     else {
         if (ros::Time::now() - last_request_ > ros::Duration(update_interval_)) {
 
-            ROS_INFO("Attempting to set state");
-
             if (set_mode_client_.call(set_mode_)) {
                 completion_handler(set_mode_.response.mode_sent);
             }

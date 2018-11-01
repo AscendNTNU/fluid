@@ -42,19 +42,19 @@ namespace fluid {
         /**
          * Sets ut the mavros state setter so it can issue state changes.
          *
-         * @param node_handle           The node handle which issues the state changes.
+         * @param node_handle_p         The node handle which issues the state changes.
          * @param message_queue_size    The message buffer size.
          * @param check_rate            The
          * @param mode                  The mode to change to.
          */
-        MavrosStateSetter(ros::NodeHandle node_handle,
+        MavrosStateSetter(const ros::NodeHandlePtr &node_handle_p,
                           unsigned int message_queue_size,
                           unsigned int update_interval,
-                          std::string mode) :
+                          const std::string &mode) :
         mode_(mode),
         update_interval_(update_interval),
-        state_subscriber_(node_handle, message_queue_size),
-        set_mode_client_(node_handle.serviceClient<mavros_msgs::SetMode>("mavros/set_mode")) {
+        state_subscriber_(node_handle_p, message_queue_size),
+        set_mode_client_(node_handle_p->serviceClient<mavros_msgs::SetMode>("mavros/set_mode")) {
             setMode(mode);
         }
 

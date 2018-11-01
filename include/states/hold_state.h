@@ -5,6 +5,7 @@
 #ifndef FLUID_FSM_HOLD_STATE_H
 #define FLUID_FSM_HOLD_STATE_H
 
+#include <ros/ros.h>
 #include "../core/state.h"
 #include "../mavros/mavros_state.h"
 
@@ -20,17 +21,17 @@ namespace fluid {
         /**
          * Initializes the hold state.
          */
-        HoldState() : MavrosState("hold") {}
+        explicit HoldState(ros::NodeHandlePtr node_handle_p) : MavrosState(node_handle_p, "hold") {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
          */
-        bool hasFinishedExecution();
+        bool hasFinishedExecution() override;
 
         /**
          * Overridden function. @see State::tick
          */
-        void tick();
+        void tick() override;
     };
 }
 

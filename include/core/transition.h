@@ -42,8 +42,6 @@ namespace fluid {
      */
     class Transition {
     private:
-        ros::NodeHandle node_handle_;                                         ///< Handle for the mavros state setter
-
         fluid::MavrosStateSetter mavros_state_setter_;                        ///< Sets states within the Pixhawk.
 
         const unsigned int refresh_rate_;                                    ///< Refresh rate of the ros loop.
@@ -59,11 +57,12 @@ namespace fluid {
          * @param source_p The source state.
          * @param destination_p The destination state.
          */
-         // TODO: Gloablize message queue
-        Transition(std::shared_ptr<State> source_state_p,
+         // TODO: Gloablize message queue number
+        Transition(const ros::NodeHandlePtr &node_handle_p,
+                   std::shared_ptr<State> source_state_p,
                    std::shared_ptr<State> destination_state_p,
                    unsigned int refresh_rate) :
-                   mavros_state_setter_(node_handle_, 1000, refresh_rate, "OFFBOARD"),
+                   mavros_state_setter_(node_handle_p, 1000, refresh_rate, "OFFBOARD"),
                    source_state_p(source_state_p),
                    destination_state_p(destination_state_p),
                    refresh_rate_(refresh_rate) {}

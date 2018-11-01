@@ -6,26 +6,38 @@
 #define FLUID_FSM_STATE_GRAPH_H
 
 #include "graph.h"
-#include "../../states/hold_state.h"
-#include "../../states/idle_state.h"
-#include "../../states/init_state.h"
-#include "../../states/land_state.h"
-#include "../../states/move_state.h"
-#include "../../states/take_off_state.h"
+
+#include <ros/ros.h>
 
 namespace fluid {
     /** \class StateGraph
      *  \brief Represents a graph with all of the states in fluid_fsm
      */
     class StateGraph: public Graph {
+
+    private:
+
+        ros::NodeHandlePtr node_handle_p;                            ///< Used for initializing states and their
+                                                                     ///< respective ros pubilshers and subscribers
+
+
+        bool initialized_ = false;
+
     public:
-        
-        std::shared_ptr<State> current_state_p; ///< The current state of the state graph
-        
+
+        std::shared_ptr<State> current_state_p;                      ///< The current state of the state graph
+
+        bool isInitialized();
+
         /**
          * Initializes the state graph with a set of states.
          */
-        StateGraph();
+        void initialize();
+
+        /**
+         * @return ROS node handle pointer, used when states need to do something specific with ROS.
+         */
+        ros::NodeHandlePtr getNodeHandlePtr();
     };
 }
 

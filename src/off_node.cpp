@@ -20,24 +20,6 @@ int main(int argc, char** argv) {
 
     ros::init(argc, argv, "client");
 
-    /*
-    actionlib::SimpleActionClient<fluid_fsm::MoveAction> client("move", true);
-    client.waitForServer();
-
-    fluid_fsm::MoveGoal move_operation_goal;
-
-    client.sendGoal(move_operation_goal);
-    client.waitForResult(ros::Duration(5.0));
-
-    if (client.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-        ROS_INFO_STREAM("Succeeded move");
-    }
-    else {
-        ROS_INFO_STREAM("Did not succeed");
-    }
-
-*/
-
     ROS_INFO("Initializing client");
     fluid::OperationClient operation_client(fluid::OperationIdentifier::move, 20);
 

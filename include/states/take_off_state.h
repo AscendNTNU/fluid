@@ -6,6 +6,7 @@
 #define FLUID_FSM_TAKE_OFF_STATE_H
 
 #include "../mavros/mavros_state.h"
+#include <ros/ros.h>
 
 namespace fluid {
 
@@ -17,17 +18,17 @@ namespace fluid {
 
         /** Initializes the take off state with a pose.
          */
-        TakeOffState() : MavrosState("take_off") {}
+        explicit TakeOffState(ros::NodeHandlePtr node_handle_p) : MavrosState(node_handle_p, "take_off") {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
          */
-        bool hasFinishedExecution();
+        bool hasFinishedExecution() override;
 
         /**
          * Overridden function. @see State::tick
          */
-        void tick();
+        void tick() override;
     };
 }
 

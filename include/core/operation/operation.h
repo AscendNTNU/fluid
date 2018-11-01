@@ -46,8 +46,12 @@ namespace fluid {
          * @param destination_state_p   The destination state of the operation.
          * @param final_state_p         The final state.
          */
-        Operation(std::shared_ptr<fluid::State> destination_state_p, std::shared_ptr<fluid::State> end_state_p) :
-        destination_state_p_(destination_state_p_), final_state_p_(final_state_p_) {}
+        Operation(ros::NodeHandlePtr node_handle_p,
+                  std::shared_ptr<fluid::State> destination_state_p,
+                  std::shared_ptr<fluid::State> end_state_p) :
+
+                  destination_state_p_(destination_state_p_),
+                  final_state_p_(final_state_p_) {}
 
 
         /**

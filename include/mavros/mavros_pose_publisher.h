@@ -25,11 +25,11 @@ namespace fluid {
         /**
          * Sets up the mavros pose publisher so it can publish poses.
          *
-         * @param node_handle Node handle to publish from.
+         * @param node_handle_p Node handle to publish from.
          * @param message_queue_size The size of the message buffer.
          */
-        MavrosPosePublisher(ros::NodeHandle node_handle, unsigned int message_queue_size) :
-        local_position_publisher_(node_handle.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local",
+        MavrosPosePublisher(ros::NodeHandlePtr node_handle_p, unsigned int message_queue_size) :
+        local_position_publisher_(node_handle_p->advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local",
                                                                                      message_queue_size)) {}
 
         /**
