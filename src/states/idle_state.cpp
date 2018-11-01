@@ -10,5 +10,5 @@ bool fluid::IdleState::hasFinishedExecution() {
 }
 
 void fluid::IdleState::tick() {
-
+    pose.pose.position.z = 0.0;
 }

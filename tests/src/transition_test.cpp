@@ -7,6 +7,8 @@
 #include "test_state_1.h"
 #include "test_state_2.h"
 #include "../../include/states/init_state.h"
+#include "../../include/states/init_state.h"
+#include "../../include/states/init_state.h"
 #include "../../include/core/transition.h"
 
 #include <iostream>
@@ -19,7 +21,11 @@ int main(int argc, char** argv) {
     std::shared_ptr<fluid::InitState> init_state = std::make_shared<fluid::InitState>();
     init_state->perform();
 
-    /*std::shared_ptr<TestState1> test_state_1 = std::make_shared<TestState1>();
+    std::
+
+
+    /**
+    std::shared_ptr<TestState1> test_state_1 = std::make_shared<TestState1>();
     std::shared_ptr<TestState2> test_state_2 = std::make_shared<TestState2>();
 
     init_state->perform();

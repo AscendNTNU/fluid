@@ -20,7 +20,24 @@ namespace fluid {
     class MavrosState: public State {
 
     private:
+
         ros::NodeHandle node_handle_;                            ///< Node handle for the mavros pose publisher
+
+        ros::Subscriber pose_subscriber_ = node_handle_.subscribe("mavros/local_position/pose",
+                                                                  1000,
+                                                                  &MavrosState::poseCallback,
+                                                                  this);                        ///< Retrieves poses
+                                                                                                ///< from mavros
+
+    protected:
+
+        geometry_msgs::PoseStamped current_position_;            ///< Keeps track of where the drone is during this
+                                                                 ///< state in terms of mavros.
+
+        /**
+         * Gets fired when mavros publishes a pose on the topic "mavros/local_position/pose".
+         */
+        void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
 
     public:
 
