@@ -19,6 +19,7 @@ namespace fluid {
     private:
 
         ros::Publisher local_position_publisher_;               ///< Ros publisher which publishes the poses
+
     public:
 
         /**

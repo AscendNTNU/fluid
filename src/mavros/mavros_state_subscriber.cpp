@@ -7,3 +7,7 @@
 void fluid::MavrosStateSubscriber::state_callback(const mavros_msgs::State::ConstPtr& msg) {
     current_state = *msg;
 }
+
+mavros_msgs::State fluid::MavrosStateSubscriber::getCurrentState() {
+    return current_state;
+}

@@ -19,7 +19,7 @@ namespace fluid {
      *  finished as well as which states the state can transition to. It also handles pose publishing.
      */
     class State {
-    private:
+    protected:
 
         const unsigned int refresh_rate_ = 20;                         ///< Refresh rate for ros loop.
 

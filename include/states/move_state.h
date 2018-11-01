@@ -18,7 +18,7 @@ namespace fluid {
 
         /** Initializes the move state.
          */
-        MoveState(std::string identifier) : MavrosState(identifier) {}
+        MoveState() : MavrosState("move") {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

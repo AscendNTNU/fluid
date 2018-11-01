@@ -3,6 +3,3 @@
 //
 
 #include "../../include/mavros/mavros_state.h"
-
-ros::NodeHandle fluid::MavrosState::node_handle_;
-fluid::MavrosPosePublisher fluid::MavrosState::mavros_pose_publisher_;

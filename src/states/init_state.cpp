@@ -17,41 +17,67 @@
 
 
 bool fluid::InitState::hasFinishedExecution() {
-
+    return armed;
 }
 
 void fluid::InitState::tick() {
-
+    // Not implemented as all logic happens inside perform for the init state has we have to arm and set offboard mode
 }
-
 
 void fluid::InitState::perform() {
 
-    /*ros::Rate rate(20); // Arbitrary number, must be higher than 2 Hz
+    ros::Rate rate(refresh_rate_);
 
-    geometry_msgs::PoseStamped pose;
+    ros::NodeHandle node_handle;
+    fluid::MavrosStateSetter state_setter(node_handle, 1000, 2, "OFFBOARD");
+    ros::ServiceClient arming_client = node_handle.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
+    mavros_msgs::CommandBool arm_command;
+    arm_command.request.value = true;
 
-    // Run until we connect with mavros, init specific code
-    {
-        while (ros::ok() && !state_setter.state_subscriber.current_state.connected) {
-            ros::spinOnce();
-            rate.sleep();
-        }
 
-        pose.pose.position.x = 0;
-        pose.pose.position.y = 0;
-        pose.pose.position.z = 0;
-
-        //send a few setpoints before starting. This is because the stream has to be set ut before we change modes within px4
-        for (int i = 100; ros::ok() && i > 0; --i) {
-            publisher.publish(pose);
-            ros::spinOnce();
-            rate.sleep();
-        }
+    // Run until we achieve a connection with mavros
+    while (ros::ok() && !state_setter.getCurrentState().connected) {
+        ros::spinOnce();
+        rate.sleep();
     }
 
 
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateFinished(*this);
-    }*/
+    //send a few setpoints before starting. This is because the stream has to be set ut before we
+    // change modes within px4
+    pose.pose.position.x = 0;
+    pose.pose.position.y = 0;
+    pose.pose.position.z = 0;
+
+    // TODO: Evaluate numbers here
+    for (int i = 100; ros::ok() && i > 0; --i) {
+        pose_publisher_p->publish(pose);
+        ros::spinOnce();
+        rate.sleep();
+    }
+
+
+    // Attempt to set offboard mode. Once that has completed, arm the drone.
+    ros::Time last_request = ros::Time::now();
+
+    while(ros::ok() && !hasFinishedExecution()) {
+
+        state_setter.attemptToSetState([&](bool completed) {
+            if(completed &&
+               !state_setter.getCurrentState().armed &&
+               (ros::Time::now() - last_request > ros::Duration(5.0))) {
+
+                if(arming_client.call(arm_command) && arm_command.response.success){
+                    ROS_INFO("FLUID FSM - Drone armed");
+                    armed = true;
+                }
+
+                last_request = ros::Time::now();
+            }
+        });
+
+        pose_publisher_p->publish(pose);
+
+        ros::spinOnce();
+        rate.sleep();
+    }
 }

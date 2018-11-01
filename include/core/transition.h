@@ -26,12 +26,13 @@ namespace fluid {
      *  \brief Describes the error which happened in the transitions between two states.
      */
     struct TransitionError {
+
         TransitionErrorCode error_code;                         ///< The code which specifies which transition
                                                                 ///< error occurred
 
-        fluid::StateIdentifier source_state;                    ///< The source state of the transition
+        std::string source_state_identifier;                    ///< The source state of the transition
 
-        fluid::StateIdentifier destination_state;               ///< The destination state of the transition
+        std::string destination_state_identifier;               ///< The destination state of the transition
     };
 
 
@@ -41,9 +42,9 @@ namespace fluid {
      */
     class Transition {
     private:
-        static ros::NodeHandle node_handle_;                                 ///< Handle for the mavros state setter
+        ros::NodeHandle node_handle_;                                         ///< Handle for the mavros state setter
 
-        static fluid::MavrosStateSetter mavros_state_setter_;                ///< Sets states within the Pixhawk.
+        fluid::MavrosStateSetter mavros_state_setter_;                        ///< Sets states within the Pixhawk.
 
         const unsigned int refresh_rate_;                                    ///< Refresh rate of the ros loop.
 
@@ -58,9 +59,11 @@ namespace fluid {
          * @param source_p The source state.
          * @param destination_p The destination state.
          */
+         // TODO: Gloablize message queue
         Transition(std::shared_ptr<State> source_state_p,
                    std::shared_ptr<State> destination_state_p,
                    unsigned int refresh_rate) :
+                   mavros_state_setter_(node_handle_, 1000, refresh_rate, "OFFBOARD"),
                    source_state_p(source_state_p),
                    destination_state_p(destination_state_p),
                    refresh_rate_(refresh_rate) {}

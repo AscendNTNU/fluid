@@ -7,6 +7,7 @@
 
 #include <ros/ros.h>
 #include "mavros_state_subscriber.h"
+#include <mavros_msgs/State.h>
 
 namespace fluid {
     /**
@@ -65,6 +66,11 @@ namespace fluid {
          */
         void setMode(std::string mode);
 
+
+        /**
+         * @return The current state the state subscriber has obtained.
+         */
+        mavros_msgs::State getCurrentState();
 
         /**
          * Checks if the current state is the state we want the Pixhawk to be in. If not, this function will issue

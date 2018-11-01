@@ -9,14 +9,20 @@ void fluid::MavrosStateSetter::setMode(std::string mode) {
     set_mode_.request.custom_mode = mode_;
 }
 
+mavros_msgs::State fluid::MavrosStateSetter::getCurrentState() {
+    return state_subscriber_.getCurrentState();
+}
+
 void fluid::MavrosStateSetter::attemptToSetState(std::function<void (bool)> completion_handler) {
 
     // The state on the Pixhawk is equal to the state we wan't to set, so we just return
-    if (state_subscriber_.current_state.mode == mode_) {
+    if (state_subscriber_.getCurrentState().mode == mode_) {
         completion_handler(true);
     }
     else {
         if (ros::Time::now() - last_request_ > ros::Duration(update_interval_)) {
+
+            ROS_INFO("Attempting to set state");
 
             if (set_mode_client_.call(set_mode_)) {
                 completion_handler(set_mode_.response.mode_sent);

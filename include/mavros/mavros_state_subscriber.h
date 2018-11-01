@@ -23,6 +23,9 @@ namespace fluid {
         ros::Subscriber state_subscriber;                               ///< ROS subscriber which subscribes to
                                                                         ///< state changes within the pixhawk
 
+
+        mavros_msgs::State current_state;                               ///< The current state on the pixhawk
+
         /**
          * Callback function from mavros. Updates the current state.
          *
@@ -31,8 +34,6 @@ namespace fluid {
         void state_callback(const mavros_msgs::State::ConstPtr& msg);
 
     public:
-
-        mavros_msgs::State current_state;                               ///< The current state on the pixhawk
 
         /**
          * Sets up the mavros state subscriber so it can listen to state changes on the pixhawk.
@@ -45,6 +46,11 @@ namespace fluid {
                                                                    message_queue_size,
                                                                    &MavrosStateSubscriber::state_callback,
                                                                    this)) {}
+
+        /**
+         * @return The current state within PX4.
+         */
+        mavros_msgs::State getCurrentState();
     };
 }
 

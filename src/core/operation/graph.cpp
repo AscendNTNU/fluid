@@ -61,7 +61,7 @@ std::list<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(std::st
             break;
         }
 
-        for(const auto neighborState : adjacency_list->at(start_state_identifier)) {
+        for(const auto &neighborState : adjacency_list->at(start_state_identifier)) {
 
             if(!visited[neighborState->identifier]) {
                 visited[neighborState->identifier] = true;
@@ -76,8 +76,8 @@ std::list<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(std::st
 
     for (auto identifier : plan) {
         // Get state with this identifier from the state vector
-        auto iterator = find_if(getStates().begin(), getStates().end(), [&identifier](const std::string & obj) {
-            return obj == identifier;
+        auto iterator = find_if(getStates().begin(), getStates().end(), [&identifier](std::shared_ptr<fluid::State> state) {
+            return state->identifier == identifier;
         });
 
         if (iterator != getStates().end()) {
@@ -93,7 +93,7 @@ void fluid::Graph::print() {
         
         std::cout << "\n Adjacency list of vertex " << item.first << "\n head ";
         
-        for (auto neighbor : item.second) {
+        for (auto &neighbor : item.second) {
             std::cout << "-> " << neighbor->identifier;
         }
         

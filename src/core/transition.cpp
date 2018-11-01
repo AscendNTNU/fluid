@@ -10,9 +10,6 @@
 #include "../../include/core/transition.h"
 #include <algorithm>
 
-ros::NodeHandle fluid::Transition::node_handle_;
-fluid::MavrosStateSetter fluid::Transition::mavros_state_setter_(node_handle_, 1000, 5, "OFFBOARD");
-
 void fluid::Transition::perform(std::function<void (void)> completion_handler) {
 
     // The source state is the same as the destination state, we're done here!

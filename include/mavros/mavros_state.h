@@ -20,8 +20,8 @@ namespace fluid {
     class MavrosState: public State {
 
     private:
-        static ros::NodeHandle node_handle_;                            ///< Node handle for the mavros pose publisher
-        static fluid::MavrosPosePublisher mavros_pose_publisher_;       ///< Publishes poses through mavros.
+        ros::NodeHandle node_handle_;                            ///< Node handle for the mavros pose publisher
+
     public:
 
         /**
@@ -29,7 +29,8 @@ namespace fluid {
          *
          * @param identifier The identifier of the state.
          */
-        MavrosState(std::string identifier) : State(identifier, std::make_shared(mavros_pose_publisher_), 20) {}
+        MavrosState(std::string identifier) :
+        State(identifier, std::make_shared<fluid::MavrosPosePublisher>(node_handle_, 1000), 20) {}
     };
 }
 

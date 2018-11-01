@@ -6,6 +6,9 @@
 #define FLUID_FSM_INIT_STATE_H
 
 #include "../mavros/mavros_state.h"
+#include "../mavros/mavros_state_setter.h"
+
+#include <ros/ros.h>
 
 namespace fluid {
 
@@ -13,6 +16,12 @@ namespace fluid {
      *  \brief Makes sure everything is initialized (link to mavros and px4) before any further transitions are called.
      */
     class InitState: public MavrosState {
+
+    private:
+
+        ros::NodeHandle handle;
+        bool armed = false;                                 ///< Tells whether the drone is armed or not.
+
     public:
         
         /** Initializes the init state.

@@ -25,12 +25,12 @@ int main(int argc, char** argv) {
 
     op eration->perform();
 */
-
+/*
     ros::init(argc, argv, "fluid_fsm");
     fluid::OperationServer<fluid_fsm::MoveAction, fluid_fsm::MoveGoalConstPtr> move_server(fluid::OperationIdentifier::move);
     fluid::OperationServer<fluid_fsm::LandAction, fluid_fsm::LandGoalConstPtr> land_server(fluid::OperationIdentifier::land);
     ros::spin();
-
+*/
 
 
     return 0;

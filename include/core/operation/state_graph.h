@@ -8,6 +8,7 @@
 #include "graph.h"
 #include "../../states/hold_state.h"
 #include "../../states/idle_state.h"
+#include "../../states/init_state.h"
 #include "../../states/land_state.h"
 #include "../../states/move_state.h"
 #include "../../states/take_off_state.h"
