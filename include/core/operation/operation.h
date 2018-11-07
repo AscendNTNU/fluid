@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <vector>
+#include <string>
 #include "../state.h"
 #include "../transition.h"
 #include "state_graph.h"
@@ -20,10 +21,10 @@ namespace fluid {
     class Operation {
     private:
 
-        std::shared_ptr<fluid::State> destination_state_p_;                     ///< The state the operation should
+        const std::string destination_state_identifier_;                        ///< The state the operation should
                                                                                 ///< transition to.
 
-        std::shared_ptr<fluid::State> final_state_p_;                           ///< The state the operation should
+        const std::string final_state_identifier_;                              ///< The state the operation should
                                                                                 ///< transition to after it has carried
                                                                                 ///< out the logic in the destination
                                                                                 ///< state. E.g. if destination state
@@ -34,6 +35,15 @@ namespace fluid {
         static StateGraph state_graph;                              ///< Provides the states which the operation can
                                                                     ///< consist of and how to transition between them
 
+        /** Performs the operation.
+         *
+         * Runs through the different states and performs the necessary transitions.
+         *
+         * @param completion_handler Callback function for whether the operation completed or not.
+         */
+        // TODO: Some sort of error attached in the callback?
+        void perform(std::function<void (bool)> completion_handler);
+
     public:
 
 
@@ -43,15 +53,14 @@ namespace fluid {
          * is the state we want to be at after the operation. E.g. a move operation would want to be at a final state
          * of position hold after a given move state.
          *
-         * @param destination_state_p   The destination state of the operation.
-         * @param final_state_p         The final state.
+         * @param destination_state_identifier   The destination state of the operation.
+         * @param final_state_identifier         The final state.
          */
-        Operation(ros::NodeHandlePtr node_handle_p,
-                  std::shared_ptr<fluid::State> destination_state_p,
-                  std::shared_ptr<fluid::State> end_state_p) :
+        Operation(std::string destination_state_identifier,
+                  std::string final_state_identifier) :
 
-                  destination_state_p_(destination_state_p_),
-                  final_state_p_(final_state_p_) {}
+                  destination_state_identifier_(destination_state_identifier_),
+                  final_state_identifier_(final_state_identifier_) {}
 
 
         /**
@@ -63,16 +72,7 @@ namespace fluid {
          *
          * @return A flag determining the validation of the operation given the current state.
          */
-        virtual bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> destination_state_p) = 0;
-
-        /** Performs the operation.
-         *
-         * Runs through the different states and performs the necessary transitions.
-         *
-         * @param completion_handler Callback function for whether the operation completed or not.
-         */
-         // TODO: Some sort of error attached in the callback?
-        void perform(std::function<void (bool)> completion_handler);
+        virtual bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) = 0;
     };
 }
 

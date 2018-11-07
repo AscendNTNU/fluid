@@ -75,17 +75,24 @@ std::list<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(std::st
     std::list<std::shared_ptr<fluid::State>> states_in_plan;
 
     for (auto identifier : plan) {
-        // Get state with this identifier from the state vector
-        auto iterator = find_if(getStates().begin(), getStates().end(), [&identifier](std::shared_ptr<fluid::State> state) {
-            return state->identifier == identifier;
-        });
-
-        if (iterator != getStates().end()) {
-            states_in_plan.push_back(*iterator);
-        }
+        states_in_plan.push_back(getStateWithIdentifier(identifier));
     }
 
     return states_in_plan;
+}
+
+std::shared_ptr<fluid::State> fluid::Graph::getStateWithIdentifier(std::string identifier) {
+    // Get state with this identifier from the state vector
+    auto iterator = find_if(getStates().begin(), getStates().end(), [&identifier](std::shared_ptr<fluid::State> state) {
+        return state->identifier == identifier;
+    });
+
+    if (iterator != getStates().end()) {
+        return *iterator;
+    }
+    else {
+        return nullptr;
+    }
 }
 
 void fluid::Graph::print() {

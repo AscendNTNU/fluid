@@ -4,8 +4,6 @@
 
 #include <ros/ros.h>
 
-#include "test_state_1.h"
-#include "test_state_2.h"
 #include "../../include/states/init_state.h"
 #include "../../include/states/take_off_state.h"
 #include "../../include/states/move_state.h"

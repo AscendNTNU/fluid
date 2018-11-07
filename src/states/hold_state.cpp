@@ -6,7 +6,7 @@
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 bool fluid::HoldState::hasFinishedExecution() {
-
+    return false;
 }
 
 void fluid::HoldState::tick() {

@@ -57,6 +57,11 @@ namespace fluid {
                                                                    std::string end_state_identifier);
 
         /**
+         * @return The state with the given identifier.
+         */
+        std::shared_ptr<fluid::State> getStateWithIdentifier(std::string identifier);
+
+        /**
          * Prints the graph.
          */
         void print();

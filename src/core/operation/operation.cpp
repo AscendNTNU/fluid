@@ -20,7 +20,7 @@ void fluid::Operation::perform(std::function<void (bool)> completion_handler) {
 
     // Get plan to the destination state.
     std::list<std::shared_ptr<State>> plan = state_graph.getPlanToEndState(state_graph.current_state_p->identifier,
-                                                                           destination_state_p_->identifier);
+                                                                           destination_state_identifier_);
 
 
     std::shared_ptr<fluid::State> first_state_p = plan.front();
@@ -38,7 +38,10 @@ void fluid::Operation::perform(std::function<void (bool)> completion_handler) {
         state_graph.current_state_p = plan.front();
     }
 
-    fluid::Transition final_transition(state_graph.getNodeHandlePtr(), state_graph.current_state_p, final_state_p_, 20);
+    fluid::Transition final_transition(state_graph.getNodeHandlePtr(),
+                                       state_graph.current_state_p,
+                                       state_graph.getStateWithIdentifier(final_state_identifier_),
+                                       20);
     final_transition.perform([]() {});
 
     completion_handler(true);

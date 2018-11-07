@@ -15,8 +15,16 @@ namespace fluid {
      * \class MoveOperation
      * \brief Encapsulates the operation of moving from a to b.
      */
-    class MoveOperation {
+    class MoveOperation: public Operation {
 
+    public:
+
+        MoveOperation() : Operation("move", "hold") {}
+
+        /**
+         * Method overriden from superclass.
+         */
+        bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p);
     };
 }
 
