@@ -5,7 +5,7 @@
 #ifndef FLUID_FSM_POSE_PUBLISHER_H
 #define FLUID_FSM_POSE_PUBLISHER_H
 
-#include <geometry_msgs/PoseStamped.h>
+#include <mavros_msgs/PositionTarget.h>
 
 namespace fluid {
     /**
@@ -19,9 +19,9 @@ namespace fluid {
         /**
          * Publishes a pose.
          *
-         * @param pose_stamped The pose that ought to be published.
+         * @param pose_stamped The position target that ought to be published.
          */
-        virtual void publish(geometry_msgs::PoseStamped pose_stamped) = 0;
+        virtual void publish(mavros_msgs::PositionTarget position_target) = 0;
     };
 }
 

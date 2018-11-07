@@ -6,6 +6,7 @@
 #define FLUID_FSM_STATE_UTIL_H
 
 #include <string>
+#include <mavros_msgs/PositionTarget.h>
 #include <geometry_msgs/PoseStamped.h>
 
 namespace fluid {
@@ -27,14 +28,14 @@ namespace fluid {
                 return "OFFBOARD";
             }
             else if (state_identifier == "land") {
-                return "AUTO.LAND";
+                return "OFFBOARD";
             }
         }
 
-        static double distanceBetween(geometry_msgs::PoseStamped first, geometry_msgs::PoseStamped second) {
-            double delta_x = second.pose.position.x - first.pose.position.x;
-            double delta_y = second.pose.position.y - first.pose.position.y;
-            double delta_z = second.pose.position.z - first.pose.position.z;
+        static double distanceBetween(geometry_msgs::PoseStamped current, mavros_msgs::PositionTarget target) {
+            double delta_x = target.position.x - current.pose.position.x;
+            double delta_y = target.position.y - current.pose.position.y;
+            double delta_z = target.position.z - current.pose.position.z;
 
             return sqrt(delta_x*delta_x + delta_y*delta_y + delta_z*delta_z);
         }

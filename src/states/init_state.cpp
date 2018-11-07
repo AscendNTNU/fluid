@@ -41,13 +41,13 @@ void fluid::InitState::perform() {
 
     //send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within px4
-    pose.pose.position.x = 0;
-    pose.pose.position.y = 0;
-    pose.pose.position.z = 0;
+    position_target.position.x = 0;
+    position_target.position.y = 0;
+    position_target.position.z = 0;
 
     // TODO: Evaluate numbers here
     for (int i = 100; ros::ok() && i > 0; --i) {
-        pose_publisher_p->publish(pose);
+        position_target_publisher_p->publish(position_target);
         ros::spinOnce();
         rate.sleep();
     }
@@ -72,7 +72,7 @@ void fluid::InitState::perform() {
             }
         });
 
-        pose_publisher_p->publish(pose);
+        position_target_publisher_p->publish(position_target);
 
         ros::spinOnce();
         rate.sleep();

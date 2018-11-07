@@ -6,9 +6,9 @@
 
 
 bool fluid::IdleState::hasFinishedExecution() {
-
+    return false;
 }
 
 void fluid::IdleState::tick() {
-    pose.pose.position.z = 0.0;
+    position_target.position.z = 0.0;
 }

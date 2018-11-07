@@ -3,15 +3,16 @@
 //
 
 #include "../../include/core/state.h"
+#include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 void fluid::State::perform() {
 
     ros::Rate rate(refresh_rate_);
 
     while(ros::ok() && !hasFinishedExecution()) {
-        pose_publisher_p->publish(pose);
-
         tick();
+
+        position_target_publisher_p->publish(position_target);
 
         ros::spinOnce();
         rate.sleep();

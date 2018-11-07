@@ -21,26 +21,27 @@ namespace fluid {
     class State {
     protected:
 
-        const unsigned int refresh_rate_ = 20;                         ///< Refresh rate for ros loop.
+        const unsigned int refresh_rate_ = 20;                                 ///< Refresh rate for ros loop.
 
     public:
 
-        const std::string identifier;                                  ///< Identifier of the state
+        const std::string identifier;                                          ///< Identifier of the state
 
-        std::shared_ptr<fluid::PosePublisher> pose_publisher_p;        ///< Publishes poses.
+        std::shared_ptr<fluid::PosePublisher> position_target_publisher_p;     ///< Publishes poses.
 
-        geometry_msgs::PoseStamped pose;                               ///< The current pose of the state.
+        mavros_msgs::PositionTarget position_target;                           ///< The position target of the state.
         
         /**
          * Initializes state with an identifier and a refresh rate.
          *
          * @param identifier The identifier of the state.
+         * @param position_target_publisher_p Position targets publisher.
          * @param refresh_rate Refresh rate of the logic within the state.
          */
         State(  std::string identifier,
-                std::shared_ptr<fluid::PosePublisher> pose_publisher_p,
+                std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
                 unsigned int refresh_rate) : identifier(std::move(identifier)), refresh_rate_(refresh_rate) {
-            this->pose_publisher_p = std::move(pose_publisher_p);
+            this->position_target_publisher_p = std::move(position_target_publisher_p);
         }
 
         /**

@@ -7,6 +7,7 @@
 
 #include "../core/pose_publisher.h"
 #include <ros/ros.h>
+#include <mavros_msgs/PositionTarget.h>
 #include <geometry_msgs/PoseStamped.h>
 
 namespace fluid {
@@ -29,15 +30,13 @@ namespace fluid {
          * @param message_queue_size The size of the message buffer.
          */
         MavrosPosePublisher(ros::NodeHandlePtr node_handle_p, unsigned int message_queue_size) :
-        local_position_publisher_(node_handle_p->advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local",
-                                                                                     message_queue_size)) {}
+        local_position_publisher_(node_handle_p->advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local",
+                                                                                         message_queue_size)) {}
 
         /**
          * Method overridden from interface.
-         *
-         * @see PosePublisher::publish
          */
-        void publish(geometry_msgs::PoseStamped pose_stamped);
+        void publish(mavros_msgs::PositionTarget position_target) override;
     };
 }
 

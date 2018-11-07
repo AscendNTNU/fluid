@@ -37,7 +37,7 @@ void fluid::Transition::perform(std::function<void (void)> completion_handler) {
         });
 
         // Publish poses continuously so PX4 won't complain
-        source_state_p->pose_publisher_p->publish(source_state_p->pose);
+        source_state_p->position_target_publisher_p->publish(source_state_p->position_target);
 
         ros::spinOnce();
         rate.sleep();
