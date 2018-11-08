@@ -4,9 +4,11 @@
 
 #ifndef FLUID_FSM_TAKE_OFF_OPERATION_H
 #define FLUID_FSM_TAKE_OFF_OPERATION_H
+
 #include "../core/operation/operation.h"
 #include "../core/state.h"
 #include "../core/transition.h"
+#include <mavros_msgs/PositionTarget.h>
 
 namespace fluid {
 
@@ -18,7 +20,8 @@ namespace fluid {
 
     public:
 
-        MoveOperation() : Operation("take_off_operation", "take_off", "hold") {}
+        TakeOffOperation(mavros_msgs::PositionTarget position_target) :
+        Operation("take_off_operation", "take_off", "hold", position_target) {}
 
         /**
          * Method overriden from superclass.

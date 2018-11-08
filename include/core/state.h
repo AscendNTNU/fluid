@@ -1,14 +1,13 @@
-#include <utility>
 
 #ifndef FLUID_FSM_STATE_H
 #define FLUID_FSM_STATE_H
 
+#include <utility>
 #include <memory>
 #include <vector>
 #include <string>
 #include <ros/ros.h>
 #include <mavros/mavros_pose_publisher.h>
-#include <geometry_msgs/PoseStamped.h>
 
 namespace fluid {
 
@@ -40,7 +39,7 @@ namespace fluid {
          */
         State(  std::string identifier,
                 std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
-                unsigned int refresh_rate) : identifier(std::move(identifier)), refresh_rate_(refresh_rate) {
+                unsigned int refresh_rate) : identifier(identifier), refresh_rate_(refresh_rate) {
             this->position_target_publisher_p = std::move(position_target_publisher_p);
         }
 

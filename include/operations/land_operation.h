@@ -8,6 +8,7 @@
 #include "../core/operation/operation.h"
 #include "../core/state.h"
 #include "../core/transition.h"
+#include <mavros_msgs/PositionTarget.h>
 
 namespace fluid {
 
@@ -15,11 +16,12 @@ namespace fluid {
      * \class LandOperation
      * \brief Encapsulates the operation of landing at the current position.
      */
-    class MoveOperation: public Operation {
+    class LandOperation: public Operation {
 
     public:
 
-        MoveOperation() : Operation("land_operation", "land", "idle") {}
+        LandOperation(mavros_msgs::PositionTarget position_target) :
+        Operation("land_operation", "land", "idle", position_target) {}
 
         /**
          * Method overriden from superclass.

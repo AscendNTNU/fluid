@@ -38,6 +38,10 @@ namespace fluid {
                     description = "land";
                     break;
 
+                case fluid::OperationIdentifier::init:
+                    description = "init";
+                    break;
+
                 default:
                     description = "unknown";
                     break;

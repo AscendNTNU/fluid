@@ -13,6 +13,7 @@ namespace fluid {
      *
      */
     enum class OperationIdentifier {
+        init,
         take_off,
         move,
         land

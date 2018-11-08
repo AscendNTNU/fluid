@@ -38,8 +38,8 @@ std::vector<std::shared_ptr<fluid::State>> fluid::Graph::getStates() {
     return states_;
 }
 
-std::list<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(std::string start_state_identifier,
-                                                                         std::string end_state_identifier) {
+std::vector<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(std::string start_state_identifier,
+                                                                           std::string end_state_identifier) {
     std::map<std::string, bool> visited;
 
     for (auto const& item : *adjacency_list) {
@@ -72,9 +72,9 @@ std::list<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(std::st
 
 
     // Transform plan of state identifiers into a plan of states
-    std::list<std::shared_ptr<fluid::State>> states_in_plan;
+    std::vector<std::shared_ptr<fluid::State>> states_in_plan;
 
-    for (auto identifier : plan) {
+    for (const auto &identifier : plan) {
         states_in_plan.push_back(getStateWithIdentifier(identifier));
     }
 
@@ -83,16 +83,13 @@ std::list<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(std::st
 
 std::shared_ptr<fluid::State> fluid::Graph::getStateWithIdentifier(std::string identifier) {
     // Get state with this identifier from the state vector
-    auto iterator = find_if(getStates().begin(), getStates().end(), [&identifier](std::shared_ptr<fluid::State> state) {
-        return state->identifier == identifier;
-    });
+    for (auto state : getStates()) {
+        if (state->identifier == identifier) {
+            return state;
+        }
+    }
 
-    if (iterator != getStates().end()) {
-        return *iterator;
-    }
-    else {
-        return nullptr;
-    }
+    return nullptr;
 }
 
 void fluid::Graph::print() {

@@ -16,15 +16,33 @@ void state_callback(const mavros_msgs::State::ConstPtr& msg) {
     current_state = *msg;
 }*/
 
+void move(int x, int y, int z) {
+    fluid::OperationClient operation_client(fluid::OperationIdentifier::move, 5);
+
+    geometry_msgs::Pose pose;
+    pose.position.x = x;
+    pose.position.y = y;
+    pose.position.z = z;
+
+    operation_client.requestOperationToTargetPoint(pose, [&](bool completed) {
+        if (completed) {
+            ROS_INFO("Operation completed (callback)");
+        }
+        else {
+            ROS_INFO("Operation failed (callback)");
+        }
+    });
+}
+
 int main(int argc, char** argv) {
 
     ros::init(argc, argv, "client");
 
-    ROS_INFO("Initializing client");
-    fluid::OperationClient operation_client(fluid::OperationIdentifier::move, 20);
+    ros::NodeHandle nh("~");
+
+    fluid::OperationClient operation_client(fluid::OperationIdentifier::init, 5);
 
     geometry_msgs::Pose pose;
-    pose.position.x = 4;
 
     operation_client.requestOperationToTargetPoint(pose, [&](bool completed) {
         if (completed) {
@@ -36,69 +54,56 @@ int main(int argc, char** argv) {
     });
 
 
-    return 0;
 
-    /*ros::init(argc, argv, "offboard_node");
-    ros::NodeHandle nh;
+    ros::Duration(10).sleep();
 
-    // Subscribe to state changes in order to check connection, arming and offboard flags.
-    ros::Subscriber state_subscriber = nh.subscribe<mavros_msgs::State>("mavros/state", 10, state_callback);
-    ros::Publisher local_position_publisher = nh.advertise<geometry_msgs::PoseStamped>("mavros/setpoint_position/local", 10); // Publish our local position
-    ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming"); // Client for arming (?)
-    ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("mavros/set_mode"); // Client for set mode
+    fluid::OperationClient operation_take_off_client(fluid::OperationIdentifier::take_off, 5);
 
-    // Set point refreshing rate has to be faster than 2 Hz
-    ros::Rate rate(20.0);
+    geometry_msgs::Pose take_off_pose;
+    take_off_pose.position.x = 0;
+    take_off_pose.position.y = 0;
+    take_off_pose.position.z = 2;
 
-    // Wait for connection to establish between mavros and the autopilot
-    while(ros::ok() && !current_state.connected) {
-        ros::spinOnce();
-        rate.sleep();
-    }
-
-    // Set initial position
-    geometry_msgs::PoseStamped pose;
-    pose.pose.position.x = 0;
-    pose.pose.position.y = 0;
-    pose.pose.position.z = 2;
-
-    // Before we enter offboard mode we have to start streaming data, 20 is an arbitrary number.
-    for (int i = 20; ros::ok() && i > 0; --i) {
-        local_position_publisher.publish(pose);
-        ros::spinOnce();
-        rate.sleep();
-    }
-
-    mavros_msgs::SetMode offboard_set_mode;
-    offboard_set_mode.request.custom_mode = "OFFBOARD";
-
-    mavros_msgs::CommandBool arming_command;
-    arming_command.request.value = true;
-
-    ros::Time last_request = ros::Time::now();
-
-    while(ros::ok()) {
-        if(current_state.mode != "OFFBOARD" && (ros::Time::now() - last_request > ros::Duration(5.0))){
-            if(set_mode_client.call(offboard_set_mode) && offboard_set_mode.response.mode_sent){
-                ROS_INFO("Offboard enabled");
-            }
-
-            last_request = ros::Time::now();
+    operation_take_off_client.requestOperationToTargetPoint(take_off_pose, [&](bool completed) {
+        if (completed) {
+            ROS_INFO("Operation completed (callback)");
         }
         else {
-            if( !current_state.armed &&
-                (ros::Time::now() - last_request > ros::Duration(5.0))){
-                if(arming_client.call(arming_command) && arming_command.response.success){
-                    ROS_INFO("Vehicle armed");
-                }
-
-                last_request = ros::Time::now();
-            }
+            ROS_INFO("Operation failed (callback)");
         }
+    });
 
-        local_position_publisher.publish(pose);
-        ros::spinOnce();
-        rate.sleep();*/
-    //}
+    ros::Duration(7).sleep();
+
+    move(5, 0, 2);
+    ros::Duration(3).sleep();
+
+    move(5, 5, 2);
+    ros::Duration(3).sleep();
+
+    move(0, 5, 2);
+    ros::Duration(3).sleep();
+
+    move(0, 0, 2);
+    ros::Duration(3).sleep();
+
+    fluid::OperationClient operation_land_client(fluid::OperationIdentifier::land, 5);
+
+    geometry_msgs::Pose land_pose;
+    land_pose.position.x = 0;
+    land_pose.position.y = 0;
+    land_pose.position.z = 0;
+
+    operation_land_client.requestOperationToTargetPoint(land_pose, [&](bool completed) {
+        if (completed) {
+            ROS_INFO("Operation completed (callback)");
+        }
+        else {
+            ROS_INFO("Operation failed (callback)");
+        }
+    });
+
+
+    return 0;
 }
 

@@ -8,6 +8,7 @@
 #include "../core/operation/operation.h"
 #include "../core/state.h"
 #include "../core/transition.h"
+#include <mavros_msgs/PositionTarget.h>
 
 namespace fluid {
 
@@ -15,16 +16,17 @@ namespace fluid {
      * \class InitOperation
      * \brief Encapsulates the operation of initializing and arming the drone.
      */
-    class MoveOperation: public Operation {
+    class InitOperation: public Operation {
 
     public:
 
-        MoveOperation() : Operation("init_operation", "move", "hold") {}
+        InitOperation(mavros_msgs::PositionTarget position_target) :
+        Operation("init_operation", "init", "idle", position_target) {}
 
         /**
          * Method overriden from superclass.
          */
-        bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p);
+        bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) override;
     };
 }
 

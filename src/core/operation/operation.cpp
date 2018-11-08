@@ -21,20 +21,28 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     }
 
     // Get plan to the destination state.
-    std::list<std::shared_ptr<State>> plan = state_graph.getPlanToEndState(state_graph.current_state_p->identifier,
-                                                                           destination_state_identifier_);
+    std::vector<std::shared_ptr<State>> plan = state_graph.getPlanToEndState(state_graph.current_state_p->identifier,
+                                                                             destination_state_identifier_);
 
+    int startIndex = plan.size() > 1 ? 1 : 0;
 
-    std::shared_ptr<fluid::State> first_state_p = plan.front();
-    plan.pop_front();
+    // This implicates that the plan's size is bigger than 1.
+    if (state_graph.current_state_p->identifier != destination_state_identifier_) {
+        fluid::Transition initial_transition(state_graph.getNodeHandlePtr(), plan[0], plan[1], 20);
+        initial_transition.perform([]() {});
+    }
 
-    fluid::Transition initial_transition(state_graph.getNodeHandlePtr(), first_state_p, plan.front(), 20);
-    initial_transition.perform([]() {});
+    for (int index = startIndex; index < plan.size(); index++) {
 
-    for (const auto &state_p : plan) {
+        std::shared_ptr<fluid::State> state_p = plan[index];
+
+        if (index == plan.size() - 1) {
+            state_p->position_target = position_target;
+        }
+
         state_p->perform(shouldAbort);
 
-        if (shouldAbort) {
+        if (shouldAbort()) {
             fluid::Transition final_transition(state_graph.getNodeHandlePtr(),
                                                state_graph.current_state_p,
                                                state_graph.getStateWithIdentifier(final_state_identifier_),
@@ -45,18 +53,26 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
             return;
         }
 
-        plan.pop_front();
+        state_graph.current_state_p = state_p;
 
-        fluid::Transition transition(state_graph.getNodeHandlePtr(), state_p, plan.front(), 20);
-        transition.perform([]() {});
-        state_graph.current_state_p = plan.front();
+        if (index < plan.size() - 1) {
+
+            fluid::Transition transition(state_graph.getNodeHandlePtr(), state_p, plan[index + 1], 20);
+            transition.perform([]() {});
+        }
     }
+
+
+    std::shared_ptr<fluid::State> final_state = state_graph.getStateWithIdentifier(final_state_identifier_);
 
     fluid::Transition final_transition(state_graph.getNodeHandlePtr(),
                                        state_graph.current_state_p,
-                                       state_graph.getStateWithIdentifier(final_state_identifier_),
+                                       final_state,
                                        20);
     final_transition.perform([]() {});
+
+    state_graph.current_state_p = final_state;
+    state_graph.current_state_p->position_target = position_target;
 
     completionHandler(true);
 }

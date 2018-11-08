@@ -17,6 +17,23 @@ void fluid::OperationClient::requestOperationToTargetPoint(geometry_msgs::Pose t
     // This is not suitable, should've been broken into a generic way, but it's not possible as
     // actionlib's Goal objects doesn't have a superclass...
     switch (operation_identifier_) {
+        case OperationIdentifier::init: {
+
+            InitActionClient init_action_client(
+                    fluid::OperationUtil::descriptionFromOperationIdentifier(operation_identifier_), true);
+            init_action_client.waitForServer();
+
+            fluid_fsm::InitGoal init_goal;
+            init_goal.target_pose = target_pose;
+            init_action_client.sendGoal(init_goal);
+            bool finished_before_timeout = init_action_client.waitForResult(ros::Duration(timeout_value_));
+
+            if (callback) {
+                callback(finished_before_timeout && init_action_client.getState().isDone());
+            }
+
+        } break;
+
         case OperationIdentifier::move: {
 
             MoveActionClient move_action_client(

@@ -10,6 +10,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <fluid_fsm/MoveAction.h>
 #include <fluid_fsm/TakeOffAction.h>
+#include <fluid_fsm/InitAction.h>
 #include <fluid_fsm/LandAction.h>
 
 
@@ -25,6 +26,7 @@ namespace fluid {
         typedef actionlib::SimpleActionClient<fluid_fsm::MoveAction> MoveActionClient;
         typedef actionlib::SimpleActionClient<fluid_fsm::LandAction> LandActionClient;
         typedef actionlib::SimpleActionClient<fluid_fsm::TakeOffAction> TakeOffActionClient;
+        typedef actionlib::SimpleActionClient<fluid_fsm::InitAction> InitActionClient;
 
         const OperationIdentifier operation_identifier_; ///< The identifier of the operation, and thus the operation
                                                          ///< server this operation client will send requests to

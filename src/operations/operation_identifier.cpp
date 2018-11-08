@@ -20,6 +20,10 @@ std::ostream& operator<<(std::ostream& os, const fluid::OperationIdentifier iden
             description = "land";
             break;
 
+        case fluid::OperationIdentifier::init:
+            description = "init";
+            break;
+
         default:
             description = "unknown";
             break;

@@ -10,7 +10,11 @@
 #include "operations/operation_identifier.h"
 #include "operations/operation_util.h"
 #include "core/operation/operation.h"
+#include "operations/init_operation.h"
 #include "operations/move_operation.h"
+#include "operations/land_operation.h"
+#include "operations/take_off_operation.h"
+#include <mavros_msgs/PositionTarget.h>
 
 namespace fluid {
 
@@ -48,31 +52,46 @@ namespace fluid {
             actionlib_action_server_.start();
         }
 
-        /**
+       /**
         * Executes the operation. This will perform the given operation with the operation identifier.
         *
         * @param goal The goal of the action/operation, this will in most cases be a set point.
         */
         void execute(const GoalConstPtr &goal) {
 
-            switch (operation_identifier_) {
+           mavros_msgs::PositionTarget position_target;
+           position_target.position = goal->target_pose.position;
+
+           ROS_INFO_STREAM("Got operation request for " << operation_identifier_);
+
+           switch (operation_identifier_) {
+                case fluid::OperationIdentifier::init: {
+                    std::shared_ptr<fluid::InitOperation> init_operation = std::make_shared<fluid::InitOperation>(position_target);
+                    operationRequestedCallback(init_operation);
+                    break;
+                }
+
                 case fluid::OperationIdentifier::move: {
-                    operationRequestedCallback(std::make_shared<fluid::MoveOperation>());
+                    std::shared_ptr<fluid::MoveOperation> move_operation = std::make_shared<fluid::MoveOperation>(position_target);
+                    operationRequestedCallback(move_operation);
                     break;
                 }
 
                 case fluid::OperationIdentifier::land: {
-
+                    std::shared_ptr<fluid::LandOperation> land_operation = std::make_shared<fluid::LandOperation>(position_target);
+                    operationRequestedCallback(land_operation);
                     break;
                 }
 
                 case fluid::OperationIdentifier::take_off: {
-
+                    std::shared_ptr<fluid::TakeOffOperation> take_off_operation = std::make_shared<fluid::TakeOffOperation>(position_target);
+                    operationRequestedCallback(take_off_operation);
                     break;
                 }
             }
 
-        }
+           actionlib_action_server_.setPreempted();
+       }
 
         /**
          * Notifies the action lib client that the server finished executing.
@@ -87,7 +106,7 @@ namespace fluid {
          */
         void abort() {
             // TODO: Some result here?
-            actionlib_action_server_.setAborted();
+            //actionlib_action_server_.setAborted();
         }
     };
 }

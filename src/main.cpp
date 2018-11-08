@@ -6,7 +6,10 @@
 #include <ros/ros.h>
 #include <list>
 #include <fluid_fsm/MoveGoal.h>
+#include <fluid_fsm/InitGoal.h>
 #include <fluid_fsm/MoveAction.h>
+#include <fluid_fsm/TakeOffAction.h>
+#include <fluid_fsm/InitAction.h>
 #include <fluid_fsm/LandAction.h>
 #include <fluid_fsm/LandGoal.h>
 #include "actionlib/operation_server.h"
@@ -19,6 +22,7 @@
 #include "../include/core/transition.h"
 
 #include <actionlib/client/simple_action_client.h>
+#include <fluid_fsm/TakeOffGoal.h>
 
 int main(int argc, char** argv) {
 
@@ -28,6 +32,7 @@ int main(int argc, char** argv) {
 
     ros::NodeHandlePtr node_handle_p(new ros::NodeHandle);
 
+    /*
     std::shared_ptr<fluid::InitState> init_state = std::make_shared<fluid::InitState>(node_handle_p);
     init_state->perform([]() -> bool {
         return false;
@@ -42,7 +47,7 @@ int main(int argc, char** argv) {
     take_off_state->perform([]() -> bool {
         return false;
     });
-
+*/
 
 
 
@@ -54,13 +59,34 @@ int main(int argc, char** argv) {
 
     bool newOperationRequested = false;
 
+    fluid::OperationServer<fluid_fsm::InitAction, fluid_fsm::InitGoalConstPtr> init_server(fluid::OperationIdentifier::init);
+    init_server.operationRequestedCallback = [&](std::shared_ptr<fluid::Operation> operation) {
+        next_operation = operation;
+        newOperationRequested = true;
+    };
+
+    fluid::OperationServer<fluid_fsm::TakeOffAction, fluid_fsm::TakeOffGoalConstPtr> take_off_server(fluid::OperationIdentifier::take_off);
+    take_off_server.operationRequestedCallback = [&](std::shared_ptr<fluid::Operation> operation) {
+        next_operation = operation;
+        newOperationRequested = true;
+    };
+
     fluid::OperationServer<fluid_fsm::MoveAction, fluid_fsm::MoveGoalConstPtr> move_server(fluid::OperationIdentifier::move);
     move_server.operationRequestedCallback = [&](std::shared_ptr<fluid::Operation> operation) {
         next_operation = operation;
         newOperationRequested = true;
     };
 
+    fluid::OperationServer<fluid_fsm::LandAction, fluid_fsm::LandGoalConstPtr> land_server(fluid::OperationIdentifier::land);
+    land_server.operationRequestedCallback = [&](std::shared_ptr<fluid::Operation> operation) {
+        next_operation = operation;
+        newOperationRequested = true;
+    };
 
+
+
+
+    /*
 
     // Hold state
 
@@ -72,10 +98,12 @@ int main(int argc, char** argv) {
 
     last_state->position_target.position.z = 2.0;
 
-
+*/
 
 
     // Operation and last state logic
+
+    ROS_INFO_STREAM("Fluid launched, waiting for requests...");
 
     ros::Rate rate(20);
 
@@ -87,7 +115,7 @@ int main(int argc, char** argv) {
             newOperationRequested = false;
         }
 
-        // We have a operation to execute.
+        // We have an operation to execute.
         if (current_operation) {
             current_operation->perform(
                     [&]() -> bool {
@@ -102,26 +130,42 @@ int main(int argc, char** argv) {
                     [&](bool completed) {
                         // Tell respective operation server that we finished executing
                         if (completed) {
-                            if (current_operation->identifier == "move") {
-                                move_server.finishedExecuting();
+                            if (current_operation->identifier == "init_operation") {
+                                init_server.finishedExecuting();
+                                ROS_INFO_STREAM("Init operation finished executing");
                             }
-                            // Else if...
+                            if (current_operation->identifier == "take_off_operation") {
+                                take_off_server.finishedExecuting();
+                                ROS_INFO_STREAM("Take off operation finished executing");
+                            }
+                            if (current_operation->identifier == "move_operation") {
+                                move_server.finishedExecuting();
+                                ROS_INFO_STREAM("Move operation finished executing");
+                            }
+                            if (current_operation->identifier == "land_operation") {
+                                land_server.finishedExecuting();
+                                ROS_INFO_STREAM("Land operation finished executing");
+                            }
                         }
                     });
 
             last_state = current_operation->getFinalStatePtr();
             current_operation.reset();
+            ROS_INFO_STREAM("Operation finished, state is now: " << last_state->identifier);
         }
         // We don't have a current operation, so we just continue executing the last state.
         else {
-            last_state->perform([&]() -> bool {
-                // We abort the execution of the current state if there is a new operation.
-                if (newOperationRequested) {
-                    ROS_INFO_STREAM("Aborting state for new operation operation" << next_operation->identifier.c_str());
-                }
+            if (last_state) {
+                last_state->perform([&]() -> bool {
+                    // We abort the execution of the current state if there is a new operation.
+                    if (newOperationRequested) {
+                        ROS_INFO_STREAM(
+                                "Aborting state for new operation operation: " << next_operation->identifier.c_str());
+                    }
 
-                return newOperationRequested;
-            });
+                    return newOperationRequested;
+                });
+            }
         }
 
         ros::spinOnce();

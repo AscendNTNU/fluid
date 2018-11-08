@@ -8,6 +8,7 @@
 #include "../core/operation/operation.h"
 #include "../core/state.h"
 #include "../core/transition.h"
+#include <mavros_msgs/PositionTarget.h>
 
 namespace fluid {
 
@@ -19,7 +20,8 @@ namespace fluid {
 
     public:
 
-        MoveOperation() : Operation("move_operation", "move", "hold") {}
+        MoveOperation(mavros_msgs::PositionTarget position_target) :
+        Operation("move_operation", "move", "hold", position_target) {}
 
         /**
          * Method overriden from superclass.

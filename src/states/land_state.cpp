@@ -7,7 +7,6 @@
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 bool fluid::LandState::hasFinishedExecution() {
-    ROS_INFO_STREAM(current_position_.pose.position.z);
     return current_position_.pose.position.z < 0.35;
 }
 

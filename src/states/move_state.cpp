@@ -7,6 +7,7 @@
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 bool fluid::MoveState::hasFinishedExecution() {
+
     return StateUtil::distanceBetween(current_position_, position_target) < 0.2;
 }
 

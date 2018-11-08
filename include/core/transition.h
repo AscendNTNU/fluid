@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by simengangstad on 04.10.18.
 //
@@ -44,12 +46,12 @@ namespace fluid {
     private:
         fluid::MavrosStateSetter mavros_state_setter_;                        ///< Sets states within the Pixhawk.
 
-        const unsigned int refresh_rate_;                                    ///< Refresh rate of the ros loop.
+        const unsigned int refresh_rate_;                                     ///< Refresh rate of the ros loop.
 
     public:
-        const std::shared_ptr<State> source_state_p;                         ///< Source state of the transition
+        const std::shared_ptr<fluid::State> source_state_p;                   ///< Source state of the transition
 
-        const std::shared_ptr<State> destination_state_p;                    ///< Destination state of the transition
+        const std::shared_ptr<fluid::State> destination_state_p;              ///< Destination state of the transition
 
         /**
          * Initializes a transition with source state and destination state.
@@ -63,8 +65,8 @@ namespace fluid {
                    std::shared_ptr<State> destination_state_p,
                    unsigned int refresh_rate) :
                    mavros_state_setter_(node_handle_p, 1000, refresh_rate, "OFFBOARD"),
-                   source_state_p(source_state_p),
-                   destination_state_p(destination_state_p),
+                   source_state_p(std::move(source_state_p)),
+                   destination_state_p(std::move(destination_state_p)),
                    refresh_rate_(refresh_rate) {}
 
         /**

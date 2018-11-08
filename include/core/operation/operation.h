@@ -13,6 +13,7 @@
 #include "../state.h"
 #include "../transition.h"
 #include "state_graph.h"
+#include <mavros_msgs/PositionTarget.h>
 
 namespace fluid {
     /** \class Operation
@@ -39,6 +40,8 @@ namespace fluid {
 
     public:
 
+        const mavros_msgs::PositionTarget position_target;          ///< Position target of the operation.
+
         const std::string identifier;                               ///< Identifier of the operation
 
         /**
@@ -53,11 +56,12 @@ namespace fluid {
          */
         Operation(std::string identifier,
                   std::string destination_state_identifier,
-                  std::string final_state_identifier) :
-
+                  std::string final_state_identifier,
+                  mavros_msgs::PositionTarget position_target) :
                   identifier(std::move(identifier)),
                   destination_state_identifier_(std::move(destination_state_identifier)),
-                  final_state_identifier_(std::move(final_state_identifier)) {}
+                  final_state_identifier_(std::move(final_state_identifier)),
+                  position_target(position_target) {}
 
 
         /**

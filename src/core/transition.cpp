@@ -32,6 +32,7 @@ void fluid::Transition::perform(std::function<void (void)> completion_handler) {
     while(ros::ok() && !state_is_set) {
         mavros_state_setter_.attemptToSetState([&](bool succeeded) {
             // State set succeeded, break from loop
+            ROS_INFO_STREAM("Transitioning from " << source_state_p->identifier << " -> " << destination_state_p->identifier);
             ROS_INFO_STREAM("Attempt to set mode " << mode.c_str() << ", succeeded:" << succeeded);
             state_is_set = succeeded;
         });

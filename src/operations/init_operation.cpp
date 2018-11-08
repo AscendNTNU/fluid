@@ -4,6 +4,6 @@
 
 #include "../../include/operations/init_operation.h"
 
-bool fluid::MoveOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) {
+bool fluid::InitOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) {
     return current_state_p->identifier == "init";
 }

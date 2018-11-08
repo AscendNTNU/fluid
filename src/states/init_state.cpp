@@ -33,6 +33,8 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     mavros_msgs::CommandBool arm_command;
     arm_command.request.value = true;
 
+    ROS_INFO_STREAM("Attempting to arm...");
+
     // Run until we achieve a connection with mavros
     while (ros::ok() && !state_setter.getCurrentState().connected) {
         ros::spinOnce();
@@ -61,10 +63,10 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
         state_setter.attemptToSetState([&](bool completed) {
             if(completed &&
                !state_setter.getCurrentState().armed &&
-               (ros::Time::now() - last_request > ros::Duration(5.0))) {
+               (ros::Time::now() - last_request > ros::Duration(1.0))) {
 
                 if(arming_client.call(arm_command) && arm_command.response.success){
-                    ROS_INFO("FLUID FSM - Drone armed");
+                    ROS_INFO("Drone armed");
                     armed = true;
                 }
 

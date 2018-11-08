@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
         actionlib
         )
 
-add_action_files(DIRECTORY action FILES Move.action Land.action TakeOff.action)
+add_action_files(DIRECTORY action FILES Move.action Land.action TakeOff.action Init.action)
 generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
 
 catkin_package(
