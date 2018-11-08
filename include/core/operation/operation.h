@@ -16,6 +16,9 @@
 #include <mavros_msgs/PositionTarget.h>
 
 namespace fluid {
+
+    typedef std::string OperationIdentifier;
+
     /** \class Operation
      *  \brief Manages the transitions between multiple states
      *
@@ -42,7 +45,7 @@ namespace fluid {
 
         const mavros_msgs::PositionTarget position_target;          ///< Position target of the operation.
 
-        const std::string identifier;                               ///< Identifier of the operation
+        const OperationIdentifier identifier;                       ///< Identifier of the operation
 
         /**
          * Sets up the operation with a destination state and a final state. The difference between them is that the
@@ -54,7 +57,7 @@ namespace fluid {
          * @param destination_state_identifier   The destination state of the operation.
          * @param final_state_identifier         The final state.
          */
-        Operation(std::string identifier,
+        Operation(OperationIdentifier identifier,
                   std::string destination_state_identifier,
                   std::string final_state_identifier,
                   mavros_msgs::PositionTarget position_target) :
