@@ -9,6 +9,8 @@
 #include <actionlib/server/simple_action_server.h>
 #include "operations/operation_identifier.h"
 #include "operations/operation_util.h"
+#include "core/operation/operation.h"
+#include "operations/move_operation.h"
 
 namespace fluid {
 
@@ -28,8 +30,10 @@ namespace fluid {
 
         Server actionlib_action_server_;                             ///< Reference to the ROS action server which the
                                                                      ///< operation server class encapsulates
-
     public:
+
+        std::function<void (std::shared_ptr<fluid::Operation>)> operationRequestedCallback;  ///< Callback for the
+                                                                                             ///< operation requested
 
         /** Initializes the operation server with an operation identifier.
          *
@@ -53,31 +57,37 @@ namespace fluid {
 
             switch (operation_identifier_) {
                 case fluid::OperationIdentifier::move: {
-
-
-
-                    actionlib_action_server_.setSucceeded();
-
+                    operationRequestedCallback(std::make_shared<fluid::MoveOperation>());
                     break;
                 }
 
                 case fluid::OperationIdentifier::land: {
-
-
-                    actionlib_action_server_.setSucceeded();
 
                     break;
                 }
 
                 case fluid::OperationIdentifier::take_off: {
 
-
-                    actionlib_action_server_.setSucceeded();
-
                     break;
                 }
             }
 
+        }
+
+        /**
+         * Notifies the action lib client that the server finished executing.
+         */
+        void finishedExecuting() {
+            // TODO: Some result here?
+            actionlib_action_server_.setSucceeded();
+        }
+
+        /**
+         * Notifies the action lib client that the server aborted the current operation.
+         */
+        void abort() {
+            // TODO: Some result here?
+            actionlib_action_server_.setAborted();
         }
     };
 }

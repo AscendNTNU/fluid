@@ -8,7 +8,7 @@
 
 bool fluid::LandState::hasFinishedExecution() {
     ROS_INFO_STREAM(current_position_.pose.position.z);
-    return current_position_.pose.position.z < 0.02;
+    return current_position_.pose.position.z < 0.35;
 }
 
 void fluid::LandState::tick() {

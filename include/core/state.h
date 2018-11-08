@@ -46,8 +46,10 @@ namespace fluid {
 
         /**
          * Performs the Ros loop for executing logic within this state given the refresh rate.
+         *
+         * @param shouldAbort Called each tick, makes it possible to abort states in the midst of an execution.
          */
-        virtual void perform();
+        virtual void perform(std::function<bool (void)> shouldAbort);
 
         /**
          * @return A flag determining whether the state has finished execution.

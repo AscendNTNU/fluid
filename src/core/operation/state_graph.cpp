@@ -19,6 +19,7 @@ bool fluid::StateGraph::isInitialized() {
 
 void fluid::StateGraph::initialize() {
 
+    // TODO: new here?
     node_handle_p = ros::NodeHandlePtr(new ros::NodeHandle);
 
     std::shared_ptr<fluid::InitState> init_state        = std::make_shared<fluid::InitState>(node_handle_p);

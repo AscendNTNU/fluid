@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by simengangstad on 04.10.18.
 //
@@ -35,17 +37,9 @@ namespace fluid {
         static StateGraph state_graph;                              ///< Provides the states which the operation can
                                                                     ///< consist of and how to transition between them
 
-        /** Performs the operation.
-         *
-         * Runs through the different states and performs the necessary transitions.
-         *
-         * @param completion_handler Callback function for whether the operation completed or not.
-         */
-        // TODO: Some sort of error attached in the callback?
-        void perform(std::function<void (bool)> completion_handler);
-
     public:
 
+        const std::string identifier;                               ///< Identifier of the operation
 
         /**
          * Sets up the operation with a destination state and a final state. The difference between them is that the
@@ -53,14 +47,17 @@ namespace fluid {
          * is the state we want to be at after the operation. E.g. a move operation would want to be at a final state
          * of position hold after a given move state.
          *
+         * @param identifier                     The identifier of the operation.
          * @param destination_state_identifier   The destination state of the operation.
          * @param final_state_identifier         The final state.
          */
-        Operation(std::string destination_state_identifier,
+        Operation(std::string identifier,
+                  std::string destination_state_identifier,
                   std::string final_state_identifier) :
 
-                  destination_state_identifier_(destination_state_identifier_),
-                  final_state_identifier_(final_state_identifier_) {}
+                  identifier(std::move(identifier)),
+                  destination_state_identifier_(std::move(destination_state_identifier)),
+                  final_state_identifier_(std::move(final_state_identifier)) {}
 
 
         /**
@@ -73,6 +70,21 @@ namespace fluid {
          * @return A flag determining the validation of the operation given the current state.
          */
         virtual bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) = 0;
+
+        /** Performs the operation.
+         *
+         * Runs through the different states and performs the necessary transitions.
+         *
+         * @param shouldAbort Called each tick, makes it possible to abort operations in the midst of an execution.
+         * @param completionHandler Callback function for whether the operation completed or not.
+         */
+        // TODO: Some sort of error attached in the callback?
+        void perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler);
+
+        /**
+         * @return The state the operation should end at.
+         */
+        std::shared_ptr<fluid::State> getFinalStatePtr();
     };
 }
 

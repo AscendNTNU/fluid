@@ -24,8 +24,8 @@ void fluid::InitState::tick() {
     // Not implemented as all logic happens inside perform for the init state has we have to arm and set offboard mode
 }
 
-void fluid::InitState::perform() {
-
+void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
+-
     ros::Rate rate(refresh_rate_);
 
     fluid::MavrosStateSetter state_setter(node_handle_p, 1000, 2, "OFFBOARD");
