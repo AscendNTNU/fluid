@@ -11,6 +11,8 @@
 
 namespace fluid {
 
+    typedef std::string StateIdentifier;
+
     /** \class State
      *  \brief Interface for states within the finite state machine.
      *
@@ -24,7 +26,7 @@ namespace fluid {
 
     public:
 
-        const std::string identifier;                                          ///< Identifier of the state
+        const fluid::StateIdentifier identifier;                                ///< Identifier of the state
 
         std::shared_ptr<fluid::PosePublisher> position_target_publisher_p;     ///< Publishes poses.
 
@@ -37,7 +39,7 @@ namespace fluid {
          * @param position_target_publisher_p Position targets publisher.
          * @param refresh_rate Refresh rate of the logic within the state.
          */
-        State(  std::string identifier,
+        State(  fluid::StateIdentifier identifier,
                 std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
                 unsigned int refresh_rate) : identifier(identifier), refresh_rate_(refresh_rate) {
             this->position_target_publisher_p = std::move(position_target_publisher_p);

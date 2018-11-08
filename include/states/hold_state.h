@@ -8,6 +8,7 @@
 #include <ros/ros.h>
 #include "../core/state.h"
 #include "../mavros/mavros_state.h"
+#include "state_defines.h"
 
 namespace fluid {
 
@@ -21,7 +22,8 @@ namespace fluid {
         /**
          * Initializes the hold state.
          */
-        explicit HoldState(ros::NodeHandlePtr node_handle_p) : MavrosState(node_handle_p, "hold") {}
+        explicit HoldState(ros::NodeHandlePtr node_handle_p) :
+        MavrosState(node_handle_p, fluid::state_identifiers::HOLD) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

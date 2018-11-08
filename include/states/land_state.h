@@ -6,6 +6,7 @@
 #define FLUID_FSM_LAND_STATE_H
 
 #include "../mavros/mavros_state.h"
+#include "state_defines.h"
 
 #include <ros/ros.h>
 
@@ -20,7 +21,8 @@ namespace fluid {
         /**
          * Initializes the land state.
          */
-        explicit LandState(ros::NodeHandlePtr node_handle_p) : MavrosState(node_handle_p, "land") {}
+        explicit LandState(ros::NodeHandlePtr node_handle_p) :
+        MavrosState(node_handle_p, fluid::state_identifiers::LAND) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

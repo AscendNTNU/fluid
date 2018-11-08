@@ -7,6 +7,7 @@
 
 #include "../mavros/mavros_state.h"
 #include "../mavros/mavros_state_setter.h"
+#include "state_defines.h"
 
 #include <ros/ros.h>
 
@@ -25,7 +26,8 @@ namespace fluid {
         
         /** Initializes the init state.
          */
-        explicit InitState(ros::NodeHandlePtr node_handle_p) : MavrosState(node_handle_p, "init") {}
+        explicit InitState(ros::NodeHandlePtr node_handle_p) :
+        MavrosState(node_handle_p, fluid::state_identifiers::INIT) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

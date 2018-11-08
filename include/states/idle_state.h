@@ -7,6 +7,7 @@
 
 #include "../core/state.h"
 #include "../mavros/mavros_state.h"
+#include "state_defines.h"
 
 #include <ros/ros.h>
 
@@ -21,7 +22,8 @@ namespace fluid {
         /**
          * Initializes the idle state.
          */
-        explicit IdleState(ros::NodeHandlePtr node_handle_p) : MavrosState(node_handle_p, "idle") {}
+        explicit IdleState(ros::NodeHandlePtr node_handle_p) :
+        MavrosState(node_handle_p, fluid::state_identifiers::IDLE) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
