@@ -5,15 +5,9 @@
 #include "../include/core/operation/operation.h"
 #include <ros/ros.h>
 #include <list>
-#include <fluid_fsm/MoveGoal.h>
-#include <fluid_fsm/InitGoal.h>
-#include <fluid_fsm/MoveAction.h>
-#include <fluid_fsm/TakeOffAction.h>
-#include <fluid_fsm/InitAction.h>
-#include <fluid_fsm/LandAction.h>
-#include <fluid_fsm/LandGoal.h>
+#include <fluid_fsm/OperationGoal.h>
+#include <fluid_fsm/OperationAction.h>
 #include "actionlib/operation_server.h"
-#include "../include/operations/operation_identifier.h"
 
 #include "../include/states/init_state.h"
 #include "../include/states/take_off_state.h"
@@ -22,7 +16,6 @@
 #include "../include/core/transition.h"
 
 #include <actionlib/client/simple_action_client.h>
-#include <fluid_fsm/TakeOffGoal.h>
 
 int main(int argc, char** argv) {
 
@@ -50,7 +43,7 @@ int main(int argc, char** argv) {
 */
 
 
-
+/*
     // Operation
 
     std::shared_ptr<fluid::State> last_state;
@@ -100,6 +93,7 @@ int main(int argc, char** argv) {
 
 */
 
+/*
 
     // Operation and last state logic
 
@@ -170,7 +164,7 @@ int main(int argc, char** argv) {
 
         ros::spinOnce();
         rate.sleep();
-    }
+    }*/
 
 
     return 0;
