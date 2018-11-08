@@ -8,12 +8,13 @@
 #include <string>
 #include <mavros_msgs/PositionTarget.h>
 #include <geometry_msgs/PoseStamped.h>
+#include "../core/state.h"
 
 namespace fluid {
     class StateUtil {
     public:
 
-        static std::string px4ModeForStateIdentifier(std::string state_identifier) {
+        static std::string px4ModeForStateIdentifier(fluid::StateIdentifier state_identifier) {
 
             if (state_identifier == "idle") {
                 return "OFFBOARD";
