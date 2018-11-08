@@ -1,5 +1,3 @@
-#include <utility>
-
 //
 // Created by simengangstad on 27.10.18.
 //
@@ -8,9 +6,11 @@
 #define FLUID_FSM_MAVROS_STATE_H
 
 #include "../core/state.h"
+#include "../core/operation/operation.h"
 #include "mavros_pose_publisher.h"
 
 #include <memory>
+#include <utility>
 
 #include <ros/ros.h>
 
@@ -48,7 +48,7 @@ namespace fluid {
          * @param identifier The identifier of the state.
          * @param node_handle_p Node handle to interact with ROS topics.
          */
-        MavrosState(ros::NodeHandlePtr node_handle_p, std::string identifier) :
+        MavrosState(ros::NodeHandlePtr node_handle_p, fluid::OperationIdentifier identifier) :
         State(std::move(identifier), std::make_shared<fluid::MavrosPosePublisher>(node_handle_p, 1000), 20),
         node_handle_p(node_handle_p),
         pose_subscriber_(node_handle_p->subscribe("mavros/local_position/pose", 1000, &MavrosState::poseCallback, this))

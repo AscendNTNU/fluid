@@ -6,6 +6,7 @@
 #define FLUID_FSM_INIT_OPERATION_H
 
 #include "../core/operation/operation.h"
+#include "operation_defines.h"
 #include "../core/state.h"
 #include "../core/transition.h"
 #include <mavros_msgs/PositionTarget.h>
@@ -21,7 +22,7 @@ namespace fluid {
     public:
 
         InitOperation(mavros_msgs::PositionTarget position_target) :
-        Operation("init_operation", "init", "idle", position_target) {}
+        Operation(fluid::operation_identifiers::INIT, "init", "idle", position_target) {}
 
         /**
          * Method overriden from superclass.
