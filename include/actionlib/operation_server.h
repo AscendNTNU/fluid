@@ -39,16 +39,14 @@ namespace fluid {
         std::function<void (std::shared_ptr<fluid::Operation>)> operationRequestedCallback;  ///< Callback for the
                                                                                              ///< operation requested
 
-        /** Initializes the operation server with an operation identifier.
-         *
-         * @param operation_identifier The operation identifier, which is essentially the domain this server provides
-         *                             a service on.
+        /**
+         * Initializes the operation server.
          */
-        OperationServer(fluid::OperationIdentifier operation_identifier) :
-        operation_identifier_(operation_identifier),
+        OperationServer() :
         actionlib_action_server_(node_handle_,
                                  fluid::OperationUtil::descriptionFromOperationIdentifier(operation_identifier_),
                                  boost::bind(&OperationServer::execute, this, _1), false) {
+
             actionlib_action_server_.start();
         }
 
