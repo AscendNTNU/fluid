@@ -25,7 +25,7 @@ void fluid::InitState::tick() {
 }
 
 void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
--
+
     ros::Rate rate(refresh_rate_);
 
     fluid::MavrosStateSetter state_setter(node_handle_p, 1000, 2, "OFFBOARD");

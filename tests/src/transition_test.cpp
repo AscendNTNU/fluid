@@ -19,6 +19,7 @@ int main(int argc, char** argv) {
 
     ros::init(argc, argv, "transition_test");
 
+    /*
     ros::NodeHandlePtr node_handle_p(new ros::NodeHandle);
 
     std::shared_ptr<fluid::InitState> init_state = std::make_shared<fluid::InitState>(node_handle_p);
@@ -56,7 +57,7 @@ int main(int argc, char** argv) {
     idle_transition.perform([] {
         ROS_INFO("Transitioned to idle");
     });
-    idle_state->perform();
+    idle_state->perform();*/
 
 
     /**

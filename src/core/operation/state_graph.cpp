@@ -31,11 +31,13 @@ void fluid::StateGraph::initialize() {
 
     std::vector<Edge> edges;
 
-    current_state_p = idle_state;
-    edges.emplace_back(idle_state, take_off_state);
-    edges.emplace_back(take_off_state, hold_state);
+    current_state_p = init_state;
+    edges.emplace_back(Edge(init_state, idle_state));
+    edges.emplace_back(Edge(idle_state, take_off_state));
+    edges.emplace_back(Edge(take_off_state, hold_state));
     edges.emplace_back(Edge(hold_state, move_state));
     edges.emplace_back(Edge(move_state, hold_state));
+    edges.emplace_back(Edge(move_state, land_state));
     edges.emplace_back(Edge(hold_state, land_state));
     edges.emplace_back(Edge(land_state, idle_state));
 

@@ -14,7 +14,7 @@
 
 #include "../include/states/init_state.h"
 #include "../include/states/take_off_state.h"
-#include "../include/states/move_state.h"
+#include "../include/states/hold_state.h"
 #include "../include/core/state.h"
 #include "../include/core/transition.h"
 
@@ -29,15 +29,20 @@ int main(int argc, char** argv) {
     ros::NodeHandlePtr node_handle_p(new ros::NodeHandle);
 
     std::shared_ptr<fluid::InitState> init_state = std::make_shared<fluid::InitState>(node_handle_p);
-    init_state->perform();
+    init_state->perform([]() -> bool {
+        return false;
+    });
 
     std::shared_ptr<fluid::TakeOffState> take_off_state = std::make_shared<fluid::TakeOffState>(node_handle_p);
-    fluid::Transition init_transition(node_handle_p, init_state, take_off_state, 20);
-    init_transition.perform([] {
+    fluid::Transition take_off_transition(node_handle_p, init_state, take_off_state, 20);
+    take_off_transition.perform([] {
         ROS_INFO("Transitioned to take off");
     });
     take_off_state->position_target.position.z = 2.0;
-    take_off_state->perform();
+    take_off_state->perform([]() -> bool {
+        return false;
+    });
+
 
 
 
@@ -54,6 +59,23 @@ int main(int argc, char** argv) {
         next_operation = operation;
         newOperationRequested = true;
     };
+
+
+
+    // Hold state
+
+    last_state = std::make_shared<fluid::HoldState>(node_handle_p);
+    fluid::Transition hold_transition(node_handle_p, take_off_state, last_state, 20);
+    hold_transition.perform([] {
+        ROS_INFO("Transitioned to hold");
+    });
+
+    last_state->position_target.position.z = 2.0;
+
+
+
+
+    // Operation and last state logic
 
     ros::Rate rate(20);
 

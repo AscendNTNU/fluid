@@ -1,9 +1,9 @@
 //
-// Created by simengangstad on 25.10.18.
+// Created by simengangstad on 08.11.18.
 //
 
-#ifndef FLUID_FSM_MOVE_OPERATION_H
-#define FLUID_FSM_MOVE_OPERATION_H
+#ifndef FLUID_FSM_INIT_OPERATION_H
+#define FLUID_FSM_INIT_OPERATION_H
 
 #include "../core/operation/operation.h"
 #include "../core/state.h"
@@ -12,14 +12,14 @@
 namespace fluid {
 
     /**
-     * \class MoveOperation
-     * \brief Encapsulates the operation of moving from a to b.
+     * \class InitOperation
+     * \brief Encapsulates the operation of initializing and arming the drone.
      */
     class MoveOperation: public Operation {
 
     public:
 
-        MoveOperation() : Operation("move_operation", "move", "hold") {}
+        MoveOperation() : Operation("init_operation", "move", "hold") {}
 
         /**
          * Method overriden from superclass.
@@ -28,4 +28,4 @@ namespace fluid {
     };
 }
 
-#endif //FLUID_FSM_MOVE_OPERATION_H
+#endif //FLUID_FSM_INIT_OPERATION_H
