@@ -10,4 +10,4 @@
 6. Start test client: `rosrun fluid_fsm test_client`
 
 
-The behavioral for the simulation is found at `src/test_client.cpp`.
+The behavioral code for the drone under the simulation is found at `src/test_client.cpp`.
