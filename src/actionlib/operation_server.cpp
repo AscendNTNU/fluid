@@ -13,59 +13,98 @@
 #include <fluid_fsm/OperationGoal.h>
 
 
-void fluid::OperationServer::execute(const fluid_fsm::OperationGoalConstPtr &goal) {
+void fluid::OperationServer::goalCallback() {
+    auto goal = actionlib_action_server_.acceptNewGoal();
+    geometry_msgs::Pose target_pose = goal->target_pose;
+    std_msgs::String operation_identifier = goal->type;
 
     mavros_msgs::PositionTarget position_target;
-    position_target.position = goal->target_pose.position;
-    const std_msgs::String operation_identifier = goal->type;
-
-    ROS_INFO_STREAM("Got operation request for " << operation_identifier);
+    position_target.position = target_pose.position;
 
     if (operation_identifier.data == fluid::operation_identifiers::INIT) {
-
-    }
-    else if (operation_identifier.data == fluid::operation_identifiers::IDLE) {
+        position_target.position.x = 0.0;
+        position_target.position.y = 0.0;
+        position_target.position.z = 0.0;
+        next_operation_p_ = std::make_shared<fluid::InitOperation>(position_target);
 
     }
     else if (operation_identifier.data == fluid::operation_identifiers::TAKE_OFF) {
-
-    }
-    else if (operation_identifier.data == fluid::operation_identifiers::HOLD) {
+        next_operation_p_ = std::make_shared<fluid::TakeOffOperation>(position_target);
 
     }
     else if (operation_identifier.data == fluid::operation_identifiers::MOVE) {
+        next_operation_p_ = std::make_shared<fluid::MoveOperation>(position_target);
 
     }
     else if (operation_identifier.data == fluid::operation_identifiers::LAND) {
-
+        next_operation_p_ = std::make_shared<fluid::LandOperation>(position_target);
     }
 
-    /*
-    switch (operation_identifier) {
-        case fluid::OperationIdentifier::init: {
-            std::shared_ptr<fluid::InitOperation> init_operation = std::make_shared<fluid::InitOperation>(position_target);
-            operationRequestedCallback(init_operation);
-            break;
+    new_operation_requested_ = true;
+
+    ROS_INFO_STREAM("New operation requested: " << operation_identifier.data.c_str());
+}
+
+void fluid::OperationServer::preemptCallback() {
+    ROS_INFO("%s: Preempted", current_operation_p_->identifier.c_str());
+    actionlib_action_server_.setPreempted();
+}
+
+void fluid::OperationServer::execute() {
+
+    ROS_INFO("Operation server running and listening.");
+
+    ros::Rate rate(20);
+
+    while (ros::ok()) {
+
+        if (new_operation_requested_) {
+            current_operation_p_ = next_operation_p_;
+            next_operation_p_.reset();
+            new_operation_requested_ = false;
         }
 
-        case fluid::OperationIdentifier::move: {
-            std::shared_ptr<fluid::MoveOperation> move_operation = std::make_shared<fluid::MoveOperation>(position_target);
-            operationRequestedCallback(move_operation);
-            break;
+        // We have an operation to execute.
+        if (current_operation_p_) {
+            current_operation_p_->perform(
+                    [&]() -> bool {
+                        // We abort current mission if there is a new operation.
+                        if (new_operation_requested_) {
+                            ROS_INFO_STREAM("Aborting current operation" << current_operation_p_->identifier.c_str());
+                        }
+
+                        return new_operation_requested_;
+                    },
+
+                    [&](bool completed) {
+                        if (completed) {
+                            last_state_p_ = current_operation_p_->getFinalStatePtr();
+                            actionlib_action_server_.setSucceeded();
+                        }
+                        else {
+                            last_state_p_ = current_operation_p_->getCurrentStatePtr();
+                            actionlib_action_server_.setAborted();
+                        }
+                    });
+
+            current_operation_p_.reset();
+            ROS_INFO_STREAM("Operation finished, state is now: " << last_state_p_->identifier);
+        }
+        // We don't have a current operation, so we just continue executing the last state.
+        else {
+            if (last_state_p_) {
+                last_state_p_->perform([&]() -> bool {
+                    // We abort the execution of the current state if there is a new operation.
+                    if (new_operation_requested_) {
+                        ROS_INFO_STREAM("Aborting state for new operation operation: " << next_operation_p_->identifier.c_str());
+                    }
+
+                    return new_operation_requested_;
+                });
+            }
         }
 
-        case fluid::OperationIdentifier::land: {
-            std::shared_ptr<fluid::LandOperation> land_operation = std::make_shared<fluid::LandOperation>(position_target);
-            operationRequestedCallback(land_operation);
-            break;
-        }
-
-        case fluid::OperationIdentifier::take_off: {
-            std::shared_ptr<fluid::TakeOffOperation> take_off_operation = std::make_shared<fluid::TakeOffOperation>(position_target);
-            operationRequestedCallback(take_off_operation);
-            break;
-        }
+        ros::spinOnce();
+        rate.sleep();
     }
-*/
-    actionlib_action_server_.setSucceeded();
 }

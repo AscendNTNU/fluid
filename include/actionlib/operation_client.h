@@ -33,22 +33,22 @@ namespace fluid {
 
         /** Initializes the operation client with a timeout value.
          *
-         * @param timeout_value The time the operation client waits for a response from the action server.
+         * @param timeout_value The time the operation client waits for a response from the operation server.
          */
         OperationClient(unsigned int timeout_value) : timeout_value_(timeout_value) {}
 
         /**
          * Requests an operation with a given target pose. This function will send a request to a server
-         * listening on the "operation identifier domain".
+         * listening on the fluid operation domain.
          *
          * @param operation_identifier The type of operation to execute.
          * @param target_pose The target pose of the operation.
          * @param completion_handler Gets fired when the operation finished, includes a flag whether the operation finished
          *                           before timeout or not.
          */
-        void requestOperationToTargetPoint(fluid::OperationIdentifier operation_identifier,
-                                           geometry_msgs::Pose target_pose,
-                                           std::function<void (bool)> completion_handler);
+        void requestOperation(fluid::OperationIdentifier operation_identifier,
+                              geometry_msgs::Pose target_pose,
+                              std::function<void (bool)> completion_handler);
     };
 }
 

@@ -24,7 +24,7 @@ namespace fluid {
 
         InitOperation(mavros_msgs::PositionTarget position_target) :
         Operation(fluid::operation_identifiers::INIT,
-                  fluid:::state_identifiers::INIT,
+                  fluid::state_identifiers::INIT,
                   fluid::state_identifiers::IDLE,
                   position_target) {}
 

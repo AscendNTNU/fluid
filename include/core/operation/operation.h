@@ -92,6 +92,11 @@ namespace fluid {
          * @return The state the operation should end at.
          */
         std::shared_ptr<fluid::State> getFinalStatePtr();
+
+        /**
+         * @return The current state of the operation.
+         */
+        std::shared_ptr<fluid::State> getCurrentStatePtr();
     };
 }
 

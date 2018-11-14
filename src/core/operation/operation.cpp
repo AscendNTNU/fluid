@@ -17,7 +17,9 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
     // Check if it makes sense to carry out this operation given the current state.
     if (!validateOperationFromCurrentState(state_graph.current_state_p)) {
+        ROS_ERROR("Not valid operation from current state!");
         completionHandler(false);
+        return;
     }
 
     // Get plan to the destination state.
@@ -79,4 +81,8 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
 std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() {
     return state_graph.getStateWithIdentifier(final_state_identifier_);
+}
+
+std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() {
+    return state_graph.getStateWithIdentifier(state_graph.current_state_p->identifier);
 }

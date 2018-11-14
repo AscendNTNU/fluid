@@ -12,11 +12,11 @@
 #include <ros/ros.h>
 #include <actionlib/operation_client.h>
 
-void fluid::OperationClient::requestOperationToTargetPoint(fluid::OperationIdentifier operation_identifier,
-                                                           geometry_msgs::Pose target_pose,
-                                                           std::function<void(bool)> completion_handler) {
+void fluid::OperationClient::requestOperation(fluid::OperationIdentifier operation_identifier,
+                                              geometry_msgs::Pose target_pose,
+                                              std::function<void(bool)> completion_handler) {
 
-    actionlib::SimpleActionClient<fluid_fsm::OperationAction> action_client("fluid_fsm_operation_server", true);
+    actionlib::SimpleActionClient<fluid_fsm::OperationAction> action_client("fluid_fsm_operation", true);
     action_client.waitForServer();
 
     fluid_fsm::OperationGoal goal;
