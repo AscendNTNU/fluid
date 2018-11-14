@@ -6,79 +6,66 @@
 #define FLUID_FSM_ACTION_SERVER_H
 
 #include <ros/ros.h>
+#include <geometry_msgs/Pose.h>
+#include <std_msgs/String.h>
+#include <fluid_fsm/OperationAction.h>
+#include <fluid_fsm/OperationGoal.h>
 #include <actionlib/server/simple_action_server.h>
-#include "../operations/operation_identifier.h"
-#include "../operations/operation_util.h"
+#include "core/operation/operation.h"
 
 namespace fluid {
 
     /** \class OperationServer
      *  \brief Encapsulates a ROS action server which performs operations based on requests.
      */
-    template<typename Action, typename GoalConstPtr> class OperationServer {
+    class OperationServer {
 
-        typedef actionlib::SimpleActionServer<Action> Server;
+        typedef actionlib::SimpleActionServer<fluid_fsm::OperationAction> Server;
 
     private:
-
-        const fluid::OperationIdentifier operation_identifier_;      ///< Specifies the kind of operation the
-                                                                     ///< operation server responds to
 
         ros::NodeHandle node_handle_;                                ///< The node handle for the operation server
 
         Server actionlib_action_server_;                             ///< Reference to the ROS action server which the
                                                                      ///< operation server class encapsulates
 
+        std::shared_ptr<fluid::Operation> current_operation_p_;      ///< The current operation executing.
+
+        std::shared_ptr<fluid::Operation> next_operation_p_;         ///< Next operation requested.
+
+        std::shared_ptr<fluid::State> last_state_p_;                 ///< Pointer to the last state executed.
+
+        bool new_operation_requested_ = false;                       ///< Determines whether a new operation was
+                                                                     ///< requested.
+
     public:
 
-        /** Initializes the operation server with an operation identifier.
-         *
-         * @param operation_identifier The operation identifier, which is essentially the domain this server provides
-         *                             a service on.
+
+        /**
+         * Initializes the operation server.
          */
-        OperationServer(fluid::OperationIdentifier operation_identifier) :
-        operation_identifier_(operation_identifier),
-        actionlib_action_server_(node_handle_,
-                                 fluid::OperationUtil::descriptionFromOperationIdentifier(operation_identifier_),
-                                 boost::bind(&OperationServer::execute, this, _1), false) {
+        OperationServer() : actionlib_action_server_(node_handle_, "fluid_fsm_operation", false) {
+            actionlib_action_server_.registerGoalCallback(boost::bind(&OperationServer::goalCallback, this));
+            actionlib_action_server_.registerPreemptCallback(boost::bind(&OperationServer::preemptCallback, this));
+
             actionlib_action_server_.start();
         }
 
         /**
-        * Executes the operation. This will perform the given operation with the operation identifier.
-        *
-        * @param goal The goal of the action/operation, this will in most cases be a set point.
+         * Gets fired when the operation server receives a new goal.
+         */
+        void goalCallback();
+
+
+        /**
+         * Gets fired when the operation gets preempted.
+         */
+        void preemptCallback();
+
+       /**
+        * Executes the operation. This will perform the operation to achieve the current goal.
         */
-        void execute(const GoalConstPtr &goal) {
-
-            switch (operation_identifier_) {
-                case fluid::OperationIdentifier::move: {
-
-
-
-                    actionlib_action_server_.setSucceeded();
-
-                    break;
-                }
-
-                case fluid::OperationIdentifier::land: {
-
-
-                    actionlib_action_server_.setSucceeded();
-
-                    break;
-                }
-
-                case fluid::OperationIdentifier::take_off: {
-
-
-                    actionlib_action_server_.setSucceeded();
-
-                    break;
-                }
-            }
-
-        }
+        void execute();
     };
 }
 

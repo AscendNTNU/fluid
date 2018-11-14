@@ -3,16 +3,12 @@
 //
 
 #include "../../include/states/hold_state.h"
-#include <iostream>
+#include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
-void fluid::HoldState::perform() {
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateBegan(*this);
-    }
+bool fluid::HoldState::hasFinishedExecution() {
+    return false;
+}
 
-    std::cout << "Hold state" << std::endl;
-
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateFinished(*this);
-    }
+void fluid::HoldState::tick() {
+    position_target.type_mask = fluid::DEFAULT_MASK;
 }

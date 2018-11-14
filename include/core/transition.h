@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by simengangstad on 04.10.18.
 //
@@ -6,6 +8,8 @@
 #define FLUID_FSM_TRANSITION_H
 
 #include <memory>
+#include <ros/ros.h>
+#include "mavros/mavros_state_setter.h"
 #include "state.h"
 
 namespace fluid {
@@ -18,59 +22,59 @@ namespace fluid {
         px4_error = 1
     };
 
+
+
     /** \struct TransitionError
      *  \brief Describes the error which happened in the transitions between two states.
      */
     struct TransitionError {
-        TransitionErrorCode error_code;     ///< The code which specifies which transition error occurred
-        std::string start_state;            ///< The start state of the transition
-        std::string end_state;              ///< The end state of the transition
+
+        TransitionErrorCode error_code;                         ///< The code which specifies which transition
+                                                                ///< error occurred
+
+        std::string source_state_identifier;                    ///< The source state of the transition
+
+        std::string destination_state_identifier;               ///< The destination state of the transition
     };
 
-    class Transition;
-
-    /** \class TransitionDelegate
-     *  \brief Interface for callbacks from transitions.
-     *
-     *  Implement this and set yourself as the delegate for the given transition to receive a completion callback with
-     *  possible errors. These errors are coming from the FSM in PX4 if there are any. E.g. an invalid state change.
-     */
-    class TransitionDelegate {
-    public:
-
-        /**
-         * Called when the transition completed.
-         *
-         * @param transition_error The error from the transition (if any). If the transition went as expected the error code
-         *                         will be 0.
-         */
-        virtual void completed(TransitionError transition_error) = 0;
-    };
 
 
     /** \class Transition
      *  \breif Handles state changes and the communication with the FSM in PX4.
      */
     class Transition {
+    private:
+        fluid::MavrosStateSetter mavros_state_setter_;                        ///< Sets states within the Pixhawk.
+
+        const unsigned int refresh_rate_;                                     ///< Refresh rate of the ros loop.
+
     public:
-        const std::shared_ptr<State> start_state_p;                    ///< Start state
-        const std::shared_ptr<State> end_state_p;                      ///< End state
-        
-        std::weak_ptr<TransitionDelegate> transition_delegate_p; ///< The delegate which receive completion callback
+        const std::shared_ptr<fluid::State> source_state_p;                   ///< Source state of the transition
+
+        const std::shared_ptr<fluid::State> destination_state_p;              ///< Destination state of the transition
 
         /**
-         * Initializes a transition with start and end states.
+         * Initializes a transition with source state and destination state.
          *
-         * @param start_state_p The start state (pass a shared pointer)
-         * @param end_state_p The end state (pass a shared pointer)
+         * @param source_p The source state.
+         * @param destination_p The destination state.
          */
-        Transition(std::shared_ptr<State> start_state_p,
-                   std::shared_ptr<State> end_state_p) : start_state_p(start_state_p), end_state_p(end_state_p) {}
+         // TODO: Gloablize message queue number
+        Transition(const ros::NodeHandlePtr &node_handle_p,
+                   std::shared_ptr<State> source_state_p,
+                   std::shared_ptr<State> destination_state_p,
+                   unsigned int refresh_rate) :
+                   mavros_state_setter_(node_handle_p, 1000, refresh_rate, "OFFBOARD"),
+                   source_state_p(std::move(source_state_p)),
+                   destination_state_p(std::move(destination_state_p)),
+                   refresh_rate_(refresh_rate) {}
 
         /**
-         * Performs the transition between the start state and the end state.
+         * Performs the transition between the source state and the destination state.
+         *
+         * @param completion_handler Fired when the state change completed
          */
-        void perform();
+        void perform(std::function<void (void)> completion_handler);
     };
 }
 

@@ -5,25 +5,32 @@
 #ifndef FLUID_FSM_TAKE_OFF_STATE_H
 #define FLUID_FSM_TAKE_OFF_STATE_H
 
-#include "../core/state.h"
+#include "../mavros/mavros_state.h"
+#include <ros/ros.h>
+#include "state_defines.h"
 
 namespace fluid {
+
     /** \class TakeOffState
      *  \brief Represents the state where the drone is on taking off from ground straight up.
      */
-    class TakeOffState: public State {
+    class TakeOffState: public MavrosState {
     public:
 
         /** Initializes the take off state with a pose.
-         *
-         * @param pose The pose for the take off state.
          */
-        TakeOffState(Pose pose) : State(fluid::StateIdentifier::take_off, pose) {}
+        explicit TakeOffState(ros::NodeHandlePtr node_handle_p) :
+        MavrosState(node_handle_p, fluid::state_identifiers::TAKE_OFF) {}
 
         /**
-         * Performs the operation of taking off with the drone.
+         * Overridden function. @see State::hasFinishedExecution
          */
-        void perform();
+        bool hasFinishedExecution() override;
+
+        /**
+         * Overridden function. @see State::tick
+         */
+        void tick() override;
     };
 }
 

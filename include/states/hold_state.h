@@ -5,27 +5,35 @@
 #ifndef FLUID_FSM_HOLD_STATE_H
 #define FLUID_FSM_HOLD_STATE_H
 
+#include <ros/ros.h>
 #include "../core/state.h"
+#include "../mavros/mavros_state.h"
+#include "state_defines.h"
 
 namespace fluid {
+
     /** \class HoldState
-     *  \brief Keeps the drone hovering at a certain altitude
+     *  \brief Represents the state when the drone is hovering at a certain altitude
      */
-    class HoldState: public State {
+    class HoldState: public MavrosState {
 
     public:
 
         /**
-         * Initializes the hold state with a pose.
-         *
-         * @param pose The pose the drone should be hovering at.
+         * Initializes the hold state.
          */
-        HoldState(Pose pose) : State(fluid::StateIdentifier::hold, pose) {}
+        explicit HoldState(ros::NodeHandlePtr node_handle_p) :
+        MavrosState(node_handle_p, fluid::state_identifiers::HOLD) {}
 
         /**
-         * Publishes a stream of set points (the pose of the position hold state) to PX4.
+         * Overridden function. @see State::hasFinishedExecution
          */
-        void perform();
+        bool hasFinishedExecution() override;
+
+        /**
+         * Overridden function. @see State::tick
+         */
+        void tick() override;
     };
 }
 

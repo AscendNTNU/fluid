@@ -4,16 +4,13 @@
 
 
 #include "../../include/states/take_off_state.h"
-#include <iostream>
+#include "../../include/states/state_util.h"
+#include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
-void fluid::TakeOffState::perform() {
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateBegan(*this);
-    }
+bool fluid::TakeOffState::hasFinishedExecution() {
+    return StateUtil::distanceBetween(current_position_, position_target) < 0.2;
+}
 
-    std::cout << "Taking off..." << std::endl;
-
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateFinished(*this);
-    }
+void fluid::TakeOffState::tick() {
+    position_target.type_mask = fluid::DEFAULT_MASK;
 }

@@ -3,16 +3,14 @@
 //
 
 #include "../../include/states/move_state.h"
-#include <iostream>
+#include "../../include/states/state_util.h"
+#include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
-void fluid::MoveState::perform() {
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateBegan(*this);
-    }
+bool fluid::MoveState::hasFinishedExecution() {
 
-    std::cout << "Moving..." << std::endl;
+    return StateUtil::distanceBetween(current_position_, position_target) < 0.2;
+}
 
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateFinished(*this);
-    }
+void fluid::MoveState::tick() {
+    position_target.type_mask = fluid::DEFAULT_MASK;
 }

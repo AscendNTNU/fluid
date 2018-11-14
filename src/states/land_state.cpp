@@ -4,16 +4,13 @@
 
 
 #include "../../include/states/land_state.h"
-#include <iostream>
+#include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
-void fluid::LandState::perform() {
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateBegan(*this);
-    }
+bool fluid::LandState::hasFinishedExecution() {
+    return current_position_.pose.position.z < 0.35;
+}
 
-    std::cout << "Landing..." << std::endl;
-
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateFinished(*this);
-    }
+void fluid::LandState::tick() {
+    position_target.type_mask = MASK_VELOCITY;
+    position_target.velocity.z = -0.02;
 }

@@ -3,16 +3,12 @@
 //
 
 #include "../../include/states/idle_state.h"
-#include <iostream>
 
-void fluid::IdleState::perform() {
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateBegan(*this);
-    }
 
-    std::cout << "Idle..." << std::endl;
+bool fluid::IdleState::hasFinishedExecution() {
+    return false;
+}
 
-    if (auto state_delegate = state_delegate_p.lock()) {
-        state_delegate->stateFinished(*this);
-    }
+void fluid::IdleState::tick() {
+    position_target.position.z = 0.0;
 }

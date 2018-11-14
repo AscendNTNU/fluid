@@ -6,24 +6,34 @@
 #define FLUID_FSM_IDLE_STATE_H
 
 #include "../core/state.h"
+#include "../mavros/mavros_state.h"
+#include "state_defines.h"
+
+#include <ros/ros.h>
 
 namespace fluid {
+
     /** \class IdleState
      *  \brief Represents the state where the drone is on ground, armed and spinning its rotors
      */
-    class IdleState: public State {
+    class IdleState: public MavrosState {
     public:
 
-        /** Initializes the idle state with a pose.
-         *
-         * @param pose The pose for the idle state.
+        /**
+         * Initializes the idle state.
          */
-        IdleState(Pose pose) : State(fluid::StateIdentifier::idle, pose) {}
+        explicit IdleState(ros::NodeHandlePtr node_handle_p) :
+        MavrosState(node_handle_p, fluid::state_identifiers::IDLE) {}
 
         /**
-         * Performs the operation of setting the rotors to start spinning at ground
+         * Overridden function. @see State::hasFinishedExecution
          */
-        void perform();
+        bool hasFinishedExecution() override;
+
+        /**
+         * Overridden function. @see State::tick
+         */
+        void tick() override;
     };
 }
 
