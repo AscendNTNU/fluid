@@ -10,12 +10,7 @@
 #include "../core/operation/operation.h"
 #include <geometry_msgs/Pose.h>
 #include <actionlib/client/simple_action_client.h>
-#include <fluid_fsm/MoveAction.h>
-#include <fluid_fsm/TakeOffAction.h>
-#include <fluid_fsm/InitAction.h>
-#include <fluid_fsm/LandAction.h>
 #include <core/operation/operation.h>
-
 
 namespace fluid {
 
