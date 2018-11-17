@@ -2,10 +2,8 @@
 // Created by simengangstad on 27.09.18.
 //
 
-#include <ros/ros.h>
-#include <memory>
-#include <actionlib/server/simple_action_server.h>
 #include "../include/actionlib/operation_server.h"
+#include <ros/ros.h>
 
 int main(int argc, char** argv) {
 
