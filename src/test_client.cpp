@@ -4,10 +4,10 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
-#include <operations/operation_defines.h>
 
 #include "../include/core/operation/operation.h"
-#include "actionlib/operation_client.h"
+#include "../include/actionlib/operation_client.h"
+#include "../include/operations/operation_defines.h"
 #include "../include/core/state.h"
 
 
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 
     // Just for demonstration, this will make the drone move in straight lines to form a square. When the current move
     // is finished, the next will execute as one can see in the callback.
-    fluid::OperationClient move_operation_client(15);
+    fluid::OperationClient move_operation_client(60);
 
     pose.position.x = 5;
     pose.position.y = 0;
