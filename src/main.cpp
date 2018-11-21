@@ -4,6 +4,7 @@
 
 #include "../include/actionlib/operation_server.h"
 #include <ros/ros.h>
+#include <ostream>
 
 int main(int argc, char** argv) {
 
