@@ -7,7 +7,7 @@
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 bool fluid::LandState::hasFinishedExecution() {
-    return current_position_.pose.position.z < 0.08;
+    return land_detector_.hasLanded(position_target);
 }
 
 void fluid::LandState::tick() {

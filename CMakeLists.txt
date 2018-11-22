@@ -31,7 +31,7 @@ file(GLOB fluid_fsm_core_SRC "src/core/*.cpp")
 file(GLOB fluid_fsm_states_SRC "src/states/*.cpp")
 file(GLOB fluid_fsm_actionlib_SRC "src/actionlib/*.cpp")
 file(GLOB fluid_fsm_mavros_SRC "src/mavros/*.cpp")
-file(GLOB fluid_fsm_tests_SRC "tests/src/*.cpp")
+file(GLOB fluid_fsm_tools_SRC "src/tools/*.cpp")
 
 add_library(fluid_fsm_lib
         ${fluid_fsm_mavros_SRC}
@@ -40,7 +40,7 @@ add_library(fluid_fsm_lib
         ${fluid_fsm_core_SRC}
         ${fluid_fsm_states_SRC}
         ${fluid_fsm_actionlib_SRC}
-        ${fluid_fsm_tests_SRC})
+        ${fluid_fsm_tools_SRC})
 
 target_link_libraries(fluid_fsm_lib ${catkin_LIBRARIES})
 
