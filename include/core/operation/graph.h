@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include <set>
 #include "../state.h"
 #include "edge.h"
 
@@ -26,7 +25,15 @@ namespace fluid {
 
         std::vector<std::shared_ptr<State>> states_;           ///< Vector of all the states in the state graph
 
+        ros::NodeHandlePtr node_handle_p;                      ///< Used for initializing states and their
+                                                               ///< respective ros pubilshers and subscribers
+
+
+        bool initialized_ = false;
+
     public:
+
+        std::shared_ptr<State> current_state_p;                ///< The current state of the state graph
 
         /**
          * Initializes the graph.
@@ -39,7 +46,7 @@ namespace fluid {
          *
          * @param edges Vector of edges.
          */
-        void addEdges(std::vector<Edge> const &edges);
+        void addEdges(std::vector<fluid::Edge> const &edges);
 
         /**
          * @return The states in the state graph.
@@ -65,6 +72,23 @@ namespace fluid {
          * Prints the graph.
          */
         void print();
+
+        /**
+         * @brief      Determines if initialized.
+         *
+         * @return     True if initialized, False otherwise.
+         */
+        bool isInitialized();
+
+        /**
+         * Initializes the state graph with a set of states.
+         */
+        void initialize();
+
+        /**
+         * @return ROS node handle pointer, used when states need to do something specific with ROS.
+         */
+        ros::NodeHandlePtr getNodeHandlePtr();
     };
 }
 

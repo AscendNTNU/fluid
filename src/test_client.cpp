@@ -4,10 +4,10 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
-#include <operations/operation_defines.h>
 
 #include "../include/core/operation/operation.h"
-#include "actionlib/operation_client.h"
+#include "../include/actionlib/operation_client.h"
+#include "../include/operations/operation_defines.h"
 #include "../include/core/state.h"
 
 
@@ -19,9 +19,12 @@ int main(int argc, char** argv) {
     geometry_msgs::Pose pose;
     bool initialized = false;
 
+    float height = 1.5;
+
     ROS_INFO("Starting init operation.");
     // Send an operation to initialize and arm the drone. Take off when this is done.
     fluid::OperationClient init_operation_client(20);
+    
     init_operation_client.requestOperation(fluid::operation_identifiers::INIT, pose, [&](bool completed) {
         if (completed) {
             ROS_INFO("Init operation completed");
@@ -29,7 +32,7 @@ int main(int argc, char** argv) {
             geometry_msgs::Pose take_off_pose;
             take_off_pose.position.x = 0;
             take_off_pose.position.y = 0;
-            take_off_pose.position.z = 2;
+            take_off_pose.position.z = height;
 
 
             ROS_INFO("Starting take off operation.");
@@ -51,27 +54,27 @@ int main(int argc, char** argv) {
 
     // Just for demonstration, this will make the drone move in straight lines to form a square. When the current move
     // is finished, the next will execute as one can see in the callback.
-    fluid::OperationClient move_operation_client(15);
-
-    pose.position.x = 5;
+    fluid::OperationClient move_operation_client(60);
+    
+    pose.position.x = 1;
     pose.position.y = 0;
-    pose.position.z = 2;
-
+    pose.position.z = height;
+    
     move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
         if (completed) {
             ROS_INFO("Move operation completed");
 
-            pose.position.x = 5;
-            pose.position.y = 5;
-            pose.position.z = 2;
+            pose.position.x = 1;
+            pose.position.y = 1;
+            pose.position.z = height;
 
             move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
                 if (completed) {
                     ROS_INFO("Move operation completed");
 
                     pose.position.x = 0;
-                    pose.position.y = 5;
-                    pose.position.z = 2;
+                    pose.position.y = 1;
+                    pose.position.z = height;
 
                     move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
                         if (completed) {
@@ -79,7 +82,7 @@ int main(int argc, char** argv) {
 
                             pose.position.x = 0;
                             pose.position.y = 0;
-                            pose.position.z = 2;
+                            pose.position.z = height;
 
                             move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
                                 if (completed) {

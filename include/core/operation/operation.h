@@ -12,7 +12,7 @@
 #include <string>
 #include "../state.h"
 #include "../transition.h"
-#include "state_graph.h"
+#include "graph.h"
 #include <mavros_msgs/PositionTarget.h>
 
 namespace fluid {
@@ -38,7 +38,7 @@ namespace fluid {
                                                                                 ///< operation, we want the operation
                                                                                 ///< to finish at a position hold state.
 
-        static StateGraph state_graph;                              ///< Provides the states which the operation can
+        static Graph graph;                                         ///< Provides the states which the operation can
                                                                     ///< consist of and how to transition between them
 
     public:
