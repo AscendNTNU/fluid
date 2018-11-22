@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
     ROS_INFO("Starting init operation.");
     // Send an operation to initialize and arm the drone. Take off when this is done.
     fluid::OperationClient init_operation_client(20);
+    
     init_operation_client.requestOperation(fluid::operation_identifiers::INIT, pose, [&](bool completed) {
         if (completed) {
             ROS_INFO("Init operation completed");
@@ -52,11 +53,11 @@ int main(int argc, char** argv) {
     // Just for demonstration, this will make the drone move in straight lines to form a square. When the current move
     // is finished, the next will execute as one can see in the callback.
     fluid::OperationClient move_operation_client(60);
-
+    
     pose.position.x = 5;
     pose.position.y = 0;
     pose.position.z = 2;
-
+    
     move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
         if (completed) {
             ROS_INFO("Move operation completed");
