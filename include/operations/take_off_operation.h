@@ -25,7 +25,7 @@ namespace fluid {
         TakeOffOperation(mavros_msgs::PositionTarget position_target) :
         Operation(fluid::operation_identifiers::TAKE_OFF,
                   fluid::state_identifiers::TAKE_OFF,
-                  fluid::state_identifiers::MOVE,
+                  fluid::state_identifiers::HOLD,
                   position_target) {}
 
         /**
