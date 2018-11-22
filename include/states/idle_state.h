@@ -11,6 +11,8 @@
 
 #include <ros/ros.h>
 
+// TODO: Use pixhawk idle state
+
 namespace fluid {
 
     /** \class IdleState

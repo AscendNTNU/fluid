@@ -50,7 +50,7 @@ void fluid::OperationServer::preemptCallback() {
     actionlib_action_server_.setPreempted();
 }
 
-void fluid::OperationServer::execute() {
+void fluid::OperationServer::start() {
 
     ROS_INFO("Operation server running and listening.");
 

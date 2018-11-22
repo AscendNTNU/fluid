@@ -40,8 +40,6 @@ namespace fluid {
 
     public:
 
-
-        // TODO: Referencing the same node handle fails, has to use pointers
         /**
          * Initiializes the mavros state with an identifier.
          *

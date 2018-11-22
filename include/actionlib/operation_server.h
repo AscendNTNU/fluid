@@ -63,9 +63,9 @@ namespace fluid {
         void preemptCallback();
 
        /**
-        * Executes the operation. This will perform the operation to achieve the current goal.
+        * Starts the server and awaits requests.
         */
-        void execute();
+        void start();
     };
 }
 
