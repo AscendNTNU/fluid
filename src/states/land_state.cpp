@@ -7,10 +7,11 @@
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 bool fluid::LandState::hasFinishedExecution() {
-    return current_position_.pose.position.z < 0.35;
+    return current_position_.pose.position.z < 0.08;
 }
 
 void fluid::LandState::tick() {
-    position_target.type_mask = MASK_VELOCITY;
-    position_target.velocity.z = -0.02;
+	// Last flags are only for testing
+    position_target.type_mask = MASK_VELOCITY & ~(IGNORE_PX | IGNORE_PY);  
+    position_target.velocity.z = -0.2;
 }
