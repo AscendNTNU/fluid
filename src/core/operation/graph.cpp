@@ -7,17 +7,27 @@
 //
 
 #include "../../../include/core/operation/graph.h"
+#include "../../../include/core/operation/edge.h"
+
+#include "../../../include/states/init_state.h"
+#include "../../../include/states/idle_state.h"
+#include "../../../include/states/take_off_state.h"
+#include "../../../include/states/land_state.h"
+#include "../../../include/states/hold_state.h"
+#include "../../../include/states/move_state.h"
+
+#include <memory>
 #include <iostream>
-#include <list>
 #include <iterator>
 #include <algorithm>
+#include <vector>
 
 fluid::Graph::Graph() {
     adjacency_list = std::make_unique<AdjacencyList>();
 
 }
 
-void fluid::Graph::addEdges(std::vector<Edge> const &edges) {
+void fluid::Graph::addEdges(std::vector<fluid::Edge> const &edges) {
     for (auto edge: edges) {
         // If the state isn't added in the adjacency list
         if (adjacency_list->find(edge.source->identifier) == adjacency_list->end()) {
@@ -104,3 +114,41 @@ void fluid::Graph::print() {
         std::cout << "\n";
     }
 }
+
+bool fluid::Graph::isInitialized() {
+    return initialized_;
+}
+
+void fluid::Graph::initialize() {
+
+    // TODO: new here?
+    node_handle_p = ros::NodeHandlePtr(new ros::NodeHandle);
+
+    std::shared_ptr<fluid::InitState> init_state        = std::make_shared<fluid::InitState>(node_handle_p);
+    std::shared_ptr<fluid::IdleState> idle_state        = std::make_shared<fluid::IdleState>(node_handle_p);
+    std::shared_ptr<fluid::TakeOffState> take_off_state = std::make_shared<fluid::TakeOffState>(node_handle_p);
+    std::shared_ptr<fluid::LandState> land_state        = std::make_shared<fluid::LandState>(node_handle_p);
+    std::shared_ptr<fluid::HoldState> hold_state        = std::make_shared<fluid::HoldState>(node_handle_p);
+    std::shared_ptr<fluid::MoveState> move_state        = std::make_shared<fluid::MoveState>(node_handle_p);
+
+    std::vector<Edge> edges;
+
+    current_state_p = init_state;
+    edges.emplace_back(Edge(init_state, idle_state));
+    edges.emplace_back(Edge(idle_state, take_off_state));
+    edges.emplace_back(Edge(take_off_state, hold_state));
+    edges.emplace_back(Edge(hold_state, move_state));
+    edges.emplace_back(Edge(move_state, hold_state));
+    edges.emplace_back(Edge(move_state, land_state));
+    edges.emplace_back(Edge(hold_state, land_state));
+    edges.emplace_back(Edge(land_state, idle_state));
+
+    addEdges(edges);
+
+    initialized_ = true;
+}
+
+ros::NodeHandlePtr fluid::Graph::getNodeHandlePtr() {
+    return node_handle_p;
+}
+
