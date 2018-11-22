@@ -7,6 +7,7 @@
 
 #include "../mavros/mavros_state.h"
 #include "state_defines.h"
+#include "../tools/land_detector.h"
 
 #include <ros/ros.h>
 
@@ -16,13 +17,19 @@ namespace fluid {
      *  \brief Represents the state where the drone is landing.
      */
     class LandState: public MavrosState {
+
+    private:
+
+        fluid::LandDetector land_detector_;                 ///< Checks when the drone has landed.
+
     public:
 
         /**
          * Initializes the land state.
          */
         explicit LandState(ros::NodeHandlePtr node_handle_p) :
-        MavrosState(node_handle_p, fluid::state_identifiers::LAND) {}
+        MavrosState(node_handle_p, fluid::state_identifiers::LAND),
+        land_detector_(node_handle_p) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
