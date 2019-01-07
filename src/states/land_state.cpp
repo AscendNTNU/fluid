@@ -11,7 +11,5 @@ bool fluid::LandState::hasFinishedExecution() {
 }
 
 void fluid::LandState::tick() {
-	// Last flags are only for testing
-    position_target.type_mask = MASK_VELOCITY & ~(IGNORE_PX | IGNORE_PY);  
-    position_target.velocity.z = -0.2;
+	//position_target.type_mask = DEFAULT_MASK;
 }
