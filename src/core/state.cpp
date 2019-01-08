@@ -13,7 +13,7 @@ void fluid::State::perform(std::function<bool (void)> shouldAbort) {
         tick();
 
         position_target_publisher_p->publish(position_target);
-
+        
         ros::spinOnce();
         rate.sleep();
     }

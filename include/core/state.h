@@ -41,7 +41,7 @@ namespace fluid {
          */
         State(  fluid::StateIdentifier identifier,
                 std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
-                unsigned int refresh_rate) : identifier(identifier), refresh_rate_(refresh_rate) {
+                unsigned int refresh_rate) :  refresh_rate_(refresh_rate), identifier(identifier) {
             this->position_target_publisher_p = std::move(position_target_publisher_p);
         }
 
