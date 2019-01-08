@@ -10,7 +10,6 @@
 #include "../include/operations/operation_defines.h"
 #include "../include/core/state.h"
 
-
 int main(int argc, char** argv) {
 
     ros::init(argc, argv, "test_client");
@@ -56,7 +55,9 @@ int main(int argc, char** argv) {
     // is finished, the next will execute as one can see in the callback.
     fluid::OperationClient move_operation_client(60);
     
-    pose.position.x = 1;
+    float distance = 4;
+
+    pose.position.x = distance;
     pose.position.y = 0;
     pose.position.z = height;
     
@@ -64,8 +65,8 @@ int main(int argc, char** argv) {
         if (completed) {
             ROS_INFO("Move operation completed");
 
-            pose.position.x = 1;
-            pose.position.y = 1;
+            pose.position.x = distance;
+            pose.position.y = distance;
             pose.position.z = height;
 
             move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
@@ -73,7 +74,7 @@ int main(int argc, char** argv) {
                     ROS_INFO("Move operation completed");
 
                     pose.position.x = 0;
-                    pose.position.y = 1;
+                    pose.position.y = distance;
                     pose.position.z = height;
 
                     move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
@@ -109,7 +110,6 @@ int main(int argc, char** argv) {
             });
         }
     });
-
 
     return 0;
 }

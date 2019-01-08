@@ -43,8 +43,8 @@ namespace fluid {
         /**
          * Initiializes the mavros state with an identifier.
          *
-         * @param identifier The identifier of the state.
          * @param node_handle_p Node handle to interact with ROS topics.
+         * @param identifier The identifier of the state.
          */
         MavrosState(ros::NodeHandlePtr node_handle_p, fluid::OperationIdentifier identifier) :
         State(std::move(identifier), std::make_shared<fluid::MavrosPosePublisher>(node_handle_p, 1000), 20),

@@ -13,7 +13,7 @@
 namespace fluid {
 
     /**
-     * \class MavrosPublisher
+     * \class MavrosPosePublisher
      * \brief Publishes poses on the mavros/local/setpoint_position/local topic
      */
     class MavrosPosePublisher: public PosePublisher {

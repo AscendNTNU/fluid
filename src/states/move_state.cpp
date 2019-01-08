@@ -8,7 +8,7 @@
 
 bool fluid::MoveState::hasFinishedExecution() {
 
-    return PoseUtil::distanceBetween(current_position_, position_target) < 0.2;
+    return PoseUtil::distanceBetween(current_position_, position_target) < 0.3;
 }
 
 void fluid::MoveState::tick() {
