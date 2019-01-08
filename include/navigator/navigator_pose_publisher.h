@@ -39,4 +39,4 @@ namespace fluid {
     };
 }
 
-#endif //FLUID_FSM_MAVROS_POSE_PUBLISHER_H
+#endif //FLUID_FSM_NAVIGATOR_POSE_PUBLISHER_H
