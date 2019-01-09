@@ -13,6 +13,7 @@
 #include <utility>
 
 #include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
 
 namespace fluid {
     /**

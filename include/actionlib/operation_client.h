@@ -7,10 +7,13 @@
 #ifndef FLUID_FSM_OPERATION_CLIENT_H
 #define FLUID_FSM_OPERATION_CLIENT_H
 
+#include <fluid_fsm/OperationAction.h>
 #include "../core/operation/operation.h"
 #include <geometry_msgs/Pose.h>
 #include <actionlib/client/simple_action_client.h>
 #include <core/operation/operation.h>
+
+#include <memory>
 
 namespace fluid {
 
@@ -19,10 +22,19 @@ namespace fluid {
      */
     class OperationClient {
 
+        typedef actionlib::SimpleActionClient<fluid_fsm::OperationAction> Client;
+
     private:
 
-        const unsigned int timeout_value_;               ///< The time the the client will wait for a response from
+        const double timeout_value_;            ///< The time the the client will wait for a response from
                                                          ///< the server
+
+
+        /**
+         * @brief      Waits for the timeout or the completion from the operation server.
+         */
+        void waitForResult(std::shared_ptr<Client> action_client,
+                           std::function<void (bool)> completion_handler);
 
     public:
 
@@ -30,7 +42,7 @@ namespace fluid {
          *
          * @param timeout_value The time the operation client waits for a response from the operation server.
          */
-        OperationClient(unsigned int timeout_value) : timeout_value_(timeout_value) {}
+        OperationClient(double timeout_value) : timeout_value_(timeout_value) {}
 
         /**
          * Requests an operation with a given target pose. This function will send a request to a server
@@ -44,6 +56,7 @@ namespace fluid {
         void requestOperation(fluid::OperationIdentifier operation_identifier,
                               geometry_msgs::Pose target_pose,
                               std::function<void (bool)> completion_handler);
+
     };
 }
 

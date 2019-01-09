@@ -26,7 +26,7 @@ namespace fluid {
 
     public:
 
-        const fluid::StateIdentifier identifier;                                ///< Identifier of the state
+        const fluid::StateIdentifier identifier;                               ///< Identifier of the state
 
         std::shared_ptr<fluid::PosePublisher> position_target_publisher_p;     ///< Publishes poses.
 

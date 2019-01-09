@@ -6,6 +6,9 @@
 #include <iostream>
 #include <core/operation/operation.h>
 
+// TODO: Make refresh rate a paramter in the launch file
+
+const int refresh_rate = 20;
 
 fluid::Graph fluid::Operation::graph;
 
@@ -30,7 +33,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
     // This implicates that the plan's size is bigger than 1.
     if (graph.current_state_p->identifier != destination_state_identifier_) {
-        fluid::Transition initial_transition(graph.getNodeHandlePtr(), plan[0], plan[1], 20);
+        fluid::Transition initial_transition(graph.getNodeHandlePtr(), plan[0], plan[1], refresh_rate);
         initial_transition.perform([]() {});
     }
 
@@ -48,7 +51,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
             fluid::Transition final_transition(graph.getNodeHandlePtr(),
                                                graph.current_state_p,
                                                graph.getStateWithIdentifier(final_state_identifier_),
-                                               20);
+                                               refresh_rate);
             final_transition.perform([]() {});
 
             completionHandler(false);
@@ -59,7 +62,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
         if (index < plan.size() - 1) {
 
-            fluid::Transition transition(graph.getNodeHandlePtr(), state_p, plan[index + 1], 20);
+            fluid::Transition transition(graph.getNodeHandlePtr(), state_p, plan[index + 1], refresh_rate);
             transition.perform([]() {});
         }
     }
@@ -70,7 +73,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     fluid::Transition final_transition(graph.getNodeHandlePtr(),
                                        graph.current_state_p,
                                        final_state,
-                                       20);
+                                       refresh_rate);
     final_transition.perform([]() {});
 
     graph.current_state_p = final_state;
