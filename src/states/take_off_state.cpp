@@ -8,7 +8,7 @@
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 bool fluid::TakeOffState::hasFinishedExecution() {
-    return PoseUtil::distanceBetween(current_position_, position_target) < 0.2;
+    return PoseUtil::distanceBetween(current_pose_, position_target) < 0.2;
 }
 
 void fluid::TakeOffState::tick() {

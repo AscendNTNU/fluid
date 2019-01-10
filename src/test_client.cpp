@@ -44,9 +44,12 @@ int main(int argc, char** argv) {
     });
 
 
-    // If we didn't manage to initialize, arm the drone and take off, abort.
-    if (!initialized) {
-        return 0;
+    ros::Rate wait_rate(20);
+
+
+    while (ros::ok() && !initialized) {
+        ros::spinOnce();
+        wait_rate.sleep();
     }
 
     ROS_INFO("Completed initialization and take off");
@@ -110,6 +113,13 @@ int main(int argc, char** argv) {
             });
         }
     });
+
+    ros::Rate rate(1);
+
+    while (ros::ok()) {
+            ros::spinOnce();
+            rate.sleep();
+    }
 
     return 0;
 }

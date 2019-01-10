@@ -12,7 +12,6 @@
 #include <thread>
 
 
-
 void fluid::OperationClient::waitForResult(
     std::string operation_identifier,
     geometry_msgs::Pose target_pose,

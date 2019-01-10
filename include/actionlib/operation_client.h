@@ -44,7 +44,7 @@ class OperationClient {
 
     /**
      * Requests an operation with a given target pose. This function will send a request to a server
-     * listening on the fluid operation domain.
+     * listening on the fluid operation domain. This function is asynchronous.
      *
      * @param operation_identifier The type of operation to execute.
      * @param target_pose The target pose of the operation.

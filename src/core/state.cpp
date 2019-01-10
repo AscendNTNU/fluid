@@ -5,6 +5,15 @@
 #include "../../include/core/state.h"
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
+geometry_msgs::PoseStamped fluid::State::getCurrentPose() {
+	return current_pose_;
+}
+
+void fluid::State::poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
+    current_pose_.pose = pose->pose;
+    current_pose_.header = pose->header;
+}
+
 void fluid::State::perform(std::function<bool(void)> shouldAbort) {
 
     ros::Rate rate(refresh_rate_);
