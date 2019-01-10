@@ -29,7 +29,7 @@ namespace fluid {
                 return "OFFBOARD";
             }
             else if (state_identifier == "land") {
-                return "OFFBOARD";
+                return "AUTO.LAND";
             }
         }
     };
