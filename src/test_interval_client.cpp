@@ -46,25 +46,27 @@ int main(int argc, char** argv) {
         }
     });
 
+    ROS_INFO("After init operation");
 
-    // If we didn't manage to initialize, arm the drone and take off, abort.
-    if (!initialized) {
-        return 0;
+    ros::Rate wait_rate(20);
+
+
+    while (ros::ok() && !initialized) {
+        ros::spinOnce();
+        wait_rate.sleep();
     }
 
     ROS_INFO("Completed initialization and take off");    
     ROS_INFO("Starting with interval calls");
 
-    /*
-
-    fluid::OperationClient move_operation_client(0.5);
+    fluid::OperationClient move_operation_client(1);
     ros::Rate rate(2);
     int flip = 1;
 
     while (ros::ok()) {
             ROS_INFO_STREAM("Moving to: " << pose.position);    
 
-            pose.position.y += 1.0 * flip;
+            pose.position.y += 0.2;
             pose.position.z = height;
             flip = -flip;
             ROS_INFO("Before move operaiton call");
@@ -78,7 +80,7 @@ int main(int argc, char** argv) {
             // separate thread.
 
             rate.sleep();
-    }*/
+    }
 
     return 0;
 }

@@ -28,8 +28,6 @@ class OperationClient {
     const double timeout_value_; ///< The time the the client will wait for a response from
 				                 ///< the server
 
-    Client action_client_;       ///< Sends goals to the action server encapuslated in the operation server. 
-
     /**
      * @brief      Waits for the timeout or the completion from the operation server.
      */
@@ -42,10 +40,7 @@ class OperationClient {
      *
      * @param timeout_value The time the operation client waits for a response from the operation server.
      */
-    OperationClient(double timeout_value) : timeout_value_(timeout_value), 
-                                            action_client_("fluid_fsm_operation", true) {
-        action_client_.waitForServer();
-    }
+    OperationClient(double timeout_value) : timeout_value_(timeout_value) {}
 
     /**
      * Requests an operation with a given target pose. This function will send a request to a server
