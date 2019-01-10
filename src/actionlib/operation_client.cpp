@@ -4,18 +4,21 @@
 
 #include "../../include/actionlib/operation_client.h"
 
-#include <fluid_fsm/OperationAction.h>
+#include <actionlib/operation_client.h>
 #include <fluid_fsm/OperationGoal.h>
 #include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
-#include <actionlib/operation_client.h>
 #include <utility>
+#include <thread>
 
-void fluid::OperationClient::requestOperation(fluid::OperationIdentifier operation_identifier,
-                                              geometry_msgs::Pose target_pose,
-                                              std::function<void(bool)> completion_handler) {
 
-    actionlib::SimpleActionClient<fluid_fsm::OperationAction> action_client("fluid_fsm_operation", true);
+void fluid::OperationClient::waitForResult(
+    std::string operation_identifier,
+    geometry_msgs::Pose target_pose,
+    std::function<void (bool)> completion_handler) {
+
+    Client action_client("fluid_fsm_operation", false);
+
     action_client.waitForServer();
 
     fluid_fsm::OperationGoal goal;
@@ -24,9 +27,19 @@ void fluid::OperationClient::requestOperation(fluid::OperationIdentifier operati
     type.data = std::move(operation_identifier);
     goal.type = type;
     action_client.sendGoal(goal);
+
     bool finished_before_timeout = action_client.waitForResult(ros::Duration(timeout_value_));
 
     if (completion_handler) {
         completion_handler(finished_before_timeout && action_client.getState().isDone());
     }
+}
+
+void fluid::OperationClient::requestOperation(
+    fluid::OperationIdentifier operation_identifier,
+	geometry_msgs::Pose target_pose,
+    std::function<void (bool)> completion_handler) {
+
+    std::thread thread(&OperationClient::waitForResult, this, operation_identifier, target_pose, completion_handler);
+    thread.detach();
 }

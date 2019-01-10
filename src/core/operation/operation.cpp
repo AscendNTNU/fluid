@@ -6,6 +6,9 @@
 #include <iostream>
 #include <core/operation/operation.h>
 
+// TODO: Make refresh rate a paramter in the launch file
+
+const int refresh_rate = 60;
 
 fluid::Graph fluid::Operation::graph;
 
@@ -30,7 +33,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
     // This implicates that the plan's size is bigger than 1.
     if (graph.current_state_p->identifier != destination_state_identifier_) {
-        fluid::Transition initial_transition(graph.getNodeHandlePtr(), plan[0], plan[1], 20);
+        fluid::Transition initial_transition(graph.getNodeHandlePtr(), plan[0], plan[1], refresh_rate);
         initial_transition.perform([]() {});
     }
 
@@ -45,11 +48,22 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         state_p->perform(shouldAbort);
 
         if (shouldAbort()) {
+
+            std::shared_ptr<fluid::State> final_state_p = graph.getStateWithIdentifier(final_state_identifier_);
+
             fluid::Transition final_transition(graph.getNodeHandlePtr(),
                                                graph.current_state_p,
-                                               graph.getStateWithIdentifier(final_state_identifier_),
-                                               20);
+                                               final_state_p,
+                                               refresh_rate);
             final_transition.perform([]() {});
+
+            // But if the current operation is the same as the next one, we shouldn't 
+            // switch states.
+
+            // TODO: Should set orientation here as well. But we need to convert between quaternions 
+            //       and angles.
+            final_state_p->position_target.position = graph.current_state_p->getCurrentPose().pose.position;
+            graph.current_state_p = final_state_p;
 
             completionHandler(false);
             return;
@@ -59,7 +73,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
         if (index < plan.size() - 1) {
 
-            fluid::Transition transition(graph.getNodeHandlePtr(), state_p, plan[index + 1], 20);
+            fluid::Transition transition(graph.getNodeHandlePtr(), state_p, plan[index + 1], refresh_rate);
             transition.perform([]() {});
         }
     }
@@ -70,7 +84,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     fluid::Transition final_transition(graph.getNodeHandlePtr(),
                                        graph.current_state_p,
                                        final_state,
-                                       20);
+                                       refresh_rate);
     final_transition.perform([]() {});
 
     graph.current_state_p = final_state;

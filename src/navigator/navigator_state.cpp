@@ -3,8 +3,3 @@
 //
 
 #include "../../include/navigator/navigator_state.h"
-
-void fluid::NaivgatorState::poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
-	current_position_.pose = pose->pose;
-	current_position_.header = pose->header;
-}

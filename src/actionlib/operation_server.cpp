@@ -54,7 +54,8 @@ void fluid::OperationServer::start() {
 
     ROS_INFO("Operation server running and listening.");
 
-    ros::Rate rate(20);
+    // TODO: Unify refresh rate
+    ros::Rate rate(60);
 
     while (ros::ok()) {
 
@@ -70,35 +71,32 @@ void fluid::OperationServer::start() {
                     [&]() -> bool {
                         // We abort current mission if there is a new operation.
                         if (new_operation_requested_) {
-                            ROS_INFO_STREAM("Aborting current operation" << current_operation_p_->identifier.c_str());
+                            ROS_INFO_STREAM("Aborting current operation: " << 
+                                            current_operation_p_->identifier.c_str());
                         }
 
                         return new_operation_requested_;
                     },
 
                     [&](bool completed) {
+                        last_state_p_ = current_operation_p_->getFinalStatePtr();
+
                         if (completed) {
-                            last_state_p_ = current_operation_p_->getFinalStatePtr();
                             actionlib_action_server_.setSucceeded();
                         }
                         else {
-                            last_state_p_ = current_operation_p_->getCurrentStatePtr();
                             actionlib_action_server_.setAborted();
                         }
                     });
 
             current_operation_p_.reset();
-            ROS_INFO_STREAM("Operation finished, state is now: " << last_state_p_->identifier);
+            ROS_INFO_STREAM("Operation finished, state is now: " << last_state_p_->identifier << " position target: " << last_state_p_->position_target);
         }
         // We don't have a current operation, so we just continue executing the last state.
         else {
             if (last_state_p_) {
                 last_state_p_->perform([&]() -> bool {
                     // We abort the execution of the current state if there is a new operation.
-                    if (new_operation_requested_) {
-                        ROS_INFO_STREAM("Aborting state for new operation operation: " << next_operation_p_->identifier.c_str());
-                    }
-
                     return new_operation_requested_;
                 });
             }
