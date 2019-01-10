@@ -54,7 +54,7 @@ void fluid::OperationServer::start() {
 
     ROS_INFO("Operation server running and listening.");
 
-    ros::Rate rate(60);
+    ros::Rate rate(20);
 
     while (ros::ok()) {
 

@@ -12,15 +12,12 @@
 #include <utility>
 #include <thread>
 
+
+
 void fluid::OperationClient::waitForResult(
-    std::shared_ptr<Client> action_client,
+    std::string operation_identifier,
+    geometry_msgs::Pose target_pose,
     std::function<void (bool)> completion_handler) {
-
-    bool finished_before_timeout = action_client->waitForResult(ros::Duration(timeout_value_));
-
-    if (completion_handler) {
-        completion_handler(finished_before_timeout && action_client->getState().isDone());
-    }
 }
 
 void fluid::OperationClient::requestOperation(
@@ -28,15 +25,18 @@ void fluid::OperationClient::requestOperation(
 	geometry_msgs::Pose target_pose,
     std::function<void (bool)> completion_handler) {
 
-    std::shared_ptr<Client> action_client = std::make_shared<Client>("fluid_fsm_operation", true);
-    action_client->waitForServer();
+    //boost::thread thread(boost::bind(&OperationClient::waitForResult, this, operation_identifier, target_pose, completion_handler));
 
     fluid_fsm::OperationGoal goal;
     goal.target_pose = target_pose;
     std_msgs::String type;
     type.data = std::move(operation_identifier);
     goal.type = type;
-    action_client->sendGoal(goal);
+    action_client_.sendGoal(goal);
 
-    boost::thread thread(boost::bind(&OperationClient::waitForResult, this, action_client, completion_handler));
+    bool finished_before_timeout = action_client_.waitForResult(ros::Duration(timeout_value_));
+
+    if (completion_handler) {
+        completion_handler(finished_before_timeout && action_client_.getState().isDone());
+    }
 }

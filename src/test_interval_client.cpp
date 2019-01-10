@@ -55,14 +55,16 @@ int main(int argc, char** argv) {
     ROS_INFO("Completed initialization and take off");    
     ROS_INFO("Starting with interval calls");
 
-    fluid::OperationClient move_operation_client(60);
-    ros::Rate rate(1);
+    /*
+
+    fluid::OperationClient move_operation_client(0.5);
+    ros::Rate rate(2);
     int flip = 1;
 
     while (ros::ok()) {
             ROS_INFO_STREAM("Moving to: " << pose.position);    
 
-            pose.position.y += 5.0 * flip;
+            pose.position.y += 1.0 * flip;
             pose.position.z = height;
             flip = -flip;
             ROS_INFO("Before move operaiton call");
@@ -72,9 +74,12 @@ int main(int argc, char** argv) {
 
             // TODO: When we crank down the interval the hold state doesn't get its position target set properly (maybe because of the multiple threads simoultanously). Need to figure out a smooth way to have a short interval. 
 
+            // TODO: Something funky is happening with the callback when waiting for the result in a 
+            // separate thread.
+
             rate.sleep();
-    }
-    
+    }*/
+
     return 0;
 }
 
