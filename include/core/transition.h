@@ -56,15 +56,16 @@ namespace fluid {
         /**
          * Initializes a transition with source state and destination state.
          *
+         * @param node_handle_p Used for initializing the mavros state setter.
          * @param source_p The source state.
          * @param destination_p The destination state.
+         * @param refresh_rate The refresh rate the transition should operate at.
          */
-         // TODO: Gloablize message queue number
         Transition(const ros::NodeHandlePtr &node_handle_p,
                    std::shared_ptr<State> source_state_p,
                    std::shared_ptr<State> destination_state_p,
                    unsigned int refresh_rate) :
-                   mavros_state_setter_(node_handle_p, 1000, refresh_rate, "OFFBOARD"),
+                   mavros_state_setter_(node_handle_p, 1000, 1.0/static_cast<double>(refresh_rate), "OFFBOARD"),
                    source_state_p(std::move(source_state_p)),
                    destination_state_p(std::move(destination_state_p)),
                    refresh_rate_(refresh_rate) {}
