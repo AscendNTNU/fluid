@@ -41,6 +41,8 @@ namespace fluid {
         static Graph graph;                                         ///< Provides the states which the operation can
                                                                     ///< consist of and how to transition between them
 
+        const unsigned int refresh_rate_;
+
     public:
 
         const mavros_msgs::PositionTarget position_target;          ///< Position target of the operation.
@@ -56,15 +58,19 @@ namespace fluid {
          * @param identifier                     The identifier of the operation.
          * @param destination_state_identifier   The destination state of the operation.
          * @param final_state_identifier         The final state.
+         * @param position_target                The target position of this operation.
+         * @param refresh_rate                   How fast the underlying process will operate at. 
          */
         Operation(OperationIdentifier identifier,
                   std::string destination_state_identifier,
                   std::string final_state_identifier,
-                  mavros_msgs::PositionTarget position_target) :
+                  mavros_msgs::PositionTarget position_target,
+                  unsigned int refresh_rate) :
                   identifier(std::move(identifier)),
                   destination_state_identifier_(std::move(destination_state_identifier)),
                   final_state_identifier_(std::move(final_state_identifier)),
-                  position_target(position_target) {}
+                  position_target(position_target),
+                  refresh_rate_(refresh_rate) {}
 
 
         /**

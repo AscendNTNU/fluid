@@ -25,19 +25,19 @@ void fluid::OperationServer::goalCallback() {
         position_target.position.x = 0.0;
         position_target.position.y = 0.0;
         position_target.position.z = 0.0;
-        next_operation_p_ = std::make_shared<fluid::InitOperation>(position_target);
+        next_operation_p_ = std::make_shared<fluid::InitOperation>(position_target, refresh_rate_);
 
     }
     else if (operation_identifier.data == fluid::operation_identifiers::TAKE_OFF) {
-        next_operation_p_ = std::make_shared<fluid::TakeOffOperation>(position_target);
+        next_operation_p_ = std::make_shared<fluid::TakeOffOperation>(position_target, refresh_rate_);
 
     }
     else if (operation_identifier.data == fluid::operation_identifiers::MOVE) {
-        next_operation_p_ = std::make_shared<fluid::MoveOperation>(position_target);
+        next_operation_p_ = std::make_shared<fluid::MoveOperation>(position_target, refresh_rate_);
 
     }
     else if (operation_identifier.data == fluid::operation_identifiers::LAND) {
-        next_operation_p_ = std::make_shared<fluid::LandOperation>(position_target);
+        next_operation_p_ = std::make_shared<fluid::LandOperation>(position_target, refresh_rate_);
     }
 
     new_operation_requested_ = true;
@@ -54,8 +54,7 @@ void fluid::OperationServer::start() {
 
     ROS_INFO("Operation server running and listening.");
 
-    // TODO: Unify refresh rate
-    ros::Rate rate(60);
+    ros::Rate rate(refresh_rate_);
 
     while (ros::ok()) {
 
@@ -63,6 +62,7 @@ void fluid::OperationServer::start() {
             current_operation_p_ = next_operation_p_;
             next_operation_p_.reset();
             new_operation_requested_ = false;
+            ROS_INFO_STREAM("Current operation after new operation: " << current_operation_p_->identifier.c_str());
         }
 
         // We have an operation to execute.

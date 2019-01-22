@@ -22,8 +22,8 @@ namespace fluid {
         /**
          * Initializes the hold state.
          */
-        explicit HoldState(ros::NodeHandlePtr node_handle_p) :
-        MavrosState(node_handle_p, fluid::state_identifiers::HOLD) {}
+        explicit HoldState(ros::NodeHandlePtr node_handle_p, unsigned int refresh_rate) :
+        MavrosState(node_handle_p, fluid::state_identifiers::HOLD, refresh_rate) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

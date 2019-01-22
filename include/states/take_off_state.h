@@ -19,8 +19,8 @@ namespace fluid {
 
         /** Initializes the take off state with a pose.
          */
-        explicit TakeOffState(ros::NodeHandlePtr node_handle_p) :
-        MavrosState(node_handle_p, fluid::state_identifiers::TAKE_OFF) {}
+        explicit TakeOffState(ros::NodeHandlePtr node_handle_p, unsigned int refresh_rate) :
+        MavrosState(node_handle_p, fluid::state_identifiers::TAKE_OFF, refresh_rate) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

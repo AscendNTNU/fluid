@@ -30,12 +30,14 @@ namespace fluid {
          * @param identifier The identifier of the state.
          */
         // TODO: Unify refresh rate
-        MavrosState(ros::NodeHandlePtr node_handle_p, fluid::OperationIdentifier identifier) :
+        MavrosState(ros::NodeHandlePtr node_handle_p, 
+                    fluid::OperationIdentifier identifier,
+                    unsigned int refresh_rate) :
         State(node_handle_p,
               std::move(identifier),
               "mavros/local_position/pose", 
               std::make_shared<fluid::MavrosPosePublisher>(node_handle_p, 1000), 
-              60) {}
+              refresh_rate) {}
     };
 }
 

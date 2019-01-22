@@ -38,13 +38,17 @@ namespace fluid {
         bool new_operation_requested_ = false;                       ///< Determines whether a new operation was
                                                                      ///< requested.
 
+        const unsigned int refresh_rate_;                            ///< The rate at which the operation is running. 
+
     public:
 
 
         /**
          * Initializes the operation server.
          */
-        OperationServer() : actionlib_action_server_(node_handle_, "fluid_fsm_operation", false) {
+        OperationServer(unsigned int refresh_rate) : 
+        refresh_rate_(refresh_rate),
+        actionlib_action_server_(node_handle_, "fluid_fsm_operation", false) {
             actionlib_action_server_.registerGoalCallback(boost::bind(&OperationServer::goalCallback, this));
             actionlib_action_server_.registerPreemptCallback(boost::bind(&OperationServer::preemptCallback, this));
 
