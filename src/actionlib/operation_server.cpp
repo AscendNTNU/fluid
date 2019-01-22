@@ -62,7 +62,6 @@ void fluid::OperationServer::start() {
             current_operation_p_ = next_operation_p_;
             next_operation_p_.reset();
             new_operation_requested_ = false;
-            ROS_INFO_STREAM("Current operation after new operation: " << current_operation_p_->identifier.c_str());
         }
 
         // We have an operation to execute.
@@ -90,7 +89,7 @@ void fluid::OperationServer::start() {
                     });
 
             current_operation_p_.reset();
-            ROS_INFO_STREAM("Operation finished, state is now: " << last_state_p_->identifier << " position target: " << last_state_p_->position_target);
+            //ROS_INFO_STREAM("Operation finished, state is now: " << last_state_p_->identifier << " position target: " << last_state_p_->position_target);
         }
         // We don't have a current operation, so we just continue executing the last state.
         else {

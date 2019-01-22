@@ -35,8 +35,6 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         });
     }
 
-    ROS_FATAL_STREAM("Curernt state: " << graph.current_state_p->identifier);
-
     for (int index = startIndex; index < plan.size(); index++) {
 
         std::shared_ptr<fluid::State> state_p = plan[index];

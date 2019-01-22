@@ -10,6 +10,8 @@
 #include "../include/operations/operation_defines.h"
 #include "../include/core/state.h"
 
+#include <iostream>
+
 int main(int argc, char** argv) {
 
     ros::init(argc, argv, "test_client");
@@ -66,15 +68,12 @@ int main(int argc, char** argv) {
     
     move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
         if (completed) {
-            ROS_INFO("Move operation completed");
-
             pose.position.x = distance;
             pose.position.y = distance;
             pose.position.z = height;
 
             move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
                 if (completed) {
-                    ROS_INFO("Move operation completed");
 
                     pose.position.x = 0;
                     pose.position.y = distance;
@@ -82,16 +81,12 @@ int main(int argc, char** argv) {
 
                     move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
                         if (completed) {
-                            ROS_INFO("Move operation completed");
-
                             pose.position.x = 0;
                             pose.position.y = 0;
                             pose.position.z = height;
 
                             move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
                                 if (completed) {
-                                    ROS_INFO("Move operation completed");
-
                                     fluid::OperationClient operation_land_client(60);
 
                                     geometry_msgs::Pose land_pose;
@@ -99,11 +94,7 @@ int main(int argc, char** argv) {
                                     land_pose.position.y = 0;
                                     land_pose.position.z = 0;
 
-                                    operation_land_client.requestOperation(fluid::operation_identifiers::LAND, land_pose, [&](bool completed) {
-                                        if (completed) {
-                                            ROS_INFO("Land operation completed");
-                                        }
-                                    });
+                                    operation_land_client.requestOperation(fluid::operation_identifiers::LAND, land_pose, [&](bool completed) {});
 
                                 }
                             });
