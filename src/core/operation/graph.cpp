@@ -21,6 +21,7 @@
 #include <iterator>
 #include <algorithm>
 #include <vector>
+#include <climits>
 
 fluid::Graph::Graph() {
     adjacency_list = std::make_unique<AdjacencyList>();
@@ -48,45 +49,66 @@ std::vector<std::shared_ptr<fluid::State>> fluid::Graph::getStates() {
     return states_;
 }
 
+
 std::vector<std::shared_ptr<fluid::State>> fluid::Graph::getPlanToEndState(std::string start_state_identifier,
                                                                            std::string end_state_identifier) {
+    
+    // BFS
+    std::list<std::string> queue;
     std::map<std::string, bool> visited;
+    std::map<std::string, std::string> pred;
 
     for (auto const& item : *adjacency_list) {
         visited[item.first] = false;
-   }
+        pred[item.first] = "no_val";
+    }
 
-    std::list<std::string> queue;
     visited[start_state_identifier] = true;
     queue.push_back(start_state_identifier);
+    
     std::vector<std::string> plan;
 
-    while (!queue.empty()) {
+    bool searching = true;
+
+    while (!queue.empty() && searching) {
 
         start_state_identifier = queue.front();
-        plan.push_back(start_state_identifier);
         queue.pop_front();
 
-        if (start_state_identifier == end_state_identifier) {
-            break;
-        }
-
         for(const auto &neighborState : adjacency_list->at(start_state_identifier)) {
-
             if(!visited[neighborState->identifier]) {
                 visited[neighborState->identifier] = true;
+                pred[neighborState->identifier] = start_state_identifier;
+
                 queue.push_back(neighborState->identifier);
+
+                if (neighborState->identifier == end_state_identifier) {
+                    searching = false;
+
+                    break;
+                }
             }
         }
     }
 
+    std::vector<std::string> path;
+    std::string crawl = end_state_identifier;
+
+    path.push_back(end_state_identifier);
+
+    while (pred[crawl] != "no_val") {
+        path.push_back(pred[crawl]);
+        crawl = pred[crawl];
+    }
 
     // Transform plan of state identifiers into a plan of states
     std::vector<std::shared_ptr<fluid::State>> states_in_plan;
 
-    for (const auto &identifier : plan) {
+    for (const auto &identifier : path) {
         states_in_plan.push_back(getStateWithIdentifier(identifier));
     }
+    
+    std::reverse(states_in_plan.begin(), states_in_plan.end());
 
     return states_in_plan;
 }
@@ -119,17 +141,16 @@ bool fluid::Graph::isInitialized() {
     return initialized_;
 }
 
-void fluid::Graph::initialize() {
+void fluid::Graph::initialize(unsigned int refresh_rate) {
 
-    // TODO: new here?
     node_handle_p = ros::NodeHandlePtr(new ros::NodeHandle);
 
-    std::shared_ptr<fluid::InitState> init_state        = std::make_shared<fluid::InitState>(node_handle_p);
-    std::shared_ptr<fluid::IdleState> idle_state        = std::make_shared<fluid::IdleState>(node_handle_p);
-    std::shared_ptr<fluid::TakeOffState> take_off_state = std::make_shared<fluid::TakeOffState>(node_handle_p);
-    std::shared_ptr<fluid::LandState> land_state        = std::make_shared<fluid::LandState>(node_handle_p);
-    std::shared_ptr<fluid::HoldState> hold_state        = std::make_shared<fluid::HoldState>(node_handle_p);
-    std::shared_ptr<fluid::MoveState> move_state        = std::make_shared<fluid::MoveState>(node_handle_p);
+    std::shared_ptr<fluid::InitState> init_state = std::make_shared<fluid::InitState>(node_handle_p, refresh_rate);
+    std::shared_ptr<fluid::IdleState> idle_state = std::make_shared<fluid::IdleState>(node_handle_p, refresh_rate);
+    std::shared_ptr<fluid::TakeOffState> take_off_state = std::make_shared<fluid::TakeOffState>(node_handle_p, refresh_rate);
+    std::shared_ptr<fluid::LandState> land_state = std::make_shared<fluid::LandState>(node_handle_p, refresh_rate);
+    std::shared_ptr<fluid::HoldState> hold_state = std::make_shared<fluid::HoldState>(node_handle_p, refresh_rate);
+    std::shared_ptr<fluid::MoveState> move_state = std::make_shared<fluid::MoveState>(node_handle_p, refresh_rate);
 
     std::vector<Edge> edges;
 
@@ -139,7 +160,6 @@ void fluid::Graph::initialize() {
     edges.emplace_back(Edge(take_off_state, hold_state));
     edges.emplace_back(Edge(hold_state, move_state));
     edges.emplace_back(Edge(move_state, hold_state));
-    edges.emplace_back(Edge(move_state, land_state));
     edges.emplace_back(Edge(hold_state, land_state));
     edges.emplace_back(Edge(land_state, idle_state));
 
