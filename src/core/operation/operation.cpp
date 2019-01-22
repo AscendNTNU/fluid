@@ -30,8 +30,12 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     // This implicates that the plan's size is bigger than 1.
     if (graph.current_state_p->identifier != destination_state_identifier_) {
         fluid::Transition initial_transition(graph.getNodeHandlePtr(), plan[0], plan[1], refresh_rate_);
-        initial_transition.perform([]() {});
+        initial_transition.perform([&]() {
+        	graph.current_state_p = plan[1];
+        });
     }
+
+    ROS_FATAL_STREAM("Curernt state: " << graph.current_state_p->identifier);
 
     for (int index = startIndex; index < plan.size(); index++) {
 

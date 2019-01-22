@@ -22,7 +22,7 @@ namespace fluid {
 
         ros::ServiceClient set_mode_client_;                             ///< Issues the state change commands
 
-        const unsigned int update_interval_;                             ///< Amount of time passed before a new
+        const double update_interval_;                             		 ///< Amount of time passed before a new
                                                                          ///< set mode command is issued if the
                                                                          ///< state on the pixhawk doesn't match
                                                                          ///< the set state specified by mode.
@@ -44,12 +44,12 @@ namespace fluid {
          *
          * @param node_handle_p         The node handle which issues the state changes.
          * @param message_queue_size    The message buffer size.
-         * @param check_rate            The
+         * @param update_interval       The time between each set mode call.
          * @param mode                  The mode to change to.
          */
         MavrosStateSetter(const ros::NodeHandlePtr &node_handle_p,
                           unsigned int message_queue_size,
-                          unsigned int update_interval,
+                          double update_interval,
                           const std::string &mode) :
         mode_(mode),
         update_interval_(update_interval),
