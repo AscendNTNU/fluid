@@ -10,6 +10,7 @@
 #include "../include/operations/operation_defines.h"
 #include "../include/core/state.h"
 
+#include <iostream>
 
 int main(int argc, char** argv) {
 
@@ -45,9 +46,12 @@ int main(int argc, char** argv) {
     });
 
 
-    // If we didn't manage to initialize, arm the drone and take off, abort.
-    if (!initialized) {
-        return 0;
+    ros::Rate wait_rate(20);
+
+
+    while (ros::ok() && !initialized) {
+        ros::spinOnce();
+        wait_rate.sleep();
     }
 
     ROS_INFO("Completed initialization and take off");
@@ -56,38 +60,33 @@ int main(int argc, char** argv) {
     // is finished, the next will execute as one can see in the callback.
     fluid::OperationClient move_operation_client(60);
     
-    pose.position.x = 1;
+    float distance = 4;
+
+    pose.position.x = distance;
     pose.position.y = 0;
     pose.position.z = height;
     
     move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
         if (completed) {
-            ROS_INFO("Move operation completed");
-
-            pose.position.x = 1;
-            pose.position.y = 1;
+            pose.position.x = distance;
+            pose.position.y = distance;
             pose.position.z = height;
 
             move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
                 if (completed) {
-                    ROS_INFO("Move operation completed");
 
                     pose.position.x = 0;
-                    pose.position.y = 1;
+                    pose.position.y = distance;
                     pose.position.z = height;
 
                     move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
                         if (completed) {
-                            ROS_INFO("Move operation completed");
-
                             pose.position.x = 0;
                             pose.position.y = 0;
                             pose.position.z = height;
 
                             move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
                                 if (completed) {
-                                    ROS_INFO("Move operation completed");
-
                                     fluid::OperationClient operation_land_client(60);
 
                                     geometry_msgs::Pose land_pose;
@@ -95,11 +94,7 @@ int main(int argc, char** argv) {
                                     land_pose.position.y = 0;
                                     land_pose.position.z = 0;
 
-                                    operation_land_client.requestOperation(fluid::operation_identifiers::LAND, land_pose, [&](bool completed) {
-                                        if (completed) {
-                                            ROS_INFO("Land operation completed");
-                                        }
-                                    });
+                                    operation_land_client.requestOperation(fluid::operation_identifiers::LAND, land_pose, [&](bool completed) {});
 
                                 }
                             });
@@ -110,6 +105,12 @@ int main(int argc, char** argv) {
         }
     });
 
+    ros::Rate rate(1);
+
+    while (ros::ok()) {
+            ros::spinOnce();
+            rate.sleep();
+    }
 
     return 0;
 }

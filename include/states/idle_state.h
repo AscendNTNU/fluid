@@ -11,6 +11,8 @@
 
 #include <ros/ros.h>
 
+// TODO: Use pixhawk idle state
+
 namespace fluid {
 
     /** \class IdleState
@@ -22,8 +24,8 @@ namespace fluid {
         /**
          * Initializes the idle state.
          */
-        explicit IdleState(ros::NodeHandlePtr node_handle_p) :
-        MavrosState(node_handle_p, fluid::state_identifiers::IDLE) {}
+        explicit IdleState(ros::NodeHandlePtr node_handle_p, unsigned int refresh_rate) :
+        MavrosState(node_handle_p, fluid::state_identifiers::IDLE, refresh_rate) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

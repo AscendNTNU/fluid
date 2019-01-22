@@ -21,8 +21,8 @@ namespace fluid {
 
         /** Initializes the move state.
          */
-        explicit MoveState(ros::NodeHandlePtr node_handle_p) :
-        MavrosState(node_handle_p, fluid::state_identifiers::MOVE) {}
+        explicit MoveState(ros::NodeHandlePtr node_handle_p, unsigned int refresh_rate) :
+        MavrosState(node_handle_p, fluid::state_identifiers::MOVE, refresh_rate) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

@@ -31,6 +31,17 @@ namespace fluid {
 
         bool initialized_ = false;
 
+
+        /**
+         * @brief      Checks if the start state and the end state is connected using a breadth first search.
+         *
+         * @param[in]  start_state_identifier  The start state identifier
+         * @param[in]  end_state_identifier    The end state identifier
+         *
+         * @return     { description_of_the_return_value }
+         */
+        bool breadthFirstSearch(std::string start_state_identifier, std::string end_state_identifier);
+
     public:
 
         std::shared_ptr<State> current_state_p;                ///< The current state of the state graph
@@ -82,8 +93,10 @@ namespace fluid {
 
         /**
          * Initializes the state graph with a set of states.
+         * 
+         * @param refresh_rate The refresh rate the states should be initialized to operate at.
          */
-        void initialize();
+        void initialize(unsigned int refresh_rate);
 
         /**
          * @return ROS node handle pointer, used when states need to do something specific with ROS.

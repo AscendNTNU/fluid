@@ -28,7 +28,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
     ros::Rate rate(refresh_rate_);
 
-    fluid::MavrosStateSetter state_setter(node_handle_p, 1000, 2, "OFFBOARD");
+    fluid::MavrosStateSetter state_setter(node_handle_p, 1000, 1.0/static_cast<double>(refresh_rate_), "OFFBOARD");
     ros::ServiceClient arming_client = node_handle_p->serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
     mavros_msgs::CommandBool arm_command;
     arm_command.request.value = true;

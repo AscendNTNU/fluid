@@ -1,12 +1,15 @@
 <launch>
-  <arg name="nodename"/>
-  <arg name="px4_addr"/>
+  <arg name="nodename" default="fluid"/>
+  <arg name="px4_addr" default="localhost"/>
+  <arg name="refresh_rate" default="20" />
 
   <group ns="$(arg nodename)">
-    <node name="fluid_fsm_main" pkg="fluid_fsm" type="main" output="screen"/>
+
+  	<node name="server" pkg="fluid_fsm" type="main" output="screen" args="$(arg refresh_rate)"/>
+
     <include file="$(find mavros)/launch/px4.launch">
       <arg name="fcu_url" value="udp://$(env ROS_IP):14540@$(arg px4_addr):14557"/>
     </include>
-    <node name="fluid_fsm_test_client" pkg="fluid_fsm" type="test_client" output="screen"/>
+    <node name="client" pkg="fluid_fsm" type="test_client" output="screen"/>
   </group>
 </launch>

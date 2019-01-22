@@ -4,11 +4,11 @@
 
 
 #include "../../include/states/take_off_state.h"
-#include "../../include/states/state_util.h"
+#include "../../include/tools/pose_util.h"
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 bool fluid::TakeOffState::hasFinishedExecution() {
-    return StateUtil::distanceBetween(current_position_, position_target) < 0.2;
+    return PoseUtil::distanceBetween(current_pose_, position_target) < 0.2;
 }
 
 void fluid::TakeOffState::tick() {

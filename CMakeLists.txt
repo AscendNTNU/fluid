@@ -31,16 +31,18 @@ file(GLOB fluid_fsm_core_SRC "src/core/*.cpp")
 file(GLOB fluid_fsm_states_SRC "src/states/*.cpp")
 file(GLOB fluid_fsm_actionlib_SRC "src/actionlib/*.cpp")
 file(GLOB fluid_fsm_mavros_SRC "src/mavros/*.cpp")
-file(GLOB fluid_fsm_tests_SRC "tests/src/*.cpp")
+file(GLOB fluid_fsm_navigator_SRC "src/navigator/*.cpp")
+file(GLOB fluid_fsm_tools_SRC "src/tools/*.cpp")
 
 add_library(fluid_fsm_lib
         ${fluid_fsm_mavros_SRC}
+        ${fluid_fsm_navigator_SRC}
         ${fluid_fsm_operation_SRC}
         ${fluid_fsm_operations_SRC}
         ${fluid_fsm_core_SRC}
         ${fluid_fsm_states_SRC}
         ${fluid_fsm_actionlib_SRC}
-        ${fluid_fsm_tests_SRC})
+        ${fluid_fsm_tools_SRC})
 
 target_link_libraries(fluid_fsm_lib ${catkin_LIBRARIES})
 
@@ -49,11 +51,16 @@ target_link_libraries(fluid_fsm_lib ${catkin_LIBRARIES})
 
 add_executable(main src/main.cpp)
 add_executable(test_client src/test_client.cpp)
+add_executable(test_interval_client src/test_interval_client.cpp)
+add_executable(graph_test src/graph_test.cpp)
 
 target_link_libraries(main fluid_fsm_lib)
 target_link_libraries(test_client fluid_fsm_lib ${catkin_LIBRARIES})
+target_link_libraries(test_interval_client fluid_fsm_lib ${catkin_LIBRARIES})
+target_link_libraries(graph_test fluid_fsm_lib ${catkin_LIBRARIES})
 
 ## Adds a compilation dependency to node_name
 add_dependencies(fluid_fsm_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(test_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(graph_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

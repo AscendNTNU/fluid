@@ -22,11 +22,12 @@ namespace fluid {
 
     public:
 
-        LandOperation(mavros_msgs::PositionTarget position_target) :
+        LandOperation(mavros_msgs::PositionTarget position_target, unsigned int refresh_rate) :
         Operation(fluid::operation_identifiers::LAND,
                   fluid::state_identifiers::LAND,
                   fluid::state_identifiers::IDLE,
-                  position_target) {}
+                  position_target,
+                  refresh_rate) {}
 
         /**
          * Method overriden from superclass.
