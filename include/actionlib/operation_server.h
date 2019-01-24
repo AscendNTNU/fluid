@@ -24,7 +24,7 @@ namespace fluid {
 
     private:
 
-        ros::NodeHandle node_handle_;                                ///< The node handle for the operation server
+        ros::NodeHandle node_handle_;                                ///< Used to instantiate the ROS action server
 
         Server actionlib_action_server_;                             ///< Reference to the ROS action server which the
                                                                      ///< operation server class encapsulates
@@ -45,6 +45,10 @@ namespace fluid {
 
         /**
          * Initializes the operation server.
+         * 
+         * @param refresh_rate Specifies how fast the operation server and its underlying servies will run. E.g. a
+         *        refresh rate of 10 hertz will make the states and transitions execute their logic every 100 ms (in 
+         *        best case).
          */
         OperationServer(unsigned int refresh_rate) : 
         refresh_rate_(refresh_rate),

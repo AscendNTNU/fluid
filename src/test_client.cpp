@@ -18,6 +18,11 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh("~");
 
     geometry_msgs::Pose pose;
+    pose.orientation.x = 0.5;
+    pose.orientation.y = 0.0;
+    pose.orientation.z = 0.25;
+    pose.orientation.w = 0.25;
+
     bool initialized = false;
 
     float height = 1.5;
