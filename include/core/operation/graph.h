@@ -19,7 +19,7 @@ namespace fluid {
 
     /** \class Graph
      * 
-     *  \brief Represents a graph of states (nodes) and transitions (edges).
+     *  \brief Represents a graph of nodes.
      */
     class Graph {
     protected:
@@ -27,7 +27,7 @@ namespace fluid {
         std::unique_ptr<AdjacencyList> adjacency_list;              ///< Vector containing all the 
                                                                     ///< connections in the graph
 
-        std::vector<Node> nodes_;                                   ///< Vector of all the states in the state graph
+        std::vector<Node> nodes_;                                   ///< Vector of all the nodes in the graph
         
     public:
 

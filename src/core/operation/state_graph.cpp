@@ -17,7 +17,7 @@
 #include <climits>
 #include <iostream>
 
-std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPlanToEndState(std::string start_state_identifier,
+std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(std::string start_state_identifier,
                                                                                 std::string end_state_identifier) {
     
     // BFS
@@ -57,6 +57,9 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPlanToEndState(
             }
         }
     }
+
+
+    // Get shortest back by backtracing
 
     std::vector<std::string> path;
     std::string crawl = end_state_identifier;

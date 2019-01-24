@@ -20,8 +20,8 @@ int main(int argc, char** argv) {
 
     graph.configure(20);
 
-    std::vector<std::shared_ptr<fluid::State>> plan = graph.getPlanToEndState(fluid::state_identifiers::INIT, 
-    																   		  fluid::state_identifiers::LAND);
+    std::vector<std::shared_ptr<fluid::State>> plan = graph.getPathToEndState(fluid::state_identifiers::INIT, 
+    																   		  fluid::state_identifiers::IDLE);
 
     for (auto state : plan) {
     	std::cout << state->identifier << std::endl;

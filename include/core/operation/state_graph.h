@@ -54,7 +54,7 @@ namespace fluid {
          * 
          * @return Vector of states one has to transition to in order to get to the end state.
          */
-        std::vector<std::shared_ptr<fluid::State>> getPlanToEndState(std::string start_state_identifier,
+        std::vector<std::shared_ptr<fluid::State>> getPathToEndState(std::string start_state_identifier,
                                                                      std::string end_state_identifier);
 
         /**
