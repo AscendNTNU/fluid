@@ -11,16 +11,30 @@
 #include <mavros_msgs/PositionTarget.h>
 #include <std_msgs/String.h>
 #include <fluid_fsm/OperationGoal.h>
-
+#include <tf/tf.h>
 
 void fluid::OperationServer::goalCallback() {
+    // We accept the new goal and initialize variables for target pose and the type of operation identifier.
+    // This is necessary in order to modify some of them before we initiate the different operations further down.
+    // E.g. the init operation shouldn't be called with a different pose than (0, 0, 0), so we make sure this is the
+    // case.
     auto goal = actionlib_action_server_.acceptNewGoal();
     geometry_msgs::Pose target_pose = goal->target_pose;
     std_msgs::String operation_identifier = goal->type;
 
+
+    // The goal/request is sent with a geometry_pose, so we have to convert to position_target for mavros.
     mavros_msgs::PositionTarget position_target;
     position_target.position = target_pose.position;
 
+    tf::Quaternion quaternion(target_pose.orientation.x, target_pose.orientation.y, target_pose.orientation.z, target_pose.orientation.w);
+    tf::Matrix3x3 matrix(quaternion);
+    double roll, pitch, yaw;
+    matrix.getRPY(roll, pitch, yaw);
+    position_target.yaw = yaw;
+
+
+    // Point the next operation pointer to the newly initialized operation.
     if (operation_identifier.data == fluid::operation_identifiers::INIT) {
         position_target.position.x = 0.0;
         position_target.position.y = 0.0;
@@ -56,18 +70,25 @@ void fluid::OperationServer::start() {
 
     ros::Rate rate(refresh_rate_);
 
+
+    // Main loop of Fluid FSM. This is where all the magic happens. If a new operaiton is requested, the 
+    // new operation requested flag is set and we set up the requirements for that operation to run. When it
+    // it runs we check every tick if a new operation is requested and abort from the current operation if
+    // that is the case. 
     while (ros::ok()) {
 
+        // Setup for the new operation.
         if (new_operation_requested_) {
             current_operation_p_ = next_operation_p_;
             next_operation_p_.reset();
             new_operation_requested_ = false;
         }
 
-        // We have an operation to execute.
+        // Execute the operation if there is any
         if (current_operation_p_) {
             current_operation_p_->perform(
                     [&]() -> bool {
+                        
                         // We abort current mission if there is a new operation.
                         if (new_operation_requested_) {
                             ROS_INFO_STREAM("Aborting current operation: " << 
@@ -78,8 +99,14 @@ void fluid::OperationServer::start() {
                     },
 
                     [&](bool completed) {
+                        // We completed the operation and want to end at the final state of the operation (e.g. hold)
+                        // state for move. One can think of this step as making sure that the state machine is at a
+                        // state where it's easy to execute a new operation.
                         last_state_p_ = current_operation_p_->getFinalStatePtr();
 
+
+                        // Will notify the operation client what the outcome of the operation was. This will end up
+                        // calling the callback that the operation client set up for completion.
                         if (completed) {
                             actionlib_action_server_.setSucceeded();
                         }
@@ -89,7 +116,6 @@ void fluid::OperationServer::start() {
                     });
 
             current_operation_p_.reset();
-            //ROS_INFO_STREAM("Operation finished, state is now: " << last_state_p_->identifier << " position target: " << last_state_p_->position_target);
         }
         // We don't have a current operation, so we just continue executing the last state.
         else {
