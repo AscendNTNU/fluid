@@ -8,6 +8,7 @@
 #include <string>
 #include <ros/ros.h>
 #include <mavros/mavros_pose_publisher.h>
+#include "identifiable.h"
 
 namespace fluid {
 
@@ -19,7 +20,7 @@ namespace fluid {
      *  The state class is an interface which encapsulates an action, callbacks when the state started and
      *  finished as well as which states the state can transition to. It also handles pose publishing.
      */
-    class State {
+    class State: public Identifiable {
     protected:
 
         const unsigned int refresh_rate_;                                       ///< Refresh rate for ros loop.
@@ -40,8 +41,6 @@ namespace fluid {
         void poseCallback(geometry_msgs::PoseStampedConstPtr pose);
 
     public:
-
-        const fluid::StateIdentifier identifier;                               ///< Identifier of the state
 
         ros::Subscriber pose_subscriber;                                       ///< The current pose during the state.
 
@@ -64,9 +63,10 @@ namespace fluid {
                 std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
                 unsigned int refresh_rate) : 
 
+                Identifiable(identifier),
+
                 node_handle_p(node_handle_p), 
                 refresh_rate_(refresh_rate), 
-                identifier(identifier),
                 pose_subscriber_(node_handle_p->subscribe(pose_subscription_topic, 1000, &State::poseCallback, this)),
                 position_target_publisher_p(std::move(position_target_publisher_p))  {}
 

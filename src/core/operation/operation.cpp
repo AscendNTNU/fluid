@@ -6,12 +6,12 @@
 #include <iostream>
 #include <core/operation/operation.h>
 
-fluid::Graph fluid::Operation::graph;
+fluid::StateGraph fluid::Operation::graph;
 
 void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) {
 
-    if (!graph.isInitialized()) {
-        graph.initialize(refresh_rate_);
+    if (!graph.isConfigured()) {
+        graph.configure(refresh_rate_);
     }
 
     // Check if it makes sense to carry out this operation given the current state.
@@ -33,6 +33,8 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         initial_transition.perform();
         graph.current_state_p = plan[1];
     }
+
+
 
     for (int index = startIndex; index < plan.size(); index++) {
 
