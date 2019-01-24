@@ -3,7 +3,6 @@
 //
 
 #include "../../../include/core/operation/operation.h"
-#include <iostream>
 #include <core/operation/operation.h>
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -50,8 +49,6 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         if (index == path.size() - 1) {
             state_p->position_target = position_target;
         }
-
-        std::cerr << state_p->identifier << std::endl;
 
         graph.current_state_p = state_p;
         state_p->perform(shouldAbort);
