@@ -11,7 +11,10 @@
 #include <mavros_msgs/PositionTarget.h>
 #include <std_msgs/String.h>
 #include <fluid_fsm/OperationGoal.h>
-#include <tf/tf.h>
+#include <tf2/transform_datatypes.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <cmath>
 
 void fluid::OperationServer::goalCallback() {
     // We accept the new goal and initialize variables for target pose and the type of operation identifier.
@@ -27,11 +30,16 @@ void fluid::OperationServer::goalCallback() {
     mavros_msgs::PositionTarget position_target;
     position_target.position = target_pose.position;
 
-    tf::Quaternion quaternion(target_pose.orientation.x, target_pose.orientation.y, target_pose.orientation.z, target_pose.orientation.w);
-    tf::Matrix3x3 matrix(quaternion);
+    tf2::Quaternion quat(target_pose.orientation.x, 
+                         target_pose.orientation.y, 
+                         target_pose.orientation.z, 
+                         target_pose.orientation.w);
+
     double roll, pitch, yaw;
-    matrix.getRPY(roll, pitch, yaw);
-    position_target.yaw = yaw;
+    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+    // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
+    // it to zero. 
+    position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;
 
 
     // Point the next operation pointer to the newly initialized operation.
