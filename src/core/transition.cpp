@@ -10,15 +10,12 @@
 #include "../../include/core/transition.h"
 #include <algorithm>
 
-void fluid::Transition::perform(std::function<void (void)> completion_handler) {
+void fluid::Transition::perform() {
 
     // The source state is the same as the destination state, we're done here!
     if (source_state_p->identifier == destination_state_p->identifier) {
-        completion_handler();
         return;
     }
-
-    TransitionErrorCode transition_error_code = no_error;
 
     ros::Rate rate(refresh_rate_);
 
@@ -44,12 +41,4 @@ void fluid::Transition::perform(std::function<void (void)> completion_handler) {
         ros::spinOnce();
         rate.sleep();
     }
-
-    TransitionError transition_error = {transition_error_code,
-                                        source_state_p->identifier,
-                                        destination_state_p->identifier};
-
-    // TODO: Currently we don't pass a error (if any) here, figure out which error we can get from the px4 state change
-    // TODO: Though will the loop try to set the state until it succeeds, so it might not be necessary
-    completion_handler();
 }

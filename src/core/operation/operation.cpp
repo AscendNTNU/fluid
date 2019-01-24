@@ -30,9 +30,8 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     // This implicates that the plan's size is bigger than 1.
     if (graph.current_state_p->identifier != destination_state_identifier_) {
         fluid::Transition initial_transition(graph.getNodeHandlePtr(), plan[0], plan[1], refresh_rate_);
-        initial_transition.perform([&]() {
-        	graph.current_state_p = plan[1];
-        });
+        initial_transition.perform();
+        graph.current_state_p = plan[1];
     }
 
     for (int index = startIndex; index < plan.size(); index++) {
@@ -55,7 +54,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
                                                graph.current_state_p,
                                                final_state_p,
                                                refresh_rate_);
-            final_transition.perform([]() {});
+            final_transition.perform();
 
             // But if the current operation is the same as the next one, we shouldn't 
             // switch states.
@@ -73,7 +72,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         if (index < plan.size() - 1) {
 
             fluid::Transition transition(graph.getNodeHandlePtr(), state_p, plan[index + 1], refresh_rate_);
-            transition.perform([]() {});
+            transition.perform();
         }
     }
 
@@ -84,7 +83,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
                                        graph.current_state_p,
                                        final_state,
                                        refresh_rate_);
-    final_transition.perform([]() {});
+    final_transition.perform();
 
     graph.current_state_p = final_state;
     graph.current_state_p->position_target = position_target;
