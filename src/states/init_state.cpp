@@ -63,7 +63,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
         state_setter.attemptToSetState([&](bool completed) {
             if(completed &&
                !state_setter.getCurrentState().armed &&
-               (ros::Time::now() - last_request > ros::Duration(1.0))) {
+               (ros::Time::now() - last_request > ros::Duration(1.0/static_cast<double>(refresh_rate_)))) {
 
                 if(arming_client.call(arm_command) && arm_command.response.success){
                     ROS_INFO("Drone armed");
