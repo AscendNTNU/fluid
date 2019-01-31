@@ -28,8 +28,8 @@ namespace fluid {
          *
          * @param node_handle_p Node handle to interact with ROS topics.
          * @param identifier The identifier of the state.
+         * @param refresh_rate The frequency the mavros state will operate at.
          */
-        // TODO: Unify refresh rate
         MavrosState(ros::NodeHandlePtr node_handle_p, 
                     fluid::OperationIdentifier identifier,
                     unsigned int refresh_rate) :

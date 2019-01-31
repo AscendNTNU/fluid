@@ -17,13 +17,12 @@ namespace fluid {
     /** \class State
      *  \brief Interface for states within the finite state machine.
      *
-     *  The state class is an interface which encapsulates an action, callbacks when the state started and
-     *  finished as well as which states the state can transition to. It also handles pose publishing.
+     *  The state class is an interface which encapsulates an action. It also handles pose publishing.
      */
     class State: public Identifiable {
     protected:
 
-        const unsigned int refresh_rate_;                                       ///< Refresh rate for ros loop.
+        const unsigned int refresh_rate_;                                       ///< Refresh rate for the ros loop.
 
         ros::NodeHandlePtr node_handle_p;                                       ///< Node handle for the mavros 
                                                                                 ///< pose publisher
