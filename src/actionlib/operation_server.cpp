@@ -15,6 +15,9 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <cmath>
+#include "../../include/core/fluid_fsm.h"
+
+#include <assert.h>
 
 void fluid::OperationServer::goalCallback() {
     // We accept the new goal and initialize variables for target pose and the type of operation identifier.
@@ -76,8 +79,14 @@ void fluid::OperationServer::start() {
 
     ROS_INFO("Operation server running and listening.");
 
-    ros::Rate rate(refresh_rate_);
+    // The graph needs to be set up before use (loaded with the given states).
+    if (!graph.isConfigured()) {
+        graph.configure(refresh_rate_);
+    }
 
+    status_publisher.initialize(ros::NodeHandlePtr(graph.getNodeHandlePtr()), 200);
+
+    ros::Rate rate(refresh_rate_);
 
     // Main loop of Fluid FSM. This is where all the magic happens. If a new operaiton is requested, the 
     // new operation requested flag is set and we set up the requirements for that operation to run. When it
@@ -94,8 +103,15 @@ void fluid::OperationServer::start() {
 
         // Execute the operation if there is any
         if (current_operation_p_) {
-            current_operation_p_->perform(
-                    [&]() -> bool {
+
+            status_publisher.status.current_operation = current_operation_p_->identifier;
+
+            // TODO: pointers within graph gets dereferenced here, why?
+
+            std::cout << graph.current_state_p << std::endl;
+            // assert(graph.current_state_p.use_count() == 2);
+
+            current_operation_p_->perform([&]() -> bool {
                         
                         // We abort current mission if there is a new operation.
                         if (new_operation_requested_) {
@@ -123,17 +139,27 @@ void fluid::OperationServer::start() {
                         }
                     });
 
+            std::cout << graph.current_state_p << std::endl;
+
+
             current_operation_p_.reset();
         }
         // We don't have a current operation, so we just continue executing the last state.
         else {
+
+            status_publisher.status.current_operation = "none";
+
             if (last_state_p_) {
+
+                status_publisher.status.current_state = last_state_p_->identifier;
                 last_state_p_->perform([&]() -> bool {
                     // We abort the execution of the current state if there is a new operation.
                     return new_operation_requested_;
                 });
             }
         }
+
+        //status_publisher.publish();
 
         ros::spinOnce();
         rate.sleep();

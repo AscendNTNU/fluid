@@ -13,8 +13,7 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
-
-
+#include "../../include/core/fluid_fsm.h"
 
 bool fluid::InitState::hasFinishedExecution() {
     return armed;
@@ -33,13 +32,17 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     mavros_msgs::CommandBool arm_command;
     arm_command.request.value = true;
 
-    ROS_INFO_STREAM("Attempting to arm...");
+    ROS_FATAL_STREAM("Attempting to arm...");
 
     // Run until we achieve a connection with mavros
     while (ros::ok() && !state_setter.getCurrentState().connected) {
+        ROS_FATAL_STREAM("status publisher from init");
+        status_publisher.publish();
         ros::spinOnce();
         rate.sleep();
     }
+
+    status_publisher.status.linked_with_px4 = 1;
 
     //send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within px4
@@ -50,6 +53,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     // TODO: Evaluate numbers here
     for (int i = 100; ros::ok() && i > 0; --i) {
         position_target_publisher_p->publish(position_target);
+        status_publisher.publish();
         ros::spinOnce();
         rate.sleep();
     }
@@ -61,12 +65,16 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     while(ros::ok() && !hasFinishedExecution()) {
 
         state_setter.attemptToSetState([&](bool completed) {
+
             if(completed &&
                !state_setter.getCurrentState().armed &&
                (ros::Time::now() - last_request > ros::Duration(1.0/static_cast<double>(refresh_rate_)))) {
 
+                status_publisher.status.px4_mode = "offboard";
+
                 if(arming_client.call(arm_command) && arm_command.response.success){
                     ROS_INFO("Drone armed");
+                    status_publisher.status.armed = 1;
                     armed = true;
                 }
 
@@ -74,6 +82,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
             }
         });
 
+        status_publisher.publish();
         position_target_publisher_p->publish(position_target);
 
         ros::spinOnce();
