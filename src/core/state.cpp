@@ -9,15 +9,14 @@
 
 fluid::State::State(fluid::StateIdentifier identifier,
                     std::string pose_subscription_topic,
-                    std::shared_ptr<fluid::PosePublisher> position_target_publisher_p) : Identifiable(identifier) {
+                    std::shared_ptr<fluid::PosePublisher> position_target_publisher_p) : 
 
-    pose_subscriber_ = node_handle_.subscribe(pose_subscription_topic, 
-                                              Core::message_queue_size, 
-                                              &State::poseCallback, 
-                                              this);
-    
-    position_target_publisher_p = std::move(position_target_publisher_p);
-}
+					Identifiable(identifier),
+					pose_subscriber_(node_handle_.subscribe(pose_subscription_topic, 
+                                     Core::message_queue_size, 
+                                     &State::poseCallback, 
+                                     this)),
+                    position_target_publisher_p(std::move(position_target_publisher_p)) {}
 
 geometry_msgs::PoseStamped fluid::State::getCurrentPose() {
 	return current_pose_;
