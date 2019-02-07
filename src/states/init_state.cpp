@@ -28,7 +28,9 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     ros::Rate rate(Core::refresh_rate);
     ros::NodeHandle node_handle_;
 
-    fluid::MavrosStateSetter state_setter(1000, 1.0/static_cast<double>(Core::refresh_rate), "OFFBOARD");
+    fluid::MavrosStateSetter state_setter(Core::message_queue_size, 
+    									  1.0/static_cast<double>(Core::refresh_rate), 
+    									  "OFFBOARD");
     ros::ServiceClient arming_client = node_handle_.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
     mavros_msgs::CommandBool arm_command;
     arm_command.request.value = true;
@@ -49,7 +51,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     position_target.position.z = 0;
 
     // TODO: Evaluate numbers here
-    for (int i = 100; ros::ok() && i > 0; --i) {
+    for (int i = Core::refresh_rate*3; ros::ok() && i > 0; --i) {
         position_target_publisher_p->publish(position_target);
         fluid::Core::getStatusPublisherPtr()->publish();
         ros::spinOnce();
