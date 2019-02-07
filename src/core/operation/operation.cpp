@@ -8,27 +8,23 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
-
-fluid::StateGraph fluid::Operation::graph;
+#include "../../../include/actionlib/operation_server.h"
+#include "../../../include/core/fluid_fsm.h"
 
 void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) {
 
-    // The graph needs to be set up before use (loaded with the given states).
-    if (!graph.isConfigured()) {
-        graph.configure(refresh_rate_);
-    }
-
     // Check if it makes sense to carry out this operation given the current state.
     if (!validateOperationFromCurrentState(graph.current_state_p)) {
-        ROS_ERROR("Not valid operation from current state!");
+        ROS_FATAL_STREAM("Not valid operation from current state!");
         completionHandler(false);
         return;
     }
-
+    
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
-    std::vector<std::shared_ptr<State>> path = graph.getPathToEndState(graph.current_state_p->identifier,
-                                                                       destination_state_identifier_);
+    std::vector<std::shared_ptr<State>> path = graph.getPathToEndState(
+        graph.current_state_p->identifier,
+        destination_state_identifier_);
 
     if (path.size() == 0) {
         return;
@@ -54,6 +50,9 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
             state_p->position_target = position_target;
         }
 
+        status_publisher.status.current_state = state_p->identifier;
+        status_publisher.publish();
+
         graph.current_state_p = state_p;
         state_p->perform(shouldAbort);
 
@@ -71,6 +70,9 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
             // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
             // it to zero. 
             final_state_p->position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;   
+
+
+            status_publisher.status.current_state = final_state_p->identifier;
 
             transitionToState(final_state_p);
             completionHandler(false);
@@ -101,6 +103,6 @@ std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() {
     return graph.getStateWithIdentifier(final_state_identifier_);
 }
 
-std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() {
+std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() {    
     return graph.getStateWithIdentifier(graph.current_state_p->identifier);
 }

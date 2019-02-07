@@ -37,9 +37,6 @@ namespace fluid {
                                                                                 ///< to finish at a position hold
                                                                                 ///< state.
 
-        static StateGraph graph;                                    ///< Provides the states which the operation can
-                                                                    ///< consist of and how they are connected.
-
         const unsigned int refresh_rate_;
 
     public:

@@ -12,6 +12,7 @@
 #include <fluid_fsm/OperationGoal.h>
 #include <actionlib/server/simple_action_server.h>
 #include "core/operation/operation.h"
+#include "../../include/core/status_publisher.h"
 
 namespace fluid {
 
@@ -41,7 +42,6 @@ namespace fluid {
         const unsigned int refresh_rate_;                            ///< The rate at which the operation is running. 
 
     public:
-
 
         /**
          * Initializes the operation server.

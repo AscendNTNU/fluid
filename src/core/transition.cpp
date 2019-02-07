@@ -9,6 +9,7 @@
 #include "../../include/states/state_util.h"
 #include "../../include/core/transition.h"
 #include <algorithm>
+#include "../../include/core/fluid_fsm.h"
 
 void fluid::Transition::perform() {
 
@@ -30,13 +31,14 @@ void fluid::Transition::perform() {
             
         mavros_state_setter_.attemptToSetState([&](bool succeeded) {
             // State set succeeded, break from loop
-            //ROS_INFO_STREAM("Transitioning from " << source_state_p->identifier << " -> " << destination_state_p->identifier);
-            //ROS_INFO_STREAM("Attempt to set mode " << mode.c_str() << ", succeeded:" << succeeded);
             state_is_set = succeeded;
+            status_publisher.status.px4_mode = mode;
         });
 
         // Publish poses continuously so PX4 won't complain
         source_state_p->position_target_publisher_p->publish(source_state_p->position_target);
+
+        status_publisher.publish();
 
         ros::spinOnce();
         rate.sleep();
