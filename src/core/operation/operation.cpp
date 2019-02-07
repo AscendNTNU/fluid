@@ -13,10 +13,7 @@
 
 void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) {
 
-    // What the heck, this pointer is 0 here but has a value in the other scope.
-    std::cout << fluid::graph.current_state_p << std::endl;
-
-    /*// Check if it makes sense to carry out this operation given the current state.
+    // Check if it makes sense to carry out this operation given the current state.
     if (!validateOperationFromCurrentState(graph.current_state_p)) {
         ROS_FATAL_STREAM("Not valid operation from current state!");
         completionHandler(false);
@@ -54,7 +51,6 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         }
 
         status_publisher.status.current_state = state_p->identifier;
-        ROS_FATAL_STREAM("From operation.cpp: publisher is: ");
         status_publisher.publish();
 
         graph.current_state_p = state_p;
@@ -93,7 +89,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     final_state_p->position_target = position_target;
 
     transitionToState(final_state_p);
-    completionHandler(true);*/
+    completionHandler(true);
 }
 
 void fluid::Operation::transitionToState(std::shared_ptr<fluid::State> state_p) {

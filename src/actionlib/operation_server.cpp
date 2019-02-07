@@ -106,11 +106,6 @@ void fluid::OperationServer::start() {
 
             status_publisher.status.current_operation = current_operation_p_->identifier;
 
-            // TODO: pointers within graph gets dereferenced here, why?
-
-            std::cout << graph.current_state_p << std::endl;
-            // assert(graph.current_state_p.use_count() == 2);
-
             current_operation_p_->perform([&]() -> bool {
                         
                         // We abort current mission if there is a new operation.
@@ -138,9 +133,6 @@ void fluid::OperationServer::start() {
                             actionlib_action_server_.setAborted();
                         }
                     });
-
-            std::cout << graph.current_state_p << std::endl;
-
 
             current_operation_p_.reset();
         }

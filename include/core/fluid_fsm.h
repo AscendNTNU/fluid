@@ -6,10 +6,13 @@
 
 namespace fluid {
 
-	static StateGraph graph;                                    ///< Provides the states which the operation can
-        	                                                        ///< consist of and how they are connected.
+	// TODO: Can remove node handle, just initialize it every time
+	// TODO: Use static singleton pattern
+
+	extern StateGraph graph;                                 ///< Provides the states which the operation can
+        	                                                 ///< consist of and how they are connected.
 	
-	static fluid::StatusPublisher status_publisher; 			///< Interface for publishing status about the fsm.
+	extern fluid::StatusPublisher status_publisher; 		 ///< Interface for publishing status about the fsm.
 }
 
 #endif

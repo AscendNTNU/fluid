@@ -23,7 +23,6 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort) {
         tick();
 
         position_target_publisher_p->publish(position_target);
-        ROS_FATAL_STREAM("State publishing status");
         status_publisher.publish();
 
         ros::spinOnce();
