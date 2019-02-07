@@ -17,11 +17,7 @@ namespace fluid {
      */
     class StateGraph: public fluid::Graph {
     private:
-
-        ros::NodeHandlePtr node_handle_p;                      ///< Used for initializing states and their
-                                                               ///< respective ros pubilshers and subscribers.
-
-
+        
         bool is_configured_ = false;                            
 
     public:
@@ -31,19 +27,7 @@ namespace fluid {
         /**
          * Initializes the state graph.
          */
-        StateGraph() : Graph() {}
-
-        /**
-         * @return A flag which deteremines if the graph has been configured with the necessary states.
-         */
-        bool isConfigured();
-
-        /**
-         * Set ups the state graph with a set of states.
-         * 
-         * @param refresh_rate The refresh rate the states should be initialized to operate at.
-         */
-        void configure(unsigned int refresh_rate);
+        StateGraph();
 
         /**
          * Checks if the start state and the end state is connected using a breadth first search and
@@ -61,11 +45,6 @@ namespace fluid {
          * @return The state with the given identifier in the graph. Will return a nullptr if not found.
          */
         std::shared_ptr<fluid::State> getStateWithIdentifier(std::string identifier);
-
-        /**
-         * @return ROS node handle pointer, used when states need to do something specific with ROS.
-         */
-        ros::NodeHandlePtr getNodeHandlePtr();
     };
 }
 

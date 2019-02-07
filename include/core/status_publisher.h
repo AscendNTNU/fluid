@@ -16,6 +16,8 @@ namespace fluid {
 
 	private:
 		
+		ros::NodeHandle node_handle_;										///< Used to set up the publisher.
+
 		ros::Publisher publisher_p_;										///< Used to publish messages.
 
 	public:
@@ -26,18 +28,11 @@ namespace fluid {
 		/**
 		 * @brief      Initializes the status publisher.
 		 * 
-		 * The ros publisher isn't initialized in the constructor as this class is used as a static variable
-		 * and node handle pointers can't be initialized when this class will be. 
-		 */
-		StatusPublisher();
-
-		/**
-		 * @brief      Initializes the status publisher.
-		 *
-		 * @param[in]  node_handle_p       Used to intiailize the ros publisher.
+		 * Sets up the pose publisher.
+		 * 
 		 * @param[in]  message_queue_size  Amount of messages in the buffer.
 		 */
-		void initialize(ros::NodeHandlePtr node_handle_p, const unsigned int message_queue_size);
+		StatusPublisher(const unsigned int message_queue_size);
 
 		/**
 		 * @brief      Publishes the status on the topic.
