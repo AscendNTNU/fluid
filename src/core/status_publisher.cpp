@@ -1,5 +1,6 @@
 #include "../../include/core/status_publisher.h"
 #include <ascend_msgs/FluidFsmStatus.h>
+#include "../../include/core/core.h"
 
 fluid::StatusPublisher::StatusPublisher() {
     status.armed	     = 0;
@@ -7,11 +8,8 @@ fluid::StatusPublisher::StatusPublisher() {
     status.px4_mode	  = "none";
     status.current_operation = "none";
     status.current_state     = "none";
-}
 
-void fluid::StatusPublisher::initialize(ros::NodeHandlePtr node_handle_p, const unsigned int message_queue_size) {
-	publisher_p_ = node_handle_p->advertise<ascend_msgs::FluidFsmStatus>("fluid_fsm/status/", 
-														message_queue_size);
+    publisher_p_ = node_handle_.advertise<ascend_msgs::FluidFsmStatus>("fluid_fsm/status/", Core::message_queue_size);
 }
 
 void fluid::StatusPublisher::publish() {

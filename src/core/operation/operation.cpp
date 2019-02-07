@@ -3,18 +3,17 @@
 //
 
 #include "../../../include/core/operation/operation.h"
-#include <core/operation/operation.h>
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
 #include "../../../include/actionlib/operation_server.h"
-#include "../../../include/core/fluid_fsm.h"
+#include "../../../include/core/core.h"
 
 void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) {
 
     // Check if it makes sense to carry out this operation given the current state.
-    if (!validateOperationFromCurrentState(graph.current_state_p)) {
+    if (!validateOperationFromCurrentState(fluid::Core::getGraphPtr()->current_state_p)) {
         ROS_FATAL_STREAM("Not valid operation from current state!");
         completionHandler(false);
         return;
@@ -22,8 +21,8 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
-    std::vector<std::shared_ptr<State>> path = graph.getPathToEndState(
-        graph.current_state_p->identifier,
+    std::vector<std::shared_ptr<State>> path = fluid::Core::getGraphPtr()->getPathToEndState(
+        fluid::Core::getGraphPtr()->current_state_p->identifier,
         destination_state_identifier_);
 
     if (path.size() == 0) {
@@ -37,7 +36,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
     // This will also only fire for operations that consist of more than one state (every operation other than init).
     // And in that case we transition to the next state in the path after the start state.
-    if (graph.current_state_p->identifier != destination_state_identifier_) {
+    if (fluid::Core::getGraphPtr()->current_state_p->identifier != destination_state_identifier_) {
         transitionToState(path[1]);
     }
 
@@ -50,10 +49,10 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
             state_p->position_target = position_target;
         }
 
-        status_publisher.status.current_state = state_p->identifier;
-        status_publisher.publish();
+        fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
+        fluid::Core::getStatusPublisherPtr()->publish();
 
-        graph.current_state_p = state_p;
+        fluid::Core::getGraphPtr()->current_state_p = state_p;
         state_p->perform(shouldAbort);
 
         if (shouldAbort()) {
@@ -72,7 +71,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
             final_state_p->position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;   
 
 
-            status_publisher.status.current_state = final_state_p->identifier;
+            fluid::Core::getStatusPublisherPtr()->status.current_state = final_state_p->identifier;
 
             transitionToState(final_state_p);
             completionHandler(false);
@@ -93,16 +92,16 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 }
 
 void fluid::Operation::transitionToState(std::shared_ptr<fluid::State> state_p) {
-    fluid::Transition transition(graph.current_state_p, state_p, refresh_rate_);
+    fluid::Transition transition(fluid::Core::getGraphPtr()->current_state_p, state_p, refresh_rate_);
     transition.perform();
-    graph.current_state_p = state_p;
+    fluid::Core::getGraphPtr()->current_state_p = state_p;
 }
 
 
 std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() {
-    return graph.getStateWithIdentifier(final_state_identifier_);
+    return fluid::Core::getGraphPtr()->getStateWithIdentifier(final_state_identifier_);
 }
 
 std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() {    
-    return graph.getStateWithIdentifier(graph.current_state_p->identifier);
-}op
+    return fluid::Core::getGraphPtr()->getStateWithIdentifier(fluid::Core::getGraphPtr()->current_state_p->identifier);
+}

@@ -12,10 +12,47 @@
 #include "../../../include/states/hold_state.h"
 #include "../../../include/states/move_state.h"
 
+#include "../../../include/core/core.h"
+
 #include <iterator>
 #include <algorithm>
 #include <climits>
 #include <iostream>
+
+fluid::StateGraph::StateGraph() : Graph() {
+
+    // Set up the graph
+    std::shared_ptr<fluid::Identifiable> init_state = 
+    std::make_shared<fluid::InitState>(fluid::Core::refresh_rate);
+        
+    std::shared_ptr<fluid::Identifiable> idle_state = 
+    std::make_shared<fluid::IdleState>(fluid::Core::refresh_rate);
+        
+    std::shared_ptr<fluid::Identifiable> take_off_state = 
+    std::make_shared<fluid::TakeOffState>(fluid::Core::refresh_rate);
+        
+    std::shared_ptr<fluid::Identifiable> land_state = 
+    std::make_shared<fluid::LandState>(fluid::Core::refresh_rate);
+        
+    std::shared_ptr<fluid::Identifiable> hold_state = 
+    std::make_shared<fluid::HoldState>(fluid::Core::refresh_rate);
+        
+    std::shared_ptr<fluid::Identifiable> move_state = 
+    std::make_shared<fluid::MoveState>(fluid::Core::refresh_rate);
+
+    std::vector<fluid::Edge<std::shared_ptr<fluid::Identifiable>>> edges;
+
+    current_state_p = std::dynamic_pointer_cast<fluid::State>(init_state);
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(init_state, idle_state));
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(idle_state, take_off_state));
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(take_off_state, hold_state));
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(hold_state, move_state));
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(move_state, hold_state));
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(hold_state, land_state));
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(land_state, idle_state));
+
+    addEdges(edges);
+}
 
 std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(std::string start_state_identifier,
                                                                                 std::string end_state_identifier) {
@@ -95,39 +132,3 @@ std::shared_ptr<fluid::State> fluid::StateGraph::getStateWithIdentifier(std::str
 
     return nullptr;
 }
-
-bool fluid::StateGraph::isConfigured() {
-    return is_configured_;
-}
-
-void fluid::StateGraph::configure(unsigned int refresh_rate) {
-
-    node_handle_p = ros::NodeHandlePtr(new ros::NodeHandle);
-
-    std::shared_ptr<fluid::Identifiable> init_state = std::make_shared<fluid::InitState>(refresh_rate);
-    std::shared_ptr<fluid::Identifiable> idle_state = std::make_shared<fluid::IdleState>(refresh_rate);
-    std::shared_ptr<fluid::Identifiable> take_off_state = std::make_shared<fluid::TakeOffState>(refresh_rate);
-    std::shared_ptr<fluid::Identifiable> land_state = std::make_shared<fluid::LandState>(refresh_rate);
-    std::shared_ptr<fluid::Identifiable> hold_state = std::make_shared<fluid::HoldState>(refresh_rate);
-    std::shared_ptr<fluid::Identifiable> move_state = std::make_shared<fluid::MoveState>(refresh_rate);
-
-    std::vector<fluid::Edge<std::shared_ptr<fluid::Identifiable>>> edges;
-
-    current_state_p = std::dynamic_pointer_cast<fluid::State>(init_state);
-    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(init_state, idle_state));
-    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(idle_state, take_off_state));
-    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(take_off_state, hold_state));
-    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(hold_state, move_state));
-    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(move_state, hold_state));
-    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(hold_state, land_state));
-    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(land_state, idle_state));
-
-    addEdges(edges);
-
-    is_configured_ = true;
-}
-
-ros::NodeHandlePtr fluid::StateGraph::getNodeHandlePtr() {
-    return node_handle_p;
-}
-

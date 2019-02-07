@@ -15,7 +15,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <cmath>
-#include "../../include/core/fluid_fsm.h"
+#include "../../include/core/core.h"
 
 #include <assert.h>
 
@@ -75,13 +75,6 @@ void fluid::OperationServer::preemptCallback() {
 
 void fluid::OperationServer::start() {
 
-    // The graph needs to be set up before use (loaded with the given states).
-    if (!graph.isConfigured()) {
-        graph.configure(refresh_rate_);
-    }
-
-    status_publisher.initialize(ros::NodeHandlePtr(graph.getNodeHandlePtr()), 200);
-
     ros::Rate rate(refresh_rate_);
 
     // Main loop of Fluid FSM. This is where all the magic happens. If a new operaiton is requested, the 
@@ -100,7 +93,7 @@ void fluid::OperationServer::start() {
         // Execute the operation if there is any
         if (current_operation_p_) {
 
-            status_publisher.status.current_operation = current_operation_p_->identifier;
+            fluid::Core::getStatusPublisherPtr()->status.current_operation = current_operation_p_->identifier;
 
             current_operation_p_->perform(
 
@@ -128,11 +121,11 @@ void fluid::OperationServer::start() {
         // We don't have a current operation, so we just continue executing the last state.
         else {
 
-            status_publisher.status.current_operation = "none";
+            fluid::Core::getStatusPublisherPtr()->status.current_operation = "none";
 
             if (last_state_p_) {
 
-                status_publisher.status.current_state = last_state_p_->identifier;
+                fluid::Core::getStatusPublisherPtr()->status.current_state = last_state_p_->identifier;
                 last_state_p_->perform([&]() -> bool {
                     // We abort the execution of the current state if there is a new operation.
                     return new_operation_requested_;
@@ -140,7 +133,7 @@ void fluid::OperationServer::start() {
             }
         }
 
-        //status_publisher.publish();
+        fluid::Core::getStatusPublisherPtr()->publish();
 
         ros::spinOnce();
         rate.sleep();
