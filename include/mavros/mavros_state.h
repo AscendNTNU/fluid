@@ -6,6 +6,7 @@
 #define FLUID_FSM_MAVROS_STATE_H
 
 #include "../core/state.h"
+#include "../core/core.h"
 #include "../core/operation/operation.h"
 #include "mavros_pose_publisher.h"
 
@@ -27,13 +28,8 @@ namespace fluid {
          * Initiializes the mavros state with an identifier.
          * 
          * @param identifier The identifier of the state.
-         * @param refresh_rate The frequency the mavros state will operate at.
          */
-        MavrosState(fluid::StateIdentifier identifier, unsigned int refresh_rate) :
-        State(std::move(identifier),
-              "mavros/local_position/pose", 
-              std::make_shared<fluid::MavrosPosePublisher>(1000), 
-              refresh_rate) {}
+        MavrosState(fluid::StateIdentifier identifier);
     };
 }
 

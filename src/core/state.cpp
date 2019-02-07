@@ -5,6 +5,19 @@
 #include "../../include/core/state.h"
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
 #include "../../include/core/core.h"
+#include <utility>
+
+fluid::State::State(fluid::StateIdentifier identifier,
+                    std::string pose_subscription_topic,
+                    std::shared_ptr<fluid::PosePublisher> position_target_publisher_p) : Identifiable(identifier) {
+
+    pose_subscriber_ = node_handle_.subscribe(pose_subscription_topic, 
+                                              Core::message_queue_size, 
+                                              &State::poseCallback, 
+                                              this);
+    
+    position_target_publisher_p = std::move(position_target_publisher_p);
+}
 
 geometry_msgs::PoseStamped fluid::State::getCurrentPose() {
 	return current_pose_;
@@ -17,7 +30,7 @@ void fluid::State::poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
 
 void fluid::State::perform(std::function<bool(void)> shouldAbort) {
 
-    ros::Rate rate(refresh_rate_);
+    ros::Rate rate(Core::refresh_rate);
 
     while (ros::ok() && !hasFinishedExecution() && !shouldAbort()) {
         tick();

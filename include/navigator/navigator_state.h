@@ -6,6 +6,7 @@
 #define FLUID_FSM_NAVIGATOR_STATE_H
 
 #include "../core/state.h"
+#include "../core/core.h"
 #include "../core/operation/operation.h"
 #include "navigator_pose_publisher.h"
 
@@ -27,16 +28,10 @@ namespace fluid {
         /**
          * Initiializes the navigator state with an identifier.
          *
-         * @param node_handle_p Node handle to interact with ROS topics.
          * @param identifier The identifier of the state.
          */
         // TODO: Topic is temporary
-        // TODO: Implement refresh rate here
-        NavigatorState(fluid::OperationIdentifier identifier) :
-        State(std::move(identifier), 
-              "state_estimator_pose",
-              std::make_shared<fluid::NavigatorPosePublisher>("navigator_pose_topic", 1000), 
-              20) {}
+        NavigatorState(fluid::OperationIdentifier identifier);
     };
 }
 

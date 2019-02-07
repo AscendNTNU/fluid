@@ -48,16 +48,7 @@ namespace fluid {
          * @param update_interval       The time between each set mode call.
          * @param mode                  The mode to change to.
          */
-        MavrosStateSetter(unsigned int message_queue_size,
-                          double update_interval,
-                          const std::string mode) :
-        mode_(mode),
-        update_interval_(update_interval),
-        state_subscriber_(message_queue_size),
-        set_mode_client_(node_handle_.serviceClient<mavros_msgs::SetMode>("mavros/set_mode")) {
-            setMode(mode);
-        }
-
+        MavrosStateSetter(unsigned int message_queue_size, double update_interval, const std::string mode);
 
         /**
          * Updates the mavros message set mode with a new mode.

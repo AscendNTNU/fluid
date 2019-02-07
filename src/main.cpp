@@ -7,11 +7,16 @@
 #include <iostream>
 #include <memory>
 
+#include "../include/core/core.h"
+
 int main(int argc, char** argv) {
 
     ros::init(argc, argv, "fluid_fsm");
 
-    fluid::OperationServer operation_server(atoi(argv[1]));
+    fluid::Core::refresh_rate = atoi(argv[1]);
+    fluid::Core::message_queue_size = atoi(argv[2]);
+
+    fluid::OperationServer operation_server;
     operation_server.start();
     
     return 0;

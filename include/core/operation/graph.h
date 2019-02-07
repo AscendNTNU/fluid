@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include "../state.h"
 #include "edge.h"
 #include "../identifiable.h"
 

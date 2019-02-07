@@ -27,8 +27,7 @@ namespace fluid {
         /**
          * Initializes the land state.
          */
-        explicit LandState(unsigned int refresh_rate) :
-        MavrosState(fluid::state_identifiers::LAND, refresh_rate), land_detector_() {}
+        explicit LandState() : MavrosState(fluid::state_identifiers::LAND), land_detector_() {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

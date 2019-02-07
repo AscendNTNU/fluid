@@ -29,10 +29,8 @@ namespace fluid {
          * Sets up the navigator pose publisher so it can publish poses.
          *
          * @param node_handle_p Node handle to publish from.
-         * @param message_queue_size The size of the message buffer.
          */
-        NavigatorPosePublisher(std::string topic, unsigned int message_queue_size) :
-        local_position_publisher_(node_handle_.advertise<mavros_msgs::PositionTarget>(topic,message_queue_size)) {}
+        NavigatorPosePublisher(std::string topic);
 
         /**
          * Method overridden from interface.

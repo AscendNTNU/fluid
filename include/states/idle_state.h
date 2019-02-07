@@ -24,8 +24,7 @@ namespace fluid {
         /**
          * Initializes the idle state.
          */
-        explicit IdleState(unsigned int refresh_rate) :
-        MavrosState(fluid::state_identifiers::IDLE, refresh_rate) {}
+        explicit IdleState() : MavrosState(fluid::state_identifiers::IDLE) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

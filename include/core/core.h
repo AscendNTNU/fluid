@@ -1,4 +1,4 @@
-	#ifndef FLUID_FSM_CORE_H
+#ifndef FLUID_FSM_CORE_H
 #define FLUID_FSM_CORE_H
 
 #include "status_publisher.h"
@@ -21,20 +21,22 @@ namespace fluid {
 																			///< status about the fsm.
 		
 		static std::shared_ptr<fluid::StatusPublisher> status_publisher_p_; ///< Provides the states which the
-		                                                                 	///<  operation can consists
+		                                                                 	///< operation can consists
         	                                                 				///< of and how they are connected.
-
 	public: 
 
-		/**
-		 * The unified refresh rate across the state machine.
-		 */
-		static const unsigned int refresh_rate = 30;
+		static unsigned int refresh_rate;									///< The unified refresh rate across 
+																			///< the state machine.
+																			///< Specifies how fast the operation
+																			///< server and its underlying servies 
+																			///< will run. E.g. a refresh rate of 10
+																			///< hertz will make the states and
+																			///< transitions execute their logic every 
+																			///< 100 ms (in best case).
 
-		/**
-		 * The unified message queue size for the different ros components within the FSM.
-		 */
-		static const unsigned int message_queue_size = 1000;
+		static unsigned int message_queue_size;								///< The unified message queue size for 
+																			///< the different ros components within
+																			///< the FSM.
 
 		/**
 		 * @return     The shared singleton instance of the graph.

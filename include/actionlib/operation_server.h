@@ -39,25 +39,12 @@ namespace fluid {
         bool new_operation_requested_ = false;                       ///< Determines whether a new operation was
                                                                      ///< requested.
 
-        const unsigned int refresh_rate_;                            ///< The rate at which the operation is running. 
-
     public:
 
         /**
          * Initializes the operation server.
-         * 
-         * @param refresh_rate Specifies how fast the operation server and its underlying servies will run. E.g. a
-         *        refresh rate of 10 hertz will make the states and transitions execute their logic every 100 ms (in 
-         *        best case).
          */
-        OperationServer(unsigned int refresh_rate) : 
-        refresh_rate_(refresh_rate),
-        actionlib_action_server_(node_handle_, "fluid_fsm_operation", false) {
-            actionlib_action_server_.registerGoalCallback(boost::bind(&OperationServer::goalCallback, this));
-            actionlib_action_server_.registerPreemptCallback(boost::bind(&OperationServer::preemptCallback, this));
-
-            actionlib_action_server_.start();
-        }
+        OperationServer();
 
         /**
          * Gets fired when the operation server receives a new goal.

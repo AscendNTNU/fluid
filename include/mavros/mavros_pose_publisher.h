@@ -30,9 +30,7 @@ namespace fluid {
          *
          * @param message_queue_size The size of the message buffer.
          */
-        MavrosPosePublisher(unsigned int message_queue_size) :
-        local_position_publisher_(node_handle_.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local",
-                                                                                         message_queue_size)) {}
+        MavrosPosePublisher(unsigned int message_queue_size);
 
         /**
          * Method overridden from interface.

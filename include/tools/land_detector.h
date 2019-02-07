@@ -52,18 +52,8 @@ namespace fluid {
 	public:
 		/**
 		 * @brief      Initializes the land detector and sets up the necessary subscriptions.
-		 *
-		 * @param[in]  land_position  The position the drone should land at.
 		 */
-    	LandDetector() : 
-    	pose_subscriber_(node_handle_.subscribe("mavros/local_position/pose", 
-    											1000, 
-    											&LandDetector::poseCallback, 
-    											this)),
-    	velocity_subscriber_(node_handle_.subscribe("mavros/local_position/velocity",
-    												1000, 
-    												&LandDetector::velocityCallback,
-    												this)) {}
+    	LandDetector();
 
         /**
          * @brief      Determines if the drone has landed by checking the current position and the current

@@ -59,6 +59,29 @@ int main(int argc, char** argv) {
         wait_rate.sleep();
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     ROS_INFO("Completed initialization and take off");
 
     // Just for demonstration, this will make the drone move in straight lines to form a square. When the current move

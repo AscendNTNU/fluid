@@ -3,3 +3,9 @@
 //
 
 #include "../../include/mavros/mavros_state.h"
+
+
+fluid::MavrosState::MavrosState(fluid::StateIdentifier identifier) : 
+	State(std::move(identifier), 
+	"mavros/local_position/pose", 
+    std::make_shared<fluid::MavrosPosePublisher>(Core::message_queue_size)) {}

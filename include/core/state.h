@@ -2,7 +2,6 @@
 #ifndef FLUID_FSM_STATE_H
 #define FLUID_FSM_STATE_H
 
-#include <utility>
 #include <memory>
 #include <vector>
 #include <string>
@@ -21,8 +20,6 @@ namespace fluid {
      */
     class State: public Identifiable {
     protected:
-
-        const unsigned int refresh_rate_;                                       ///< Refresh rate for the ros loop.
 
         ros::NodeHandle node_handle_;                                           ///< Node handle for the mavros 
                                                                                 ///< pose publisher
@@ -53,17 +50,10 @@ namespace fluid {
          * @param identifier The identifier of the state.
          * @param pose_subscription_topic The topic to retrieve poses from. 
          * @param position_target_publisher_p Position targets publisher.
-         * @param refresh_rate Refresh rate of the logic within the state.
          */
-        State(  fluid::StateIdentifier identifier,
-                std::string pose_subscription_topic,
-                std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
-                unsigned int refresh_rate) : 
-
-                Identifiable(identifier),
-                refresh_rate_(refresh_rate), 
-                pose_subscriber_(node_handle_.subscribe(pose_subscription_topic, 1000, &State::poseCallback, this)),
-                position_target_publisher_p(std::move(position_target_publisher_p))  {}
+        State(fluid::StateIdentifier identifier,
+              std::string pose_subscription_topic,
+              std::shared_ptr<fluid::PosePublisher> position_target_publisher_p);
 
         /**
          * @brief      Returns the current pose, the last pose that the state estimation published on

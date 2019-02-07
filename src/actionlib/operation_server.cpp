@@ -19,6 +19,18 @@
 
 #include <assert.h>
 
+
+fluid::OperationServer::OperationServer() : actionlib_action_server_(node_handle_, 
+                                                                     "fluid_fsm_operation", 
+                                                                     false) {
+    
+    actionlib_action_server_.registerGoalCallback(boost::bind(&OperationServer::goalCallback, this));
+    actionlib_action_server_.registerPreemptCallback(boost::bind(&OperationServer::preemptCallback, this));
+
+    actionlib_action_server_.start();
+}
+
+
 void fluid::OperationServer::goalCallback() {
     // We accept the new goal and initialize variables for target pose and the type of operation identifier.
     // This is necessary in order to modify some of them before we initiate the different operations further down.
@@ -50,19 +62,19 @@ void fluid::OperationServer::goalCallback() {
         position_target.position.x = 0.0;
         position_target.position.y = 0.0;
         position_target.position.z = 0.0;
-        next_operation_p_ = std::make_shared<fluid::InitOperation>(position_target, refresh_rate_);
+        next_operation_p_ = std::make_shared<fluid::InitOperation>(position_target);
 
     }
     else if (operation_identifier.data == fluid::operation_identifiers::TAKE_OFF) {
-        next_operation_p_ = std::make_shared<fluid::TakeOffOperation>(position_target, refresh_rate_);
+        next_operation_p_ = std::make_shared<fluid::TakeOffOperation>(position_target);
 
     }
     else if (operation_identifier.data == fluid::operation_identifiers::MOVE) {
-        next_operation_p_ = std::make_shared<fluid::MoveOperation>(position_target, refresh_rate_);
+        next_operation_p_ = std::make_shared<fluid::MoveOperation>(position_target);
 
     }
     else if (operation_identifier.data == fluid::operation_identifiers::LAND) {
-        next_operation_p_ = std::make_shared<fluid::LandOperation>(position_target, refresh_rate_);
+        next_operation_p_ = std::make_shared<fluid::LandOperation>(position_target);
     }
 
     new_operation_requested_ = true;
@@ -75,7 +87,7 @@ void fluid::OperationServer::preemptCallback() {
 
 void fluid::OperationServer::start() {
 
-    ros::Rate rate(refresh_rate_);
+    ros::Rate rate(fluid::Core::refresh_rate);
 
     // Main loop of Fluid FSM. This is where all the magic happens. If a new operaiton is requested, the 
     // new operation requested flag is set and we set up the requirements for that operation to run. When it

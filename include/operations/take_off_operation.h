@@ -22,12 +22,7 @@ namespace fluid {
 
     public:
 
-        TakeOffOperation(mavros_msgs::PositionTarget position_target, unsigned int refresh_rate) :
-        Operation(fluid::operation_identifiers::TAKE_OFF,
-                  fluid::state_identifiers::TAKE_OFF,
-                  fluid::state_identifiers::HOLD,
-                  position_target, 
-                  refresh_rate) {}
+        TakeOffOperation(mavros_msgs::PositionTarget position_target);
 
         /**
          * Method overriden from superclass.

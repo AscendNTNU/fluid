@@ -25,10 +25,10 @@ void fluid::InitState::tick() {
 
 void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
-    ros::Rate rate(refresh_rate_);
+    ros::Rate rate(Core::refresh_rate);
     ros::NodeHandle node_handle_;
 
-    fluid::MavrosStateSetter state_setter(1000, 1.0/static_cast<double>(refresh_rate_), "OFFBOARD");
+    fluid::MavrosStateSetter state_setter(1000, 1.0/static_cast<double>(Core::refresh_rate), "OFFBOARD");
     ros::ServiceClient arming_client = node_handle_.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
     mavros_msgs::CommandBool arm_command;
     arm_command.request.value = true;
@@ -66,7 +66,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
             if(completed &&
                !state_setter.getCurrentState().armed &&
-               (ros::Time::now() - last_request > ros::Duration(1.0/static_cast<double>(refresh_rate_)))) {
+               (ros::Time::now() - last_request > ros::Duration(1.0/static_cast<double>(Core::refresh_rate)))) {
 
                 fluid::Core::getStatusPublisherPtr()->status.px4_mode = "offboard";
 

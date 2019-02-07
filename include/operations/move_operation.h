@@ -22,13 +22,8 @@ namespace fluid {
 
     public:
 
-        MoveOperation(mavros_msgs::PositionTarget position_target, unsigned int refresh_rate) :
-        Operation(fluid::operation_identifiers::MOVE,
-                  fluid::state_identifiers::MOVE,
-                  fluid::state_identifiers::HOLD,
-                  position_target,
-                  refresh_rate) {}
-
+        MoveOperation(mavros_msgs::PositionTarget position_target);
+        
         /**
          * Method overriden from superclass.
          */

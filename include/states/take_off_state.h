@@ -17,10 +17,9 @@ namespace fluid {
     class TakeOffState: public MavrosState {
     public:
 
-        /** Initializes the take off state with a pose.
+        /** Initializes the take off state.
          */
-        explicit TakeOffState(unsigned int refresh_rate) :
-        MavrosState(fluid::state_identifiers::TAKE_OFF, refresh_rate) {}
+        explicit TakeOffState() : MavrosState(fluid::state_identifiers::TAKE_OFF) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

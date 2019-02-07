@@ -22,12 +22,7 @@ namespace fluid {
 
     public:
 
-        InitOperation(mavros_msgs::PositionTarget position_target, unsigned int refresh_rate) :
-        Operation(fluid::operation_identifiers::INIT,
-                  fluid::state_identifiers::INIT,
-                  fluid::state_identifiers::IDLE,
-                  position_target,
-                  refresh_rate) {}
+        InitOperation(mavros_msgs::PositionTarget position_target);
 
         /**
          * Method overriden from superclass.

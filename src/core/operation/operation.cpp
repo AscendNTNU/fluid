@@ -10,6 +10,15 @@
 #include "../../../include/actionlib/operation_server.h"
 #include "../../../include/core/core.h"
 
+fluid::Operation::Operation(OperationIdentifier identifier,
+                            std::string destination_state_identifier,
+                            std::string final_state_identifier,
+                            mavros_msgs::PositionTarget position_target) :
+                            identifier(std::move(identifier)),
+                            destination_state_identifier_(std::move(destination_state_identifier)),
+                            final_state_identifier_(std::move(final_state_identifier)),
+                            position_target(position_target) {}
+
 void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) {
 
     // Check if it makes sense to carry out this operation given the current state.
@@ -92,7 +101,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 }
 
 void fluid::Operation::transitionToState(std::shared_ptr<fluid::State> state_p) {
-    fluid::Transition transition(fluid::Core::getGraphPtr()->current_state_p, state_p, refresh_rate_);
+    fluid::Transition transition(fluid::Core::getGraphPtr()->current_state_p, state_p);
     transition.perform();
     fluid::Core::getGraphPtr()->current_state_p = state_p;
 }

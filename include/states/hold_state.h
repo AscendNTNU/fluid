@@ -22,8 +22,7 @@ namespace fluid {
         /**
          * Initializes the hold state.
          */
-        explicit HoldState(unsigned int refresh_rate) :
-        MavrosState(fluid::state_identifiers::HOLD, refresh_rate) {}
+        explicit HoldState() : MavrosState(fluid::state_identifiers::HOLD) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

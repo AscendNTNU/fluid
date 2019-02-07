@@ -11,6 +11,12 @@
 #include <algorithm>
 #include "../../include/core/core.h"
 
+fluid::Transition::Transition(std::shared_ptr<State> source_state_p, std::shared_ptr<State> destination_state_p) :
+                   
+    mavros_state_setter_(Core::message_queue_size, 1.0/static_cast<double>(Core::refresh_rate), "OFFBOARD"),
+    source_state_p(std::move(source_state_p)),
+    destination_state_p(std::move(destination_state_p)) {}
+
 void fluid::Transition::perform() {
 
     // The source state is the same as the destination state, we're done here!
@@ -18,7 +24,7 @@ void fluid::Transition::perform() {
         return;
     }
 
-    ros::Rate rate(refresh_rate_);
+    ros::Rate rate(Core::refresh_rate);
 
     // Get the px4 mode for the state we want to transition to and set that mode in our state setter
     std::string mode = fluid::StateUtil::px4ModeForStateIdentifier(destination_state_p->identifier);

@@ -1,8 +1,8 @@
 #include "../../include/core/core.h"
 
 
-const unsigned int fluid::Core::refresh_rate;
-const unsigned int fluid::Core::message_queue_size;
+unsigned int fluid::Core::refresh_rate = 30;
+unsigned int fluid::Core::message_queue_size = 1000;
 
 std::shared_ptr<fluid::StateGraph> fluid::Core::graph_p_;
 std::shared_ptr<fluid::StatusPublisher> fluid::Core::status_publisher_p_;

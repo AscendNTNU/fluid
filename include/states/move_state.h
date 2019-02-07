@@ -21,8 +21,7 @@ namespace fluid {
 
         /** Initializes the move state.
          */
-        explicit MoveState(unsigned int refresh_rate) :
-        MavrosState(fluid::state_identifiers::MOVE, refresh_rate) {}
+        explicit MoveState() : MavrosState(fluid::state_identifiers::MOVE) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

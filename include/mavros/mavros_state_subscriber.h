@@ -38,14 +38,8 @@ namespace fluid {
 
         /**
          * Sets up the mavros state subscriber so it can listen to state changes on the pixhawk.
-         *
-         * @param message_queue_size The size of the message buffer.
          */
-        MavrosStateSubscriber(unsigned int message_queue_size) :
-        state_subscriber(node_handle_.subscribe<mavros_msgs::State>("mavros/state",
-                                                                    message_queue_size,
-                                                                    &MavrosStateSubscriber::state_callback,
-                                                                    this)) {}
+        MavrosStateSubscriber();
 
         /**
          * @return The current state within PX4.
