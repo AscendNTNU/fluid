@@ -20,23 +20,19 @@ namespace fluid {
      * \brief Encapsulates a state which publishes poses through mavros.
      */
     class MavrosState: public State {
-
+        
     public:
 
         /**
          * Initiializes the mavros state with an identifier.
-         *
-         * @param node_handle_p Node handle to interact with ROS topics.
+         * 
          * @param identifier The identifier of the state.
          * @param refresh_rate The frequency the mavros state will operate at.
          */
-        MavrosState(ros::NodeHandlePtr node_handle_p, 
-                    fluid::OperationIdentifier identifier,
-                    unsigned int refresh_rate) :
-        State(node_handle_p,
-              std::move(identifier),
+        MavrosState(fluid::StateIdentifier identifier, unsigned int refresh_rate) :
+        State(std::move(identifier),
               "mavros/local_position/pose", 
-              std::make_shared<fluid::MavrosPosePublisher>(node_handle_p, 1000), 
+              std::make_shared<fluid::MavrosPosePublisher>(1000), 
               refresh_rate) {}
     };
 }

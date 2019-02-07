@@ -93,7 +93,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 }
 
 void fluid::Operation::transitionToState(std::shared_ptr<fluid::State> state_p) {
-    fluid::Transition transition(graph.getNodeHandlePtr(), graph.current_state_p, state_p, refresh_rate_);
+    fluid::Transition transition(graph.current_state_p, state_p, refresh_rate_);
     transition.perform();
     graph.current_state_p = state_p;
 }
@@ -105,4 +105,4 @@ std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() {
 
 std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() {    
     return graph.getStateWithIdentifier(graph.current_state_p->identifier);
-}
+}op

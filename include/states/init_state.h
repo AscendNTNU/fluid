@@ -26,8 +26,8 @@ namespace fluid {
         
         /** Initializes the init state.
          */
-        explicit InitState(ros::NodeHandlePtr node_handle_p, unsigned int refresh_rate) :
-        MavrosState(node_handle_p, fluid::state_identifiers::INIT, refresh_rate) {}
+        explicit InitState(unsigned int refresh_rate) :
+        MavrosState(fluid::state_identifiers::INIT, refresh_rate) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

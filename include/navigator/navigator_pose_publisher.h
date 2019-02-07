@@ -19,6 +19,8 @@ namespace fluid {
     class NavigatorPosePublisher: public PosePublisher {
     private:
 
+        ros::NodeHandle node_handle_;                           ///< Used to set up the publisher.
+
         ros::Publisher local_position_publisher_;               ///< Ros publisher which publishes the poses
 
     public:
@@ -29,8 +31,8 @@ namespace fluid {
          * @param node_handle_p Node handle to publish from.
          * @param message_queue_size The size of the message buffer.
          */
-        NavigatorPosePublisher(ros::NodeHandlePtr node_handle_p, std::string topic, unsigned int message_queue_size) :
-        local_position_publisher_(node_handle_p->advertise<mavros_msgs::PositionTarget>(topic,message_queue_size)) {}
+        NavigatorPosePublisher(std::string topic, unsigned int message_queue_size) :
+        local_position_publisher_(node_handle_.advertise<mavros_msgs::PositionTarget>(topic,message_queue_size)) {}
 
         /**
          * Method overridden from interface.

@@ -104,12 +104,12 @@ void fluid::StateGraph::configure(unsigned int refresh_rate) {
 
     node_handle_p = ros::NodeHandlePtr(new ros::NodeHandle);
 
-    std::shared_ptr<fluid::Identifiable> init_state = std::make_shared<fluid::InitState>(node_handle_p, refresh_rate);
-    std::shared_ptr<fluid::Identifiable> idle_state = std::make_shared<fluid::IdleState>(node_handle_p, refresh_rate);
-    std::shared_ptr<fluid::Identifiable> take_off_state = std::make_shared<fluid::TakeOffState>(node_handle_p, refresh_rate);
-    std::shared_ptr<fluid::Identifiable> land_state = std::make_shared<fluid::LandState>(node_handle_p, refresh_rate);
-    std::shared_ptr<fluid::Identifiable> hold_state = std::make_shared<fluid::HoldState>(node_handle_p, refresh_rate);
-    std::shared_ptr<fluid::Identifiable> move_state = std::make_shared<fluid::MoveState>(node_handle_p, refresh_rate);
+    std::shared_ptr<fluid::Identifiable> init_state = std::make_shared<fluid::InitState>(refresh_rate);
+    std::shared_ptr<fluid::Identifiable> idle_state = std::make_shared<fluid::IdleState>(refresh_rate);
+    std::shared_ptr<fluid::Identifiable> take_off_state = std::make_shared<fluid::TakeOffState>(refresh_rate);
+    std::shared_ptr<fluid::Identifiable> land_state = std::make_shared<fluid::LandState>(refresh_rate);
+    std::shared_ptr<fluid::Identifiable> hold_state = std::make_shared<fluid::HoldState>(refresh_rate);
+    std::shared_ptr<fluid::Identifiable> move_state = std::make_shared<fluid::MoveState>(refresh_rate);
 
     std::vector<fluid::Edge<std::shared_ptr<fluid::Identifiable>>> edges;
 

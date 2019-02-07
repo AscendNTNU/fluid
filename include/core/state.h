@@ -24,7 +24,7 @@ namespace fluid {
 
         const unsigned int refresh_rate_;                                       ///< Refresh rate for the ros loop.
 
-        ros::NodeHandlePtr node_handle_p;                                       ///< Node handle for the mavros 
+        ros::NodeHandle node_handle_;                                           ///< Node handle for the mavros 
                                                                                 ///< pose publisher
 
 
@@ -50,23 +50,19 @@ namespace fluid {
         /**
          * Sets up the state and the respective publisher and subscriber.
          *
-         * @param node_handle_p Used for setting up the pose subscription.
          * @param identifier The identifier of the state.
          * @param pose_subscription_topic The topic to retrieve poses from. 
          * @param position_target_publisher_p Position targets publisher.
          * @param refresh_rate Refresh rate of the logic within the state.
          */
-        State(  ros::NodeHandlePtr node_handle_p,
-                fluid::StateIdentifier identifier,
+        State(  fluid::StateIdentifier identifier,
                 std::string pose_subscription_topic,
                 std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
                 unsigned int refresh_rate) : 
 
                 Identifiable(identifier),
-
-                node_handle_p(node_handle_p), 
                 refresh_rate_(refresh_rate), 
-                pose_subscriber_(node_handle_p->subscribe(pose_subscription_topic, 1000, &State::poseCallback, this)),
+                pose_subscriber_(node_handle_.subscribe(pose_subscription_topic, 1000, &State::poseCallback, this)),
                 position_target_publisher_p(std::move(position_target_publisher_p))  {}
 
         /**

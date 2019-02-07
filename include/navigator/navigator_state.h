@@ -21,6 +21,7 @@ namespace fluid {
      * \brief Encapsulates a state which publishes poses through the navigator interface.
      */
     class NavigatorState: public State {
+
     public:
 
         /**
@@ -30,11 +31,11 @@ namespace fluid {
          * @param identifier The identifier of the state.
          */
         // TODO: Topic is temporary
-        NavigatorState(ros::NodeHandlePtr node_handle_p, fluid::OperationIdentifier identifier) :
-        State(node_handle_p,
-              std::move(identifier), 
+        // TODO: Implement refresh rate here
+        NavigatorState(fluid::OperationIdentifier identifier) :
+        State(std::move(identifier), 
               "state_estimator_pose",
-              std::make_shared<fluid::NavigatorPosePublisher>(node_handle_p, "navigator_pose_topic", 1000), 
+              std::make_shared<fluid::NavigatorPosePublisher>("navigator_pose_topic", 1000), 
               20) {}
     };
 }
