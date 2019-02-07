@@ -66,8 +66,6 @@ void fluid::OperationServer::goalCallback() {
     }
 
     new_operation_requested_ = true;
-
-    ROS_INFO_STREAM("New operation requested: " << operation_identifier.data.c_str());
 }
 
 void fluid::OperationServer::preemptCallback() {
@@ -76,8 +74,6 @@ void fluid::OperationServer::preemptCallback() {
 }
 
 void fluid::OperationServer::start() {
-
-    ROS_INFO("Operation server running and listening.");
 
     // The graph needs to be set up before use (loaded with the given states).
     if (!graph.isConfigured()) {
@@ -106,33 +102,26 @@ void fluid::OperationServer::start() {
 
             status_publisher.status.current_operation = current_operation_p_->identifier;
 
-            current_operation_p_->perform([&]() -> bool {
-                        
-                        // We abort current mission if there is a new operation.
-                        if (new_operation_requested_) {
-                            ROS_INFO_STREAM("Aborting current operation: " << 
-                                            current_operation_p_->identifier.c_str());
-                        }
+            current_operation_p_->perform(
 
-                        return new_operation_requested_;
-                    },
+                [&]() -> bool { return new_operation_requested_;},
 
-                    [&](bool completed) {
-                        // We completed the operation and want to end at the final state of the operation (e.g. hold)
-                        // state for move. One can think of this step as making sure that the state machine is at a
-                        // state where it's easy to execute a new operation.
-                        last_state_p_ = current_operation_p_->getFinalStatePtr();
+                [&](bool completed) {
+                    // We completed the operation and want to end at the final state of the operation (e.g. hold)
+                    // state for move. One can think of this step as making sure that the state machine is at a
+                    // state where it's easy to execute a new operation.
+                    last_state_p_ = current_operation_p_->getFinalStatePtr();
 
 
-                        // Will notify the operation client what the outcome of the operation was. This will end up
-                        // calling the callback that the operation client set up for completion.
-                        if (completed) {
-                            actionlib_action_server_.setSucceeded();
-                        }
-                        else {
-                            actionlib_action_server_.setAborted();
-                        }
-                    });
+                    // Will notify the operation client what the outcome of the operation was. This will end up
+                    // calling the callback that the operation client set up for completion.
+                    if (completed) {
+                        actionlib_action_server_.setSucceeded();
+                    }
+                    else {
+                        actionlib_action_server_.setAborted();
+                    }
+                });
 
             current_operation_p_.reset();
         }

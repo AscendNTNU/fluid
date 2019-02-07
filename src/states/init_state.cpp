@@ -71,7 +71,6 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
                 status_publisher.status.px4_mode = "offboard";
 
                 if(arming_client.call(arm_command) && arm_command.response.success){
-                    ROS_INFO("Drone armed");
                     status_publisher.status.armed = 1;
                     armed = true;
                 }
