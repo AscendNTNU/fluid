@@ -17,7 +17,7 @@ namespace fluid {
 		 * The values of the boundry.
 		 */
 		double x, y, z;
-	}
+	};
 
 	class Core {
 
