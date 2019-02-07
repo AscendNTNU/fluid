@@ -6,13 +6,15 @@
 #include "../../include/core/core.h"
 
 fluid::MavrosStateSubscriber::MavrosStateSubscriber() {
-	node_handle_.subscribe<mavros_msgs::State>("mavros/state",
-                                               Core::message_queue_size,
-                                               &MavrosStateSubscriber::state_callback,
-											   this);
+
+	state_subscriber = node_handle_.subscribe<mavros_msgs::State>("mavros/state",
+					                                              Core::message_queue_size,
+					                                              &MavrosStateSubscriber::state_callback,
+																  this);
 }
 
 void fluid::MavrosStateSubscriber::state_callback(const mavros_msgs::State::ConstPtr& msg) {
+    
     current_state = *msg;
 }
 
