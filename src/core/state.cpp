@@ -4,7 +4,7 @@
 
 #include "../../include/core/state.h"
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
-#include "../../include/core/fluid_fsm.h"
+#include "../../include/core/core.h"
 
 geometry_msgs::PoseStamped fluid::State::getCurrentPose() {
 	return current_pose_;
@@ -23,7 +23,7 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort) {
         tick();
 
         position_target_publisher_p->publish(position_target);
-        status_publisher.publish();
+        fluid::Core::getStatusPublisherPtr()->publish();
 
         ros::spinOnce();
         rate.sleep();

@@ -26,13 +26,10 @@ namespace fluid {
 
 
 		/**
-		 * @brief      Initializes the status publisher.
-		 * 
-		 * Sets up the pose publisher.
-		 * 
-		 * @param[in]  message_queue_size  Amount of messages in the buffer.
+		 * @brief      The status publisher is not set up here as it is used as a static variable and the
+		 * 			   ros node handle will complain if it's initialized before ros::init. 
 		 */
-		StatusPublisher(const unsigned int message_queue_size);
+		StatusPublisher();
 
 		/**
 		 * @brief      Publishes the status on the topic.

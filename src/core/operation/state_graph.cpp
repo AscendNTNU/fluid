@@ -12,20 +12,33 @@
 #include "../../../include/states/hold_state.h"
 #include "../../../include/states/move_state.h"
 
+#include "../../../include/core/core.h"
+
 #include <iterator>
 #include <algorithm>
 #include <climits>
 #include <iostream>
 
+fluid::StateGraph::StateGraph() : Graph() {
 
-StateGraph::StateGraph() : Graph() {
-
-    std::shared_ptr<fluid::Identifiable> init_state = std::make_shared<fluid::InitState>(refresh_rate);
-    std::shared_ptr<fluid::Identifiable> idle_state = std::make_shared<fluid::IdleState>(refresh_rate);
-    std::shared_ptr<fluid::Identifiable> take_off_state = std::make_shared<fluid::TakeOffState>(refresh_rate);
-    std::shared_ptr<fluid::Identifiable> land_state = std::make_shared<fluid::LandState>(refresh_rate);
-    std::shared_ptr<fluid::Identifiable> hold_state = std::make_shared<fluid::HoldState>(refresh_rate);
-    std::shared_ptr<fluid::Identifiable> move_state = std::make_shared<fluid::MoveState>(refresh_rate);
+    // Set up the graph
+    std::shared_ptr<fluid::Identifiable> init_state = 
+    std::make_shared<fluid::InitState>(fluid::Core::refresh_rate);
+        
+    std::shared_ptr<fluid::Identifiable> idle_state = 
+    std::make_shared<fluid::IdleState>(fluid::Core::refresh_rate);
+        
+    std::shared_ptr<fluid::Identifiable> take_off_state = 
+    std::make_shared<fluid::TakeOffState>(fluid::Core::refresh_rate);
+        
+    std::shared_ptr<fluid::Identifiable> land_state = 
+    std::make_shared<fluid::LandState>(fluid::Core::refresh_rate);
+        
+    std::shared_ptr<fluid::Identifiable> hold_state = 
+    std::make_shared<fluid::HoldState>(fluid::Core::refresh_rate);
+        
+    std::shared_ptr<fluid::Identifiable> move_state = 
+    std::make_shared<fluid::MoveState>(fluid::Core::refresh_rate);
 
     std::vector<fluid::Edge<std::shared_ptr<fluid::Identifiable>>> edges;
 

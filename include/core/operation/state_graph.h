@@ -16,16 +16,13 @@ namespace fluid {
      *  \brief Represents a graph with states.
      */
     class StateGraph: public fluid::Graph {
-    private:
-        
-        bool is_configured_ = false;                            
 
     public:
 
-        std::shared_ptr<State> current_state_p;                ///< The current state of the state graph.
+        std::shared_ptr<fluid::State> current_state_p;            ///< The current state of the state graph.
 
         /**
-         * Initializes the state graph.
+         * @brief      Sets up the graph with the respective states.
          */
         StateGraph();
 
