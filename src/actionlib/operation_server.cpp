@@ -99,7 +99,6 @@ void fluid::OperationServer::goalCallback() {
 }
 
 void fluid::OperationServer::preemptCallback() {
-    ROS_INFO("%s: Preempted", current_operation_p_->identifier.c_str());
     actionlib_action_server_.setPreempted();
 }
 
