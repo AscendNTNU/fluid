@@ -36,11 +36,11 @@ pipeline {
                 sh "docker build -t ${env.JOB_NAME}:${env.GIT_COMMIT} .".toLowerCase().replace("%2f", "/")
             }
         }
-        stage('Unit Tests') {
-            steps {
-                sh "docker run ${env.JOB_NAME}:${env.GIT_COMMIT} /ros_entrypoint.sh tests".toLowerCase().replace("%2f", "/")
-            }
-        }
+        //stage('Unit Tests') {
+        //    steps {
+        //        sh "docker run ${env.JOB_NAME}:${env.GIT_COMMIT} /ros_entrypoint.sh tests".toLowerCase().replace("%2f", "/")
+        //    }
+        //}
     }
     post {
         success {
