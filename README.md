@@ -2,7 +2,7 @@
 
 ## Run instructions for gazebo simulator
 
-Make sure you have mavros installed and PX4 and gazebo built 
+Make sure you have mavros installed and PX4 and gazebo built. You also need ascend_msgs.
 
 1. Clone fluid into your catkin workspace in the src-folder.
 2. Run `source devel/setup.bash` and `catkin build` at root of the catkin workspace.
