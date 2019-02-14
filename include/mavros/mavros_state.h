@@ -6,14 +6,6 @@
 #define FLUID_FSM_MAVROS_STATE_H
 
 #include "../core/state.h"
-#include "../core/core.h"
-#include "../core/operation/operation.h"
-#include "mavros_pose_publisher.h"
-
-#include <memory>
-#include <utility>
-
-#include <ros/ros.h>
 
 namespace fluid {
     /**
@@ -28,8 +20,9 @@ namespace fluid {
          * Initiializes the mavros state with an identifier.
          * 
          * @param identifier The identifier of the state.
+         * @param px4_mode The mode this mavros state represents within px4.
          */
-        MavrosState(fluid::StateIdentifier identifier);
+        MavrosState(fluid::StateIdentifier identifier, std::string px4_mode);
     };
 }
 

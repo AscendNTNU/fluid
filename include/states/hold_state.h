@@ -5,8 +5,6 @@
 #ifndef FLUID_FSM_HOLD_STATE_H
 #define FLUID_FSM_HOLD_STATE_H
 
-#include <ros/ros.h>
-#include "../core/state.h"
 #include "../mavros/mavros_state.h"
 #include "state_defines.h"
 
@@ -22,7 +20,7 @@ namespace fluid {
         /**
          * Initializes the hold state.
          */
-        explicit HoldState() : MavrosState(fluid::state_identifiers::HOLD) {}
+        explicit HoldState() : MavrosState(fluid::StateIdentifiers::HOLD, fluid::PX4::OFFBOARD) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

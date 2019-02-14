@@ -21,7 +21,7 @@ namespace fluid {
 
         /** Initializes the move state.
          */
-        explicit MoveState() : MavrosState(fluid::state_identifiers::MOVE) {}
+        explicit MoveState() : MavrosState(fluid::StateIdentifiers::MOVE, fluid::PX4::OFFBOARD) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

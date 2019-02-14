@@ -9,8 +9,6 @@
 #include "state_defines.h"
 #include "../tools/land_detector.h"
 
-#include <ros/ros.h>
-
 namespace fluid {
 
     /** \class LandState
@@ -27,7 +25,7 @@ namespace fluid {
         /**
          * Initializes the land state.
          */
-        explicit LandState() : MavrosState(fluid::state_identifiers::LAND), land_detector_() {}
+        explicit LandState() : MavrosState(fluid::StateIdentifiers::LAND, fluid::PX4::LAND), land_detector_() {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
