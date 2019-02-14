@@ -52,16 +52,25 @@ int main(int argc, char** argv) {
 
     fluid::OperationClient move_operation_client(5);
 
-    ros::Rate rate(30);
+    ros::Rate rate(20);
+
+    auto reference = std::chrono::high_resolution_clock::now();
+    const int radius = 2.5;
+
+    double time = 0.0;
 
     while (ros::ok()) {
 
-        pose.position.y += 0.01;
+        pose.position.y = radius * sin(time / 2000.0);
+        pose.position.x = radius * cos(time / 2000.0);
         pose.position.z = height;
+
         move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [](bool completed) {});
 
         ros::spinOnce();
         rate.sleep();
+
+        time += static_cast<double>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - reference).count());
     }
 
     return 0;
