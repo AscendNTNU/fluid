@@ -2,22 +2,24 @@
 // Created by simengangstad on 08.11.18.
 //
 
-#include "../../include/actionlib/operation_server.h"
-#include "../../include/operations/operation_defines.h"
-#include "operations/init_operation.h"
-#include "operations/move_operation.h"
-#include "operations/land_operation.h"
-#include "operations/take_off_operation.h"
 #include <mavros_msgs/PositionTarget.h>
 #include <std_msgs/String.h>
 #include <fluid_fsm/OperationGoal.h>
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
-#include <cmath>
-#include "../../include/core/core.h"
 
+#include <cmath>
 #include <assert.h>
+#include <algorithm>
+
+#include "../../include/actionlib/operation_server.h"
+#include "../../include/operations/operation_defines.h"
+#include "operations/init_operation.h"
+#include "operations/move_operation.h"
+#include "operations/land_operation.h"
+#include "operations/take_off_operation.h"
+#include "../../include/core/core.h"
 
 
 fluid::OperationServer::OperationServer() : actionlib_action_server_(node_handle_, 
@@ -40,7 +42,23 @@ void fluid::OperationServer::goalCallback() {
     geometry_msgs::Pose target_pose = goal->target_pose;
     std_msgs::String operation_identifier = goal->type;
 
+    double boundryX, boundryY, boundryZ = 0.0;
 
+    node_handle_.getParam("boundryX", boundryX);
+    node_handle_.getParam("boundryY", boundryY);
+    node_handle_.getParam("boundryZ", boundryZ);
+
+    // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
+    // -boundry and +boundry (a boundig box where boundry is the half length).
+    if (boundryX != 0) target_pose.position.x = std::max(-boundryX, std::min(target_pose.position.x, boundryX));
+    if (boundryY != 0) target_pose.position.y = std::max(-boundryY, std::min(target_pose.position.y, boundryY));
+    if (boundryZ != 0) target_pose.position.z = std::max(-boundryZ, std::min(target_pose.position.z, boundryZ));
+
+    // Update the status with the target pose
+    Core::getStatusPublisherPtr()->status.target_pose_x = target_pose.position.x;
+    Core::getStatusPublisherPtr()->status.target_pose_y = target_pose.position.y;
+    Core::getStatusPublisherPtr()->status.target_pose_z = target_pose.position.z;
+    
     // The goal/request is sent with a geometry_pose, so we have to convert to position_target for mavros.
     mavros_msgs::PositionTarget position_target;
     position_target.position = target_pose.position;
@@ -109,7 +127,7 @@ void fluid::OperationServer::start() {
 
             current_operation_p_->perform(
 
-                [&]() -> bool { return new_operation_requested_;},
+                [&]() -> bool { return new_operation_requested_; },
 
                 [&](bool completed) {
                     // We completed the operation and want to end at the final state of the operation (e.g. hold)
