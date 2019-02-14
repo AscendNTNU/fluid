@@ -2,11 +2,14 @@
 // Created by simengangstad on 04.10.18.
 //
 
-#include "../../../include/core/operation/operation.h"
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
+
+#include <assert.h>
+
+#include "../../../include/core/operation/operation.h"
 #include "../../../include/actionlib/operation_server.h"
 #include "../../../include/core/core.h"
 
@@ -73,12 +76,11 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
             tf2::Quaternion tf2Quat(poseQuat.x, poseQuat.y, poseQuat.z, poseQuat.w);
             double roll, pitch, yaw;
             tf2::Matrix3x3(tf2Quat).getRPY(roll, pitch, yaw);
-    
+
             final_state_p->position_target.position = state_p->getCurrentPose().pose.position;
             // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
             // it to zero. 
-            final_state_p->position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;   
-
+            final_state_p->position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;
 
             fluid::Core::getStatusPublisherPtr()->status.current_state = final_state_p->identifier;
 
