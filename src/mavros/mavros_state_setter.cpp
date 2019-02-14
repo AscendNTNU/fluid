@@ -4,6 +4,19 @@
 
 #include "../../include/mavros/mavros_state_setter.h"
 
+
+fluid::MavrosStateSetter::MavrosStateSetter(
+    unsigned int message_queue_size,
+    double update_interval,
+    const std::string mode) :
+        
+    mode_(mode),
+    update_interval_(update_interval),
+    set_mode_client_(node_handle_.serviceClient<mavros_msgs::SetMode>("mavros/set_mode")) {
+        
+        setMode(mode);
+}
+
 void fluid::MavrosStateSetter::setMode(std::string mode) {
     mode_ = mode;
     set_mode_.request.custom_mode = mode_;

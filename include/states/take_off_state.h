@@ -6,7 +6,6 @@
 #define FLUID_FSM_TAKE_OFF_STATE_H
 
 #include "../mavros/mavros_state.h"
-#include <ros/ros.h>
 #include "state_defines.h"
 
 namespace fluid {
@@ -17,10 +16,9 @@ namespace fluid {
     class TakeOffState: public MavrosState {
     public:
 
-        /** Initializes the take off state with a pose.
+        /** Initializes the take off state.
          */
-        explicit TakeOffState(ros::NodeHandlePtr node_handle_p, unsigned int refresh_rate) :
-        MavrosState(node_handle_p, fluid::state_identifiers::TAKE_OFF, refresh_rate) {}
+        explicit TakeOffState() : MavrosState(fluid::StateIdentifiers::TAKE_OFF, fluid::PX4::OFFBOARD) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

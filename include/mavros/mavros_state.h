@@ -6,13 +6,6 @@
 #define FLUID_FSM_MAVROS_STATE_H
 
 #include "../core/state.h"
-#include "../core/operation/operation.h"
-#include "mavros_pose_publisher.h"
-
-#include <memory>
-#include <utility>
-
-#include <ros/ros.h>
 
 namespace fluid {
     /**
@@ -20,24 +13,16 @@ namespace fluid {
      * \brief Encapsulates a state which publishes poses through mavros.
      */
     class MavrosState: public State {
-
+        
     public:
 
         /**
          * Initiializes the mavros state with an identifier.
-         *
-         * @param node_handle_p Node handle to interact with ROS topics.
+         * 
          * @param identifier The identifier of the state.
+         * @param px4_mode The mode this mavros state represents within px4.
          */
-        // TODO: Unify refresh rate
-        MavrosState(ros::NodeHandlePtr node_handle_p, 
-                    fluid::OperationIdentifier identifier,
-                    unsigned int refresh_rate) :
-        State(node_handle_p,
-              std::move(identifier),
-              "mavros/local_position/pose", 
-              std::make_shared<fluid::MavrosPosePublisher>(node_handle_p, 1000), 
-              refresh_rate) {}
+        MavrosState(fluid::StateIdentifier identifier, std::string px4_mode);
     };
 }
 

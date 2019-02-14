@@ -18,25 +18,26 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh("~");
 
     geometry_msgs::Pose pose;
+    pose.orientation.x = 0.5;
+    pose.orientation.y = 0.0;
+    pose.orientation.z = 0.0;
+    pose.orientation.w = 0.0;
+
     bool initialized = false;
 
     float height = 1.5;
 
-    ROS_INFO("Starting init operation.");
     // Send an operation to initialize and arm the drone. Take off when this is done.
     fluid::OperationClient init_operation_client(20);
     
     init_operation_client.requestOperation(fluid::operation_identifiers::INIT, pose, [&](bool completed) {
         if (completed) {
-            ROS_INFO("Init operation completed");
 
             geometry_msgs::Pose take_off_pose;
             take_off_pose.position.x = 0;
             take_off_pose.position.y = 0;
             take_off_pose.position.z = height;
 
-
-            ROS_INFO("Starting take off operation.");
             fluid::OperationClient take_off_operation_client(20);
 
             take_off_operation_client.requestOperation(fluid::operation_identifiers::TAKE_OFF, take_off_pose, [&](bool completed) {
@@ -54,13 +55,15 @@ int main(int argc, char** argv) {
         wait_rate.sleep();
     }
 
+
+
     ROS_INFO("Completed initialization and take off");
 
     // Just for demonstration, this will make the drone move in straight lines to form a square. When the current move
     // is finished, the next will execute as one can see in the callback.
     fluid::OperationClient move_operation_client(60);
     
-    float distance = 4;
+    float distance = 5;
 
     pose.position.x = distance;
     pose.position.y = 0;

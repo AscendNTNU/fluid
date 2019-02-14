@@ -2,12 +2,12 @@
 #ifndef FLUID_FSM_STATE_H
 #define FLUID_FSM_STATE_H
 
-#include <utility>
 #include <memory>
 #include <vector>
 #include <string>
 #include <ros/ros.h>
 #include <mavros/mavros_pose_publisher.h>
+#include "identifiable.h"
 
 namespace fluid {
 
@@ -16,15 +16,12 @@ namespace fluid {
     /** \class State
      *  \brief Interface for states within the finite state machine.
      *
-     *  The state class is an interface which encapsulates an action, callbacks when the state started and
-     *  finished as well as which states the state can transition to. It also handles pose publishing.
+     *  The state class is an interface which encapsulates an action. It also handles pose publishing.
      */
-    class State {
+    class State: public Identifiable {
     protected:
 
-        const unsigned int refresh_rate_;                                       ///< Refresh rate for ros loop.
-
-        ros::NodeHandlePtr node_handle_p;                                       ///< Node handle for the mavros 
+        ros::NodeHandle node_handle_;                                           ///< Node handle for the mavros 
                                                                                 ///< pose publisher
 
 
@@ -41,7 +38,9 @@ namespace fluid {
 
     public:
 
-        const fluid::StateIdentifier identifier;                               ///< Identifier of the state
+        const std::string px4_mode;                                            ///< The mode this state represents 
+                                                                               ///< within PX4. For example move state
+                                                                               ///< would be OFFBOARD. 
 
         ros::Subscriber pose_subscriber;                                       ///< The current pose during the state.
 
@@ -52,23 +51,15 @@ namespace fluid {
         /**
          * Sets up the state and the respective publisher and subscriber.
          *
-         * @param node_handle_p Used for setting up the pose subscription.
          * @param identifier The identifier of the state.
+         * @param px4Mode The mode/state within px4 this state represents.
          * @param pose_subscription_topic The topic to retrieve poses from. 
          * @param position_target_publisher_p Position targets publisher.
-         * @param refresh_rate Refresh rate of the logic within the state.
          */
-        State(  ros::NodeHandlePtr node_handle_p,
-                fluid::StateIdentifier identifier,
-                std::string pose_subscription_topic,
-                std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
-                unsigned int refresh_rate) : 
-
-                node_handle_p(node_handle_p), 
-                refresh_rate_(refresh_rate), 
-                identifier(identifier),
-                pose_subscriber_(node_handle_p->subscribe(pose_subscription_topic, 1000, &State::poseCallback, this)),
-                position_target_publisher_p(std::move(position_target_publisher_p))  {}
+        State(fluid::StateIdentifier identifier,
+              std::string px4_mode,
+              std::string pose_subscription_topic,
+              std::shared_ptr<fluid::PosePublisher> position_target_publisher_p);
 
         /**
          * @brief      Returns the current pose, the last pose that the state estimation published on

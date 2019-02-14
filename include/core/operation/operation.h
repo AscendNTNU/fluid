@@ -12,7 +12,7 @@
 #include <string>
 #include "../state.h"
 #include "../transition.h"
-#include "graph.h"
+#include "state_graph.h"
 #include <mavros_msgs/PositionTarget.h>
 
 namespace fluid {
@@ -20,9 +20,7 @@ namespace fluid {
     typedef std::string OperationIdentifier;
 
     /** \class Operation
-     *  \brief Manages the transitions between multiple states
-     *
-     * Stores a vector of states which it runs through when the operation is started
+     *  \brief Manages the transitions between multiple states and their execution.
      */
     class Operation {
     private:
@@ -36,18 +34,14 @@ namespace fluid {
                                                                                 ///< state. E.g. if destination state
                                                                                 ///< is set to a move state for a move
                                                                                 ///< operation, we want the operation
-                                                                                ///< to finish at a position hold state.
-
-        static Graph graph;                                         ///< Provides the states which the operation can
-                                                                    ///< consist of and how to transition between them
-
-        const unsigned int refresh_rate_;
+                                                                                ///< to finish at a position hold
+                                                                                ///< state.
 
     public:
 
         const mavros_msgs::PositionTarget position_target;          ///< Position target of the operation.
 
-        const OperationIdentifier identifier;                       ///< Identifier of the operation
+        const OperationIdentifier identifier;                       ///< Identifier of the operation.
 
         /**
          * Sets up the operation with a destination state and a final state. The difference between them is that the
@@ -56,27 +50,25 @@ namespace fluid {
          * of position hold after a given move state.
          *
          * @param identifier                     The identifier of the operation.
-         * @param destination_state_identifier   The destination state of the operation.
-         * @param final_state_identifier         The final state.
+         * @param destination_state_identifier   The destination state identifier of the operation.
+         * @param final_state_identifier         The final state identifier.
          * @param position_target                The target position of this operation.
-         * @param refresh_rate                   How fast the underlying process will operate at. 
          */
         Operation(OperationIdentifier identifier,
                   std::string destination_state_identifier,
                   std::string final_state_identifier,
-                  mavros_msgs::PositionTarget position_target,
-                  unsigned int refresh_rate) :
-                  identifier(std::move(identifier)),
-                  destination_state_identifier_(std::move(destination_state_identifier)),
-                  final_state_identifier_(std::move(final_state_identifier)),
-                  position_target(position_target),
-                  refresh_rate_(refresh_rate) {}
+                  mavros_msgs::PositionTarget position_target);
 
 
         /**
-         * Checks if the operation is valid from the current state. This makes sure that some operations are not
+         * Checks if the operation is valid from the current state. 
+         * 
+         * This makes sure that some operations are not
          * carried out given that they make no sense from the current state. E.g. doing any operation before
          * everything is initialized or doing a land operation during take off.
+         * 
+         * This is overridden by subclasses which provide the logic given the current state and what is reasonable
+         * for the given operaiton. 
          *
          * @param current_state_p       The current state.
          *
@@ -84,15 +76,22 @@ namespace fluid {
          */
         virtual bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) = 0;
 
-        /** Performs the operation.
+        /** 
+         * Performs the operation.
          *
          * Runs through the different states and performs the necessary transitions.
          *
          * @param shouldAbort Called each tick, makes it possible to abort operations in the midst of an execution.
          * @param completionHandler Callback function for whether the operation completed or not.
          */
-        // TODO: Some sort of error attached in the callback?
         void perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler);
+
+        /**
+         * @brief Sets the pose for a new state and performs the transition to that state from the current state.
+         * 
+         * This function also sets the current state of the state graph to the state passed as the argument.
+         */
+        void transitionToState(std::shared_ptr<fluid::State> state_p);
 
         /**
          * @return The state the operation should end at.

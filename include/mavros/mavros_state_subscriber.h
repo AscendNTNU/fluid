@@ -19,6 +19,8 @@ namespace fluid {
 
     private:
 
+        ros::NodeHandle node_handle_;                                   ///< Used to set up the subscriber.
+
         ros::Subscriber state_subscriber;                               ///< ROS subscriber which subscribes to
                                                                         ///< state changes within the pixhawk
 
@@ -36,15 +38,8 @@ namespace fluid {
 
         /**
          * Sets up the mavros state subscriber so it can listen to state changes on the pixhawk.
-         *
-         * @param node_handle_p The ros node handle to listen from.
-         * @param message_queue_size The size of the message buffer.
          */
-        MavrosStateSubscriber(ros::NodeHandlePtr node_handle_p, unsigned int message_queue_size) :
-        state_subscriber(node_handle_p->subscribe<mavros_msgs::State>("mavros/state",
-                                                                      message_queue_size,
-                                                                      &MavrosStateSubscriber::state_callback,
-                                                                      this)) {}
+        MavrosStateSubscriber();
 
         /**
          * @return The current state within PX4.

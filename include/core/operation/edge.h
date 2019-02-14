@@ -10,21 +10,18 @@
 
 namespace fluid {
     /** \class Edge
-     *  \brief Represents an edge/connection between two nodes in the graph.
-     *
-     *  This class encapsulates a transition, which is the binding part between two states
-     * (nodes)
+     *  \brief Represents an edge/connection between two nodes a the graph.
      */
-    class Edge {
+    template <class T> class Edge {
     public:
         
-        const std::shared_ptr<State> source;       ///< The source state of the edge
-        const std::shared_ptr<State> destination;  ///< The desination state of the edge
+        const T source;                 ///< The source of the edge
+        const T destination;            ///< The desination of the edge
         
-        
-        /** Initializes the Edge with a transition between two states.
+        /** Initializes the edge with its respective source and destination.
+         * 
          */
-        Edge(std::shared_ptr<State> source, std::shared_ptr<State> destination): source(source), destination(destination) {}
+        Edge(T source, T destination): source(source), destination(destination) {}
     };
 }
 #endif /* FLUID_FSM_EDGE_H */

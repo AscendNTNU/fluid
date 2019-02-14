@@ -12,6 +12,7 @@
 #include <fluid_fsm/OperationGoal.h>
 #include <actionlib/server/simple_action_server.h>
 #include "core/operation/operation.h"
+#include "../../include/core/status_publisher.h"
 
 namespace fluid {
 
@@ -24,7 +25,7 @@ namespace fluid {
 
     private:
 
-        ros::NodeHandle node_handle_;                                ///< The node handle for the operation server
+        ros::NodeHandle node_handle_;                                ///< Used to instantiate the ROS action server
 
         Server actionlib_action_server_;                             ///< Reference to the ROS action server which the
                                                                      ///< operation server class encapsulates
@@ -38,22 +39,12 @@ namespace fluid {
         bool new_operation_requested_ = false;                       ///< Determines whether a new operation was
                                                                      ///< requested.
 
-        const unsigned int refresh_rate_;                            ///< The rate at which the operation is running. 
-
     public:
-
 
         /**
          * Initializes the operation server.
          */
-        OperationServer(unsigned int refresh_rate) : 
-        refresh_rate_(refresh_rate),
-        actionlib_action_server_(node_handle_, "fluid_fsm_operation", false) {
-            actionlib_action_server_.registerGoalCallback(boost::bind(&OperationServer::goalCallback, this));
-            actionlib_action_server_.registerPreemptCallback(boost::bind(&OperationServer::preemptCallback, this));
-
-            actionlib_action_server_.start();
-        }
+        OperationServer();
 
         /**
          * Gets fired when the operation server receives a new goal.

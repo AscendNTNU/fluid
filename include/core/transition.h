@@ -13,40 +13,13 @@
 #include "state.h"
 
 namespace fluid {
-    // TODO: Check the errors which can come from state changes in the FSM in PX4
-    /** \enum TransitionErrorCode
-     *  \brief Describes which kind of error which happened in a given transition.
-     */
-    enum TransitionErrorCode: int8_t {
-        no_error = 0,
-        px4_error = 1
-    };
-
-
-
-    /** \struct TransitionError
-     *  \brief Describes the error which happened in the transitions between two states.
-     */
-    struct TransitionError {
-
-        TransitionErrorCode error_code;                         ///< The code which specifies which transition
-                                                                ///< error occurred
-
-        std::string source_state_identifier;                    ///< The source state of the transition
-
-        std::string destination_state_identifier;               ///< The destination state of the transition
-    };
-
-
-
     /** \class Transition
      *  \breif Handles state changes and the communication with the FSM in PX4.
      */
     class Transition {
     private:
-        fluid::MavrosStateSetter mavros_state_setter_;                        ///< Sets states within the Pixhawk.
 
-        const unsigned int refresh_rate_;                                     ///< Refresh rate of the ros loop.
+        fluid::MavrosStateSetter mavros_state_setter_;                        ///< Sets states within the Pixhawk.
 
     public:
         const std::shared_ptr<fluid::State> source_state_p;                   ///< Source state of the transition
@@ -56,26 +29,15 @@ namespace fluid {
         /**
          * Initializes a transition with source state and destination state.
          *
-         * @param node_handle_p Used for initializing the mavros state setter.
          * @param source_p The source state.
          * @param destination_p The destination state.
-         * @param refresh_rate The refresh rate the transition should operate at.
          */
-        Transition(const ros::NodeHandlePtr &node_handle_p,
-                   std::shared_ptr<State> source_state_p,
-                   std::shared_ptr<State> destination_state_p,
-                   unsigned int refresh_rate) :
-                   mavros_state_setter_(node_handle_p, 1000, 1.0/static_cast<double>(refresh_rate), "OFFBOARD"),
-                   source_state_p(std::move(source_state_p)),
-                   destination_state_p(std::move(destination_state_p)),
-                   refresh_rate_(refresh_rate) {}
+        Transition(std::shared_ptr<State> source_state_p, std::shared_ptr<State> destination_state_p);
 
         /**
          * Performs the transition between the source state and the destination state.
-         *
-         * @param completion_handler Fired when the state change completed
          */
-        void perform(std::function<void (void)> completion_handler);
+        void perform();
     };
 }
 
