@@ -3,6 +3,9 @@
   <arg name="refresh_rate" default="20" />
   <arg name="message_queue_size" default="1000" />
 
+
+  <rosparam command="load" file="$(find fluid_fsm)/params.yaml" />
+
   <node name="server" pkg="fluid_fsm" type="main" output="screen" args="$(arg refresh_rate) $(arg message_queue_size)"/>
 
   <include file="$(find mavros)/launch/px4.launch">
