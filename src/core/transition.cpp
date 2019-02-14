@@ -6,9 +6,11 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
-#include "../../include/core/transition.h"
 #include <algorithm>
+
+#include "../../include/core/transition.h"
 #include "../../include/core/core.h"
+#include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 fluid::Transition::Transition(std::shared_ptr<State> source_state_p, std::shared_ptr<State> destination_state_p) :
                    
@@ -40,6 +42,7 @@ void fluid::Transition::perform() {
         });
 
         // Publish poses continuously so PX4 won't complain
+        source_state_p->position_target.type_mask = fluid::DEFAULT_MASK;
         source_state_p->position_target_publisher_p->publish(source_state_p->position_target);
 
         fluid::Core::getStatusPublisherPtr()->publish();

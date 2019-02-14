@@ -50,16 +50,14 @@ int main(int argc, char** argv) {
         wait_rate.sleep();
     }
 
-    fluid::OperationClient move_operation_client(0.5);
-    int flip = 1;
+    fluid::OperationClient move_operation_client(5);
 
-    ros::Rate rate(3);
+    ros::Rate rate(30);
 
     while (ros::ok()) {
 
-        pose.position.y += 0.1;
+        pose.position.y += 0.01;
         pose.position.z = height;
-        flip = -flip;
         move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [](bool completed) {});
 
         ros::spinOnce();
