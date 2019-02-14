@@ -7,18 +7,6 @@
 
 namespace fluid {
 
-	/**
-	 * @brief      Describes a boundry box, a closed area from -x to x, -y to y and -z to z. Within the FSM a 
-	 * 			   boundry of (0, 0, 0) will describe no boundry, in other words, the drone can move everywhere.
-	 */
-	struct Boundry {
-
-		/**
-		 * The values of the boundry.
-		 */
-		double x, y, z;
-	};
-
 	class Core {
 
 	private:
@@ -49,9 +37,6 @@ namespace fluid {
 		static unsigned int message_queue_size;								///< The unified message queue size for 
 																			///< the different ros components within
 																			///< the FSM.
-
-
-		static fluid::Boundry boundry;
 
 		/**
 		 * @return     The shared singleton instance of the graph.
