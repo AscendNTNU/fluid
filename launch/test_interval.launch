@@ -1,5 +1,5 @@
 <launch>
-	<include file="$(find fluid_fsm)/launch/fluid_fsm.launch"/>
+	<include file="$(find fluid_fsm)/launch/server.launch"/>
     <node name="fluid_fsm_test_interval_client" pkg="fluid_fsm" type="test_interval_client" output="screen"/>
 </launch>
 
