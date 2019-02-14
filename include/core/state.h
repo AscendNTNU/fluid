@@ -38,6 +38,10 @@ namespace fluid {
 
     public:
 
+        const std::string px4_mode;                                            ///< The mode this state represents 
+                                                                               ///< within PX4. For example move state
+                                                                               ///< would be OFFBOARD. 
+
         ros::Subscriber pose_subscriber;                                       ///< The current pose during the state.
 
         std::shared_ptr<fluid::PosePublisher> position_target_publisher_p;     ///< Publishes poses.
@@ -48,10 +52,12 @@ namespace fluid {
          * Sets up the state and the respective publisher and subscriber.
          *
          * @param identifier The identifier of the state.
+         * @param px4Mode The mode/state within px4 this state represents.
          * @param pose_subscription_topic The topic to retrieve poses from. 
          * @param position_target_publisher_p Position targets publisher.
          */
         State(fluid::StateIdentifier identifier,
+              std::string px4_mode,
               std::string pose_subscription_topic,
               std::shared_ptr<fluid::PosePublisher> position_target_publisher_p);
 

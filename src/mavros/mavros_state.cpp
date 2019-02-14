@@ -3,9 +3,15 @@
 //
 
 #include "../../include/mavros/mavros_state.h"
+#include "../../include/core/core.h"
+#include "../../include/mavros/mavros_pose_publisher.h"
+
+#include <utility>
+#include <memory>
 
 
-fluid::MavrosState::MavrosState(fluid::StateIdentifier identifier) : 
-	State(std::move(identifier), 
+fluid::MavrosState::MavrosState(fluid::StateIdentifier identifier, std::string px4_mode) : 
+	State(std::move(identifier),
+	px4_mode, 
 	"mavros/local_position/pose", 
     std::make_shared<fluid::MavrosPosePublisher>(Core::message_queue_size)) {}

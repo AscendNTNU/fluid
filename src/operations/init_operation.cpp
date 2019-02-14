@@ -6,8 +6,8 @@
 
 fluid::InitOperation::InitOperation(mavros_msgs::PositionTarget position_target) :
         							Operation(fluid::operation_identifiers::INIT,
-							                  fluid::state_identifiers::INIT,
-							                  fluid::state_identifiers::IDLE,
+							                  fluid::StateIdentifiers::INIT,
+							                  fluid::StateIdentifiers::IDLE,
 							                  position_target) {}
 
 

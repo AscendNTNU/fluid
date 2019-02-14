@@ -7,8 +7,8 @@
 
 fluid::MoveOperation::MoveOperation(mavros_msgs::PositionTarget position_target) :
 					    		    Operation(fluid::operation_identifiers::MOVE,
-							                  fluid::state_identifiers::MOVE,
-							                  fluid::state_identifiers::HOLD,
+							                  fluid::StateIdentifiers::MOVE,
+							                  fluid::StateIdentifiers::HOLD,
 							                  position_target) {}
 
 bool fluid::MoveOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) {

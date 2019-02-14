@@ -3,7 +3,6 @@
 
 unsigned int fluid::Core::refresh_rate = 30;
 unsigned int fluid::Core::message_queue_size = 1000;
-fluid::Boundry fluid::Core::boundry = {0, 0, 0};
 std::shared_ptr<fluid::StateGraph> fluid::Core::graph_p_;
 std::shared_ptr<fluid::StatusPublisher> fluid::Core::status_publisher_p_;
 

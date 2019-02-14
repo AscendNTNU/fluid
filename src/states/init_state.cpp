@@ -4,16 +4,17 @@
 
 
 #include "../../include/states/init_state.h"
+
 #include <iostream>
 
 #include <ros/ros.h>
-
 #include <geometry_msgs/PoseStamped.h>
-
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
+
 #include "../../include/core/core.h"
+#include "../../include/mavros/mavros_state_setter.h"
 
 bool fluid::InitState::hasFinishedExecution() {
     return armed;

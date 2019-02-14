@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <utility>
+#include <string>
 
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -31,7 +32,7 @@ namespace fluid {
          * @param identifier The identifier of the state.
          */
         // TODO: Topic is temporary
-        NavigatorState(fluid::OperationIdentifier identifier);
+        NavigatorState(fluid::OperationIdentifier identifier, std::string px4_mode);
     };
 }
 

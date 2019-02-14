@@ -18,8 +18,8 @@ int main(int argc, char** argv) {
 
     fluid::StateGraph graph;
 
-    std::vector<std::shared_ptr<fluid::State>> plan = graph.getPathToEndState(fluid::state_identifiers::INIT, 
-    																   		  fluid::state_identifiers::IDLE);
+    std::vector<std::shared_ptr<fluid::State>> plan = graph.getPathToEndState(fluid::StateIdentifiers::INIT, 
+    																   		  fluid::StateIdentifiers::IDLE);
 
     for (auto state : plan) {
     	std::cout << state->identifier << std::endl;
