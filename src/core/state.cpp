@@ -8,10 +8,12 @@
 #include <utility>
 
 fluid::State::State(fluid::StateIdentifier identifier,
+                    std::string px4_mode,
                     std::string pose_subscription_topic,
                     std::shared_ptr<fluid::PosePublisher> position_target_publisher_p) : 
 
 					Identifiable(identifier),
+                    px4_mode(px4_mode),
 					pose_subscriber_(node_handle_.subscribe(pose_subscription_topic, 
                                      Core::message_queue_size, 
                                      &State::poseCallback, 
