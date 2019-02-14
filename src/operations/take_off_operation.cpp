@@ -7,8 +7,8 @@
 
 fluid::TakeOffOperation::TakeOffOperation(mavros_msgs::PositionTarget position_target) :
 								          Operation(fluid::operation_identifiers::TAKE_OFF,
-								                    fluid::state_identifiers::TAKE_OFF,
-								                    fluid::state_identifiers::HOLD,
+								                    fluid::StateIdentifiers::TAKE_OFF,
+								                    fluid::StateIdentifiers::HOLD,
 								                    position_target) {}
 
 bool fluid::TakeOffOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) {
