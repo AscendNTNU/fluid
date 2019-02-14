@@ -57,34 +57,13 @@ int main(int argc, char** argv) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     ROS_INFO("Completed initialization and take off");
 
     // Just for demonstration, this will make the drone move in straight lines to form a square. When the current move
     // is finished, the next will execute as one can see in the callback.
     fluid::OperationClient move_operation_client(60);
     
-    float distance = 4;
+    float distance = 5;
 
     pose.position.x = distance;
     pose.position.y = 0;
