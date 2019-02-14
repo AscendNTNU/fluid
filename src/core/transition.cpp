@@ -6,7 +6,6 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
-#include "../../include/states/state_util.h"
 #include "../../include/core/transition.h"
 #include <algorithm>
 #include "../../include/core/core.h"
@@ -27,8 +26,7 @@ void fluid::Transition::perform() {
     ros::Rate rate(Core::refresh_rate);
 
     // Get the px4 mode for the state we want to transition to and set that mode in our state setter
-    std::string mode = fluid::StateUtil::px4ModeForStateIdentifier(destination_state_p->identifier);
-    mavros_state_setter_.setMode(mode);
+    mavros_state_setter_.setMode(destination_state_p->px4_mode);
 
     bool state_is_set = false;
 
@@ -38,7 +36,7 @@ void fluid::Transition::perform() {
         mavros_state_setter_.attemptToSetState([&](bool succeeded) {
             // State set succeeded, break from loop
             state_is_set = succeeded;
-            Core::getStatusPublisherPtr()->status.px4_mode = mode;
+            Core::getStatusPublisherPtr()->status.px4_mode = destination_state_p->px4_mode;
         });
 
         // Publish poses continuously so PX4 won't complain
