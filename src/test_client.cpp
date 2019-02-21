@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
     bool initialized = false;
 
-    float height = 1.5;
+    float height = 1.0;
 
     // Send an operation to initialize and arm the drone. Take off when this is done.
     fluid::OperationClient init_operation_client(20);
