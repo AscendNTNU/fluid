@@ -2,7 +2,7 @@
   <arg name="fcu_url" default="/dev/ttyUSB0:921600"/>
   <arg name="refresh_rate" default="20" />
   <arg name="message_queue_size" default="1000" />
-  <arg name="auto_arm" default="false" />
+  <arg name="auto_arm" default="false"/>
 
   <rosparam command="load" file="$(find fluid_fsm)/params.yaml" />
 
@@ -10,5 +10,6 @@
 
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url" value="$(arg fcu_url)"/>
+    <arg name="log_output" value="log"/>
   </include>
 </launch>

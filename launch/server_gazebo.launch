@@ -10,5 +10,6 @@
 
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url" value="$(arg fcu_url)"/>
+    <arg name="log_output" value="log"/>
   </include>
 </launch>
