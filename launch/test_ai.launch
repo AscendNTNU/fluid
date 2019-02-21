@@ -1,0 +1,4 @@
+<launch>
+	<include file="$(find fluid_fsm)/launch/fluid_fsm.launch"/>
+	<node name="ai_client" pkg="fluid_fsm" type="test_ai" output="screen"/>
+</launch>
