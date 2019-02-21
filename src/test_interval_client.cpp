@@ -18,6 +18,12 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "test_client");
     ros::NodeHandle nh;
 
+
+    // Set boundries
+    nh.setParam("boundryX", 2);
+    nh.setParam("boundryY", 2);
+    nh.setParam("boundryZ", 1);
+
     geometry_msgs::Pose pose;
     bool initialized = false;
 
@@ -44,7 +50,6 @@ int main(int argc, char** argv) {
 
     ros::Rate wait_rate(20);
 
-
     while (ros::ok() && !initialized) {
         ros::spinOnce();
         wait_rate.sleep();
@@ -54,23 +59,15 @@ int main(int argc, char** argv) {
 
     ros::Rate rate(20);
 
-    auto reference = std::chrono::high_resolution_clock::now();
-    const int radius = 2.5;
-
-    double time = 0.0;
-
     while (ros::ok()) {
 
-        pose.position.y = radius * sin(time / 2000.0);
-        pose.position.x = radius * cos(time / 2000.0);
+        pose.position.x += 0.01;
         pose.position.z = height;
 
         move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [](bool completed) {});
 
-        ros::spinOnce();
         rate.sleep();
-
-        time += static_cast<double>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - reference).count());
+        ros::spinOnce();
     }
 
     return 0;
