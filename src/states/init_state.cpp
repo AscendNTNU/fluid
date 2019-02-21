@@ -36,7 +36,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     									  1.0/static_cast<double>(Core::refresh_rate), 
     									  "OFFBOARD");
 
-    ROS_INFO("Attempting to establish contact with PX4.");
+    ROS_INFO("Attempting to establish contact with PX4...");
 
     // Run until we achieve a connection with mavros
     while (ros::ok() && !state_setter.getCurrentState().connected) {
@@ -66,7 +66,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
     // Offboard
 
-    ROS_INFO("Attempting to set offboard.");
+    ROS_INFO("Attempting to set offboard...");
 
     bool set_offboard = false;
 
@@ -90,6 +90,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
     ROS_INFO("OK!\n");
 
+    ROS_INFO_STREAM("Attemping to arm... Auto arm: " << fluid::Core::auto_arm);
 
     // Arming
 
@@ -98,12 +99,15 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     mavros_msgs::CommandBool arm_command;
     arm_command.request.value = true;
     bool armed = false;
-    double arm_request_interval = 1.0;
+    double arm_request_interval = 0.5;
 
     while (ros::ok() && !hasFinishedExecution() && !armed) {
 
+        ROS_INFO_STREAM("Calling");
+
         // Send request to arm every interval specified
         if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
+
             if (!state_setter.getCurrentState().armed) {
                 if (fluid::Core::auto_arm) {
                     if(arming_client.call(arm_command) && arm_command.response.success){
@@ -122,4 +126,6 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
         ros::spinOnce();
         rate.sleep();
     }
+
+    ROS_INFO("OK!\n");
 }
