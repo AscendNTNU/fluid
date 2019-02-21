@@ -92,6 +92,10 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
     ROS_INFO_STREAM("Attemping to arm... Auto arm: " << fluid::Core::auto_arm);
 
+    if (fluid::Core::auto_arm) {
+        ROS_INFO("Waiting for arm signal...");
+    }
+
     // Arming
 
     ros::Time last_request = ros::Time::now();
@@ -103,14 +107,12 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
     while (ros::ok() && !hasFinishedExecution() && !armed) {
 
-        ROS_INFO_STREAM("Calling");
-
         // Send request to arm every interval specified
         if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
 
             if (!state_setter.getCurrentState().armed) {
                 if (fluid::Core::auto_arm) {
-                    if(arming_client.call(arm_command) && arm_command.response.success){
+                    if(arming_client.call(arm_command) && arm_command.response.success) {
                         fluid::Core::getStatusPublisherPtr()->status.armed = 1;
                         armed = true;
                     }
@@ -120,9 +122,13 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
                 fluid::Core::getStatusPublisherPtr()->status.armed = 1;
                 armed = true;
             }
+
+            last_request = ros::Time::now();
         }
 
-        last_request = ros::Time::now();
+        fluid::Core::getStatusPublisherPtr()->publish();
+        position_target_publisher_p->publish(position_target);
+
         ros::spinOnce();
         rate.sleep();
     }
