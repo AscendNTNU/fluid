@@ -38,6 +38,10 @@ namespace fluid {
 																			///< the different ros components within
 																			///< the FSM.
 
+
+		static bool auto_arm;		 										///< Determines whether the state machine
+																			///< should auto arm or not.
+
 		/**
 		 * @return     The shared singleton instance of the graph.
 		 */
