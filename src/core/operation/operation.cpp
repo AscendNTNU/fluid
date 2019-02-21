@@ -28,7 +28,8 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
     // Check if it makes sense to carry out this operation given the current state.
     if (!validateOperationFromCurrentState(fluid::Core::getGraphPtr()->current_state_p)) {
-        ROS_FATAL_STREAM("Not valid operation from current state!");
+        ROS_FATAL_STREAM("Operation: " << identifier << "is not a valid operation from current state: " <<
+                         fluid::Core::getGraphPtr()->current_state_p->identifier);
         completionHandler(false);
         return;
     }

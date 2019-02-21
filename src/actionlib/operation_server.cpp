@@ -34,6 +34,7 @@ fluid::OperationServer::OperationServer() : actionlib_action_server_(node_handle
 
 
 void fluid::OperationServer::goalCallback() {
+
     // We accept the new goal and initialize variables for target pose and the type of operation identifier.
     // This is necessary in order to modify some of them before we initiate the different operations further down.
     // E.g. the init operation shouldn't be called with a different pose than (0, 0, 0), so we make sure this is the
