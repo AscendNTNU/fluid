@@ -141,7 +141,7 @@ void fluid::OperationServer::start() {
                     // Will notify the operation client what the outcome of the operation was. This will end up
                     // calling the callback that the operation client set up for completion.
                     if (completed) {
-                        ROS_INFO_STREAM("Operation completed.")
+                        ROS_INFO_STREAM("Operation completed.");
                         actionlib_action_server_.setSucceeded();
                     }
                     else {
