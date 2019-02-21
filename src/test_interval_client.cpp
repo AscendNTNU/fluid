@@ -18,6 +18,12 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "test_client");
     ros::NodeHandle nh;
 
+
+    // Set boundries
+    nh.setParam("boundryX", 2);
+    nh.setParam("boundryY", 2);
+    nh.setParam("boundryZ", 1);
+
     geometry_msgs::Pose pose;
     bool initialized = false;
 
@@ -44,7 +50,6 @@ int main(int argc, char** argv) {
 
     ros::Rate wait_rate(20);
 
-
     while (ros::ok() && !initialized) {
         ros::spinOnce();
         wait_rate.sleep();
@@ -52,16 +57,17 @@ int main(int argc, char** argv) {
 
     fluid::OperationClient move_operation_client(5);
 
-    ros::Rate rate(30);
+    ros::Rate rate(20);
 
     while (ros::ok()) {
 
-        pose.position.y += 0.01;
+        pose.position.x += 0.01;
         pose.position.z = height;
+
         move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [](bool completed) {});
 
-        ros::spinOnce();
         rate.sleep();
+        ros::spinOnce();
     }
 
     return 0;

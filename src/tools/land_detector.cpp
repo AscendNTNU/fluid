@@ -23,6 +23,6 @@ void fluid::LandDetector::velocityCallback(const geometry_msgs::TwistStampedPtr 
 
 bool fluid::LandDetector::hasLanded(mavros_msgs::PositionTarget land_position) {
 
-	return PoseUtil::distanceBetween(current_pose_, land_position) < 0.05 && 
-		   std::abs(current_velocity_.twist.linear.z) < 0.05;
+	return current_pose_.pose.position.z - land_position.position.z < 0.05 &&
+		   std::abs(current_velocity_.twist.linear.z) < 0.1;
 }

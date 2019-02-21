@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by simengangstad on 04.10.18.
 //
@@ -20,7 +22,7 @@ fluid::Operation::Operation(OperationIdentifier identifier,
                             identifier(std::move(identifier)),
                             destination_state_identifier_(std::move(destination_state_identifier)),
                             final_state_identifier_(std::move(final_state_identifier)),
-                            position_target(position_target) {}
+                            position_target(std::move(position_target)) {}
 
 void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) {
 
@@ -37,7 +39,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         fluid::Core::getGraphPtr()->current_state_p->identifier,
         destination_state_identifier_);
 
-    if (path.size() == 0) {
+    if (path.empty()) {
         return;
     }
 
@@ -69,20 +71,19 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
         if (shouldAbort()) {
 
-            // Set the pose of the final state to the current pose.
+            // We have to abort, so we transition to the final state and set the current pose as the final state's
+            // pose.
             std::shared_ptr<fluid::State> final_state_p = getFinalStatePtr();
 
             geometry_msgs::Quaternion poseQuat = state_p->getCurrentPose().pose.orientation;
             tf2::Quaternion tf2Quat(poseQuat.x, poseQuat.y, poseQuat.z, poseQuat.w);
-            double roll, pitch, yaw;
+            double roll = 0, pitch = 0, yaw = 0;
             tf2::Matrix3x3(tf2Quat).getRPY(roll, pitch, yaw);
 
             final_state_p->position_target.position = state_p->getCurrentPose().pose.position;
             // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
             // it to zero. 
-            final_state_p->position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;
-
-            fluid::Core::getStatusPublisherPtr()->status.current_state = final_state_p->identifier;
+            final_state_p->position_target.yaw = static_cast<float>(std::isnan(yaw) ? 0.0 : yaw);
 
             transitionToState(final_state_p);
             completionHandler(false);
@@ -106,6 +107,7 @@ void fluid::Operation::transitionToState(std::shared_ptr<fluid::State> state_p) 
     fluid::Transition transition(fluid::Core::getGraphPtr()->current_state_p, state_p);
     transition.perform();
     fluid::Core::getGraphPtr()->current_state_p = state_p;
+    fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
 }
 
 

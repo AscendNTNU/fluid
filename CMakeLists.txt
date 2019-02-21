@@ -16,6 +16,7 @@ add_action_files(DIRECTORY action FILES Operation.action)
 generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
 
 catkin_package(
+        INCLUDE_DIRS include
         CATKIN_DEPENDS ascend_msgs roscpp
 )
 
@@ -66,3 +67,15 @@ add_dependencies(main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARG
 add_dependencies(test_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(test_interval_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(graph_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Mark libraries for installation
+install(TARGETS fluid_fsm_lib
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+## Mark header files for installation
+install(DIRECTORY include
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN ".svn" EXCLUDE
+)
