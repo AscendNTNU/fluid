@@ -4,8 +4,6 @@
 
 #include "../include/actionlib/operation_server.h"
 #include <ros/ros.h>
-#include <iostream>
-#include <memory>
 
 #include "../include/core/core.h"
 
