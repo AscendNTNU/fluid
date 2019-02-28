@@ -25,16 +25,16 @@ void commandCallback(const std_msgs::String::ConstPtr& string) {
 
         if (new_command == "0") {
             geometry_msgs::Pose take_off_pose;
-            take_off_pose.position.x = 0;
-            take_off_pose.position.y = 0;
-            take_off_pose.position.z = 1.0;
+            take_off_pose.position.x = 1;
+            take_off_pose.position.y = 1;
+            take_off_pose.position.z = 1;
 
             operation_client.requestOperation(fluid::operation_identifiers::TAKE_OFF, take_off_pose, [&](bool completed) {});
         }
         else if (new_command == "1") {
             geometry_msgs::Pose land_pose;
-            land_pose.position.x = 0;
-            land_pose.position.y = 0;
+            land_pose.position.x = 1;
+            land_pose.position.y = 1;
             land_pose.position.z = 0.0;
 
             operation_client.requestOperation(fluid::operation_identifiers::LAND, land_pose, [&](bool completed) {});
