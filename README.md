@@ -40,7 +40,7 @@ Fluid FSM is built around a client-server architecture, where a client requests 
 
 In order to initialize the drone and link it up with PX4 and arm it we need to request that from it with the following code: 
 
-```
+```cpp
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 
