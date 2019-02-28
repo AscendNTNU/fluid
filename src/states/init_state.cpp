@@ -15,6 +15,7 @@
 
 #include "../../include/core/core.h"
 #include "../../include/mavros/mavros_state_setter.h"
+#include "../../include/mavros/mavros_state_subscriber.h"
 
 bool fluid::InitState::hasFinishedExecution() {
     return armed;
@@ -65,13 +66,16 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
 
     // Offboard
-
-    ROS_INFO("Attempting to set offboard...");
+    ROS_INFO("Waiting for offboard signal...");
+    fluid::MavrosStateSubscriber state_subscriber;
 
     bool set_offboard = false;
 
     while(ros::ok() && !hasFinishedExecution() && !set_offboard) {
 
+        set_offboard = state_subscriber.getCurrentState().mode == "OFFBOARD";
+
+        /*
         state_setter.attemptToSetState([&](bool completed) {
 
             set_offboard = completed;
@@ -79,7 +83,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
             if (completed) {
                 fluid::Core::getStatusPublisherPtr()->status.px4_mode = "offboard";
             }
-        });
+        });*/
 
         fluid::Core::getStatusPublisherPtr()->publish();
         position_target_publisher_p->publish(position_target);
