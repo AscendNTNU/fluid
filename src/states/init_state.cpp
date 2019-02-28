@@ -16,6 +16,7 @@
 #include "../../include/core/core.h"
 #include "../../include/mavros/mavros_state_setter.h"
 #include "../../include/mavros/mavros_state_subscriber.h"
+#include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 bool fluid::InitState::hasFinishedExecution() {
     return armed;
