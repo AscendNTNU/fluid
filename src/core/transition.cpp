@@ -42,7 +42,6 @@ void fluid::Transition::perform() {
         });
 
         // Publish poses continuously so PX4 won't complain
-        source_state_p->position_target.type_mask = fluid::DEFAULT_MASK;
         source_state_p->position_target_publisher_p->publish(source_state_p->position_target);
 
         fluid::Core::getStatusPublisherPtr()->publish();
