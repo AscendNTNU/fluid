@@ -64,36 +64,6 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     }
 
 
-
-    // Offboard
-    ROS_INFO("Waiting for offboard signal...");
-    fluid::MavrosStateSubscriber state_subscriber;
-
-    bool set_offboard = false;
-
-    while(ros::ok() && !hasFinishedExecution() && !set_offboard) {
-
-        set_offboard = state_subscriber.getCurrentState().mode == "OFFBOARD";
-
-        /*
-        state_setter.attemptToSetState([&](bool completed) {
-
-            set_offboard = completed;
-
-            if (completed) {
-                fluid::Core::getStatusPublisherPtr()->status.px4_mode = "offboard";
-            }
-        });*/
-
-        fluid::Core::getStatusPublisherPtr()->publish();
-        position_target_publisher_p->publish(position_target);
-
-        ros::spinOnce();
-        rate.sleep();
-    }
-
-    ROS_INFO("OK!\n");
-
     ROS_INFO_STREAM("Attemping to arm... Auto arm: " << fluid::Core::auto_arm);
 
     if (fluid::Core::auto_arm) {
@@ -129,6 +99,36 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
             last_request = ros::Time::now();
         }
+
+        fluid::Core::getStatusPublisherPtr()->publish();
+        position_target_publisher_p->publish(position_target);
+
+        ros::spinOnce();
+        rate.sleep();
+    }
+
+    ROS_INFO("OK!\n");
+
+
+    // Offboard
+    ROS_INFO("Waiting for offboard signal...");
+    fluid::MavrosStateSubscriber state_subscriber;
+
+    bool set_offboard = false;
+
+    while(ros::ok() && !hasFinishedExecution() && !set_offboard) {
+
+        set_offboard = state_subscriber.getCurrentState().mode == "OFFBOARD";
+
+        /*
+        state_setter.attemptToSetState([&](bool completed) {
+
+            set_offboard = completed;
+
+            if (completed) {
+                fluid::Core::getStatusPublisherPtr()->status.px4_mode = "offboard";
+            }
+        });*/
 
         fluid::Core::getStatusPublisherPtr()->publish();
         position_target_publisher_p->publish(position_target);
