@@ -33,8 +33,7 @@ namespace fluid {
                                       IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ |
                                       IGNORE_YAW_RATE;
 
-	constexpr uint16_t IDLE_MASK 	= IGNORE_PX | IGNORE_PY | IGNORE_PZ | 
-									  IGNORE_YAW;
+	constexpr uint16_t IDLE_MASK 	= IGNORE_PX | IGNORE_PY | IGNORE_PZ;
 
 
 
