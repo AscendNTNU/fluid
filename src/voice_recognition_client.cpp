@@ -12,7 +12,7 @@
 #include "../include/core/state.h"
 
 std::string last_command;
-bool initialized = true;
+bool initialized = false;
 
 void commandCallback(const std_msgs::String::ConstPtr& string) {
     std::string new_command = std::string(string->data);
@@ -50,6 +50,8 @@ int main(int argc, char** argv) {
     ros::NodeHandle node_handle;
 
     geometry_msgs::Pose pose;
+
+    ros::Subscriber subscriber = node_handle.subscribe<std_msgs::String>("/ai/voice/commmand", 100, commandCallback);
 
     // Send an operation to initialize and arm the drone. Take off when this is done.
     fluid::OperationClient init_operation_client(20);
