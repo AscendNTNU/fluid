@@ -16,6 +16,7 @@ int main(int argc, char** argv) {
     fluid::Core::refresh_rate = static_cast<unsigned int>(atoi(argv[1]));
     fluid::Core::message_queue_size = static_cast<unsigned int>(atoi(argv[2]));
     fluid::Core::auto_arm = std::string(argv[3]) == "true";
+    fluid::Core::auto_set_offboard = std::string(argv[4]) == "true";
 
     fluid::OperationServer operation_server;
     operation_server.start();

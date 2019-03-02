@@ -42,6 +42,10 @@ namespace fluid {
 		static bool auto_arm;		 										///< Determines whether the state machine
 																			///< should auto arm or not.
 
+		static bool auto_set_offboard;										///< Determines whether the state machine
+																			///< should set itself into offboard
+																			///< automatically or not.
+
 		/**
 		 * @return     The shared singleton instance of the graph.
 		 */

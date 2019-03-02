@@ -19,7 +19,7 @@
 #include "../../include/mavros/mavros_setpoint_msg_defines.h"
 
 bool fluid::InitState::hasFinishedExecution() {
-    return armed;
+    return initialized;
 }
 
 void fluid::InitState::tick() {
@@ -66,13 +66,13 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     }
 
 
-    ROS_INFO_STREAM("Attemping to arm... Auto arm: " << fluid::Core::auto_arm);
+    // Arming
+    ROS_INFO_STREAM("Attemping to arm...");
 
-    if (fluid::Core::auto_arm) {
+    if (!fluid::Core::auto_arm) {
         ROS_INFO("Waiting for arm signal...");
     }
 
-    // Arming
 
     ros::Time last_request = ros::Time::now();
     ros::ServiceClient arming_client = node_handle_.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
@@ -113,7 +113,13 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
 
     // Offboard
-    ROS_INFO("Waiting for offboard signal...");
+    ROS_INFO("Trying to set offboard...");
+
+    if (!Core::auto_set_offboard) {
+        ROS_INFO("Waiting for offboard signal...");        
+    }
+
+
     fluid::MavrosStateSubscriber state_subscriber;
 
     bool set_offboard = false;
@@ -122,15 +128,17 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
         set_offboard = state_subscriber.getCurrentState().mode == "OFFBOARD";
 
-        /*
-        state_setter.attemptToSetState([&](bool completed) {
+        if (Core::auto_set_offboard) { 
+            state_setter.attemptToSetState([&](bool completed) {
 
-            set_offboard = completed;
+                set_offboard = completed;
 
-            if (completed) {
-                fluid::Core::getStatusPublisherPtr()->status.px4_mode = "offboard";
-            }
-        });*/
+                if (completed) {
+                    fluid::Core::getStatusPublisherPtr()->status.px4_mode = "offboard";
+                }
+            });
+        }
+        
 
         fluid::Core::getStatusPublisherPtr()->publish();
         position_target_publisher_p->publish(position_target);
@@ -140,4 +148,6 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     }
 
     ROS_INFO("OK!\n");
+
+    initialized = true;
 }

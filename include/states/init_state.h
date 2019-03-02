@@ -18,7 +18,7 @@ namespace fluid {
 
     private:
 
-        bool armed = false;                                 ///< Tells whether the drone is armed or not.
+        bool initialized = false;                                 ///< Tells whether the drone is initialized or not.
 
     public:
         
