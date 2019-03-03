@@ -12,7 +12,7 @@
 #include "../include/core/state.h"
 
 std::string last_command;
-bool initialized = true;
+bool initialized = false;
 
 void commandCallback(const std_msgs::String::ConstPtr& string) {
     std::string new_command = std::string(string->data);
@@ -25,16 +25,16 @@ void commandCallback(const std_msgs::String::ConstPtr& string) {
 
         if (new_command == "0") {
             geometry_msgs::Pose take_off_pose;
-            take_off_pose.position.x = 0;
-            take_off_pose.position.y = 0;
-            take_off_pose.position.z = 1.0;
+            take_off_pose.position.x = 1;
+            take_off_pose.position.y = 1;
+            take_off_pose.position.z = 1;
 
             operation_client.requestOperation(fluid::operation_identifiers::TAKE_OFF, take_off_pose, [&](bool completed) {});
         }
         else if (new_command == "1") {
             geometry_msgs::Pose land_pose;
-            land_pose.position.x = 0;
-            land_pose.position.y = 0;
+            land_pose.position.x = 1;
+            land_pose.position.y = 1;
             land_pose.position.z = 0.0;
 
             operation_client.requestOperation(fluid::operation_identifiers::LAND, land_pose, [&](bool completed) {});
@@ -50,6 +50,8 @@ int main(int argc, char** argv) {
     ros::NodeHandle node_handle;
 
     geometry_msgs::Pose pose;
+
+    ros::Subscriber subscriber = node_handle.subscribe<std_msgs::String>("/ai/voice/commmand", 100, commandCallback);
 
     // Send an operation to initialize and arm the drone. Take off when this is done.
     fluid::OperationClient init_operation_client(20);

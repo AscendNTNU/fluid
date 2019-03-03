@@ -3,10 +3,11 @@
   <arg name="refresh_rate" default="20" />
   <arg name="message_queue_size" default="1000" />
   <arg name="auto_arm" default="true" />
+  <arg name="auto_set_offboard" default="true"/>
 
   <rosparam command="load" file="$(find fluid_fsm)/params.yaml" />
 
-  <node name="server" pkg="fluid_fsm" type="main" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) $(arg auto_arm)"/>
+  <node name="server" pkg="fluid_fsm" type="main" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) $(arg auto_arm) $(arg auto_set_offboard)"/>
 
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url" value="$(arg fcu_url)"/>
