@@ -3,7 +3,7 @@
   <arg name="refresh_rate" default="20" />
   <arg name="message_queue_size" default="1000" />
   <arg name="auto_arm" default="true" />
-  <arg name="auto_set_offboard" default="false"/>
+  <arg name="auto_set_offboard" default="true"/>
 
   <rosparam command="load" file="$(find fluid_fsm)/params.yaml" />
 
