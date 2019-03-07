@@ -21,8 +21,6 @@ int main(int argc, char** argv) {
     geometry_msgs::Pose pose;
     bool initialized = false;
 
-    std::cout << "Hello world" << std::endl;
-
     float height = 1.0;
 
     // Send an operation to initialize and arm the drone. Take off when this is done.
@@ -53,8 +51,6 @@ int main(int argc, char** argv) {
 
     fluid::OperationClient track_operation_client(5);
     track_operation_client.requestOperation(fluid::OperationIdentifier::PositionFollow, pose, [&](bool completed) {});
-
-    std::cout << "hello world 2" << std::endl;
 
     ros::spin();
 
