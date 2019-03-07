@@ -41,7 +41,9 @@ void fluid::Transition::perform() {
             Core::getStatusPublisherPtr()->status.px4_mode = destination_state_p->px4_mode;
         });
 
-        // Publish poses continuously so PX4 won't complain
+        // Publish poses continuously so PX4 won't complain, have to have tick here so the type mask is 
+        // set up correctly
+        source_state_p->tick();
         source_state_p->position_target_publisher_p->publish(source_state_p->position_target);
 
         fluid::Core::getStatusPublisherPtr()->publish();
