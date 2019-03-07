@@ -20,9 +20,13 @@ int main(int argc, char** argv) {
 
 
     // Set boundries
-    nh.setParam("boundryX", 2);
-    nh.setParam("boundryY", 2);
-    nh.setParam("boundryZ", 1);
+    nh.setParam("minX", 0);
+    nh.setParam("minY", 0);
+    nh.setParam("minZ", 0);
+
+    nh.setParam("maxX", 2);
+    nh.setParam("maxY", 2);
+    nh.setParam("maxZ", 2);
 
     geometry_msgs::Pose pose;
     bool initialized = false;
@@ -59,10 +63,13 @@ int main(int argc, char** argv) {
 
     ros::Rate rate(20);
 
+    pose.position.z = height;
+
     while (ros::ok()) {
 
         pose.position.x += 0.01;
-        pose.position.z = height;
+        pose.position.y += 0.01;
+        pose.position.z += 0.01;
 
         move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [](bool completed) {});
 
