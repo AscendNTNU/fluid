@@ -33,7 +33,21 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
     tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
     // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
     // it to zero. 
-    yaw_target = (std::isnan(yaw) ? 0.0 : yaw) - theta;
+    calculated_pose_.yaw = theta;
+
+    // Figure out position
+    double distance = 1.0;
+
+    double deltaX = targetX - currentX;
+    double deltaY = targetY - currentY;
+    double deltaMagnitude = sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    double unitX = deltaX / deltaMagnitude;
+    double unitY = deltaY / deltaMagnitude;
+
+    calculated_pose_.position.x = currentX + unitX * (deltaMagnitude - distance);
+    calculated_pose_.position.y = currentY + unitY * (deltaMagnitude - distance);
+    calculated_pose_.position.z = 1.5;
 }
 
 bool fluid::PositionFollowState::hasFinishedExecution() {
@@ -43,29 +57,8 @@ bool fluid::PositionFollowState::hasFinishedExecution() {
 void fluid::PositionFollowState::tick() {
     position_target.type_mask = fluid::TypeMask::Default;
 
-    /*
-    
-    ROS_FATAL_STREAM(theta * 180.0/3.14159);
-
-    // Figure out position
-    double distance = 1.0;
-
-	double deltaX = targetX - currentX;
-	double deltaY = targetY - currentY;
-    double deltaMagnitude = sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    double unitX = deltaX / deltaMagnitude;
-    double unitY = deltaY / deltaMagnitude;
-
-    double newX = currentX + unitX*(deltaMagnitude - distance);
-    double newY = currentY + unitY*(deltaMagnitude - distance);
-
-    position_target.position.x = newX;
-    position_target.position.y = newY;
+    position_target.position.x = calculated_pose_.position.x;
+    position_target.position.y = calculated_pose_.position.y;
     position_target.position.z = 1.5;
-
-    ROS_INFO_STREAM("x: " << position_target.position.x << ", y: " << position_target.position.y << ", z: " << position_target.position.z);*/
-
-    position_target.position.z = 1.5;
-    position_target.yaw = yaw_target;
+    position_target.yaw = calculated_pose_.yaw;
 }
