@@ -4,8 +4,8 @@
 // http://discuss.px4.io/t/offboard-takeoff-land-loiter-via-set-position-target-local-ned/2648/2
 //
 
-#ifndef FLUID_FSM_MAVROS_SETPOINT_MSG_DEFINES_H
-#define FLUID_FSM_MAVROS_SETPOINT_MSG_DEFINES_H
+#ifndef FLUID_FSM_TYPE_MASK_H
+#define FLUID_FSM_TYPE_MASK_H
 
 #include <cstdint>
 
@@ -21,23 +21,18 @@
 #define FORCE (1 << 9)          // Force in af vector flag
 #define IGNORE_YAW (1 << 10)
 #define IGNORE_YAW_RATE (1 << 11)
-#define SETPOINT_TYPE_TAKEOFF 0x1000
-#define SETPOINT_TYPE_LAND 0b0010111111000111 //0x2000
-#define SETPOINT_TYPE_LOITER 0x3000
-#define SETPOINT_TYPE_IDLE 0x4000
-#define MASK_VELOCITY 0b0000111111000111
-#define MASK_LAND_VELOCITY 0b0010111111000111
 
 namespace fluid {
-    constexpr uint16_t DEFAULT_MASK = IGNORE_VX | IGNORE_VY | IGNORE_VZ |
-                                      IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ |
-                                      IGNORE_YAW_RATE;
 
-	constexpr uint16_t IDLE_MASK 	= IGNORE_PX | IGNORE_PY | IGNORE_PZ;
+	namespace TypeMask {
 
+	    constexpr uint16_t Default = IGNORE_VX | IGNORE_VY | IGNORE_VZ |
+                                     IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ |
+                              	 	 IGNORE_YAW_RATE;
 
-
+		constexpr uint16_t Idle    = IGNORE_PX | IGNORE_PY | IGNORE_PZ;
+	}
 }
 
 
-#endif //FLUID_FSM_MAVROS_SETPOINT_MSG_DEFINES_H
+#endif
