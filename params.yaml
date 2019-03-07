@@ -1,3 +1,7 @@
-boundryX: 0.0
-boundryY: 0.0
-boundryZ: 0.0
+minX: 0.0
+minY: 0.0
+minZ: 0.0
+
+maxX: 0.0
+maxY: 0.0
+maxZ: 0.0
