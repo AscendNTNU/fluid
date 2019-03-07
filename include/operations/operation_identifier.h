@@ -9,10 +9,11 @@
 
 namespace fluid {
     namespace OperationIdentifier {
-        const std::string		Init      = "init_operation",
-                                TakeOff   = "take_off_operation",
-                                Move      = "move_operation",
-                                Land      = "land_operation";
+        const std::string		Init           = "init_operation",
+                                TakeOff        = "take_off_operation",
+                                Move           = "move_operation",
+                                Land      	   = "land_operation",
+                                PositionFollow = "position_follow_operation";
     }
 }
 

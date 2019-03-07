@@ -12,6 +12,7 @@
 #include <cmath>
 #include <assert.h>
 #include <algorithm>
+#include <operations/position_follow_operation.h>
 
 #include "../../include/actionlib/operation_server.h"
 #include "../../include/operations/operation_identifier.h"
@@ -100,6 +101,9 @@ void fluid::OperationServer::goalCallback() {
     }
     else if (operation_identifier.data == fluid::OperationIdentifier::Land) {
         next_operation_p_ = std::make_shared<fluid::LandOperation>(position_target);
+    }
+    else if (operation_identifier.data == fluid::OperationIdentifier::PositionFollow) {
+        next_operation_p_ = std::make_shared<fluid::PositionFollowOperation>();
     }
 
     new_operation_requested_ = true;

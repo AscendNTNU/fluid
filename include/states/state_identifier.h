@@ -10,12 +10,13 @@
 
 namespace fluid {
     namespace StateIdentifier {
-        const std::string     	         Init      = "init",
-                                         Idle      = "idle",
-                                         TakeOff   = "take_off",
-                                         Hold      = "hold",
-                                         Move      = "move",
-                                         Land      = "land";
+        const std::string     	         Init           = "init",
+                                         Idle           = "idle",
+                                         TakeOff        = "take_off",
+                                         Hold           = "hold",
+                                         Move           = "move",
+                                         Land           = "land",
+                                         PositionFollow = "position_follow";
     }
 
     namespace PX4 {
