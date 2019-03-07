@@ -22,8 +22,9 @@ namespace fluid {
 
         geometry_msgs::Pose object_target_pose_;                                ///< The pose to follow.
 
-        double yaw_target = 0.0;                                                ///< When we retrieve a new target, 
-                                                                                ///< this is the setpoint yaw.
+        mavros_msgs::PositionTarget calculated_pose_;                           ///< The pose we want the drone to be
+                                                                                ///< at so it's on some distance from 
+                                                                                ///< the object target pose.
 
         ros::Subscriber object_target_pose_subscriber_;                         ///< Retrieves the pose of the object 
                                                                                 ///< we're to follow
