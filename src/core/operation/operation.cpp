@@ -59,7 +59,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
         // TODO: What do we do here if the different states require different position targets?
         std::shared_ptr<fluid::State> state_p = path[index];
-
+        
         if (index == path.size() - 1) {
             state_p->position_target = position_target;
         }
