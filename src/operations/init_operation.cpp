@@ -5,9 +5,9 @@
 #include "../../include/operations/init_operation.h"
 
 fluid::InitOperation::InitOperation(mavros_msgs::PositionTarget position_target) :
-        							Operation(fluid::operation_identifiers::INIT,
-							                  fluid::StateIdentifiers::INIT,
-							                  fluid::StateIdentifiers::IDLE,
+        							Operation(fluid::OperationIdentifier::Init,
+							                  fluid::StateIdentifier::Init,
+							                  fluid::StateIdentifier::Idle,
 							                  position_target) {}
 
 

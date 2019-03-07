@@ -2,7 +2,7 @@
 #include <geometry_msgs/Pose.h>
 
 #include "../include/actionlib/operation_client.h"
-#include "../include/operations/operation_defines.h"
+#include "../include/operations/operation_identifier.h"
 
 int main(int argc, char** argv) {
 
@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
     // Send an operation to initialize and arm the drone. Take off when this is done.
     fluid::OperationClient init_operation_client(20);
     
-    init_operation_client.requestOperation(fluid::operation_identifiers::INIT, pose, [&](bool completed) {
+    init_operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
         if (completed) {
 
             geometry_msgs::Pose take_off_pose;
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 
             fluid::OperationClient take_off_operation_client(20);
 
-            take_off_operation_client.requestOperation(fluid::operation_identifiers::TAKE_OFF, take_off_pose, [&](bool completed) {
+            take_off_operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
                 initialized = completed;
             });
         }
@@ -57,26 +57,26 @@ int main(int argc, char** argv) {
     pose.position.y = 0;
     pose.position.z = height;
     
-    move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
+    move_operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
         if (completed) {
             pose.position.x = distance;
             pose.position.y = distance;
             pose.position.z = height;
 
-            move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
+            move_operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
                 if (completed) {
 
                     pose.position.x = 0;
                     pose.position.y = distance;
                     pose.position.z = height;
 
-                    move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
+                    move_operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
                         if (completed) {
                             pose.position.x = 0;
                             pose.position.y = 0;
                             pose.position.z = height;
 
-                            move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
+                            move_operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
                                 if (completed) {
                                     fluid::OperationClient operation_land_client(60);
 
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
                                     land_pose.position.y = 0;
                                     land_pose.position.z = 0;
 
-                                    operation_land_client.requestOperation(fluid::operation_identifiers::LAND, land_pose, [&](bool completed) {});
+                                    operation_land_client.requestOperation(fluid::OperationIdentifier::Land, land_pose, [&](bool completed) {});
 
                                 }
                             });

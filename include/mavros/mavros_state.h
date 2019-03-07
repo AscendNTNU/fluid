@@ -6,6 +6,7 @@
 #define FLUID_FSM_MAVROS_STATE_H
 
 #include "../core/state.h"
+#include "../core/core.h"
 
 namespace fluid {
     /**
@@ -22,7 +23,7 @@ namespace fluid {
          * @param identifier The identifier of the state.
          * @param px4_mode The mode this mavros state represents within px4.
          */
-        MavrosState(fluid::StateIdentifier identifier, std::string px4_mode);
+        MavrosState(std::string identifier, std::string px4_mode);
     };
 }
 

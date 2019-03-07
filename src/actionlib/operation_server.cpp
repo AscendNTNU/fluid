@@ -14,7 +14,7 @@
 #include <algorithm>
 
 #include "../../include/actionlib/operation_server.h"
-#include "../../include/operations/operation_defines.h"
+#include "../../include/operations/operation_identifier.h"
 #include "operations/init_operation.h"
 #include "operations/move_operation.h"
 #include "operations/land_operation.h"
@@ -83,22 +83,22 @@ void fluid::OperationServer::goalCallback() {
 
 
     // Point the next operation pointer to the newly initialized operation.
-    if (operation_identifier.data == fluid::operation_identifiers::INIT) {
+    if (operation_identifier.data == fluid::OperationIdentifier::Init) {
         position_target.position.x = 0.0;
         position_target.position.y = 0.0;
         position_target.position.z = 0.0;
         next_operation_p_ = std::make_shared<fluid::InitOperation>(position_target);
 
     }
-    else if (operation_identifier.data == fluid::operation_identifiers::TAKE_OFF) {
+    else if (operation_identifier.data == fluid::OperationIdentifier::TakeOff) {
         next_operation_p_ = std::make_shared<fluid::TakeOffOperation>(position_target);
 
     }
-    else if (operation_identifier.data == fluid::operation_identifiers::MOVE) {
+    else if (operation_identifier.data == fluid::OperationIdentifier::Move) {
         next_operation_p_ = std::make_shared<fluid::MoveOperation>(position_target);
 
     }
-    else if (operation_identifier.data == fluid::operation_identifiers::LAND) {
+    else if (operation_identifier.data == fluid::OperationIdentifier::Land) {
         next_operation_p_ = std::make_shared<fluid::LandOperation>(position_target);
     }
 

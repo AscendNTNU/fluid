@@ -10,7 +10,7 @@
 #include <memory>
 
 
-fluid::MavrosState::MavrosState(fluid::StateIdentifier identifier, std::string px4_mode) : 
+fluid::MavrosState::MavrosState(std::string identifier, std::string px4_mode) : 
 	State(std::move(identifier),
 	px4_mode, 
 	"mavros/local_position/pose", 

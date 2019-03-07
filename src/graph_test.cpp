@@ -9,7 +9,7 @@
 #include "../include/core/operation/state_graph.h"
 #include <vector>
 #include "../include/core/state.h"
-#include "../include/states/state_defines.h"
+#include "../include/states/state_identifier.h"
 
 int main(int argc, char** argv) {
 
@@ -18,8 +18,8 @@ int main(int argc, char** argv) {
 
     fluid::StateGraph graph;
 
-    std::vector<std::shared_ptr<fluid::State>> plan = graph.getPathToEndState(fluid::StateIdentifiers::INIT, 
-    																   		  fluid::StateIdentifiers::IDLE);
+    std::vector<std::shared_ptr<fluid::State>> plan = graph.getPathToEndState(fluid::StateIdentifier::Init, 
+    																   		  fluid::StateIdentifier::Idle);
 
     for (auto state : plan) {
     	std::cout << state->identifier << std::endl;
