@@ -11,6 +11,7 @@
 #include "../../../include/states/land_state.h"
 #include "../../../include/states/hold_state.h"
 #include "../../../include/states/move_state.h"
+#include "../../../include/states/position_follow_state.h"
 
 #include <iterator>
 #include <algorithm>
@@ -26,6 +27,7 @@ fluid::StateGraph::StateGraph() : Graph() {
     std::shared_ptr<fluid::Identifiable> land_state = std::make_shared<fluid::LandState>();
     std::shared_ptr<fluid::Identifiable> hold_state = std::make_shared<fluid::HoldState>();
     std::shared_ptr<fluid::Identifiable> move_state = std::make_shared<fluid::MoveState>();
+    std::shared_ptr<fluid::Identifiable> position_follow_state = std::make_shared<fluid::PositionFollowState>();
 
     std::vector<fluid::Edge<std::shared_ptr<fluid::Identifiable>>> edges;
 
@@ -38,6 +40,8 @@ fluid::StateGraph::StateGraph() : Graph() {
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(hold_state, land_state));
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(land_state, idle_state));
 
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(hold_state, position_follow_state));
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::Identifiable>>(position_follow_state, hold_state));
     addEdges(edges);
 }
 

@@ -1,4 +1,4 @@
 <launch>
 	<include file="$(find fluid_fsm)/launch/server_gazebo.launch"/>
-	<node name="client" pkg="fluid_fsm" type="test_client" output="screen"/>
+	<node name="client" pkg="fluid_fsm" type="client_square" output="screen"/>
 </launch>

@@ -10,9 +10,7 @@
 #include "identifiable.h"
 
 namespace fluid {
-
-    typedef std::string StateIdentifier;
-
+    
     /** \class State
      *  \brief Interface for states within the finite state machine.
      *
@@ -56,7 +54,7 @@ namespace fluid {
          * @param pose_subscription_topic The topic to retrieve poses from. 
          * @param position_target_publisher_p Position targets publisher.
          */
-        State(fluid::StateIdentifier identifier,
+        State(std::string identifier,
               std::string px4_mode,
               std::string pose_subscription_topic,
               std::shared_ptr<fluid::PosePublisher> position_target_publisher_p);

@@ -8,9 +8,9 @@
 #include "../core/operation/operation.h"
 #include "../core/state.h"
 #include "../core/transition.h"
-#include "operation_defines.h"
+#include "operation_identifier.h"
 #include <mavros_msgs/PositionTarget.h>
-#include "../states/state_defines.h"
+#include "../states/state_identifier.h"
 
 namespace fluid {
 

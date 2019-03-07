@@ -6,7 +6,7 @@
 #define FLUID_FSM_MOVE_STATE_H
 
 #include "../mavros/mavros_state.h"
-#include "state_defines.h"
+#include "state_identifier.h"
 
 #include <ros/ros.h>
 
@@ -21,7 +21,7 @@ namespace fluid {
 
         /** Initializes the move state.
          */
-        explicit MoveState() : MavrosState(fluid::StateIdentifiers::MOVE, fluid::PX4::OFFBOARD) {}
+        explicit MoveState() : MavrosState(fluid::StateIdentifier::Move, fluid::PX4::Offboard) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

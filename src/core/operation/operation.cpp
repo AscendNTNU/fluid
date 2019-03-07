@@ -15,7 +15,7 @@
 #include "../../../include/actionlib/operation_server.h"
 #include "../../../include/core/core.h"
 
-fluid::Operation::Operation(OperationIdentifier identifier,
+fluid::Operation::Operation(std::string identifier,
                             std::string destination_state_identifier,
                             std::string final_state_identifier,
                             mavros_msgs::PositionTarget position_target) :
@@ -59,7 +59,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
         // TODO: What do we do here if the different states require different position targets?
         std::shared_ptr<fluid::State> state_p = path[index];
-
+        
         if (index == path.size() - 1) {
             state_p->position_target = position_target;
         }

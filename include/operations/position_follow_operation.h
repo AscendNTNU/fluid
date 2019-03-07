@@ -1,9 +1,9 @@
 //
-// Created by simengangstad on 08.11.18.
+// Created by simengangstad on 07.03.19.
 //
 
-#ifndef FLUID_FSM_INIT_OPERATION_H
-#define FLUID_FSM_INIT_OPERATION_H
+#ifndef FLUID_FSM_POSITION_FOLLOW_OPERATION_H
+#define FLUID_FSM_POSITION_FOLLOW_OPERATION_H
 
 #include "../core/operation/operation.h"
 #include "operation_identifier.h"
@@ -15,14 +15,14 @@
 namespace fluid {
 
     /**
-     * \class InitOperation
-     * \brief Encapsulates the operation of initializing and arming the drone.
+     * \class PositionFollowOperation
+     * \brief Encapsulates the operation of following after a point, e.g. a person.
      */
-    class InitOperation: public Operation {
+    class PositionFollowOperation: public Operation {
 
     public:
 
-        InitOperation(mavros_msgs::PositionTarget position_target);
+        PositionFollowOperation();
 
         /**
          * Method overriden from superclass.
@@ -31,4 +31,4 @@ namespace fluid {
     };
 }
 
-#endif //FLUID_FSM_INIT_OPERATION_H
+#endif
