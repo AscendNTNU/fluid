@@ -6,7 +6,7 @@
 #define FLUID_FSM_INIT_STATE_H
 
 #include "../mavros/mavros_state.h"
-#include "state_defines.h"
+#include "state_identifier.h"
 
 
 namespace fluid {
@@ -24,7 +24,7 @@ namespace fluid {
         
         /** Initializes the init state.
          */
-        explicit InitState() : MavrosState(fluid::StateIdentifiers::INIT, fluid::PX4::OFFBOARD) {}
+        explicit InitState() : MavrosState(fluid::StateIdentifier::Init, fluid::PX4::Offboard) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

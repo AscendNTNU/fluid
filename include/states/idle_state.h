@@ -6,7 +6,7 @@
 #define FLUID_FSM_IDLE_STATE_H
 
 #include "../mavros/mavros_state.h"
-#include "state_defines.h"
+#include "state_identifier.h"
 
 // TODO: Use pixhawk idle state
 
@@ -21,7 +21,7 @@ namespace fluid {
         /**
          * Initializes the idle state.
          */
-        explicit IdleState() : MavrosState(fluid::StateIdentifiers::IDLE, fluid::PX4::OFFBOARD) {}
+        explicit IdleState() : MavrosState(fluid::StateIdentifier::Idle, fluid::PX4::Offboard) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

@@ -36,7 +36,7 @@ void fluid::OperationClient::waitForResult(
 }
 
 void fluid::OperationClient::requestOperation(
-    fluid::OperationIdentifier operation_identifier,
+    std::string operation_identifier,
 	geometry_msgs::Pose target_pose,
     std::function<void (bool)> completion_handler) {
 

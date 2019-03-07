@@ -6,7 +6,7 @@
 #define FLUID_FSM_TAKE_OFF_STATE_H
 
 #include "../mavros/mavros_state.h"
-#include "state_defines.h"
+#include "state_identifier.h"
 
 namespace fluid {
 
@@ -18,7 +18,7 @@ namespace fluid {
 
         /** Initializes the take off state.
          */
-        explicit TakeOffState() : MavrosState(fluid::StateIdentifiers::TAKE_OFF, fluid::PX4::OFFBOARD) {}
+        explicit TakeOffState() : MavrosState(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

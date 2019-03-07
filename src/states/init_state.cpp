@@ -16,7 +16,7 @@
 #include "../../include/core/core.h"
 #include "../../include/mavros/mavros_state_setter.h"
 #include "../../include/mavros/mavros_state_subscriber.h"
-#include "../../include/mavros/mavros_setpoint_msg_defines.h"
+#include "../../include/mavros/type_mask.h"
 
 bool fluid::InitState::hasFinishedExecution() {
     return initialized;
@@ -56,7 +56,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     position_target.position.x = 0;
     position_target.position.y = 0;
     position_target.position.z = 0;
-    position_target.type_mask = fluid::IDLE_MASK;
+    position_target.type_mask = fluid::TypeMask::Idle;
 
     for (int i = Core::refresh_rate*3; ros::ok() && i > 0; --i) {
         position_target_publisher_p->publish(position_target);

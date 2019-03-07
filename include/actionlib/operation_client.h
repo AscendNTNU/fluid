@@ -51,7 +51,7 @@ class OperationClient {
      * @param completion_handler Gets fired when the operation finished, includes a flag whether the operation finished
      *                           before timeout or not.
      */
-    void requestOperation(fluid::OperationIdentifier operation_identifier, geometry_msgs::Pose target_pose,
+    void requestOperation(std::string operation_identifier, geometry_msgs::Pose target_pose,
 			  std::function<void(bool)> completion_handler);
 };
 }

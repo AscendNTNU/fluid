@@ -15,7 +15,7 @@
 #include "../../../include/actionlib/operation_server.h"
 #include "../../../include/core/core.h"
 
-fluid::Operation::Operation(OperationIdentifier identifier,
+fluid::Operation::Operation(std::string identifier,
                             std::string destination_state_identifier,
                             std::string final_state_identifier,
                             mavros_msgs::PositionTarget position_target) :

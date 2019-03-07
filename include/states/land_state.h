@@ -6,7 +6,7 @@
 #define FLUID_FSM_LAND_STATE_H
 
 #include "../mavros/mavros_state.h"
-#include "state_defines.h"
+#include "state_identifier.h"
 #include "../tools/land_detector.h"
 
 namespace fluid {
@@ -25,7 +25,7 @@ namespace fluid {
         /**
          * Initializes the land state.
          */
-        explicit LandState() : MavrosState(fluid::StateIdentifiers::LAND, fluid::PX4::LAND), land_detector_() {}
+        explicit LandState() : MavrosState(fluid::StateIdentifier::Land, fluid::PX4::Land), land_detector_() {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

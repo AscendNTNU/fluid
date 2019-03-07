@@ -3,11 +3,10 @@
 //
 
 #include "../../include/core/state.h"
-#include "../../include/mavros/mavros_setpoint_msg_defines.h"
 #include "../../include/core/core.h"
 #include <utility>
 
-fluid::State::State(fluid::StateIdentifier identifier,
+fluid::State::State(std::string identifier,
                     std::string px4_mode,
                     std::string pose_subscription_topic,
                     std::shared_ptr<fluid::PosePublisher> position_target_publisher_p) : 

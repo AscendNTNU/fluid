@@ -10,7 +10,7 @@
 
 #include "../include/core/operation/operation.h"
 #include "../include/actionlib/operation_client.h"
-#include "../include/operations/operation_defines.h"
+#include "../include/operations/operation_identifier.h"
 #include "../include/core/state.h"
 
 int main(int argc, char** argv) {
@@ -20,9 +20,13 @@ int main(int argc, char** argv) {
 
 
     // Set boundries
-    nh.setParam("boundryX", 2);
-    nh.setParam("boundryY", 2);
-    nh.setParam("boundryZ", 1);
+    nh.setParam("minX", 0);
+    nh.setParam("minY", 0);
+    nh.setParam("minZ", 0);
+
+    nh.setParam("maxX", 2);
+    nh.setParam("maxY", 2);
+    nh.setParam("maxZ", 2);
 
     geometry_msgs::Pose pose;
     bool initialized = false;
@@ -32,7 +36,7 @@ int main(int argc, char** argv) {
     // Send an operation to initialize and arm the drone. Take off when this is done.
     fluid::OperationClient init_operation_client(20);
     
-    init_operation_client.requestOperation(fluid::operation_identifiers::INIT, pose, [&](bool completed) {
+    init_operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
         if (completed) {
 
             geometry_msgs::Pose take_off_pose;
@@ -42,7 +46,7 @@ int main(int argc, char** argv) {
 
             fluid::OperationClient take_off_operation_client(20);
 
-            take_off_operation_client.requestOperation(fluid::operation_identifiers::TAKE_OFF, take_off_pose, [&](bool completed) {
+            take_off_operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
                 initialized = completed;
             });
         }
@@ -59,12 +63,15 @@ int main(int argc, char** argv) {
 
     ros::Rate rate(20);
 
+    pose.position.z = height;
+
     while (ros::ok()) {
 
         pose.position.x += 0.01;
-        pose.position.z = height;
+        pose.position.y += 0.01;
+        pose.position.z += 0.01;
 
-        move_operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [](bool completed) {});
+        move_operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [](bool completed) {});
 
         rate.sleep();
         ros::spinOnce();

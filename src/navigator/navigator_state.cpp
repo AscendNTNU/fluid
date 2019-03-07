@@ -4,7 +4,7 @@
 
 #include "../../include/navigator/navigator_state.h"
 
- fluid::NavigatorState::NavigatorState(fluid::OperationIdentifier identifier, std::string px4_mode) :
+ fluid::NavigatorState::NavigatorState(std::string identifier, std::string px4_mode) :
  State(std::move(identifier),
  	   px4_mode, 
  	   "state_estimator_pose",
