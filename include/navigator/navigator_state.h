@@ -31,7 +31,6 @@ namespace fluid {
          *
          * @param identifier The identifier of the state.
          */
-        // TODO: Topic is temporary
         NavigatorState(std::string identifier, std::string px4_mode);
     };
 }
