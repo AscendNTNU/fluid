@@ -20,6 +20,13 @@ namespace fluid {
 
     private: 
 
+        bool has_target_ = false;                                               ///< Indicates whether a valid target 
+                                                                                ///< was pubilshed
+
+        bool set_standby_position_ = false;                                     ///< Determines whether we set a target
+                                                                                ///< pose when we don't have an object 
+                                                                                ///< to track.
+
         geometry_msgs::Pose object_target_pose_;                                ///< The pose to follow.
 
         mavros_msgs::PositionTarget calculated_pose_;                           ///< The pose we want the drone to be
