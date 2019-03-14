@@ -1,5 +1,7 @@
 #include "../../include/states/position_follow_state.h"
 #include "../../include/mavros/type_mask.h"
+#include "../../include/core/core.h"
+
 
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -14,6 +16,10 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
         // Same target, so we don't do any new calculations.
         return;
     }
+
+    Core::getStatusPublisherPtr()->status.target_pose_x = object_target_pose.position.x;
+    Core::getStatusPublisherPtr()->status.target_pose_y = object_target_pose.position.y;
+    Core::getStatusPublisherPtr()->status.target_pose_z = object_target_pose.position.z;
 
     // TODO: need to do a check whether we've got a target or not
 
