@@ -11,18 +11,25 @@ fluid::StatusPublisher::StatusPublisher() {
     status.target_pose_x = 0;
 	status.target_pose_y = 0;
 	status.target_pose_z = 0;
-	status.half_boundry_x = 0;
-	status.half_boundry_y = 0;
-	status.half_boundry_z = 0;
+	status.min_x = 0;
+	status.min_y = 0;
+	status.min_z = 0;
+	status.max_x = 0;
+	status.max_y = 0;
+	status.max_z = 0;
 
     publisher_p_ = node_handle_.advertise<ascend_msgs::FluidFsmStatus>("fluid_fsm/status/", Core::message_queue_size);
 }
 
 void fluid::StatusPublisher::publish() {
 
-	node_handle_.getParam("boundryX", status.half_boundry_x);
-	node_handle_.getParam("boundryY", status.half_boundry_y);
-	node_handle_.getParam("boundryZ", status.half_boundry_z);
+	node_handle_.getParam("minX", status.min_x);
+	node_handle_.getParam("minY", status.min_y);
+	node_handle_.getParam("minZ", status.min_z);
+
+	node_handle_.getParam("maxX", status.max_x);
+	node_handle_.getParam("maxY", status.max_y);
+	node_handle_.getParam("maxZ", status.max_z);
 
 	publisher_p_.publish(status);
 }

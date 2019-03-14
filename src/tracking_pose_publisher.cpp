@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
     ros::Rate rate(5);
 
     double theta = 0.0;
+    
 
     while (ros::ok()) {
 

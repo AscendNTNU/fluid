@@ -1,5 +1,7 @@
 #include "../../include/states/position_follow_state.h"
 #include "../../include/mavros/type_mask.h"
+#include "../../include/core/core.h"
+
 
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -14,6 +16,15 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
         // Same target, so we don't do any new calculations.
         return;
     }
+
+    Core::getStatusPublisherPtr()->status.target_pose_x = object_target_pose.position.x;
+    Core::getStatusPublisherPtr()->status.target_pose_y = object_target_pose.position.y;
+    Core::getStatusPublisherPtr()->status.target_pose_z = object_target_pose.position.z;
+
+    // TODO: need to do a check whether we've got a target or not
+
+    set_standby_position_ = false;
+    has_target_ = true;
 
     object_target_pose_ = object_target_pose;
 
@@ -57,8 +68,29 @@ bool fluid::PositionFollowState::hasFinishedExecution() {
 void fluid::PositionFollowState::tick() {
     position_target.type_mask = fluid::TypeMask::Default;
 
+    if (!has_target_) {
+        if (!set_standby_position_) {
+            calculated_pose_.position.x = getCurrentPose().pose.position.x;
+            calculated_pose_.position.y = getCurrentPose().pose.position.y;
+            calculated_pose_.position.z = getCurrentPose().pose.position.z;
+
+            tf2::Quaternion quat(getCurrentPose().pose.orientation.x, 
+                                 getCurrentPose().pose.orientation.y, 
+                                 getCurrentPose().pose.orientation.z, 
+                                 getCurrentPose().pose.orientation.w);
+
+            double roll, pitch, yaw;
+            tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+            // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
+            // it to zero. 
+            calculated_pose_.yaw = yaw;
+
+            set_standby_position_ = true;
+        }
+    }
+
     position_target.position.x = calculated_pose_.position.x;
     position_target.position.y = calculated_pose_.position.y;
-    position_target.position.z = 1.5;
-    position_target.yaw = calculated_pose_.yaw;
+    position_target.position.z = calculated_pose_.position.z;
+    position_target.yaw	= calculated_pose_.yaw;
 }
