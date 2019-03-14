@@ -45,7 +45,7 @@ In order to initialize the drone and link it up with PX4 and arm it we need to r
 #include <geometry_msgs/Pose.h>
 
 #include "../include/actionlib/operation_client.h"
-#include "../include/operations/operation_defines.h"
+#include "../include/operations/operation_identifier.h"
 
 int main(int argc, char** argv) {
 
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     //
     // This function call is asynchronous, so we have to "wait" until it finishes because the drone has to be 
     // initialized in order to do other things.
-    init_operation_client.requestOperation(fluid::operation_identifiers::INIT, pose, [&](bool completed) {
+    init_operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
         initialized = completed;
     });
 
@@ -102,7 +102,7 @@ int main(int argc, char** argv) {
     pose.position.z = 1.5;
 
     // We then request take off:
-    operation_client.requestOperation(fluid::operation_identifiers::TAKE_OFF, pose, [&](bool completed) {
+    operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, pose, [&](bool completed) {
         if (completed) {
 
             ROS_INFO("Drone completed take off!");
@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
             pose.position.x = 1;
             pose.position.z = 1.5;
 
-            operation_client.requestOperation(fluid::operation_identifiers::MOVE, pose, [&](bool completed) {
+            operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
                 if (completed) {
                     ROS_INFO("Drone flew to the position!");
                 }
