@@ -17,9 +17,13 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
         return;
     }
 
+    double height = 2.5;
+
+    node_handle_.getParam("positionFollowHeight", height);
+
     Core::getStatusPublisherPtr()->status.target_pose_x = object_target_pose.position.x;
     Core::getStatusPublisherPtr()->status.target_pose_y = object_target_pose.position.y;
-    Core::getStatusPublisherPtr()->status.target_pose_z = object_target_pose.position.z;
+    Core::getStatusPublisherPtr()->status.target_pose_z = height;
 
     // TODO: need to do a check whether we've got a target or not
 
@@ -58,7 +62,7 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
 
     calculated_pose_.position.x = currentX + unitX * (deltaMagnitude - distance);
     calculated_pose_.position.y = currentY + unitY * (deltaMagnitude - distance);
-    calculated_pose_.position.z = 1.5;
+    calculated_pose_.position.z = height;
 }
 
 bool fluid::PositionFollowState::hasFinishedExecution() {
