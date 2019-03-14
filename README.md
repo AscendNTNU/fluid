@@ -139,3 +139,4 @@ The different operations are:
 - Position follow (follow a given position, can be a person or an object)
     - In the position follow state the the drone will follow a position given on a topic. If there isn't anything
       published on that topic it will just hover.
+      
