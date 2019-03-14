@@ -5,3 +5,5 @@ minZ: 0.0
 maxX: 0.0
 maxY: 0.0
 maxZ: 0.0
+
+positionFollowHeight: 2.3
