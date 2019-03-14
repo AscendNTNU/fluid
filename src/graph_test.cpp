@@ -21,9 +21,9 @@ int main(int argc, char** argv) {
     std::vector<std::shared_ptr<fluid::State>> plan = graph.getPathToEndState(fluid::StateIdentifier::Init, 
     																   		  fluid::StateIdentifier::Idle);
 
-    for (auto state : plan) {
+    for (const auto state : plan) {
     	std::cout << state->identifier << std::endl;
     }
-    
+
     return 0;
 }
