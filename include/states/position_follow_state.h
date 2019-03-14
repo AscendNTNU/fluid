@@ -45,7 +45,7 @@ namespace fluid {
          */
         explicit PositionFollowState() : 
         MavrosState(fluid::StateIdentifier::PositionFollow, fluid::PX4::Offboard), 
-        object_target_pose_subscriber_(node_handle_.subscribe("/perception/tracking", 
+        object_target_pose_subscriber_(node_handle_.subscribe("perception/target", 
                                                               Core::message_queue_size, 
                                                               &PositionFollowState::objectTargetPoseCallback, 
                                                               this)) {}
