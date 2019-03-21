@@ -29,7 +29,9 @@ void commandCallback(const std_msgs::String::ConstPtr& string) {
             take_off_pose.position.y = 1;
             take_off_pose.position.z = 1;
 
-            operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {});
+            operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, 
+                                              take_off_pose, 
+                                              [&](bool completed) {});
         }
         else if (new_command == "1") {
             geometry_msgs::Pose land_pose;
@@ -37,7 +39,9 @@ void commandCallback(const std_msgs::String::ConstPtr& string) {
             land_pose.position.y = 1;
             land_pose.position.z = 0.0;
 
-            operation_client.requestOperation(fluid::OperationIdentifier::Land, land_pose, [&](bool completed) {});
+            operation_client.requestOperation(fluid::OperationIdentifier::Land, 
+                                              land_pose, 
+                                              [&](bool completed) {});
         }
 
         last_command = std::string(new_command);
