@@ -17,16 +17,14 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
         return;
     }
 
-    double height = 2.5;
+    double height = 2.3;
 
     node_handle_.getParam("positionFollowHeight", height);
 
     Core::getStatusPublisherPtr()->status.target_pose_x = object_target_pose.position.x;
     Core::getStatusPublisherPtr()->status.target_pose_y = object_target_pose.position.y;
     Core::getStatusPublisherPtr()->status.target_pose_z = height;
-
-    // TODO: need to do a check whether we've got a target or not
-
+ 
     set_standby_position_ = false;
     has_target_ = true;
 
@@ -37,18 +35,7 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
     double currentX = getCurrentPose().pose.position.x; 
     double currentY = getCurrentPose().pose.position.y;
 
-    double theta = atan2(targetY - currentY, targetX - currentX);
-
-    tf2::Quaternion quat(getCurrentPose().pose.orientation.x, 
-                         getCurrentPose().pose.orientation.y, 
-                         getCurrentPose().pose.orientation.z, 
-                         getCurrentPose().pose.orientation.w);
-
-    double roll, pitch, yaw;
-    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-    // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
-    // it to zero. 
-    calculated_pose_.yaw = theta;
+    calculated_pose_.yaw = atan2(targetY - currentY, targetX - currentX);
 
     // Figure out position
     double distance = 1.0;

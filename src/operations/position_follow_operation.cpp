@@ -6,7 +6,7 @@
 
 fluid::PositionFollowOperation::PositionFollowOperation() : Operation(fluid::OperationIdentifier::PositionFollow,
 													                  fluid::StateIdentifier::PositionFollow,
-													                  fluid::StateIdentifier::Idle,
+													                  fluid::StateIdentifier::Hold,
 													                  mavros_msgs::PositionTarget()) {}
 
 

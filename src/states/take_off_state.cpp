@@ -8,7 +8,7 @@
 #include "../../include/mavros/type_mask.h"
 
 bool fluid::TakeOffState::hasFinishedExecution() {
-    return PoseUtil::distanceBetween(current_pose_, position_target) < 0.2;
+    return PoseUtil::distanceBetween(current_pose_, position_target) < 0.3;
 }
 
 void fluid::TakeOffState::tick() {
