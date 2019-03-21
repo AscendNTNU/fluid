@@ -53,12 +53,12 @@ int main(int argc, char** argv) {
 
     fluid::OperationClient track_operation_client(5);
     track_operation_client.requestOperation(fluid::OperationIdentifier::PositionFollow, pose, [](bool completed) {});
-/*
+
 
     std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();
     std::chrono::time_point<std::chrono::system_clock> current = std::chrono::system_clock::now();
     
-    while (ros::ok() && std::chrono::duration_cast<std::chrono::milliseconds>(current - startTime).count() < 15000) {
+    while (ros::ok() && std::chrono::duration_cast<std::chrono::milliseconds>(current - startTime).count() < 10000) {
         current = std::chrono::system_clock::now();
 
         ros::spinOnce();
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
     pose.position.z = 0;
 
     track_operation_client.requestOperation(fluid::OperationIdentifier::Land, pose, [](bool completed) {});
-*/
+
     ros::spin();
 
     return 0;

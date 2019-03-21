@@ -20,8 +20,8 @@ int main(int argc, char** argv) {
     
     while (ros::ok()) {
 
-        pose.position.x = 1 + cos(theta);
-        pose.position.y = 1 + sin(theta);
+        pose.position.x = 1.5 + 0.5*cos(theta);
+        pose.position.y = 1.5 + 0.5*sin(theta);
 
         publisher.publish(pose);
 
