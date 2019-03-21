@@ -17,16 +17,14 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
         return;
     }
 
-    double height = 2.5;
+    double height = 2.3;
 
     node_handle_.getParam("positionFollowHeight", height);
 
     Core::getStatusPublisherPtr()->status.target_pose_x = object_target_pose.position.x;
     Core::getStatusPublisherPtr()->status.target_pose_y = object_target_pose.position.y;
     Core::getStatusPublisherPtr()->status.target_pose_z = height;
-
-    // TODO: need to do a check whether we've got a target or not
-
+ 
     set_standby_position_ = false;
     has_target_ = true;
 
