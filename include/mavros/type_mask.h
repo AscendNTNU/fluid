@@ -29,7 +29,7 @@ namespace fluid {
 	    constexpr uint16_t Default = IGNORE_VX | IGNORE_VY | IGNORE_VZ |
                                      IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ |
                               	 	 IGNORE_YAW_RATE;
-                              	 	 
+              	 	 
 		constexpr uint16_t Idle    = IGNORE_PX | IGNORE_PY | IGNORE_PZ;
 	}
 }
