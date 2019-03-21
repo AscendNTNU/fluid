@@ -12,8 +12,6 @@ int main(int argc, char** argv) {
     
     ros::Publisher publisher = node_handle.advertise<geometry_msgs::Pose>("perception/target", 100);
 
-    node_handle.setParam("positionFollowHeight", 1.0);
-
     geometry_msgs::Pose pose;
 
     ros::Rate rate(5);
@@ -22,8 +20,8 @@ int main(int argc, char** argv) {
     
     while (ros::ok()) {
 
-        pose.position.x = 2 + cos(theta);
-        pose.position.y = 2 + sin(theta);
+        pose.position.x = 1 + cos(theta);
+        pose.position.y = 1 + sin(theta);
 
         publisher.publish(pose);
 
