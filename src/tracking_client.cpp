@@ -30,8 +30,8 @@ int main(int argc, char** argv) {
         if (completed) {
 
             geometry_msgs::Pose take_off_pose;
-            take_off_pose.position.x = 0;
-            take_off_pose.position.y = 0;
+            take_off_pose.position.x = 2;
+            take_off_pose.position.y = 2;
             take_off_pose.position.z = height;
 
             fluid::OperationClient take_off_operation_client(20);

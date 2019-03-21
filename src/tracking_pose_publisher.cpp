@@ -22,8 +22,8 @@ int main(int argc, char** argv) {
     
     while (ros::ok()) {
 
-        pose.position.x = 1 + cos(theta);
-        pose.position.y = 1 + sin(theta);
+        pose.position.x = 2 + cos(theta);
+        pose.position.y = 2 + sin(theta);
 
         publisher.publish(pose);
 
