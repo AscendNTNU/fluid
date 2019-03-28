@@ -8,9 +8,9 @@
 
 bool fluid::MoveState::hasFinishedExecution() {
     return PoseUtil::distanceBetween(current_pose_, position_target) < 0.3 && 
-    	   getCurrentTwist().twist.linear.x < 0.05 && 
-    	   getCurrentTwist().twist.linear.y < 0.05 && 
-    	   getCurrentTwist().twist.linear.z < 0.05;
+    	   std::abs(getCurrentTwist().twist.linear.x) < 0.1 && 
+    	   std::abs(getCurrentTwist().twist.linear.y) < 0.1 && 
+    	   std::abs(getCurrentTwist().twist.linear.z) < 0.1;
 }
 
 void fluid::MoveState::tick() {
