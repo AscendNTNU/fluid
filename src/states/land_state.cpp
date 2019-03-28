@@ -7,7 +7,7 @@
 #include "../../include/mavros/type_mask.h"
 
 bool fluid::LandState::hasFinishedExecution() {
-    return current_pose_.pose.position.z - 0.0 < 0.05 && std::abs(getCurrentTwist().twist.linear.z) < 0.1
+    return current_pose_.pose.position.z - 0.0 < 0.05 && std::abs(getCurrentTwist().twist.linear.z) < 0.1;
 }
 
 void fluid::LandState::tick() {
