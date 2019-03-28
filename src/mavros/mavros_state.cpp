@@ -14,5 +14,5 @@ fluid::MavrosState::MavrosState(std::string identifier, std::string px4_mode) :
 	State(std::move(identifier),
 	px4_mode, 
 	"mavros/local_position/pose",
-	"mavros/local_position/velocity", 
+	"mavros/local_position/velocity_local", 
     std::make_shared<fluid::MavrosPosePublisher>(Core::message_queue_size)) {}
