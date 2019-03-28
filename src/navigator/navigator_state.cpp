@@ -8,4 +8,5 @@
  State(std::move(identifier),
  	   px4_mode, 
  	   "state_estimator_pose",
+ 	   "state_estimator_vel",
        std::make_shared<fluid::NavigatorPosePublisher>("navigator_pose_topic")) {}
