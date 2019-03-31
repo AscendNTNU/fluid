@@ -61,12 +61,12 @@ int main(int argc, char** argv) {
     // An operation client is the object which is going to send requests to the drone to do things, like moving, 
     // taking off, landing, initializing.
     //
-    // In this case we set up an initialize operation client with an argument of 20. The argument states how long
-    // the operation client will wait for a response from the drone. If the drone hasn't been able to initialize and
-    // respond within 20 seconds, we move on. Notice that the type is a generic operation client, that is because
-    // we can use this client for all the different things we want our drone to do. But just for the clarity of this
-    // example, we name it init_operation_client. 
-    fluid::OperationClient init_operation_client(20);
+    // In this case we set up an initialize operation client with an argument of 1 (which is the id) and 20, which 
+    // states how long the operation client will wait for a response from the drone. If the drone hasn't been able to 
+    // initialize and respond within 20 seconds, we move on. Notice that the type is a generic operation client, that 
+    // is because we can use this client for all the different things we want our drone to do. But just for the 
+    // clarity of this example, we name it init_operation_client. 
+    fluid::OperationClient init_operation_client(1, 20);
     
     // We request an initialize operation from the drone. Since every operation client is generic we have to specify 
     // which operation we want to do. In this case it is an INIT operation since we want the drone to initialize. 
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 
 
     // Now we want to take off. We set up an operation client:
-    fluid::OperationClient operation_client(10);
+    fluid::OperationClient operation_client(1, 10);
 
     // And we want the drone to take off so it's 1.5 meters over ground:
     pose.position.z = 1.5;
