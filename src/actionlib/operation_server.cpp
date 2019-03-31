@@ -24,7 +24,7 @@
 
 
 fluid::OperationServer::OperationServer() : actionlib_action_server_(node_handle_, 
-                                                                     "fluid_fsm_operation", 
+                                                                     "fluid_fsm_operation_" + std::to_string(Core::id),
                                                                      false) {
     
     actionlib_action_server_.registerGoalCallback(boost::bind(&OperationServer::goalCallback, this));

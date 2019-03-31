@@ -25,6 +25,9 @@ class OperationClient {
     typedef actionlib::SimpleActionClient<fluid_fsm::OperationAction> Client;
 
   private:
+
+    const int id;                ///< The identifier of the client, have to correspond to the server's id.
+
     const double timeout_value_; ///< The time the the client will wait for a response from
 				                 ///< the server
 
@@ -38,9 +41,10 @@ class OperationClient {
   public:
     /** Initializes the operation client with a timeout value.
      *
+     * @param id The id of the client server pair, this has to correspond to the server's id.s
      * @param timeout_value The time the operation client waits for a response from the operation server.
      */
-    OperationClient(double timeout_value) : timeout_value_(timeout_value) {}
+    OperationClient(int id, double timeout_value) : id(id), timeout_value_(timeout_value) {}
 
     /**
      * Requests an operation with a given target pose. This function will send a request to a server

@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
     float height = 1.0;
 
     // Send an operation to initialize and arm the drone. Take off when this is done.
-    fluid::OperationClient init_operation_client(20);
+    fluid::OperationClient init_operation_client(1, 20);
     
     init_operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
         if (completed) {
@@ -26,9 +26,11 @@ int main(int argc, char** argv) {
             take_off_pose.position.y = 0;
             take_off_pose.position.z = height;
 
-            fluid::OperationClient take_off_operation_client(20);
+            fluid::OperationClient take_off_operation_client(1, 20);
 
-            take_off_operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
+            ROS_FATAL_STREAM("Take off?");
+
+            init_operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
                 initialized = completed;
             });
         }
@@ -45,8 +47,8 @@ int main(int argc, char** argv) {
 
     // Just for demonstration, this will make the drone move in straight lines to form a square. When the current move
     // is finished, the next will execute as one can see in the callback.
-    fluid::OperationClient move_operation_client(60);
-    
+    fluid::OperationClient move_operation_client(1, 60);
+
     float distance = 1;
 
     pose.position.x = distance;
@@ -74,7 +76,7 @@ int main(int argc, char** argv) {
 
                             move_operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
                                 if (completed) {
-                                    fluid::OperationClient operation_land_client(60);
+                                    fluid::OperationClient operation_land_client(1, 60);
 
                                     geometry_msgs::Pose land_pose;
                                     land_pose.position.x = 0;

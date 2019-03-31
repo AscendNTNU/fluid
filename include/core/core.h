@@ -39,6 +39,8 @@ namespace fluid {
 																			///< the FSM.
 
 
+		static int id;														///< The id of the operation server.
+
 		static bool auto_arm;		 										///< Determines whether the state machine
 																			///< should auto arm or not.
 
