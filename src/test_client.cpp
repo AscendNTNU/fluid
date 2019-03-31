@@ -28,8 +28,6 @@ int main(int argc, char** argv) {
 
             fluid::OperationClient take_off_operation_client(1, 20);
 
-            ROS_FATAL_STREAM("Take off?");
-
             init_operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
                 initialized = completed;
             });
