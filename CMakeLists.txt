@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         roscpp
         genmsg
+        mavros_msgs
         actionlib
         tf2
         )
