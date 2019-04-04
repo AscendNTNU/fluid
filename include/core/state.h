@@ -7,6 +7,8 @@
 #include <string>
 #include <ros/ros.h>
 #include <mavros/mavros_pose_publisher.h>
+#include <geometry_msgs/TwistStamped.h>
+
 #include "identifiable.h"
 
 namespace fluid {
@@ -22,25 +24,36 @@ namespace fluid {
         ros::NodeHandle node_handle_;                                           ///< Node handle for the mavros 
                                                                                 ///< pose publisher
 
-
-        ros::Subscriber pose_subscriber_;                                       ///< Retrieves poses from mavros
-
-        geometry_msgs::PoseStamped current_pose_;                               ///< Keeps track of the drone's pose 
+        ros::Subscriber pose_subscriber_;                                       ///< Keeps track of the drone's pose 
                                                                                 ///< during this state.
 
+        ros::Subscriber twist_subscriber_;                                      ///< Keeps track of the drone's twist 
+                                                                                ///< during this state.
+
+        geometry_msgs::PoseStamped current_pose_;                               ///< The current pose of the
+                                                                                ///< drone during the state.        
+
+
+        geometry_msgs::TwistStamped current_twist_;                             ///< The current twist of the  
+                                                                                ///< drone during the state.
 
         /**
          * Gets fired when the state estimation publishes a pose on the given topic.
          */
-        void poseCallback(geometry_msgs::PoseStampedConstPtr pose);
+        void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
+
+        /**
+         * @brief      Retrieves the current twist of the drone.
+         *
+         * @param[in]  twist  The twist retrieved from the IMU,
+         */
+        void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
 
     public:
 
         const std::string px4_mode;                                            ///< The mode this state represents 
                                                                                ///< within PX4. For example move state
                                                                                ///< would be OFFBOARD. 
-
-        ros::Subscriber pose_subscriber;                                       ///< The current pose during the state.
 
         std::shared_ptr<fluid::PosePublisher> position_target_publisher_p;     ///< Publishes poses.
 
@@ -52,11 +65,13 @@ namespace fluid {
          * @param identifier The identifier of the state.
          * @param px4Mode The mode/state within px4 this state represents.
          * @param pose_subscription_topic The topic to retrieve poses from. 
+         * @param twist_subscription_topic The topic to retrieve twists from. 
          * @param position_target_publisher_p Position targets publisher.
          */
         State(std::string identifier,
               std::string px4_mode,
               std::string pose_subscription_topic,
+              std::string twist_subscription_topic,
               std::shared_ptr<fluid::PosePublisher> position_target_publisher_p);
 
         /**
@@ -64,6 +79,12 @@ namespace fluid {
          *             the given topic.
          */
         geometry_msgs::PoseStamped getCurrentPose();
+
+        /**
+         * @brief      Returns the current twist, which is the last twist from the IMU.
+         * 
+         */
+        geometry_msgs::TwistStamped getCurrentTwist();
 
         /**
          * Performs the Ros loop for executing logic within this state given the refresh rate.

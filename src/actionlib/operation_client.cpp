@@ -17,7 +17,7 @@ void fluid::OperationClient::waitForResult(
     geometry_msgs::Pose target_pose,
     std::function<void (bool)> completion_handler) {
 
-    Client action_client("fluid_fsm_operation", false);
+    Client action_client(name_space + "/fluid_fsm_operation", false);
 
     action_client.waitForServer();
 

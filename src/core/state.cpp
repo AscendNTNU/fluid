@@ -9,6 +9,7 @@
 fluid::State::State(std::string identifier,
                     std::string px4_mode,
                     std::string pose_subscription_topic,
+                    std::string twist_subscription_topic,
                     std::shared_ptr<fluid::PosePublisher> position_target_publisher_p) : 
 
 					Identifiable(identifier),
@@ -17,6 +18,10 @@ fluid::State::State(std::string identifier,
                                      Core::message_queue_size, 
                                      &State::poseCallback, 
                                      this)),
+                    twist_subscriber_(node_handle_.subscribe(twist_subscription_topic, 
+                                      Core::message_queue_size,
+                                      &State::twistCallback,
+                                      this)),
                     position_target_publisher_p(std::move(position_target_publisher_p)) {}
 
 geometry_msgs::PoseStamped fluid::State::getCurrentPose() {
@@ -26,6 +31,15 @@ geometry_msgs::PoseStamped fluid::State::getCurrentPose() {
 void fluid::State::poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
     current_pose_.pose = pose->pose;
     current_pose_.header = pose->header;
+}
+
+geometry_msgs::TwistStamped fluid::State::getCurrentTwist() {
+    return current_twist_;
+}
+
+void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist) {
+    current_twist_.twist = twist->twist;
+    current_twist_.header = twist->header;
 }
 
 void fluid::State::perform(std::function<bool(void)> shouldAbort) {

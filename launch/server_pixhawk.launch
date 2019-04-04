@@ -1,5 +1,5 @@
 <launch>
-  <arg name="fcu_url" default="/dev/ttyUSB0:921600"/>
+  <arg name="fcu_url" default="/dev/ttyPixhawk:921600"/>
   <arg name="refresh_rate" default="20" />
   <arg name="message_queue_size" default="1000" />
   <arg name="auto_arm" default="false"/>
@@ -9,7 +9,8 @@
 
   <include file="$(find control_test_nodes)/launch/fullFeedback.launch"/>
 
-  <node name="server" pkg="fluid_fsm" type="main" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) $(arg auto_arm) $(arg auto_set_offboard)")
+  <node name="server" pkg="fluid_fsm" type="main" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) 
+  $(arg auto_arm) $(arg auto_set_offboard)")
 
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url" value="$(arg fcu_url)"/>

@@ -8,9 +8,10 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         roscpp
         genmsg
+        mavros_msgs
         actionlib
         tf2
-        )
+)
 
 add_action_files(DIRECTORY action FILES Operation.action)
 generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
@@ -18,6 +19,7 @@ generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
 catkin_package(
         INCLUDE_DIRS include
         CATKIN_DEPENDS ascend_msgs roscpp
+        LIBRARIES fluid_fsm_lib
 )
 
 # Includes headers in include folder
@@ -34,7 +36,6 @@ file(GLOB fluid_fsm_states_SRC "src/states/*.cpp")
 file(GLOB fluid_fsm_actionlib_SRC "src/actionlib/*.cpp")
 file(GLOB fluid_fsm_mavros_SRC "src/mavros/*.cpp")
 file(GLOB fluid_fsm_navigator_SRC "src/navigator/*.cpp")
-file(GLOB fluid_fsm_tools_SRC "src/tools/*.cpp")
 
 add_library(fluid_fsm_lib
         ${fluid_fsm_mavros_SRC}
@@ -43,8 +44,7 @@ add_library(fluid_fsm_lib
         ${fluid_fsm_operations_SRC}
         ${fluid_fsm_core_SRC}
         ${fluid_fsm_states_SRC}
-        ${fluid_fsm_actionlib_SRC}
-        ${fluid_fsm_tools_SRC})
+        ${fluid_fsm_actionlib_SRC})
 
 target_link_libraries(fluid_fsm_lib ${catkin_LIBRARIES})
 
