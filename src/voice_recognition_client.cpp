@@ -21,7 +21,7 @@ void commandCallback(const std_msgs::String::ConstPtr& string) {
 
         ROS_FATAL_STREAM("New command: " << new_command);
 
-        fluid::OperationClient operation_client(1, 20);
+        fluid::OperationClient operation_client("", 20);
 
         if (new_command == "0") {
             geometry_msgs::Pose take_off_pose;
@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     ros::Subscriber subscriber = node_handle.subscribe<std_msgs::String>("/ai/voice/commmand", 100, commandCallback);
 
     // Send an operation to initialize and arm the drone. Take off when this is done.
-    fluid::OperationClient init_operation_client(1, 20);
+    fluid::OperationClient init_operation_client("", 20);
 
     init_operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
         initialized = completed;
