@@ -19,6 +19,7 @@ generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
 catkin_package(
         INCLUDE_DIRS include
         CATKIN_DEPENDS ascend_msgs roscpp
+        LIBRARIES fluid_fsm_lib
 )
 
 # Includes headers in include folder
