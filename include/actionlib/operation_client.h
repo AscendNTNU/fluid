@@ -1,5 +1,3 @@
-#include <utility>
-
 //
 // Created by simengangstad on 24.10.18.
 //
@@ -13,6 +11,8 @@
 #include <fluid_fsm/OperationAction.h>
 #include <geometry_msgs/Pose.h>
 
+#include <utility>
+#include <string>
 #include <memory>
 
 namespace fluid {
@@ -26,7 +26,7 @@ class OperationClient {
 
   private:
 
-    const int id;                ///< The identifier of the client, have to correspond to the server's id.
+    const std::string namespace; ///< The namespace of the client, have to correspond to the server's namespace.
 
     const double timeout_value_; ///< The time the the client will wait for a response from
 				                 ///< the server
@@ -41,10 +41,10 @@ class OperationClient {
   public:
     /** Initializes the operation client with a timeout value.
      *
-     * @param id The id of the client server pair, this has to correspond to the server's id.s
+     * @param namespace The namespace of the client server pair, this has to correspond to the server's namespace.
      * @param timeout_value The time the operation client waits for a response from the operation server.
      */
-    OperationClient(int id, double timeout_value) : id(id), timeout_value_(timeout_value) {}
+    OperationClient(std::string namespace, double timeout_value) : id(id), timeout_value_(timeout_value) {}
 
     /**
      * Requests an operation with a given target pose. This function will send a request to a server

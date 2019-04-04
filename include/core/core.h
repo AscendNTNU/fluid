@@ -4,6 +4,7 @@
 #include "status_publisher.h"
 #include "operation/state_graph.h"
 #include <memory>
+#include <string>
 
 namespace fluid {
 
@@ -37,9 +38,6 @@ namespace fluid {
 		static unsigned int message_queue_size;								///< The unified message queue size for 
 																			///< the different ros components within
 																			///< the FSM.
-
-
-		static int id;														///< The id of the operation server.
 
 		static bool auto_arm;		 										///< Determines whether the state machine
 																			///< should auto arm or not.

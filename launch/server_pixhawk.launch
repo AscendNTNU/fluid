@@ -1,8 +1,7 @@
 <launch>
-  <arg name="fcu_url" default="/dev/ttyUSB0:921600"/>
+  <arg name="fcu_url" default="/dev/ttyPixhawk:921600"/>
   <arg name="refresh_rate" default="20" />
   <arg name="message_queue_size" default="1000" />
-  <arg name="id" default="1"/>
   <arg name="auto_arm" default="false"/>
   <arg name="auto_set_offboard" default="false"/>
 

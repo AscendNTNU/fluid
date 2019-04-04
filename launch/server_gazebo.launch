@@ -2,7 +2,6 @@
   <arg name="fcu_url" default="udp://localhost:14540@localhost:14557"/>
   <arg name="refresh_rate" default="20" />
   <arg name="message_queue_size" default="1000" />
-  <arg name="id" default="1"/>
   <arg name="auto_arm" default="true" />
   <arg name="auto_set_offboard" default="true"/>
 
