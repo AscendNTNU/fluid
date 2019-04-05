@@ -1,7 +1,11 @@
 <launch>
-    <arg name="px4_id"/>
-    
     <!-- Derived parameters -->
+    <!-- 
+        Compute px4_id based on ROS_NAMESPACE.
+        This assumes that ROS_NAMESPACE is of the form drone_1, drone_2, etc, so that
+        the last character can be used as an ID. Only supports 9 concurrent drones. 
+     -->
+    <arg name="px4_id" default="$(eval str(env('ROS_NAMESPACE'))[~0])"/>
     <arg name="offboard_api_port" default="$(eval 14540 + arg('px4_id'))"/> <!-- port which mavros listens to px4 on -->
     <arg name="fcu_api_port" default="$(eval 14580 + arg('px4_id'))"/> <!-- port which px4 listens to mavros on -->
 
