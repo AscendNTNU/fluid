@@ -13,24 +13,26 @@
 
 1. Make sure you have mavros installed and PX4 and gazebo built. 
 2. Clone fluid into your catkin workspace in the src-folder.
-3. Run `source devel/setup.bash` and `catkin_make` at root of the catkin workspace.
-4. Run `export ROS_IP=localhost`.
-5. Start gazebo from your gazebo firmware folder: `make posix_sitl_default gazebo`.
-6. Start fluid and test client via the roslaunch file: `roslaunch fluid_fsm client_square.launch`.
+3. Run `source devel/setup.bash` and `catkin build` at root of the catkin workspace.
+4. Start gazebo from your gazebo firmware folder: `make posix_sitl_default gazebo`.
+5. Start fluid and test client via the roslaunch file: `roslaunch fluid_fsm client_square.launch`.
 
 The behavioral code for the simulation is found at `src/test_client.cpp`.
 
 ### Running only the server
 
-If you want to only start the server and write your own client, just run `roslaunch fluid_fsm server_gazebo.launch` and then start your own client node. 
+Remember to set the namespace, if you want any, by running `export ROS_NAMESPACE=your_namespace`.
+Run `roslaunch fluid_fsm server_gazebo.launch` and then start your own client node. Remeber to construct
+the OperationClient with the same namespace.
 
 
 ## Run instructions for physical drone with Pixhawk flight controller
 
 1. Clone fluid into the catkin workspace on the drone. 
 2. Run `source devel/setup.bash` and `catkin_make` at root of the catkin workspace.
-3. Start fluid server via the roslaunch file: `roslaunch fluid_fsm server_pixhawk.launch`.
-4. Launch your client node.
+3. Optional: Run `export ROS_NAMESPACE=your_namespace` (if you want to launch the server in a namespace).
+4. Start fluid server via the roslaunch file: `roslaunch fluid_fsm server_pixhawk.launch`.
+5. Launch your client node.
 
 
 
@@ -61,12 +63,12 @@ int main(int argc, char** argv) {
     // An operation client is the object which is going to send requests to the drone to do things, like moving, 
     // taking off, landing, initializing.
     //
-    // In this case we set up an initialize operation client with an argument of 1 (which is the id) and 20, which 
-    // states how long the operation client will wait for a response from the drone. If the drone hasn't been able to 
-    // initialize and respond within 20 seconds, we move on. Notice that the type is a generic operation client, that 
-    // is because we can use this client for all the different things we want our drone to do. But just for the 
-    // clarity of this example, we name it init_operation_client. 
-    fluid::OperationClient init_operation_client(1, 20);
+    // In this case we set up an initialize operation client with an argument of drone_1 (which is the rps namespace)
+    // and 20, which states how long the operation client will wait for a response from the drone. If the drone hasn't
+    // been able to initialize and respond within 20 seconds, we move on. Notice that the type is a generic operation
+    // client, that is because we can use this client for all the different things we want our drone to do. But just 
+    // for the clarity of this example, we name it init_operation_client. 
+    fluid::OperationClient init_operation_client("drone_1", 20);
     
     // We request an initialize operation from the drone. Since every operation client is generic we have to specify 
     // which operation we want to do. In this case it is an INIT operation since we want the drone to initialize. 
@@ -96,7 +98,7 @@ int main(int argc, char** argv) {
 
 
     // Now we want to take off. We set up an operation client:
-    fluid::OperationClient operation_client(1, 10);
+    fluid::OperationClient operation_client("drone_1", 10);
 
     // And we want the drone to take off so it's 1.5 meters over ground:
     pose.position.z = 1.5;
