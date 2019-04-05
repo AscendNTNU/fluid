@@ -1,19 +1,8 @@
 <launch>
-  <arg name="fcu_url" default="/dev/ttyPixhawk:921600"/>
-  <arg name="refresh_rate" default="20" />
-  <arg name="message_queue_size" default="1000" />
-  <arg name="auto_arm" default="false"/>
-  <arg name="auto_set_offboard" default="false"/>
+    <include file="$(find fluid_fsm)/launch/server_base.launch">
+        <arg name="fcu_url" value="/dev/ttyPixhawk:921600"/>
+        <arg name="px4_id" value="0"/>
+    </include>
 
-  <rosparam command="load" file="$(find fluid_fsm)/params.yaml" />
-
-  <include file="$(find control_test_nodes)/launch/fullFeedback.launch"/>
-
-  <node name="server" pkg="fluid_fsm" type="main" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) 
-  $(arg auto_arm) $(arg auto_set_offboard)")
-
-  <include file="$(find mavros)/launch/px4.launch">
-    <arg name="fcu_url" value="$(arg fcu_url)"/>
-    <arg name="log_output" value="log"/>
-  </include>
+    <include file="$(find control_test_nodes)/launch/fullFeedback.launch"/>
 </launch>
