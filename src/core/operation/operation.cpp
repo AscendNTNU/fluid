@@ -117,5 +117,5 @@ std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() {
 }
 
 std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() {    
-    return fluid::Core::getGraphPtr()->getStateWithIdentifier(fluid::Core::getGraphPtr()->current_state_p->identifier);
+    return fluid::Core::getGraphPtr()->current_state_p;
 }
