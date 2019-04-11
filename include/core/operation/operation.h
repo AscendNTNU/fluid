@@ -38,7 +38,7 @@ namespace fluid {
 
     public:
 
-        const mavros_msgs::PositionTarget position_target;          ///< Position target of the operation.
+        mavros_msgs::PositionTarget position_target;                ///< Position target of the operation.
 
         const std::string identifier;                               ///< Identifier of the operation.
 

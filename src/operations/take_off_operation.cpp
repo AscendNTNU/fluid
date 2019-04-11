@@ -13,8 +13,11 @@ fluid::TakeOffOperation::TakeOffOperation(mavros_msgs::PositionTarget position_t
 
 	// We want that the take off is executed from the current position at ground, so we
 	// grab the current x and y values.
-	position_target.position.x = fluid::Core::getGraphPtr()->current_state_p->getCurrentPose().pose.position.x;
-	position_target.position.y = fluid::Core::getGraphPtr()->current_state_p->getCurrentPose().pose.position.y;
+	this->position_target.position.x = fluid::Core::getGraphPtr()->current_state_p->getCurrentPose().pose.position.x;
+	this->position_target.position.y = fluid::Core::getGraphPtr()->current_state_p->getCurrentPose().pose.position.y;
+
+	fluid::Core::getStatusPublisherPtr()->status.target_pose_x = this->position_target.position.x;
+	fluid::Core::getStatusPublisherPtr()->status.target_pose_y = this->position_target.position.y;
 }
 
 bool fluid::TakeOffOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) {
