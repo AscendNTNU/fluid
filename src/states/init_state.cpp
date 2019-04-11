@@ -58,7 +58,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
     position_target.position.z = 0;
     position_target.type_mask = fluid::TypeMask::Idle;
 
-    for (int i = Core::refresh_rate*3; ros::ok() && i > 0; --i) {
+    for (int i = Core::refresh_rate*2; ros::ok() && i > 0; --i) {
         position_target_publisher_p->publish(position_target);
         fluid::Core::getStatusPublisherPtr()->publish();
         ros::spinOnce();

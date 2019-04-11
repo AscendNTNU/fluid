@@ -1,9 +1,8 @@
-#include <utility>
-
 //
 // Created by simengangstad on 04.10.18.
 //
 
+#include <utility>
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -37,8 +36,8 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
     std::vector<std::shared_ptr<State>> path = fluid::Core::getGraphPtr()->getPathToEndState(
-        fluid::Core::getGraphPtr()->current_state_p->identifier,
-        destination_state_identifier_);
+                        fluid::Core::getGraphPtr()->current_state_p->identifier,
+                        destination_state_identifier_);
 
     if (path.empty()) {
         return;
@@ -117,5 +116,5 @@ std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() {
 }
 
 std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() {    
-    return fluid::Core::getGraphPtr()->getStateWithIdentifier(fluid::Core::getGraphPtr()->current_state_p->identifier);
+    return fluid::Core::getGraphPtr()->current_state_p;
 }
