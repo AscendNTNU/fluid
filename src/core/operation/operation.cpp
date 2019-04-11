@@ -1,9 +1,8 @@
-#include <utility>
-
 //
 // Created by simengangstad on 04.10.18.
 //
 
+#include <utility>
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
