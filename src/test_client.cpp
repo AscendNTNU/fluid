@@ -22,8 +22,8 @@ int main(int argc, char** argv) {
         if (completed) {
 
             geometry_msgs::Pose take_off_pose;
-            take_off_pose.position.x = 0;
-            take_off_pose.position.y = 0;
+            take_off_pose.position.x = 1;
+            take_off_pose.position.y = 1;
             take_off_pose.position.z = height;
 
             operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
@@ -46,34 +46,34 @@ int main(int argc, char** argv) {
     // 
     float distance = 1;
 
-    pose.position.x = distance;
-    pose.position.y = 0;
+    pose.position.x = 1 + distance;
+    pose.position.y = 1;
     pose.position.z = height;
     
     operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
         if (completed) {
-            pose.position.x = distance;
-            pose.position.y = distance;
+            pose.position.x = 1 + distance;
+            pose.position.y = 1 + distance;
             pose.position.z = height;
 
             operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
                 if (completed) {
 
-                    pose.position.x = 0;
-                    pose.position.y = distance;
+                    pose.position.x = 1;
+                    pose.position.y = 1 + distance;
                     pose.position.z = height;
 
                     operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
                         if (completed) {
-                            pose.position.x = 0;
-                            pose.position.y = 0;
+                            pose.position.x = 1;
+                            pose.position.y = 1;
                             pose.position.z = height;
 
                             operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
                                 if (completed) {
                                     geometry_msgs::Pose land_pose;
-                                    land_pose.position.x = 0;
-                                    land_pose.position.y = 0;
+                                    land_pose.position.x = 1;
+                                    land_pose.position.y = 1;
                                     land_pose.position.z = 0;
 
                                     operation_client.requestOperation(fluid::OperationIdentifier::Land, land_pose, [&](bool completed) {});
