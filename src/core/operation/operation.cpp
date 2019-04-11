@@ -37,8 +37,8 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
     std::vector<std::shared_ptr<State>> path = fluid::Core::getGraphPtr()->getPathToEndState(
-        fluid::Core::getGraphPtr()->current_state_p->identifier,
-        destination_state_identifier_);
+                        fluid::Core::getGraphPtr()->current_state_p->identifier,
+                        destination_state_identifier_);
 
     if (path.empty()) {
         return;
