@@ -1,6 +1,8 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 
+#include <tf2/LinearMath/Quaternion.h>
+
 #include "../include/actionlib/operation_client.h"
 #include "../include/operations/operation_identifier.h"
 
@@ -46,43 +48,75 @@ int main(int argc, char** argv) {
     // 
     float distance = 1;
 
+    tf2::Quaternion quaternion;
+
     pose.position.x = 1 + distance;
     pose.position.y = 1;
     pose.position.z = height;
     
     operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
         if (completed) {
-            pose.position.x = 1 + distance;
-            pose.position.y = 1 + distance;
-            pose.position.z = height;
+
+            quaternion.setRPY(0, 0, 3.14159 / 2.0);
+
+            pose.orientation.x = quaternion.x();
+            pose.orientation.y = quaternion.y();
+            pose.orientation.z = quaternion.z();
+            pose.orientation.w = quaternion.w();
 
             operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
                 if (completed) {
 
-                    pose.position.x = 1;
-                    pose.position.y = 1 + distance;
-                    pose.position.z = height;
+                pose.position.x = 1 + distance;
+                pose.position.y = 1 + distance;
+                pose.position.z = height;
 
-                    operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
-                        if (completed) {
-                            pose.position.x = 1;
-                            pose.position.y = 1;
-                            pose.position.z = height;
+                operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
+                    if (completed) {
 
-                            operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
-                                if (completed) {
-                                    geometry_msgs::Pose land_pose;
-                                    land_pose.position.x = 1;
-                                    land_pose.position.y = 1;
-                                    land_pose.position.z = 0;
+                        pose.position.x = 1;
+                        pose.position.y = 1 + distance;
+                        pose.position.z = height;
 
-                                    operation_client.requestOperation(fluid::OperationIdentifier::Land, land_pose, [&](bool completed) {});
 
-                                }
-                            });
-                        }
-                    });
-                }
+                        quaternion.setRPY(0, 0, 3.14159 / 2.0);
+
+                        pose.orientation.x = quaternion.x();
+                        pose.orientation.y = quaternion.y();
+                        pose.orientation.z = quaternion.z();
+                        pose.orientation.w = quaternion.w();
+
+
+                        operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
+                            if (completed) {
+                                pose.position.x = 1;
+                                pose.position.y = 1;
+                                pose.position.z = height;
+
+                                quaternion.setRPY(0, 0, 3.14159 / 2.0);
+
+                                pose.orientation.x = quaternion.x();
+                                pose.orientation.y = quaternion.y();
+                                pose.orientation.z = quaternion.z();
+                                pose.orientation.w = quaternion.w();
+
+
+                                operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
+                                    if (completed) {
+                                        geometry_msgs::Pose land_pose;
+                                        land_pose.position.x = 1;
+                                        land_pose.position.y = 1;
+                                        land_pose.position.z = 0;
+
+                                        operation_client.requestOperation(fluid::OperationIdentifier::Land, land_pose, [&](bool completed) {});
+
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+            }
             });
         }
     });
