@@ -46,22 +46,20 @@ void fluid::OperationServer::goalCallback() {
 
     ROS_INFO_STREAM("New operation requested: " << operation_identifier);
 
-    double minX, minY, minZ, maxX, maxY, maxZ = 0.0;
-
-    node_handle_.getParam("minX", minX);
-    node_handle_.getParam("minY", minY);
-    node_handle_.getParam("minZ", minZ);
-
-    node_handle_.getParam("maxX", maxX);
-    node_handle_.getParam("maxY", maxY);
-    node_handle_.getParam("maxZ", maxZ);
-
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
-    if (minX != 0 || maxX != 0) target_pose.position.x = std::max(minX, std::min(target_pose.position.x, maxX));
-    if (minY != 0 || maxY != 0) target_pose.position.y = std::max(minY, std::min(target_pose.position.y, maxY));
-    if (minZ != 0 || maxZ != 0) target_pose.position.z = std::max(minZ, std::min(target_pose.position.z, maxZ));
-    
+    if (fluid::Core::minX != 0 || fluid::Core::maxX != 0) {
+        target_pose.position.x = std::max(fluid::Core::minX, std::min(target_pose.position.x, fluid::Core::maxX));
+    }
+
+    if (fluid::Core::minY != 0 || fluid::Core::maxY != 0) { 
+        target_pose.position.y = std::max(fluid::Core::minY, std::min(target_pose.position.y, fluid::Core::maxY));
+    }
+
+    if (fluid::Core::minZ != 0 || fluid::Core::maxZ != 0) {
+        target_pose.position.z = std::max(fluid::Core::minZ, std::min(target_pose.position.z, fluid::Core::maxZ));
+    }
+
     // Update the status with the target pose
     Core::getStatusPublisherPtr()->status.target_pose_x = target_pose.position.x;
     Core::getStatusPublisherPtr()->status.target_pose_y = target_pose.position.y;
