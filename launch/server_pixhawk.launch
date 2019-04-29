@@ -7,8 +7,6 @@
 
   <rosparam command="load" file="$(find fluid_fsm)/params.yaml" />
 
-  <include file="$(find control_test_nodes)/launch/fullFeedback.launch"/>
-
   <node name="server" pkg="fluid_fsm" type="main" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) 
   $(arg auto_arm) $(arg auto_set_offboard)"/>
 
