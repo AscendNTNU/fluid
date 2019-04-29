@@ -5,7 +5,7 @@
 #include "../../include/mavros/mavros_pose_publisher.h"
 
 fluid::MavrosPosePublisher::MavrosPosePublisher(unsigned int message_queue_size) :
-    local_position_publisher_(node_handle_.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local",
+    local_position_publisher_(node_handle_.advertise<mavros_msgs::PositionTarget>("fluid_fsm/setpoint",
                                                                                   message_queue_size)) {}
 
 
