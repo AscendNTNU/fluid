@@ -51,7 +51,8 @@ target_link_libraries(fluid_fsm_lib ${catkin_LIBRARIES})
 
 #########################################################################################
 
-add_executable(main src/main.cpp)
+add_executable(server src/main.cpp)
+add_executable(setpoint_publisher src/setpoint_publisher_node.cpp)
 add_executable(client_square src/test_client.cpp)
 add_executable(client_interval src/test_interval_client.cpp)
 add_executable(graph_test src/graph_test.cpp)
@@ -59,7 +60,8 @@ add_executable(client_ai src/voice_recognition_client.cpp)
 add_executable(client_tracking src/tracking_client.cpp)
 add_executable(tracking_publisher src/tracking_pose_publisher.cpp)
 
-target_link_libraries(main fluid_fsm_lib)
+target_link_libraries(server fluid_fsm_lib)
+target_link_libraries(setpoint_publisher fluid_fsm_lib)
 target_link_libraries(client_square fluid_fsm_lib ${catkin_LIBRARIES})
 target_link_libraries(client_interval fluid_fsm_lib ${catkin_LIBRARIES})
 target_link_libraries(graph_test fluid_fsm_lib ${catkin_LIBRARIES})
@@ -69,7 +71,8 @@ target_link_libraries(tracking_publisher fluid_fsm_lib ${catkin_LIBRARIES})
 
 ## Adds a compilation dependency to node_name
 add_dependencies(fluid_fsm_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(main ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(setpoint_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(client_square ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(client_interval ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(graph_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
