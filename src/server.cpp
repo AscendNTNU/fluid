@@ -11,7 +11,7 @@ int main(int argc, char** argv) {
 
     ros::init(argc, argv, "fluid_fsm_server");
 
-    ROS_INFO("\nStarting Fluid FSM.");
+    ROS_INFO("Starting Fluid FSM.");
 
     fluid::Core::refresh_rate = static_cast<unsigned int>(atoi(argv[1]));
     fluid::Core::message_queue_size = static_cast<unsigned int>(atoi(argv[2]));
