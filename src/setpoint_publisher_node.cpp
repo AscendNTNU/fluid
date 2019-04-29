@@ -11,7 +11,7 @@ bool position_is_set = false;
 
 
 void subscriptionCallback(const mavros_msgs::PositionTarget::ConstPtr& pt) {
-    position_target = pt;
+    position_target = *pt;
     position_is_set = true;
 }
 
