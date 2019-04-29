@@ -10,5 +10,6 @@ fluid::MavrosPosePublisher::MavrosPosePublisher(unsigned int message_queue_size)
 
 
 void fluid::MavrosPosePublisher::publish(mavros_msgs::PositionTarget position_target) {
+	position_target.header.stamp = ros::Time::now();
     local_position_publisher_.publish(position_target);
 }
