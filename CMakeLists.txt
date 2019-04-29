@@ -51,7 +51,7 @@ target_link_libraries(fluid_fsm_lib ${catkin_LIBRARIES})
 
 #########################################################################################
 
-add_executable(server src/main.cpp)
+add_executable(server src/server.cpp)
 add_executable(setpoint_publisher src/setpoint_publisher_node.cpp)
 add_executable(client_square src/test_client.cpp)
 add_executable(client_interval src/test_interval_client.cpp)
