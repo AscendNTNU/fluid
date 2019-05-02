@@ -48,26 +48,26 @@ int main(int argc, char** argv) {
     pose.position.y = 1;
     pose.position.z = height;
     
-    operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
+    operation_client.requestOperation(fluid::OperationIdentifier::MoveOriented, pose, [&](bool completed) {
         if (completed) {
                 pose.position.x = 1 + distance;
                 pose.position.y = 1 + distance;
                 pose.position.z = height;
 
-                operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
+                operation_client.requestOperation(fluid::OperationIdentifier::MoveOriented, pose, [&](bool completed) {
                     if (completed) {
 
                         pose.position.x = 1;
                         pose.position.y = 1 + distance;
                         pose.position.z = height;
 
-                        operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
+                        operation_client.requestOperation(fluid::OperationIdentifier::MoveOriented, pose, [&](bool completed) {
                             if (completed) {
                                 pose.position.x = 1;
                                 pose.position.y = 1;
                                 pose.position.z = height;
 
-                                operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
+                                operation_client.requestOperation(fluid::OperationIdentifier::MoveOriented, pose, [&](bool completed) {
                                     if (completed) {
                                         geometry_msgs::Pose land_pose;
                                         land_pose.position.x = 1;
