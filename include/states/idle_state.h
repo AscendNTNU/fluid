@@ -21,7 +21,7 @@ namespace fluid {
         /**
          * Initializes the idle state.
          */
-        explicit IdleState() : MavrosState(fluid::StateIdentifier::Idle, fluid::PX4::Offboard) {}
+        explicit IdleState() : MavrosState(fluid::StateIdentifier::Idle, fluid::PX4::Offboard, false) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

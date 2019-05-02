@@ -22,8 +22,9 @@ namespace fluid {
          * 
          * @param identifier The identifier of the state.
          * @param px4_mode The mode this mavros state represents within px4.
+         * @param should_check_obstacle_avoidance Whether we should check obstacle avoidance completion in this state.
          */
-        MavrosState(std::string identifier, std::string px4_mode);
+        MavrosState(std::string identifier, std::string px4_mode, bool should_check_obstacle_avoidance_completion);
     };
 }
 
