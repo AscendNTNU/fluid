@@ -12,12 +12,9 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh;
 
     geometry_msgs::Pose pose;
-
     bool initialized = false;
-
     float height = 1.0;
 
-    // Send an operation to initialize and arm the drone. Take off when this is done.
     fluid::OperationClient operation_client("drone_1", 60);
     
     operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
@@ -36,7 +33,6 @@ int main(int argc, char** argv) {
 
 
     ros::Rate wait_rate(20);
-
 
     while (ros::ok() && !initialized) {
         ros::spinOnce();
