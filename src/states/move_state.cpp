@@ -28,7 +28,7 @@ bool fluid::MoveState::hasFinishedExecution() {
     // it to zero. 
     yaw = std::isnan(yaw) ? 0.0 : yaw;
 
-    bool atYawTarget = std::abs(position_target.yaw - yaw) < 0.3; 
+    bool atYawTarget = std::abs(position_target.yaw - yaw) < 0.2; 
 
     return atYawTarget && atPositionTarget;
 }
