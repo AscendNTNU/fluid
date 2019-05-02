@@ -25,7 +25,7 @@ geometry_msgs::Pose pose;
 
 constexpr float height = 2.5;
 
-void runOperation(bool completed ignored for this purpose) {
+void runOperation(bool completed) {
 
     // Run two operations:
     // 
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle node_handle;
     operation_client_ptr = std::make_shared<fluid::OperationClient>(name_space, 60);
     ros::Rate rate(20);
-
+/*
     // Retrieve initial pose 
     ros::Subscriber subscriber = node_handle.subscribe(name_space + "/mavros/local_position/pose", 100, poseCallback);
 
@@ -74,14 +74,13 @@ int main(int argc, char** argv) {
         rate.sleep();
     }
 
-
+*/
     // Initialization and take off
     bool initialized = false;
     
-    
+    /*
     pose.position.x = initialPose.position.x;
-    pose.position.y = initialPose.position.y;
-
+    pose.position.y = initialPose.position.y;*/
 
     pose.position.x = 0.0;
     pose.position.y = 0.0;
