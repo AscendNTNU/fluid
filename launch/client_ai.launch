@@ -1,4 +1,0 @@
-<launch>
-	<include file="$(find fluid_fsm)/launch/server_pixhawk.launch"/>
-	<node name="ai_client" pkg="fluid_fsm" type="client_ai" output="screen"/>
-</launch>
