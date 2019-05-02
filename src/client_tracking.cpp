@@ -8,11 +8,10 @@
 #include "../include/core/operation/operation.h"
 #include "../include/actionlib/operation_client.h"
 #include "../include/operations/operation_identifier.h"
-#include "../include/core/state.h"
 
 int main(int argc, char** argv) {
 
-    ros::init(argc, argv, "tracking_client");
+    ros::init(argc, argv, "client_tracking");
     ros::NodeHandle nh;
 
     geometry_msgs::Pose pose;

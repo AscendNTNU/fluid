@@ -8,7 +8,7 @@
 
 int main(int argc, char** argv) {
 
-    ros::init(argc, argv, "test_client");
+    ros::init(argc, argv, "client_square");
     ros::NodeHandle nh;
 
     geometry_msgs::Pose pose;

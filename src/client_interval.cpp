@@ -1,40 +1,20 @@
-#include <mavros_msgs/CommandBool.h>
-#include <mavros_msgs/SetMode.h>
-#include <mavros_msgs/State.h>
-
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
-#include <thread>
-#include <chrono>
-#include <ostream>
 
 #include "../include/core/operation/operation.h"
 #include "../include/actionlib/operation_client.h"
 #include "../include/operations/operation_identifier.h"
-#include "../include/core/state.h"
 
 int main(int argc, char** argv) {
 
-    ros::init(argc, argv, "test_client");
+    ros::init(argc, argv, "client_interval");
     ros::NodeHandle nh;
-
-
-    // Set boundries
-    nh.setParam("minX", 0);
-    nh.setParam("minY", 0);
-    nh.setParam("minZ", 0);
-
-    nh.setParam("maxX", 2);
-    nh.setParam("maxY", 2);
-    nh.setParam("maxZ", 2);
 
     geometry_msgs::Pose pose;
     bool initialized = false;
-
     float height = 1.0;
 
-    // Send an operation to initialize and arm the drone. Take off when this is done.
-    fluid::OperationClient operation_client("drone_1", 20);
+    fluid::OperationClient operation_client("drone_1", 60);
     
     operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
         if (completed) {
