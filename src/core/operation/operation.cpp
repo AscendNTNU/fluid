@@ -8,8 +8,6 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
 
-#include <assert.h>
-
 #include "../../../include/core/operation/operation.h"
 #include "../../../include/actionlib/operation_server.h"
 #include "../../../include/core/core.h"

@@ -1,5 +1,4 @@
 #include "../../include/core/status_publisher.h"
-#include <ascend_msgs/FluidFsmStatus.h>
 #include "../../include/core/core.h"
 
 fluid::StatusPublisher::StatusPublisher() {
