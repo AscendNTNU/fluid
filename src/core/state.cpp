@@ -50,7 +50,6 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
 }
 
 void fluid::State::obstacleAvoidanceCompletionCallback(const std_msgs::Bool::ConstPtr& completed) {
-
     if (!obstacle_avoidance_completed_) {
         obstacle_avoidance_completed_ = !obstacle_avoidance_completed_ && completed->data;
     }
