@@ -70,8 +70,7 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort) {
         rate.sleep();
 
         if (should_check_obstacle_avoidance_completion_ && obstacle_avoidance_completed_) {
-            
-            ROS_FATAL("Obstacle avoidance completed");
+            // Obstacle avoidance reported that we've come as far as we can in this state            
             break;
         }        
     }
