@@ -21,44 +21,43 @@ float xLength, yLength;
 std::shared_ptr<fluid::OperationClient> operation_client_ptr;
 
 bool initialPoseSet = false;
-geometry_msgs::Pose initialPose;
-geometry_msgs::Pose lastPose;
-geometry_msgs::Pose pose;
+geometry_msgs::Pose initialPose, pose, lastPose;
 
 constexpr float height = 2.5;
 
 void runOperation(bool completed /* ignored for this purpose */) {
 
-    // Run two operations:
-    // 
-    // 1. Rotate towards the next position
-    // 2. Move to the next position
-
     float x = initialPose.position.x + (-xLength + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(xLength * 2))));
     float y = initialPose.position.y + (-yLength + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(yLength * 2))));
-
-    float yaw = atan2(y - lastPose.position.y, x - lastPose.position.x);
 
     ROS_INFO_STREAM("Current pose: " << "(" << pose.position.x << ", " << pose.position.y << ", " << pose.position.z << ")");
     ROS_INFO_STREAM("Next position: " << "(" << x << ", " << y << ", " << pose.position.z << ")");
 
+    float yaw = atan2(y - lastPose.position.y, x - lastPose.position.x);
+
     tf2::Quaternion quaternion;
     quaternion.setRPY(0, 0, yaw);
-
+/*
     pose.orientation.x = quaternion.x();
     pose.orientation.y = quaternion.y();
     pose.orientation.z = quaternion.z();
     pose.orientation.w = quaternion.w();
+*/
+    pose.position.x = x;
+    pose.position.y = y;
+    pose.position.z = height;
 
-    operation_client_ptr->requestOperation(fluid::OperationIdentifier::Move, pose, [=] (bool completed) {
+
+    operation_client_ptr->requestOperation(fluid::OperationIdentifier::Move, pose, runOperation);
+    /* [=] (bool completed) {
         pose.position.x = x;
         pose.position.y = y;
         pose.position.z = height;
 
         operation_client_ptr->requestOperation(fluid::OperationIdentifier::Move, pose, runOperation);
-
+    
         lastPose = pose;
-    });
+    });*/
 }
 
 void poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
@@ -79,7 +78,7 @@ int main(int argc, char** argv) {
 
     ros::init(argc, argv, name_space + "_random_movement_client");
     ros::NodeHandle node_handle;
-    operation_client_ptr = std::make_shared<fluid::OperationClient>(name_space, 60);
+    operation_client_ptr = std::make_shared<fluid::OperationClient>(name_space, 16);
     ros::Rate rate(20);
 
     // Retrieve initial pose 
@@ -90,14 +89,15 @@ int main(int argc, char** argv) {
         rate.sleep();
     }
 
-
     // Initialization and take off
     bool initialized = false;
     
     pose.position.x = initialPose.position.x;
     pose.position.y = initialPose.position.y;
 
-    operation_client_ptr->requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
+    fluid::OperationClient init_operation_client(name_space, 60);
+
+    init_operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
         if (completed) {
 
             pose.position.z = height;
