@@ -20,6 +20,7 @@
 #include "operations/move_operation.h"
 #include "operations/land_operation.h"
 #include "operations/take_off_operation.h"
+#include "operations/move_oriented_operation.h"
 #include "../../include/core/core.h"
 
 
@@ -95,13 +96,15 @@ void fluid::OperationServer::goalCallback() {
     }
     else if (operation_identifier.data == fluid::OperationIdentifier::Move) {
         next_operation_p_ = std::make_shared<fluid::MoveOperation>(position_target);
-
     }
     else if (operation_identifier.data == fluid::OperationIdentifier::Land) {
         next_operation_p_ = std::make_shared<fluid::LandOperation>(position_target);
     }
     else if (operation_identifier.data == fluid::OperationIdentifier::PositionFollow) {
         next_operation_p_ = std::make_shared<fluid::PositionFollowOperation>();
+    }
+    else if (operation_identifier.data == fluid::OperationIdentifier::MoveOriented) {
+        next_operation_p_ = std::make_shared<fluid::MoveOrientedOperation>(position_target);
     }
 
     new_operation_requested_ = true;

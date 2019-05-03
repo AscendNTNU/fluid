@@ -1,9 +1,6 @@
-#include <mavros_msgs/CommandBool.h>
-#include <mavros_msgs/SetMode.h>
-#include <mavros_msgs/State.h>
-
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
+
 #include <thread>
 #include <chrono>
 #include <ostream>
@@ -11,21 +8,16 @@
 #include "../include/core/operation/operation.h"
 #include "../include/actionlib/operation_client.h"
 #include "../include/operations/operation_identifier.h"
-#include "../include/core/state.h"
 
 int main(int argc, char** argv) {
 
-    ros::init(argc, argv, "tracking_client");
+    ros::init(argc, argv, "client_tracking");
     ros::NodeHandle nh;
-
-    nh.setParam("positionFollowHeight", 1.0);
 
     geometry_msgs::Pose pose;
     bool initialized = false;
-
     float height = 1.0;
 
-    // Send an operation to initialize and arm the drone. Take off when this is done.
     fluid::OperationClient operation_client("drone_1", 60);
     
     operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {

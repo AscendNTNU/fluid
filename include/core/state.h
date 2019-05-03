@@ -8,6 +8,7 @@
 #include <ros/ros.h>
 #include <mavros/mavros_pose_publisher.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <std_msgs/Bool.h>
 
 #include "identifiable.h"
 
@@ -37,6 +38,17 @@ namespace fluid {
         geometry_msgs::TwistStamped current_twist_;                             ///< The current twist of the  
                                                                                 ///< drone during the state.
 
+        ros::Subscriber obstacle_avoidance_completion_subscriber_;              ///< Tells us when the obstacle 
+                                                                                ///< avoidance system wants to 
+                                                                                ///< go over to position hold
+
+        const bool should_check_obstacle_avoidance_completion_;                 ///< Whether it makes sense to check
+                                                                                ///< that obstacle avoidance is
+                                                                                ///< complete for this state
+
+        bool obstacle_avoidance_completed_ = false;                             ///< Keeps track of the state with
+                                                                                ///< obstacle avoidance.
+
         /**
          * Gets fired when the state estimation publishes a pose on the given topic.
          */
@@ -48,6 +60,11 @@ namespace fluid {
          * @param[in]  twist  The twist retrieved from the IMU,
          */
         void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
+
+        /**
+         * @brief      Retrieves whether the obstacle avoidance completed or not.
+         */
+        void obstacleAvoidanceCompletionCallback(const std_msgs::Bool::ConstPtr& completed);
 
     public:
 
@@ -72,7 +89,8 @@ namespace fluid {
               std::string px4_mode,
               std::string pose_subscription_topic,
               std::string twist_subscription_topic,
-              std::shared_ptr<fluid::PosePublisher> position_target_publisher_p);
+              std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
+              bool should_check_obstacle_avoidance_completion_);
 
         /**
          * @brief      Returns the current pose, the last pose that the state estimation published on

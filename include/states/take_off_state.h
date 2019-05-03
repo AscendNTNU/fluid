@@ -18,7 +18,7 @@ namespace fluid {
 
         /** Initializes the take off state.
          */
-        explicit TakeOffState() : MavrosState(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard) {}
+        explicit TakeOffState() : MavrosState(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard, true) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

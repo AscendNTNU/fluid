@@ -10,9 +10,10 @@
 #include <memory>
 
 
-fluid::MavrosState::MavrosState(std::string identifier, std::string px4_mode) : 
+fluid::MavrosState::MavrosState(std::string identifier, std::string px4_mode, bool should_check_obstacle_avoidance_completion) : 
 	State(std::move(identifier),
 	px4_mode, 
 	"mavros/local_position/pose",
 	"mavros/local_position/velocity_local", 
-    std::make_shared<fluid::MavrosPosePublisher>(Core::message_queue_size)) {}
+    std::make_shared<fluid::MavrosPosePublisher>(Core::message_queue_size), 
+    should_check_obstacle_avoidance_completion) {}
