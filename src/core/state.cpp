@@ -50,8 +50,8 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
 }
 
 void fluid::State::obstacleAvoidanceCompletionCallback(const std_msgs::Bool::ConstPtr& completed) {
-    if (!obstacle_avoidance_completed_) {
-        obstacle_avoidance_completed_ = !obstacle_avoidance_completed_ && completed->data;
+    if (!obstacle_avoidance_completed_ && completed->data) {
+        obstacle_avoidance_completed_ = true;
     }
 }
 
@@ -70,6 +70,8 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort) {
         rate.sleep();
 
         if (should_check_obstacle_avoidance_completion_ && obstacle_avoidance_completed_) {
+            
+            ROS_FATAL("Obstacle avoidance completed");
             break;
         }        
     }
