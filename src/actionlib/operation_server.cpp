@@ -41,6 +41,11 @@ void fluid::OperationServer::goalCallback() {
     // This is necessary in order to modify some of them before we initiate the different operations further down.
     // E.g. the init operation shouldn't be called with a different pose than (0, 0, 0), so we make sure this is the
     // case.
+    
+    if (actionlib_action_server_.isActive()) {
+        actionlib_action_server_.setAborted();
+    }
+
     auto goal = actionlib_action_server_.acceptNewGoal();
     geometry_msgs::Pose target_pose = goal->target_pose;
     std_msgs::String operation_identifier = goal->type;
@@ -149,6 +154,11 @@ void fluid::OperationServer::start() {
 
                     // Will notify the operation client what the outcome of the operation was. This will end up
                     // calling the callback that the operation client set up for completion.
+                    
+                    if (!actionlib_action_server_.isActive()) {
+                        return;
+                    }
+
                     if (completed) {
                         ROS_INFO_STREAM("Operation completed.");
                         actionlib_action_server_.setSucceeded();
