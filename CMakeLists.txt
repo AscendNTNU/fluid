@@ -55,7 +55,7 @@ add_executable(client_square src/client_square.cpp)
 add_executable(client_interval src/client_interval.cpp)
 add_executable(client_tracking src/client_tracking.cpp)
 add_executable(tracking_publisher src/tracking_pose_publisher.cpp)
-add_executable(client_random_movement src/random_movement_client.cpp)
+add_executable(client_random_movement src/client_random_movement.cpp)
 
 target_link_libraries(server fluid_fsm_lib)
 target_link_libraries(setpoint_publisher fluid_fsm_lib)
