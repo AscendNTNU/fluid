@@ -34,15 +34,11 @@ void runOperation(bool completed) {
 
     float x = initialPose.position.x + (-xLength + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(xLength * 2))));
     float y = initialPose.position.y + (-yLength + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(yLength * 2))));
-
-    ROS_INFO_STREAM("Current pose: " << "(" << pose.position.x << ", " << pose.position.y << ", " << pose.position.z << ")");
-    ROS_INFO_STREAM("Next position: " << "(" << x << ", " << y << ", " << pose.position.z << ")");
-
     pose.position.x = x;
     pose.position.y = y;
     pose.position.z = height;
 
-    operation_client_ptr->requestOperation(fluid::OperationIdentifier::MoveOriented, pose, runOperation);
+    operation_client_ptr->requestOperation(fluid::OperationIdentifier::Move, pose, runOperation);
 }
 
 void poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
@@ -65,22 +61,9 @@ int main(int argc, char** argv) {
     ros::NodeHandle node_handle;
     operation_client_ptr = std::make_shared<fluid::OperationClient>(name_space, 60);
     ros::Rate rate(20);
-/*
-    // Retrieve initial pose 
-    ros::Subscriber subscriber = node_handle.subscribe(name_space + "/mavros/local_position/pose", 100, poseCallback);
 
-    while (ros::ok() && !initialPoseSet) {
-        ros::spinOnce();
-        rate.sleep();
-    }
-
-*/
     // Initialization and take off
     bool initialized = false;
-    
-    /*
-    pose.position.x = initialPose.position.x;
-    pose.position.y = initialPose.position.y;*/
 
     pose.position.x = 0.0;
     pose.position.y = 0.0;
