@@ -10,6 +10,9 @@
 #include <memory>
 
 #include <tf2/LinearMath/Quaternion.h>
+#include <thread>
+#include <chrono>
+#include <ostream>
 
 #include "../include/core/operation/operation.h"
 #include "../include/actionlib/operation_client.h"
@@ -25,7 +28,7 @@ geometry_msgs::Pose initialPose, pose, lastPose;
 
 constexpr float height = 2.5;
 
-void runOperation(bool completed /* ignored for this purpose */) {
+void runOperation(/* bool completed ignored for this purpose */) {
 
     float x = initialPose.position.x + (-xLength + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(xLength * 2))));
     float y = initialPose.position.y + (-yLength + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(yLength * 2))));
@@ -48,7 +51,7 @@ void runOperation(bool completed /* ignored for this purpose */) {
     pose.position.z = height;
 
 
-    operation_client_ptr->requestOperation(fluid::OperationIdentifier::Move, pose, runOperation);
+    operation_client_ptr->requestOperation(fluid::OperationIdentifier::Move, pose,/* runOperation*/ [](bool completed) {});
     /* [=] (bool completed) {
         pose.position.x = x;
         pose.position.y = y;
@@ -108,6 +111,27 @@ int main(int argc, char** argv) {
         }
     });
 
+
+    std::chrono::time_point<std::chrono::system_clock> lastTime = std::chrono::system_clock::now();
+    std::chrono::time_point<std::chrono::system_clock> current = std::chrono::system_clock::now();
+    
+    while (ros::ok()) {
+        current = std::chrono::system_clock::now();
+
+        if (std::chrono::duration_cast<std::chrono::milliseconds>(current - lastTime).count() > 10000) {
+
+            runOperation();
+            lastTime = current;
+        }
+
+        ros::spinOnce();
+        rate.sleep();
+    }
+
+    /*
+
+    ros::spin();
+
     while (ros::ok() && !initialized) {
         ros::spinOnce();
         rate.sleep();
@@ -117,7 +141,7 @@ int main(int argc, char** argv) {
     srand(static_cast<unsigned int>(time(nullptr)));
     runOperation(true);
     ros::spin();
-
+*/
     return 0;
 }
 
