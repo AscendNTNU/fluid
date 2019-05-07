@@ -55,6 +55,7 @@ add_executable(client_square src/client_square.cpp)
 add_executable(client_interval src/client_interval.cpp)
 add_executable(client_tracking src/client_tracking.cpp)
 add_executable(tracking_publisher src/tracking_pose_publisher.cpp)
+add_executable(client_random_movement src/client_random_movement.cpp)
 
 target_link_libraries(server fluid_fsm_lib)
 target_link_libraries(setpoint_publisher fluid_fsm_lib)
@@ -62,6 +63,7 @@ target_link_libraries(client_square fluid_fsm_lib ${catkin_LIBRARIES})
 target_link_libraries(client_interval fluid_fsm_lib ${catkin_LIBRARIES})
 target_link_libraries(client_tracking fluid_fsm_lib ${catkin_LIBRARIES})
 target_link_libraries(tracking_publisher fluid_fsm_lib ${catkin_LIBRARIES})
+target_link_libraries(client_random_movement fluid_fsm_lib ${catkin_LIBRARIES})
 
 ## Adds a compilation dependency to node_name
 add_dependencies(fluid_fsm_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -71,6 +73,7 @@ add_dependencies(client_square ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 add_dependencies(client_interval ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(client_tracking ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(tracking_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(client_random_movement ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Mark libraries for installation
 install(TARGETS fluid_fsm_lib
