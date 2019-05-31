@@ -5,10 +5,8 @@ add_compile_options(-std=c++14)
 # Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
         ascend_msgs
-        geometry_msgs
         roscpp
         genmsg
-        mavros_msgs
         actionlib
         tf2
 )
