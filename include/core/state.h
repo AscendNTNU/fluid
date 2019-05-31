@@ -8,7 +8,7 @@
 #include <ros/ros.h>
 #include <mavros/mavros_pose_publisher.h>
 #include <geometry_msgs/TwistStamped.h>
-#include <std_msgs/Bool.h>
+#include <ascend_msgs/ObstacleAvoidanceCompletion.h>
 
 #include "identifiable.h"
 
@@ -64,7 +64,7 @@ namespace fluid {
         /**
          * @brief      Retrieves whether the obstacle avoidance completed or not.
          */
-        void obstacleAvoidanceCompletionCallback(const std_msgs::Bool::ConstPtr& completed);
+        void obstacleAvoidanceCompletionCallback(const ascend_msgs::ObstacleAvoidanceCompletion& msg);
 
     public:
 

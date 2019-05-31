@@ -6,7 +6,6 @@
 #include "../../include/core/core.h"
 #include <utility>
 
-
 fluid::State::State(std::string identifier,
                     std::string px4_mode,
                     std::string pose_subscription_topic,
@@ -49,8 +48,16 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
     current_twist_.header = twist->header;
 }
 
-void fluid::State::obstacleAvoidanceCompletionCallback(const std_msgs::Bool::ConstPtr& completed) {
-    if (!obstacle_avoidance_completed_ && completed->data) {
+void fluid::State::obstacleAvoidanceCompletionCallback(const ascend_msgs::ObstacleAvoidanceCompletion& msg) {
+
+    // Check whether the obstacle avoidance is returning completed on the current setpoint
+    if (msg.setpoint.position.x != position_target.position.x || 
+        msg.setpoint.position.y != position_target.position.y || 
+        msg.setpoint.position.z != position_target.position.z) {
+        return;
+    }
+
+    if (!obstacle_avoidance_completed_ && msg.completed) {
         obstacle_avoidance_completed_ = true;
     }
 }
