@@ -8,3 +8,4 @@
 - Rename operation client and operation server to just client and server under the fluid namespace.
 - Make it so we can include with <> instead of using relative path.
 - Rename pose publisher to position target publisher
+- Migrate status message to use position target and point types
