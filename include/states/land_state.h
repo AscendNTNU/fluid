@@ -20,7 +20,7 @@ namespace fluid {
         /**
          * Initializes the land state.
          */
-        explicit LandState() : MavrosState(fluid::StateIdentifier::Land, fluid::PX4::Land) {}
+        explicit LandState() : MavrosState(fluid::StateIdentifier::Land, fluid::PX4::Land, false) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

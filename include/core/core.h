@@ -46,6 +46,14 @@ namespace fluid {
 																			///< should set itself into offboard
 																			///< automatically or not.
 
+		static double minX, minY, minZ, maxX, maxY, maxZ;					///< The bounding box restricting the
+																			///< movement of the drone. When all
+																			///< values are set to 0 the drone can
+																			///< move freely.
+
+		static double positionFollowHeight;									///< The height at which the drone will
+																			///< follow a given target.	
+
 		/**
 		 * @return     The shared singleton instance of the graph.
 		 */

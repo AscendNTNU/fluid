@@ -51,7 +51,6 @@ namespace fluid {
          */
         void goalCallback();
 
-
         /**
          * Gets fired when the operation gets preempted.
          */

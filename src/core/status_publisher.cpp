@@ -1,5 +1,4 @@
 #include "../../include/core/status_publisher.h"
-#include <ascend_msgs/FluidFsmStatus.h>
 #include "../../include/core/core.h"
 
 fluid::StatusPublisher::StatusPublisher() {
@@ -22,14 +21,5 @@ fluid::StatusPublisher::StatusPublisher() {
 }
 
 void fluid::StatusPublisher::publish() {
-
-	node_handle_.getParam("minX", status.min_x);
-	node_handle_.getParam("minY", status.min_y);
-	node_handle_.getParam("minZ", status.min_z);
-
-	node_handle_.getParam("maxX", status.max_x);
-	node_handle_.getParam("maxY", status.max_y);
-	node_handle_.getParam("maxZ", status.max_z);
-
 	publisher_p_.publish(status);
 }

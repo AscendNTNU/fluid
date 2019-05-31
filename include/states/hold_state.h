@@ -20,7 +20,7 @@ namespace fluid {
         /**
          * Initializes the hold state.
          */
-        explicit HoldState() : MavrosState(fluid::StateIdentifier::Hold, fluid::PX4::Offboard) {}
+        explicit HoldState() : MavrosState(fluid::StateIdentifier::Hold, fluid::PX4::Offboard, false) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

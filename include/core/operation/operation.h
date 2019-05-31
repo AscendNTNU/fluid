@@ -22,7 +22,7 @@ namespace fluid {
      *  \brief Manages the transitions between multiple states and their execution.
      */
     class Operation {
-    private:
+    protected:
 
         const std::string destination_state_identifier_;                        ///< The state the operation should
                                                                                 ///< transition to.
@@ -59,6 +59,8 @@ namespace fluid {
                   mavros_msgs::PositionTarget position_target);
 
 
+        virtual ~Operation() {}
+
         /**
          * Checks if the operation is valid from the current state. 
          * 
@@ -83,7 +85,7 @@ namespace fluid {
          * @param shouldAbort Called each tick, makes it possible to abort operations in the midst of an execution.
          * @param completionHandler Callback function for whether the operation completed or not.
          */
-        void perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler);
+        virtual void perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler);
 
         /**
          * @brief Sets the pose for a new state and performs the transition to that state from the current state.

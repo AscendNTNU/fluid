@@ -24,6 +24,10 @@ void fluid::Transition::perform() {
         return;
     }
 
+    if (source_state_p->px4_mode == destination_state_p->px4_mode) {
+        return;
+    }
+
     ros::Rate rate(Core::refresh_rate);
 
     // Get the px4 mode for the state we want to transition to and set that mode in our state setter

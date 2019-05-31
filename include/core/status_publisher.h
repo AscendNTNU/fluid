@@ -10,8 +10,6 @@
 
 namespace fluid {
 
-	/**
-	 */
 	class StatusPublisher {
 
 	private:

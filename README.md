@@ -19,6 +19,9 @@
 
 The behavioral code for the simulation is found at `src/test_client.cpp`.
 
+If you're running control_simulator you have to wait until vision fuse is set up. Read more here:
+https://confluence.ascendntnu.no/pages/viewpage.action?pageId=21955671
+
 ### Running only the server
 
 Remember to set the namespace, if you want any, by running `export ROS_NAMESPACE=your_namespace`.

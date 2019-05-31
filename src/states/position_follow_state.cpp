@@ -17,13 +17,9 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
         return;
     }
 
-    double height = 2.3;
-
-    node_handle_.getParam("positionFollowHeight", height);
-
     Core::getStatusPublisherPtr()->status.target_pose_x = object_target_pose.position.x;
     Core::getStatusPublisherPtr()->status.target_pose_y = object_target_pose.position.y;
-    Core::getStatusPublisherPtr()->status.target_pose_z = height;
+    Core::getStatusPublisherPtr()->status.target_pose_z = fluid::Core::positionFollowHeight;
  
     set_standby_position_ = false;
     has_target_ = true;
@@ -49,7 +45,7 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
 
     calculated_pose_.position.x = currentX + unitX * (deltaMagnitude - distance);
     calculated_pose_.position.y = currentY + unitY * (deltaMagnitude - distance);
-    calculated_pose_.position.z = height;
+    calculated_pose_.position.z = fluid::Core::positionFollowHeight;
 }
 
 bool fluid::PositionFollowState::hasFinishedExecution() {
@@ -83,5 +79,23 @@ void fluid::PositionFollowState::tick() {
     position_target.position.x = calculated_pose_.position.x;
     position_target.position.y = calculated_pose_.position.y;
     position_target.position.z = calculated_pose_.position.z;
+
+    // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
+    // min and max.
+    if (fluid::Core::minX != 0 || fluid::Core::maxX != 0) {
+        position_target.position.x = std::max(fluid::Core::minX, 
+                                              std::min(calculated_pose_.position.x, fluid::Core::maxX));
+    }
+
+    if (fluid::Core::minY != 0 || fluid::Core::maxY != 0) { 
+        position_target.position.y = std::max(fluid::Core::minY, 
+                                              std::min(calculated_pose_.position.y, fluid::Core::maxY));
+    }
+
+    if (fluid::Core::minZ != 0 || fluid::Core::maxZ != 0) {
+        position_target.position.z = std::max(fluid::Core::minZ, 
+                                              std::min(calculated_pose_.position.z, fluid::Core::maxZ));
+    }
+
     position_target.yaw	= calculated_pose_.yaw;
 }

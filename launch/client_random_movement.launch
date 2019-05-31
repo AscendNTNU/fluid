@@ -1,0 +1,9 @@
+<launch>
+	<arg name="namespace"/>
+
+	<group ns="$(arg namespace)">
+		<include file="$(find fluid_fsm)/launch/server_gazebo.launch"/>
+	</group>
+
+	<node name="client" pkg="fluid_fsm" type="client_random_movement" output="screen" args="$(arg namespace) 2.0 5.0"/>
+</launch>

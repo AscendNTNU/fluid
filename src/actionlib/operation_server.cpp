@@ -20,6 +20,7 @@
 #include "operations/move_operation.h"
 #include "operations/land_operation.h"
 #include "operations/take_off_operation.h"
+#include "operations/move_oriented_operation.h"
 #include "../../include/core/core.h"
 
 
@@ -40,28 +41,31 @@ void fluid::OperationServer::goalCallback() {
     // This is necessary in order to modify some of them before we initiate the different operations further down.
     // E.g. the init operation shouldn't be called with a different pose than (0, 0, 0), so we make sure this is the
     // case.
+    
+    if (actionlib_action_server_.isActive()) {
+        actionlib_action_server_.setAborted();
+    }
+
     auto goal = actionlib_action_server_.acceptNewGoal();
     geometry_msgs::Pose target_pose = goal->target_pose;
     std_msgs::String operation_identifier = goal->type;
 
     ROS_INFO_STREAM("New operation requested: " << operation_identifier);
 
-    double minX, minY, minZ, maxX, maxY, maxZ = 0.0;
-
-    node_handle_.getParam("minX", minX);
-    node_handle_.getParam("minY", minY);
-    node_handle_.getParam("minZ", minZ);
-
-    node_handle_.getParam("maxX", maxX);
-    node_handle_.getParam("maxY", maxY);
-    node_handle_.getParam("maxZ", maxZ);
-
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
-    if (minX != 0 || maxX != 0) target_pose.position.x = std::max(minX, std::min(target_pose.position.x, maxX));
-    if (minY != 0 || maxY != 0) target_pose.position.y = std::max(minY, std::min(target_pose.position.y, maxY));
-    if (minZ != 0 || maxZ != 0) target_pose.position.z = std::max(minZ, std::min(target_pose.position.z, maxZ));
-    
+    if (fluid::Core::minX != 0 || fluid::Core::maxX != 0) {
+        target_pose.position.x = std::max(fluid::Core::minX, std::min(target_pose.position.x, fluid::Core::maxX));
+    }
+
+    if (fluid::Core::minY != 0 || fluid::Core::maxY != 0) { 
+        target_pose.position.y = std::max(fluid::Core::minY, std::min(target_pose.position.y, fluid::Core::maxY));
+    }
+
+    if (fluid::Core::minZ != 0 || fluid::Core::maxZ != 0) {
+        target_pose.position.z = std::max(fluid::Core::minZ, std::min(target_pose.position.z, fluid::Core::maxZ));
+    }
+
     // Update the status with the target pose
     Core::getStatusPublisherPtr()->status.target_pose_x = target_pose.position.x;
     Core::getStatusPublisherPtr()->status.target_pose_y = target_pose.position.y;
@@ -97,13 +101,15 @@ void fluid::OperationServer::goalCallback() {
     }
     else if (operation_identifier.data == fluid::OperationIdentifier::Move) {
         next_operation_p_ = std::make_shared<fluid::MoveOperation>(position_target);
-
     }
     else if (operation_identifier.data == fluid::OperationIdentifier::Land) {
         next_operation_p_ = std::make_shared<fluid::LandOperation>(position_target);
     }
     else if (operation_identifier.data == fluid::OperationIdentifier::PositionFollow) {
         next_operation_p_ = std::make_shared<fluid::PositionFollowOperation>();
+    }
+    else if (operation_identifier.data == fluid::OperationIdentifier::MoveOriented) {
+        next_operation_p_ = std::make_shared<fluid::MoveOrientedOperation>(position_target);
     }
 
     new_operation_requested_ = true;
@@ -148,6 +154,11 @@ void fluid::OperationServer::start() {
 
                     // Will notify the operation client what the outcome of the operation was. This will end up
                     // calling the callback that the operation client set up for completion.
+                    
+                    if (!actionlib_action_server_.isActive()) {
+                        return;
+                    }
+
                     if (completed) {
                         ROS_INFO_STREAM("Operation completed.");
                         actionlib_action_server_.setSucceeded();

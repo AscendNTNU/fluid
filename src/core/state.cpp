@@ -10,7 +10,8 @@ fluid::State::State(std::string identifier,
                     std::string px4_mode,
                     std::string pose_subscription_topic,
                     std::string twist_subscription_topic,
-                    std::shared_ptr<fluid::PosePublisher> position_target_publisher_p) : 
+                    std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
+                    bool should_check_obstacle_avoidance_completion) : 
 
 					Identifiable(identifier),
                     px4_mode(px4_mode),
@@ -22,7 +23,12 @@ fluid::State::State(std::string identifier,
                                       Core::message_queue_size,
                                       &State::twistCallback,
                                       this)),
-                    position_target_publisher_p(std::move(position_target_publisher_p)) {}
+                    position_target_publisher_p(std::move(position_target_publisher_p)),
+                    obstacle_avoidance_completion_subscriber_(node_handle_.subscribe("obstacle_avoidance/completion", 
+                                                              Core::message_queue_size, 
+                                                              &State::obstacleAvoidanceCompletionCallback, 
+                                                              this)),
+                    should_check_obstacle_avoidance_completion_(should_check_obstacle_avoidance_completion) {}
 
 geometry_msgs::PoseStamped fluid::State::getCurrentPose() {
 	return current_pose_;
@@ -42,9 +48,24 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
     current_twist_.header = twist->header;
 }
 
+void fluid::State::obstacleAvoidanceCompletionCallback(const ascend_msgs::ObstacleAvoidanceCompletion& msg) {
+
+    // Check whether the obstacle avoidance is returning completed on the current setpoint
+    if (msg.setpoint.position.x != position_target.position.x || 
+        msg.setpoint.position.y != position_target.position.y || 
+        msg.setpoint.position.z != position_target.position.z) {
+        return;
+    }
+
+    if (!obstacle_avoidance_completed_ && msg.completed) {
+        obstacle_avoidance_completed_ = true;
+    }
+}
+
 void fluid::State::perform(std::function<bool(void)> shouldAbort) {
 
     ros::Rate rate(Core::refresh_rate);
+    obstacle_avoidance_completed_ = false;
 
     while (ros::ok() && !hasFinishedExecution() && !shouldAbort()) {
         tick();
@@ -54,5 +75,10 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort) {
 
         ros::spinOnce();
         rate.sleep();
+
+        if (should_check_obstacle_avoidance_completion_ && obstacle_avoidance_completed_) {
+            // Obstacle avoidance reported that we've come as far as we can in this state            
+            break;
+        }        
     }
 }
