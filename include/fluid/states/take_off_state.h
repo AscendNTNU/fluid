@@ -10,7 +10,8 @@
 namespace fluid {
 
     /** \class TakeOffState
-     *  \brief Represents the state where the drone is on taking off from ground straight up.
+     *  \brief Represents the state where the drone is on taking off from ground straight up. This state's reference point is the current position,
+     *         so the setpoint is irrelevant. 
      */
     class TakeOffState: public State {
     public:
