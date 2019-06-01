@@ -12,7 +12,6 @@
 #include <ascend_msgs/ObstacleAvoidanceCompletion.h>
 #include <mavros_msgs/PositionTarget.h>
 
-#include "identifiable.h"
 #include "state_identifier.h"
 #include "type_mask.h"
 
@@ -23,7 +22,7 @@ namespace fluid {
      *
      *  The state class is an interface which encapsulates an action. It also handles pose publishing.
      */
-    class State: public Identifiable {
+    class State {
     protected:
 
         ros::NodeHandle node_handle_;                                           ///< Node handle for the mavros 
@@ -73,11 +72,13 @@ namespace fluid {
 
     public:
 
+		const std::string identifier;                                          ///< Makes it easy to distinguish between states 
+  
         const std::string px4_mode;                                            ///< The mode this state represents 
                                                                                ///< within PX4. For example move state
                                                                                ///< would be OFFBOARD. 
 
-        const ros::Publisher setpoint_publisher;                              ///< Publishes setpoints for this state.
+        const ros::Publisher setpoint_publisher;                               ///< Publishes setpoints for this state.
 
         mavros_msgs::PositionTarget setpoint;                                  ///< The position target of the state.
         

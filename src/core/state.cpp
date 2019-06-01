@@ -13,7 +13,7 @@ fluid::State::State(std::string identifier,
                     std::string px4_mode,
                     bool should_check_obstacle_avoidance_completion) : 
 
-					Identifiable(identifier),
+					identifier(identifier),
                     px4_mode(px4_mode),
 					pose_subscriber_(node_handle_.subscribe("mavros/local_position/pose", 
                                      Core::message_queue_size, 
