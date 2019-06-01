@@ -9,7 +9,7 @@
 
 #include <memory>
 #include <ros/ros.h>
-#include "mavros/mavros_state_setter.h"
+#include "mavros_state_link.h"
 #include "state.h"
 
 namespace fluid {
@@ -19,7 +19,7 @@ namespace fluid {
     class Transition {
     private:
 
-        fluid::MavrosStateSetter mavros_state_setter_;                        ///< Sets states within the Pixhawk.
+        fluid::MavrosStateLink mavros_state_link_;                             ///< Used to set states within the Pixhawk.
 
     public:
         const std::shared_ptr<fluid::State> source_state_p;                   ///< Source state of the transition
