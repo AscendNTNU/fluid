@@ -36,6 +36,8 @@ void fluid::Transition::perform() {
             
         mavros_state_link_.attemptToSetState(destination_state_p->px4_mode, [&](bool succeeded) {
             // State set succeeded, break from loop
+
+            destination_state_p->setCurrentPose(source_state_p->getCurrentPose());
             state_is_set = succeeded;
             Core::getStatusPublisherPtr()->status.px4_mode = destination_state_p->px4_mode;
         });
