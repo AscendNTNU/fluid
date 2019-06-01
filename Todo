@@ -1,4 +1,3 @@
-- Minimize, strip down mavros folder and move things to where they belong. E. g. transition. Remove virtual classes which don't serve a purpose. 
 - Should move to a more generalized state machine perspective, because the logic between states are performed on the client side now. The client should only have to specify to land, take off, move or follow, and the fsm should find the different states which make up that generalized operation. 
 - Land should automatically set z to 0
 - Take off should be from current position and then the specified height.
@@ -7,5 +6,4 @@
 - Land and take off should be from the current position. 
 - Rename operation client and operation server to just client and server under the fluid namespace.
 - Make it so we can include with <> instead of using relative path.
-- Rename pose publisher to position target publisher
 - Migrate status message to use position target and point types
