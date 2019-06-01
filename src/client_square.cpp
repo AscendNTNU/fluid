@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 #include <tf2/LinearMath/Quaternion.h>
-#include <fluid/core/operation_client.h>
+#include <fluid/core/client.h>
 #include <fluid/operations/operation_identifier.h>
 
 int main(int argc, char** argv) {
@@ -15,9 +15,9 @@ int main(int argc, char** argv) {
     float startX = 0.0;
     float startY = 0.0;
 
-    fluid::OperationClient operation_client("drone_1", 10);
+    fluid::Client client("drone_1", 10);
     
-    operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
+    client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
         if (completed) {
 
             geometry_msgs::Pose take_off_pose;
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     pose.position.y = startY;
     pose.position.z = height;
     
-    operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
+    client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
         /*if (completed) {
                 pose.position.x = startX + distance;
                 pose.position.y = startY + distance;

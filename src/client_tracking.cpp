@@ -5,7 +5,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 #include <fluid/core/operation.h>
-#include <fluid/core/operation_client.h>
+#include <fluid/core/client.h>
 #include <fluid/operations/operation_identifier.h>
 
 int main(int argc, char** argv) {
@@ -17,9 +17,9 @@ int main(int argc, char** argv) {
     bool initialized = false;
     float height = 1.0;
 
-    fluid::OperationClient operation_client("drone_1", 60);
+    fluid::Client client("drone_1", 60);
     
-    operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
+    client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
         if (completed) {
 
             geometry_msgs::Pose take_off_pose;
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
         rate.sleep();
     }
 
-    operation_client.requestOperation(fluid::OperationIdentifier::PositionFollow, pose, [](bool completed) {});
+    client.requestOperation(fluid::OperationIdentifier::PositionFollow, pose, [](bool completed) {});
 
 
     std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();
