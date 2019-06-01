@@ -2,8 +2,8 @@
 // Created by simengangstad on 26.10.18.
 //
 
-#include "../../include/fluid/core/mavros_state_link.h"
-#include "../../include/fluid/core/core.h"
+#include "mavros_state_link.h"
+#include "core.h"
 
 fluid::MavrosStateLink::MavrosStateLink() : 
     state_subscriber_(node_handle_.subscribe<mavros_msgs::State>("mavros/state",

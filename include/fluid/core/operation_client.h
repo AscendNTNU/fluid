@@ -10,9 +10,11 @@
 #include <memory>
 
 #include <actionlib/client/simple_action_client.h>
-#include <fluid/OperationAction.h>
 #include <geometry_msgs/Pose.h>
-#include <fluid/core/operation/operation.h>
+
+#include <fluid/OperationAction.h>
+
+#include "operation.h"
 
 namespace fluid {
 

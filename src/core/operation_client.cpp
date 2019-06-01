@@ -2,9 +2,10 @@
 // Created by simengangstad on 25.10.18.
 //
 
-#include "fluid/core/operation_client.h"
+#include "operation_client.h"
 
 #include <fluid/OperationGoal.h>
+
 #include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
 #include <utility>

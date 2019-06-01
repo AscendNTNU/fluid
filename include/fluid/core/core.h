@@ -2,9 +2,9 @@
 #define FLUID_FSM_CORE_H
 
 #include "status_publisher.h"
-#include "operation/state_graph.h"
+#include "state_graph.h"
+
 #include <memory>
-#include <string>
 
 namespace fluid {
 

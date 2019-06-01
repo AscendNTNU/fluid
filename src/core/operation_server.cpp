@@ -13,16 +13,15 @@
 #include <assert.h>
 #include <algorithm>
 
-#include "fluid/core/operation_server.h"
-#include "fluid/operations/operation_identifier.h"
-#include "fluid/operations/init_operation.h"
-#include "fluid/operations/move_operation.h"
-#include "fluid/operations/land_operation.h"
-#include "fluid/operations/take_off_operation.h"
-#include "fluid/operations/move_oriented_operation.h"
-#include "fluid/operations/position_follow_operation.h" 
-#include "fluid/core/core.h"
-
+#include "operation_server.h"
+#include "operation_identifier.h"
+#include "init_operation.h"
+#include "move_operation.h"
+#include "land_operation.h"
+#include "take_off_operation.h"
+#include "move_oriented_operation.h"
+#include "position_follow_operation.h" 
+#include "core.h"
 
 fluid::OperationServer::OperationServer() : actionlib_action_server_(node_handle_, 
                                                                      "fluid_fsm_operation",

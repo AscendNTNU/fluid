@@ -1,5 +1,3 @@
-#include <utility>
-
 //
 // Created by simengangstad on 04.10.18.
 //
@@ -9,6 +7,7 @@
 
 #include <memory>
 #include <ros/ros.h>
+
 #include "mavros_state_link.h"
 #include "state.h"
 

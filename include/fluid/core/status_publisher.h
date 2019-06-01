@@ -4,9 +4,8 @@
 #define FLUID_FSM_STATUS_PUBLISHER_H
 
 #include <ros/ros.h>
-#include <string>
+
 #include <ascend_msgs/FluidFsmStatus.h>
-#include <memory>
 
 namespace fluid {
 

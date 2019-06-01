@@ -2,11 +2,11 @@
 //  Created by Simen Gangstad on 09/10/2018.
 //
 
+#include "graph.h"
+
 #include <iostream>
 #include <iterator>
 #include <vector>
-
-#include "graph.h"
 
 fluid::Graph::Graph() {
     adjacency_list = std::make_unique<AdjacencyList>();

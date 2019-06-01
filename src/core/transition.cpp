@@ -2,14 +2,13 @@
 // Created by simengangstad on 04.10.18.
 //
 
+#include "transition.h"
+
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
-#include <algorithm>
-
-#include "../../include/fluid/core/transition.h"
-#include "../../include/fluid/core/core.h"
+#include "core.h"
 
 fluid::Transition::Transition(std::shared_ptr<State> source_state_p, std::shared_ptr<State> destination_state_p) :
                               source_state_p(std::move(source_state_p)),

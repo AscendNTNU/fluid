@@ -2,14 +2,14 @@
 // Created by simengangstad on 04.10.18.
 //
 
+#include "operation.h"
+
 #include <utility>
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
 
-#include "operation.h"
-#include "operation_server.h"
 #include "core.h"
 #include "transition.h"
 

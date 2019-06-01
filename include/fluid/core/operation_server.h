@@ -6,14 +6,10 @@
 #define FLUID_FSM_ACTION_SERVER_H
 
 #include <ros/ros.h>
-#include <geometry_msgs/Pose.h>
-#include <std_msgs/String.h>
 #include <fluid/OperationAction.h>
-#include <fluid/OperationGoal.h>
 #include <actionlib/server/simple_action_server.h>
 
-#include "fluid/core/operation/operation.h"
-#include "fluid/core/status_publisher.h"
+#include "operation.h"
 
 namespace fluid {
 
