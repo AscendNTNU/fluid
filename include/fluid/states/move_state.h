@@ -5,10 +5,7 @@
 #ifndef FLUID_FSM_MOVE_STATE_H
 #define FLUID_FSM_MOVE_STATE_H
 
-#include "../core/state.h"
-#include "state_identifier.h"
-
-#include <ros/ros.h>
+#include "state.h"
 
 namespace fluid {
 

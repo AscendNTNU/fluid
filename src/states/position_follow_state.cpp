@@ -1,6 +1,4 @@
-#include "../../include/fluid/states/position_follow_state.h"
-#include "../../include/fluid/core/type_mask.h"
-
+#include "position_follow_state.h"
 
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>

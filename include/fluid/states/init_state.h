@@ -5,8 +5,7 @@
 #ifndef FLUID_FSM_INIT_STATE_H
 #define FLUID_FSM_INIT_STATE_H
 
-#include "../core/state.h"
-#include "state_identifier.h"
+#include "state.h"
 
 namespace fluid {
 

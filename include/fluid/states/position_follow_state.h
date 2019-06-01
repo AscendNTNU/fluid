@@ -5,11 +5,9 @@
 #ifndef FLUID_FSM_POSITION_FOLLOW_STATE_H
 #define FLUID_FSM_POSITION_FOLLOW_STATE_H
 
-#include "../core/core.h"
-#include "../core/state.h"
-#include "state_identifier.h"
+#include "core.h"
+#include "state.h"
 
-#include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 
 namespace fluid {

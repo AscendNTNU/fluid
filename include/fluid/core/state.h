@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -12,6 +13,8 @@
 #include <mavros_msgs/PositionTarget.h>
 
 #include "identifiable.h"
+#include "state_identifier.h"
+#include "type_mask.h"
 
 namespace fluid {
     

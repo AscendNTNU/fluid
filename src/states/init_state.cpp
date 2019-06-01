@@ -3,18 +3,16 @@
 //
 
 
-#include "../../include/fluid/states/init_state.h"
+#include "init_state.h"
 
-#include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 #include <ascend_msgs/FluidFsmStatus.h>
 
-#include "../../include/fluid/core/core.h"
-#include "../../include/fluid/core/mavros_state_link.h"
-#include "../../include/fluid/core/type_mask.h"
+#include "core.h"
+#include "mavros_state_link.h"
 
 bool fluid::InitState::hasFinishedExecution() {
     return initialized;
