@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(fluid_fsm)
+project(fluid)
 add_compile_options(-std=c++14)
 
 # Find catkin macros and libraries
@@ -14,33 +14,53 @@ find_package(catkin REQUIRED COMPONENTS
 add_action_files(DIRECTORY action FILES Operation.action)
 generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
 
-catkin_package(
-        INCLUDE_DIRS include
-        CATKIN_DEPENDS ascend_msgs roscpp
-        LIBRARIES fluid_fsm_lib
-)
-
 # Includes headers in include folder
-include_directories(
-        include
-        ${catkin_INCLUDE_DIRS}
+include_directories(include
+                   
+include/fluid/core/operation
+include/fluid/core
+include/fluid/operations
+include/fluid/states
+include/fluid/tools
+${catkin_INCLUDE_DIRS}
 )
 
+# Retrieve all the source files using GLOB
 file(GLOB fluid_fsm_operation_SRC "src/core/operation/*.cpp")
 file(GLOB fluid_fsm_operations_SRC "src/operations/*.cpp")
 file(GLOB fluid_fsm_core_SRC "src/core/*.cpp")
 file(GLOB fluid_fsm_states_SRC "src/states/*.cpp")
 file(GLOB fluid_fsm_actionlib_SRC "src/actionlib/*.cpp")
 
-add_library(fluid_fsm_lib
+# Add the source files to the library
+add_library(fluid
         ${fluid_fsm_operation_SRC}
         ${fluid_fsm_operations_SRC}
         ${fluid_fsm_core_SRC}
         ${fluid_fsm_states_SRC}
         ${fluid_fsm_actionlib_SRC})
 
-target_link_libraries(fluid_fsm_lib ${catkin_LIBRARIES})
+target_link_libraries(fluid ${catkin_LIBRARIES})
 
+# Export the library
+catkin_package(
+        CATKIN_DEPENDS ascend_msgs roscpp
+        INCLUDE_DIRS include
+        LIBRARIES fluid
+)
+
+## Mark libraries for installation
+install(TARGETS fluid
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+
+## Mark header files for installation
+install(DIRECTORY include/${PROJECT_NAME}
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN ".svn" EXCLUDE
+)
 
 #########################################################################################
 
@@ -52,16 +72,15 @@ add_executable(client_tracking src/client_tracking.cpp)
 add_executable(tracking_publisher src/tracking_pose_publisher.cpp)
 add_executable(client_random_movement src/client_random_movement.cpp)
 
-target_link_libraries(server fluid_fsm_lib)
-target_link_libraries(setpoint_publisher fluid_fsm_lib)
-target_link_libraries(client_square fluid_fsm_lib ${catkin_LIBRARIES})
-target_link_libraries(client_interval fluid_fsm_lib ${catkin_LIBRARIES})
-target_link_libraries(client_tracking fluid_fsm_lib ${catkin_LIBRARIES})
-target_link_libraries(tracking_publisher fluid_fsm_lib ${catkin_LIBRARIES})
-target_link_libraries(client_random_movement fluid_fsm_lib ${catkin_LIBRARIES})
+target_link_libraries(server fluid ${catkin_LIBRARIES})
+target_link_libraries(setpoint_publisher fluid ${catkin_LIBRARIES})
+target_link_libraries(client_square fluid ${catkin_LIBRARIES})
+target_link_libraries(client_interval fluid ${catkin_LIBRARIES})
+target_link_libraries(client_tracking fluid ${catkin_LIBRARIES})
+target_link_libraries(tracking_publisher fluid ${catkin_LIBRARIES})
+target_link_libraries(client_random_movement fluid ${catkin_LIBRARIES})
 
 ## Adds a compilation dependency to node_name
-add_dependencies(fluid_fsm_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(setpoint_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(client_square ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -70,14 +89,3 @@ add_dependencies(client_tracking ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 add_dependencies(tracking_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(client_random_movement ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-## Mark libraries for installation
-install(TARGETS fluid_fsm_lib
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
-## Mark header files for installation
-install(DIRECTORY include
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        FILES_MATCHING PATTERN "*.h"
-        PATTERN ".svn" EXCLUDE
-)
