@@ -61,10 +61,10 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 add_executable(server src/main.cpp)
 add_executable(setpoint_publisher src/setpoint_publisher_node.cpp)
-add_executable(client_square src/client_square.cpp)
-add_executable(client_tracking src/client_tracking.cpp)
+add_executable(client_square src/test/client_square.cpp)
+add_executable(client_tracking src/test/client_tracking.cpp)
 add_executable(tracking_publisher src/tracking_pose_publisher.cpp)
-add_executable(client_random_movement src/client_random_movement.cpp)
+add_executable(client_random_movement src/test/client_random_movement.cpp)
 
 target_link_libraries(server fluid ${catkin_LIBRARIES})
 target_link_libraries(setpoint_publisher fluid ${catkin_LIBRARIES})
