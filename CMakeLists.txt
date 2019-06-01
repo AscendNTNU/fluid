@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_action_files(DIRECTORY action FILES Operation.action)
-generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
+generate_messages(DEPENDENCIES ascend_msgs)
 
 # Includes headers in include folder
 include_directories(include
