@@ -31,11 +31,6 @@ void fluid::Client::waitForResult(
     bool finished_before_timeout = actionlib_client.waitForResult(ros::Duration(timeout_value_));
 
     if (completion_handler) {
-
-        if (!finished_before_timeout) {
-            ROS_INFO_STREAM("Operation timed out.");
-        }
-
         completion_handler(finished_before_timeout && actionlib_client.getState().isDone());
     }
 }
