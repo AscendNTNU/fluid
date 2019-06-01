@@ -1,4 +1,4 @@
-#include "../../include/core/core.h"
+#include "../../include/fluid/core/core.h"
 
 
 unsigned int fluid::Core::refresh_rate = 30;

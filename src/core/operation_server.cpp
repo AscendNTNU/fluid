@@ -4,7 +4,7 @@
 
 #include <mavros_msgs/PositionTarget.h>
 #include <std_msgs/String.h>
-#include <fluid_fsm/OperationGoal.h>
+#include <fluid/OperationGoal.h>
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -12,16 +12,16 @@
 #include <cmath>
 #include <assert.h>
 #include <algorithm>
-#include <operations/position_follow_operation.h>
 
-#include "../../include/actionlib/operation_server.h"
-#include "../../include/operations/operation_identifier.h"
-#include "operations/init_operation.h"
-#include "operations/move_operation.h"
-#include "operations/land_operation.h"
-#include "operations/take_off_operation.h"
-#include "operations/move_oriented_operation.h"
-#include "../../include/core/core.h"
+#include "fluid/core/operation_server.h"
+#include "fluid/operations/operation_identifier.h"
+#include "fluid/operations/init_operation.h"
+#include "fluid/operations/move_operation.h"
+#include "fluid/operations/land_operation.h"
+#include "fluid/operations/take_off_operation.h"
+#include "fluid/operations/move_oriented_operation.h"
+#include "fluid/operations/position_follow_operation.h" 
+#include "fluid/core/core.h"
 
 
 fluid::OperationServer::OperationServer() : actionlib_action_server_(node_handle_, 

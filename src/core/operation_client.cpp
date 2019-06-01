@@ -2,10 +2,9 @@
 // Created by simengangstad on 25.10.18.
 //
 
-#include "../../include/actionlib/operation_client.h"
+#include "fluid/core/operation_client.h"
 
-#include <actionlib/operation_client.h>
-#include <fluid_fsm/OperationGoal.h>
+#include <fluid/OperationGoal.h>
 #include <geometry_msgs/Pose.h>
 #include <ros/ros.h>
 #include <utility>
@@ -21,7 +20,7 @@ void fluid::OperationClient::waitForResult(
 
     action_client.waitForServer();
 
-    fluid_fsm::OperationGoal goal;
+    fluid::OperationGoal goal;
     goal.target_pose = target_pose;
     std_msgs::String type;
     type.data = std::move(operation_identifier);

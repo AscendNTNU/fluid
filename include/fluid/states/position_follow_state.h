@@ -5,7 +5,7 @@
 #ifndef FLUID_FSM_POSITION_FOLLOW_STATE_H
 #define FLUID_FSM_POSITION_FOLLOW_STATE_H
 
-#include "../../include/core/core.h"
+#include "../core/core.h"
 #include "../core/state.h"
 #include "state_identifier.h"
 

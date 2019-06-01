@@ -9,7 +9,7 @@
 #include <vector>
 #include <map>
 #include "edge.h"
-#include "../identifiable.h"
+#include "identifiable.h"
 
 namespace fluid {
 

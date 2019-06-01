@@ -8,8 +8,8 @@
 
 #include <algorithm>
 
-#include "../../include/core/transition.h"
-#include "../../include/core/core.h"
+#include "../../include/fluid/core/transition.h"
+#include "../../include/fluid/core/core.h"
 
 fluid::Transition::Transition(std::shared_ptr<State> source_state_p, std::shared_ptr<State> destination_state_p) :
                               source_state_p(std::move(source_state_p)),

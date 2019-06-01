@@ -2,8 +2,8 @@
 // Created by simengangstad on 26.10.18.
 //
 
-#include "../../include/core/state.h"
-#include "../../include/core/core.h"
+#include "../../include/fluid/core/state.h"
+#include "../../include/fluid/core/core.h"
 #include <mavros_msgs/PositionTarget.h>
 #include <utility>
 

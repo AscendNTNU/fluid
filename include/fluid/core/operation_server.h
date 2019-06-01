@@ -8,11 +8,12 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 #include <std_msgs/String.h>
-#include <fluid_fsm/OperationAction.h>
-#include <fluid_fsm/OperationGoal.h>
+#include <fluid/OperationAction.h>
+#include <fluid/OperationGoal.h>
 #include <actionlib/server/simple_action_server.h>
-#include "core/operation/operation.h"
-#include "../../include/core/status_publisher.h"
+
+#include "fluid/core/operation/operation.h"
+#include "fluid/core/status_publisher.h"
 
 namespace fluid {
 
@@ -21,7 +22,7 @@ namespace fluid {
      */
     class OperationServer {
 
-        typedef actionlib::SimpleActionServer<fluid_fsm::OperationAction> Server;
+        typedef actionlib::SimpleActionServer<fluid::OperationAction> Server;
 
     private:
 

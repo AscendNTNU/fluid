@@ -2,7 +2,7 @@
 // Created by simengangstad on 08.11.18.
 //
 
-#include "../../include/operations/init_operation.h"
+#include "../../include/fluid/operations/init_operation.h"
 
 fluid::InitOperation::InitOperation(mavros_msgs::PositionTarget position_target) :
         							Operation(fluid::OperationIdentifier::Init,

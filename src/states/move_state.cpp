@@ -7,9 +7,9 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
 
-#include "../../include/states/move_state.h"
-#include "../../include/tools/pose_util.h"
-#include "../../include/core/type_mask.h"
+#include "../../include/fluid/states/move_state.h"
+#include "../../include/fluid/tools/pose_util.h"
+#include "../../include/fluid/core/type_mask.h"
 
 bool fluid::MoveState::hasFinishedExecution() {
     bool atPositionTarget = PoseUtil::distanceBetween(current_pose_, setpoint) < 0.3 && 

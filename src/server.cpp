@@ -2,10 +2,10 @@
 // Created by simengangstad on 27.09.18.
 //
 
-#include "../include/actionlib/operation_server.h"
 #include <ros/ros.h>
 
-#include "../include/core/core.h"
+#include "fluid/core/operation_server.h"
+#include "fluid/core/core.h"
 
 int main(int argc, char** argv) {
 

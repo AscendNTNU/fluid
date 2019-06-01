@@ -8,9 +8,9 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
 
-#include "../../../include/core/operation/operation.h"
-#include "../../../include/actionlib/operation_server.h"
-#include "../../../include/core/core.h"
+#include "fluid/core/operation/operation.h"
+#include "fluid/core/operation_server.h"
+#include "fluid/core/core.h"
 
 fluid::Operation::Operation(std::string identifier,
                             std::string destination_state_identifier,

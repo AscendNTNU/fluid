@@ -14,10 +14,9 @@
 #include <chrono>
 #include <ostream>
 
-#include "../include/core/operation/operation.h"
-#include "../include/actionlib/operation_client.h"
-#include "../include/operations/operation_identifier.h"
-#include "../include/core/state.h"
+#include <fluid/core/operation_client.h>
+#include <fluid/operations/operation_identifier.h>
+#include <fluid/core/state.h>
 
 std::string name_space;
 float xLength, yLength;

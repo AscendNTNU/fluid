@@ -2,8 +2,8 @@
 //  Created by Simen Gangstad on 09/10/2018.
 //
 
-#include "../../../include/core/operation/graph.h"
-#include "../../../include/core/operation/edge.h"
+#include "../../../include/fluid/core/operation/graph.h"
+#include "../../../include/fluid/core/operation/edge.h"
 
 #include <iostream>
 #include <iterator>

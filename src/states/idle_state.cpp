@@ -2,8 +2,8 @@
 // Created by simengangstad on 11.10.18.
 //
 
-#include "../../include/states/idle_state.h"
-#include "../../include/core/type_mask.h"
+#include "../../include/fluid/states/idle_state.h"
+#include "../../include/fluid/core/type_mask.h"
 
 bool fluid::IdleState::hasFinishedExecution() {
     return false;

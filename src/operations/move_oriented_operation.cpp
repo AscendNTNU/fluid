@@ -8,7 +8,7 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
 
-#include "../../include/operations/move_oriented_operation.h"
+#include "../../include/fluid/operations/move_oriented_operation.h"
 #include <geometry_msgs/Pose.h>
 
 fluid::MoveOrientedOperation::MoveOrientedOperation(mavros_msgs::PositionTarget position_target) :

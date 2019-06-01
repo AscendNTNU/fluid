@@ -3,9 +3,9 @@
 //
 
 
-#include "../../include/states/take_off_state.h"
-#include "../../include/tools/pose_util.h"
-#include "../../include/core/type_mask.h"
+#include "../../include/fluid/states/take_off_state.h"
+#include "../../include/fluid/tools/pose_util.h"
+#include "../../include/fluid/core/type_mask.h"
 
 bool fluid::TakeOffState::hasFinishedExecution() {
     return PoseUtil::distanceBetween(current_pose_, setpoint) < 0.3 && 

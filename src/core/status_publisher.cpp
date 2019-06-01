@@ -1,5 +1,5 @@
-#include "../../include/core/status_publisher.h"
-#include "../../include/core/core.h"
+#include "../../include/fluid/core/status_publisher.h"
+#include "../../include/fluid/core/core.h"
 
 fluid::StatusPublisher::StatusPublisher() {
     status.armed	     = 0;

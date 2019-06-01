@@ -5,15 +5,14 @@
 #ifndef FLUID_FSM_OPERATION_CLIENT_H
 #define FLUID_FSM_OPERATION_CLIENT_H
 
-#include "../core/operation/operation.h"
-#include <actionlib/client/simple_action_client.h>
-#include <core/operation/operation.h>
-#include <fluid_fsm/OperationAction.h>
-#include <geometry_msgs/Pose.h>
-
 #include <utility>
 #include <string>
 #include <memory>
+
+#include <actionlib/client/simple_action_client.h>
+#include <fluid/OperationAction.h>
+#include <geometry_msgs/Pose.h>
+#include <fluid/core/operation/operation.h>
 
 namespace fluid {
 
@@ -22,7 +21,7 @@ namespace fluid {
  */
 class OperationClient {
 
-    typedef actionlib::SimpleActionClient<fluid_fsm::OperationAction> Client;
+    typedef actionlib::SimpleActionClient<fluid::OperationAction> Client;
 
   private:
 

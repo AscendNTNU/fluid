@@ -1,10 +1,8 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
-
 #include <tf2/LinearMath/Quaternion.h>
-
-#include "../include/actionlib/operation_client.h"
-#include "../include/operations/operation_identifier.h"
+#include <fluid/core/operation_client.h>
+#include <fluid/operations/operation_identifier.h>
 
 int main(int argc, char** argv) {
 
