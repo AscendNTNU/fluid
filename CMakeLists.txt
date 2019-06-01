@@ -59,7 +59,7 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 #########################################################################################
 
-add_executable(server src/server.cpp)
+add_executable(server src/main.cpp)
 add_executable(setpoint_publisher src/setpoint_publisher_node.cpp)
 add_executable(client_square src/client_square.cpp)
 add_executable(client_interval src/client_interval.cpp)
