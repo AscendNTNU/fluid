@@ -11,11 +11,11 @@
  <!-- obstacle_avoidance/target_position -->
  <!-- mavros/setpoint_raw/local -->
 
-  <rosparam command="load" file="$(find fluid_fsm)/params.yaml" />
+  <rosparam command="load" file="$(find fluid)/params.yaml" />
 
-  <node name="server" pkg="fluid_fsm" type="server" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) 
+  <node name="server" pkg="fluid" type="server" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) 
       $(arg auto_arm) $(arg auto_set_offboard)"/>
-  <node name="setpoint_publisher" pkg="fluid_fsm" type="setpoint_publisher" output="screen" args="$(arg refresh_rate) $(arg setpoint_subscription_topic) $(arg setpoint_publish_topic)"/>
+  <node name="setpoint_publisher" pkg="fluid" type="setpoint_publisher" output="screen" args="$(arg refresh_rate) $(arg setpoint_subscription_topic) $(arg setpoint_publish_topic)"/>
 
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url" value="$(arg fcu_url)"/>

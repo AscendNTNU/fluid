@@ -9,7 +9,7 @@
     <arg name="offboard_api_port" default="$(eval 14540 + arg('px4_id'))"/> <!-- port which mavros listens to px4 on -->
     <arg name="fcu_api_port" default="$(eval 14580 + arg('px4_id'))"/> <!-- port which px4 listens to mavros on -->
 
-    <include file="$(find fluid_fsm)/launch/server_base.launch">
+    <include file="$(find fluid)/launch/server_base.launch">
         <arg name="fcu_url" value="udp://localhost:$(arg offboard_api_port)@localhost:$(arg fcu_api_port)"/>
         <arg name="px4_id" value="$(arg px4_id)"/>
         <arg name="auto_arm" value="true"/>

@@ -1,5 +1,5 @@
 <launch>
-    <include file="$(find fluid_fsm)/launch/server_base.launch">
+    <include file="$(find fluid)/launch/server_base.launch">
         <arg name="fcu_url" value="/dev/ttyPixhawk:921600"/>
         <arg name="px4_id" value="0"/>
         <arg name="auto_arm" value="false"/>
