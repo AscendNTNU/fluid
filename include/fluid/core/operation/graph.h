@@ -8,10 +8,28 @@
 #include <memory>
 #include <vector>
 #include <map>
-#include "edge.h"
+
 #include "identifiable.h"
 
 namespace fluid {
+
+    /** \class Edge
+     *  \brief Represents an edge/connection between two nodes a the graph.
+     */
+    template <class T> class Edge {
+    public:
+        
+        const T source;                 ///< The source of the edge
+        const T destination;            ///< The desination of the edge
+        
+        /** Initializes the edge with its respective source and destination.
+         * 
+         */
+        Edge(T source, T destination): source(source), destination(destination) {}
+    };
+
+
+
 
     typedef std::shared_ptr<fluid::Identifiable> Node;
     typedef std::map<std::string, std::vector<Node>> AdjacencyList;
