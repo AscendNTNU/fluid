@@ -10,7 +10,8 @@
 namespace fluid {
 
     /** \class LandState
-     *  \brief Represents the state where the drone is landing.
+     *  \brief Represents the state where the drone is landing. This state happens from the current position, so
+     *         the a setpoint is inrelevant.
      */
     class LandState: public State {
 
@@ -25,6 +26,11 @@ namespace fluid {
          * Overridden function. @see State::hasFinishedExecution
          */
         bool hasFinishedExecution() override;
+
+        /**
+         * Overridden function. @see State::init
+         */
+        void initialize() override;
 
         /**
          * Overridden function. @see State::tick
