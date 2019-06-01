@@ -13,7 +13,7 @@
 #include <assert.h>
 #include <algorithm>
 
-#include "operation_server.h"
+#include "server.h"
 #include "operation_identifier.h"
 #include "init_operation.h"
 #include "move_operation.h"
@@ -23,29 +23,29 @@
 #include "position_follow_operation.h" 
 #include "core.h"
 
-fluid::OperationServer::OperationServer() : actionlib_action_server_(node_handle_, 
-                                                                     "fluid_fsm_operation",
-                                                                     false) {
+fluid::Server::Server() : actionlib_server_(node_handle_, 
+                                                   "fluid_fsm_operation",
+                                                   false) {
     
-    actionlib_action_server_.registerGoalCallback(boost::bind(&OperationServer::goalCallback, this));
-    actionlib_action_server_.registerPreemptCallback(boost::bind(&OperationServer::preemptCallback, this));
+    actionlib_server_.registerGoalCallback(boost::bind(&Server::goalCallback, this));
+    actionlib_server_.registerPreemptCallback(boost::bind(&Server::preemptCallback, this));
 
-    actionlib_action_server_.start();
+    actionlib_server_.start();
 }
 
 
-void fluid::OperationServer::goalCallback() {
+void fluid::Server::goalCallback() {
 
     // We accept the new goal and initialize variables for target pose and the type of operation identifier.
     // This is necessary in order to modify some of them before we initiate the different operations further down.
     // E.g. the init operation shouldn't be called with a different pose than (0, 0, 0), so we make sure this is the
     // case.
     
-    if (actionlib_action_server_.isActive()) {
-        actionlib_action_server_.setAborted();
+    if (actionlib_server_.isActive()) {
+        actionlib_server_.setAborted();
     }
 
-    auto goal = actionlib_action_server_.acceptNewGoal();
+    auto goal = actionlib_server_.acceptNewGoal();
     geometry_msgs::Pose target_pose = goal->target_pose;
     std_msgs::String operation_identifier = goal->type;
 
@@ -114,11 +114,11 @@ void fluid::OperationServer::goalCallback() {
     new_operation_requested_ = true;
 }
 
-void fluid::OperationServer::preemptCallback() {
-    actionlib_action_server_.setPreempted();
+void fluid::Server::preemptCallback() {
+    actionlib_server_.setPreempted();
 }
 
-void fluid::OperationServer::start() {
+void fluid::Server::start() {
 
     ros::Rate rate(fluid::Core::refresh_rate);
 
@@ -154,16 +154,16 @@ void fluid::OperationServer::start() {
                     // Will notify the operation client what the outcome of the operation was. This will end up
                     // calling the callback that the operation client set up for completion.
                     
-                    if (!actionlib_action_server_.isActive()) {
+                    if (!actionlib_server_.isActive()) {
                         return;
                     }
 
                     if (completed) {
                         ROS_INFO_STREAM("Operation completed.");
-                        actionlib_action_server_.setSucceeded();
+                        actionlib_server_.setSucceeded();
                     }
                     else {
-                        actionlib_action_server_.setAborted();
+                        actionlib_server_.setAborted();
                     }
                 });
 

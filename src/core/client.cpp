@@ -2,7 +2,7 @@
 // Created by simengangstad on 25.10.18.
 //
 
-#include "operation_client.h"
+#include "client.h"
 
 #include <fluid/OperationGoal.h>
 
@@ -12,23 +12,23 @@
 #include <thread>
 
 
-void fluid::OperationClient::waitForResult(
+void fluid::Client::waitForResult(
     std::string operation_identifier,
     geometry_msgs::Pose target_pose,
     std::function<void (bool)> completion_handler) {
 
-    Client action_client(name_space + "/fluid_fsm_operation", false);
+    ActionlibClient actionlib_client(name_space + "/fluid_fsm_operation", false);
 
-    action_client.waitForServer();
+    actionlib_client.waitForServer();
 
     fluid::OperationGoal goal;
     goal.target_pose = target_pose;
     std_msgs::String type;
     type.data = std::move(operation_identifier);
     goal.type = type;
-    action_client.sendGoal(goal);
+    actionlib_client.sendGoal(goal);
 
-    bool finished_before_timeout = action_client.waitForResult(ros::Duration(timeout_value_));
+    bool finished_before_timeout = actionlib_client.waitForResult(ros::Duration(timeout_value_));
 
     if (completion_handler) {
 
@@ -36,15 +36,15 @@ void fluid::OperationClient::waitForResult(
             ROS_INFO_STREAM("Operation timed out.");
         }
 
-        completion_handler(finished_before_timeout && action_client.getState().isDone());
+        completion_handler(finished_before_timeout && actionlib_client.getState().isDone());
     }
 }
 
-void fluid::OperationClient::requestOperation(
+void fluid::Client::requestOperation(
     std::string operation_identifier,
 	geometry_msgs::Pose target_pose,
     std::function<void (bool)> completion_handler) {
 
-    std::thread thread(&OperationClient::waitForResult, this, operation_identifier, target_pose, completion_handler);
+    std::thread thread(&Client::waitForResult, this, operation_identifier, target_pose, completion_handler);
     thread.detach();
 }

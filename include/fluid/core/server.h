@@ -2,8 +2,8 @@
 // Created by simengangstad on 18.10.18.
 //
 
-#ifndef FLUID_FSM_ACTION_SERVER_H
-#define FLUID_FSM_ACTION_SERVER_H
+#ifndef FLUID_FSM_SERVER_H
+#define FLUID_FSM_SERVER_H
 
 #include <ros/ros.h>
 #include <fluid/OperationAction.h>
@@ -13,19 +13,19 @@
 
 namespace fluid {
 
-    /** \class OperationServer
+    /** \class Server
      *  \brief Encapsulates a ROS action server which performs operations based on requests.
      */
-    class OperationServer {
+    class Server {
 
-        typedef actionlib::SimpleActionServer<fluid::OperationAction> Server;
+        typedef actionlib::SimpleActionServer<fluid::OperationAction> ActionlibServer;
 
     private:
 
         ros::NodeHandle node_handle_;                                ///< Used to instantiate the ROS action server
 
-        Server actionlib_action_server_;                             ///< Reference to the ROS action server which the
-                                                                     ///< operation server class encapsulates
+        ActionlibServer actionlib_server_;                           ///< Reference to the ROS action server which the
+                                                                     ///< server class encapsulates
 
         std::shared_ptr<fluid::Operation> current_operation_p_;      ///< The current operation executing.
 
@@ -39,12 +39,12 @@ namespace fluid {
     public:
 
         /**
-         * Initializes the operation server.
+         * Initializes the server.
          */
-        OperationServer();
+        Server();
 
         /**
-         * Gets fired when the operation server receives a new goal.
+         * Gets fired when the server receives a new goal.
          */
         void goalCallback();
 
@@ -60,4 +60,4 @@ namespace fluid {
     };
 }
 
-#endif //FLUID_FSM_ACTION_SERVER_H
+#endif
