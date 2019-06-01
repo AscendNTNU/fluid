@@ -2,7 +2,7 @@ FROM ros:kinetic-ros-base
 MAINTAINER Ascend NTNU "www.ascendntnu.no"
 
 ENV ROS_WORKSPACE_PATH=/opt/catkin_ws
-ENV ROS_PACKAGE_NAME=FLUID_FSM
+ENV ROS_PACKAGE_NAME=FLUID
 
 RUN apt-get update -qq && apt-get install -yqq \
     build-essential \
