@@ -17,7 +17,6 @@ generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
 # Includes headers in include folder
 include_directories(include
                    
-include/fluid/core/operation
 include/fluid/core
 include/fluid/operations
 include/fluid/states
@@ -26,19 +25,15 @@ ${catkin_INCLUDE_DIRS}
 )
 
 # Retrieve all the source files using GLOB
-file(GLOB fluid_fsm_operation_SRC "src/core/operation/*.cpp")
 file(GLOB fluid_fsm_operations_SRC "src/operations/*.cpp")
 file(GLOB fluid_fsm_core_SRC "src/core/*.cpp")
 file(GLOB fluid_fsm_states_SRC "src/states/*.cpp")
-file(GLOB fluid_fsm_actionlib_SRC "src/actionlib/*.cpp")
 
 # Add the source files to the library
 add_library(fluid
-        ${fluid_fsm_operation_SRC}
         ${fluid_fsm_operations_SRC}
         ${fluid_fsm_core_SRC}
-        ${fluid_fsm_states_SRC}
-        ${fluid_fsm_actionlib_SRC})
+        ${fluid_fsm_states_SRC})
 
 target_link_libraries(fluid ${catkin_LIBRARIES})
 
