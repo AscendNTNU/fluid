@@ -5,10 +5,11 @@
 #ifndef FLUID_FSM_STATE_GRAPH_H
 #define FLUID_FSM_STATE_GRAPH_H
 
-#include "../state.h"
-#include "graph.h"
 #include <memory>
-#include <vector>
+#include <string>
+
+#include "state.h"
+#include "graph.h"
 
 namespace fluid {
 

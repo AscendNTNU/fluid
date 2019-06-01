@@ -5,12 +5,7 @@
 #ifndef FLUID_FSM_MOVE_ORIENTED_OPERATION_H
 #define FLUID_FSM_MOVE_ORIENTED_OPERATION_H
 
-#include "../core/operation/operation.h"
-#include "../core/state.h"
-#include "../core/transition.h"
-#include "operation_identifier.h"
-#include "../states/state_identifier.h"
-#include <mavros_msgs/PositionTarget.h>
+#include "operation.h"
 
 namespace fluid {
 

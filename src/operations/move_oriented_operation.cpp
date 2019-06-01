@@ -2,13 +2,13 @@
 // Created by simengangstad on 26.10.18.
 //
 
+#include "move_oriented_operation.h"
+
 #include <utility>
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
-
-#include "../../include/fluid/operations/move_oriented_operation.h"
 #include <geometry_msgs/Pose.h>
 
 fluid::MoveOrientedOperation::MoveOrientedOperation(mavros_msgs::PositionTarget position_target) :

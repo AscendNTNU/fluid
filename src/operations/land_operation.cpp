@@ -2,7 +2,7 @@
 // Created by simengangstad on 08.11.18.
 //
 
-#include "../../include/fluid/operations/land_operation.h"
+#include "land_operation.h"
 
 fluid::LandOperation::LandOperation(mavros_msgs::PositionTarget position_target) :
         Operation(fluid::OperationIdentifier::Land,

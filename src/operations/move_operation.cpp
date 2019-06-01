@@ -2,8 +2,7 @@
 // Created by simengangstad on 26.10.18.
 //
 
-#include "../../include/fluid/operations/move_operation.h"
-
+#include "move_operation.h"
 
 fluid::MoveOperation::MoveOperation(mavros_msgs::PositionTarget position_target) :
 					    		    Operation(fluid::OperationIdentifier::Move,

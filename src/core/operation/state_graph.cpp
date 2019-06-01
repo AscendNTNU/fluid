@@ -2,21 +2,19 @@
 //  Created by Simen Gangstad on 24/01/2019.
 //
 
-#include "../../../include/fluid/core/operation/state_graph.h"
-#include "../../../include/fluid/core/operation/edge.h"
-
-#include "../../../include/fluid/states/init_state.h"
-#include "../../../include/fluid/states/idle_state.h"
-#include "../../../include/fluid/states/take_off_state.h"
-#include "../../../include/fluid/states/land_state.h"
-#include "../../../include/fluid/states/hold_state.h"
-#include "../../../include/fluid/states/move_state.h"
-#include "../../../include/fluid/states/position_follow_state.h"
+#include "state_graph.h"
 
 #include <iterator>
 #include <algorithm>
 #include <climits>
-#include <iostream>
+
+#include "init_state.h"
+#include "idle_state.h"
+#include "take_off_state.h"
+#include "land_state.h"
+#include "hold_state.h"
+#include "move_state.h"
+#include "position_follow_state.h"
 
 fluid::StateGraph::StateGraph() : Graph() {
 

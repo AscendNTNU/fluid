@@ -1,5 +1,3 @@
-#include <utility>
-
 //
 // Created by simengangstad on 04.10.18.
 //
@@ -8,13 +6,15 @@
 #define FLUID_FSM_OPERATION_H
 
 #include <memory>
-#include <vector>
 #include <string>
-#include "../state.h"
-#include "../transition.h"
-#include "state_graph.h"
+
 #include <mavros_msgs/PositionTarget.h>
-#include "../core.h"
+
+#include "state.h"
+#include "core.h"
+#include "operation_identifier.h"
+#include "state_identifier.h"
+
 
 namespace fluid {
 

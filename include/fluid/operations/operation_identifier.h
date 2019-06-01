@@ -5,8 +5,6 @@
 #ifndef FLUID_FSM_OPERATION_DEFINES_H
 #define FLUID_FSM_OPERATION_DEFINES_H
 
-#include "../core/operation/operation.h"
-
 namespace fluid {
     namespace OperationIdentifier {
         const std::string		Init           		= "init_operation",

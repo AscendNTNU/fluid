@@ -2,8 +2,7 @@
 // Created by simengangstad on 08.11.18.
 //
 
-#include "../../include/fluid/operations/take_off_operation.h"
-
+#include "take_off_operation.h"
 
 fluid::TakeOffOperation::TakeOffOperation(mavros_msgs::PositionTarget position_target) :
 								          Operation(fluid::OperationIdentifier::TakeOff,
