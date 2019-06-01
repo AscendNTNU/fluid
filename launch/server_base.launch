@@ -13,7 +13,7 @@
 
   <rosparam command="load" file="$(find fluid)/params.yaml" />
 
-  <node name="server" pkg="fluid" type="server" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) 
+  <node name="fluid_server" pkg="fluid" type="server" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) 
       $(arg auto_arm) $(arg auto_set_offboard)"/>
   <node name="setpoint_publisher" pkg="fluid" type="setpoint_publisher" output="screen" args="$(arg refresh_rate) $(arg setpoint_subscription_topic) $(arg setpoint_publish_topic)"/>
 
