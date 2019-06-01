@@ -10,7 +10,7 @@ fluid::LandOperation::LandOperation(mavros_msgs::PositionTarget position_target)
                   fluid::StateIdentifier::Idle,
                   position_target) {}
 
-bool fluid::LandOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) {
-    return current_state_p->identifier == "hold";
+bool fluid::LandOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) {
+    return current_state_ptr->identifier == "hold";
 }
 

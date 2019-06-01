@@ -17,8 +17,8 @@ fluid::MoveOrientedOperation::MoveOrientedOperation(mavros_msgs::PositionTarget 
 							                  		fluid::StateIdentifier::Hold,
 							                  		position_target) {}
 
-bool fluid::MoveOrientedOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) {
-    return current_state_p->identifier == "hold" || current_state_p->identifier == "move";
+bool fluid::MoveOrientedOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) {
+    return current_state_ptr->identifier == "hold" || current_state_ptr->identifier == "move";
 }
 
 // TODO: Override to allow us to rotate first, then move, small temp hack
@@ -26,9 +26,9 @@ bool fluid::MoveOrientedOperation::validateOperationFromCurrentState(std::shared
 void fluid::MoveOrientedOperation::perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) {
 
     // Check if it makes sense to carry out this operation given the current state.
-    if (!validateOperationFromCurrentState(fluid::Core::getGraphPtr()->current_state_p)) {
+    if (!validateOperationFromCurrentState(fluid::Core::getGraphPtr()->current_state_ptr)) {
         ROS_FATAL_STREAM("Operation: " << identifier << "is not a valid operation from current state: " <<
-                         fluid::Core::getGraphPtr()->current_state_p->identifier);
+                         fluid::Core::getGraphPtr()->current_state_ptr->identifier);
         completionHandler(false);
         return;
     }
@@ -36,7 +36,7 @@ void fluid::MoveOrientedOperation::perform(std::function<bool (void)> shouldAbor
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
     std::vector<std::shared_ptr<State>> path = fluid::Core::getGraphPtr()->getPathToEndState(
-                        fluid::Core::getGraphPtr()->current_state_p->identifier,
+                        fluid::Core::getGraphPtr()->current_state_ptr->identifier,
                         destination_state_identifier_);
 
     if (path.empty()) {
@@ -56,7 +56,7 @@ void fluid::MoveOrientedOperation::perform(std::function<bool (void)> shouldAbor
 
     // This will also only fire for operations that consist of more than one state (every operation other than init).
     // And in that case we transition to the next state in the path after the start state.
-    if (fluid::Core::getGraphPtr()->current_state_p->identifier != destination_state_identifier_) {
+    if (fluid::Core::getGraphPtr()->current_state_ptr->identifier != destination_state_identifier_) {
         transitionToState(path[1]);
     }
 
@@ -78,7 +78,7 @@ void fluid::MoveOrientedOperation::perform(std::function<bool (void)> shouldAbor
         fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
         fluid::Core::getStatusPublisherPtr()->publish();
 
-        fluid::Core::getGraphPtr()->current_state_p = state_p;
+        fluid::Core::getGraphPtr()->current_state_ptr = state_p;
         state_p->perform(shouldAbort);
 
         if (shouldAbort()) {

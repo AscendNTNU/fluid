@@ -75,7 +75,7 @@ namespace fluid {
          *
          * @return A flag determining the validation of the operation given the current state.
          */
-        virtual bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p) = 0;
+        virtual bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) = 0;
 
         /** 
          * Performs the operation.

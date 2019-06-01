@@ -22,7 +22,7 @@ namespace fluid {
         /**
          * Method overriden from superclass.
          */
-        bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_p);
+        bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) override;
 
         void perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) override;
     };
