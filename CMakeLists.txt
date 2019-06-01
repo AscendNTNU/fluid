@@ -23,7 +23,6 @@ catkin_package(
 # Includes headers in include folder
 include_directories(
         include
-        tests/include
         ${catkin_INCLUDE_DIRS}
 )
 
@@ -32,10 +31,8 @@ file(GLOB fluid_fsm_operations_SRC "src/operations/*.cpp")
 file(GLOB fluid_fsm_core_SRC "src/core/*.cpp")
 file(GLOB fluid_fsm_states_SRC "src/states/*.cpp")
 file(GLOB fluid_fsm_actionlib_SRC "src/actionlib/*.cpp")
-file(GLOB fluid_fsm_mavros_SRC "src/mavros/*.cpp")
 
 add_library(fluid_fsm_lib
-        ${fluid_fsm_mavros_SRC}
         ${fluid_fsm_operation_SRC}
         ${fluid_fsm_operations_SRC}
         ${fluid_fsm_core_SRC}
