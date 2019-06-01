@@ -8,7 +8,6 @@
 #include "../core/state.h"
 #include "state_identifier.h"
 
-
 namespace fluid {
 
     /** \class InitState
@@ -18,14 +17,14 @@ namespace fluid {
 
     private:
 
-        bool initialized = false;                                 ///< Tells whether the drone is initialized or not.
+        bool initialized = false;                                       ///< Tells whether the drone is initialized or not.
 
     public:
         
         /** Initializes the init state.
          */
         explicit InitState() : State(fluid::StateIdentifier::Init, fluid::PX4::Offboard, false) {}
-
+        
         /**
          * Overridden function. @see State::hasFinishedExecution
          */

@@ -1,5 +1,5 @@
 #include "../../include/states/position_follow_state.h"
-#include "../../include/mavros/type_mask.h"
+#include "../../include/core/type_mask.h"
 
 
 #include <tf2/transform_datatypes.h>

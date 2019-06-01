@@ -3,7 +3,7 @@
 //
 
 #include "../../include/states/idle_state.h"
-#include "../../include/mavros/type_mask.h"
+#include "../../include/core/type_mask.h"
 
 bool fluid::IdleState::hasFinishedExecution() {
     return false;

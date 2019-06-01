@@ -9,7 +9,7 @@
 
 #include "../../include/states/move_state.h"
 #include "../../include/tools/pose_util.h"
-#include "../../include/mavros/type_mask.h"
+#include "../../include/core/type_mask.h"
 
 bool fluid::MoveState::hasFinishedExecution() {
     bool atPositionTarget = PoseUtil::distanceBetween(current_pose_, setpoint) < 0.3 && 

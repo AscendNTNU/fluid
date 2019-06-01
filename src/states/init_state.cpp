@@ -15,9 +15,8 @@
 #include <ascend_msgs/FluidFsmStatus.h>
 
 #include "../../include/core/core.h"
-#include "../../include/mavros/mavros_state_setter.h"
-#include "../../include/mavros/mavros_state_subscriber.h"
-#include "../../include/mavros/type_mask.h"
+#include "../../include/core/mavros_state_link.h"
+#include "../../include/core/type_mask.h"
 
 bool fluid::InitState::hasFinishedExecution() {
     return initialized;
@@ -45,14 +44,12 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
     // Establishing contact through mavros with Pixhawk.
 
-    fluid::MavrosStateSetter state_setter(Core::message_queue_size, 
-    									  1.0/static_cast<double>(Core::refresh_rate), 
-    									  "OFFBOARD");
+    fluid::MavrosStateLink mavros_state_link;
 
     ROS_INFO("Attempting to establish contact with PX4...");
 
     // Run until we achieve a connection with mavros
-    while (ros::ok() && !state_setter.getCurrentState().connected) {
+    while (ros::ok() && !mavros_state_link.getCurrentState().connected) {
         fluid::Core::getStatusPublisherPtr()->publish();
         ros::spinOnce();
         rate.sleep();
@@ -84,7 +81,6 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
         ROS_INFO("Waiting for arm signal...");
     }
 
-
     ros::Time last_request = ros::Time::now();
     ros::ServiceClient arming_client = node_handle_.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
     mavros_msgs::CommandBool arm_command;
@@ -97,7 +93,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
         // Send request to arm every interval specified
         if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
 
-            if (!state_setter.getCurrentState().armed) {
+            if (!mavros_state_link.getCurrentState().armed) {
                 if (fluid::Core::auto_arm) {
                     if(arming_client.call(arm_command) && arm_command.response.success) {
                         fluid::Core::getStatusPublisherPtr()->status.armed = 1;
@@ -130,17 +126,14 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
         ROS_INFO("Waiting for offboard signal...");        
     }
 
-
-    fluid::MavrosStateSubscriber state_subscriber;
-
     bool set_offboard = false;
 
     while(ros::ok() && !hasFinishedExecution() && !set_offboard) {
 
-        set_offboard = state_subscriber.getCurrentState().mode == "OFFBOARD";
+        set_offboard = mavros_state_link.getCurrentState().mode == "OFFBOARD";
 
         if (Core::auto_set_offboard) { 
-            state_setter.attemptToSetState([&](bool completed) {
+            mavros_state_link.attemptToSetState("OFFBOARD", [&](bool completed) {
 
                 set_offboard = completed;
 
