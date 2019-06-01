@@ -4,7 +4,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
-#include <fluid/core/operation/operation.h>
+#include <fluid/core/operation.h>
 #include <fluid/core/operation_client.h>
 #include <fluid/operations/operation_identifier.h>
 
