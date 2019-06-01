@@ -5,7 +5,7 @@
 #ifndef FLUID_FSM_HOLD_STATE_H
 #define FLUID_FSM_HOLD_STATE_H
 
-#include "../mavros/mavros_state.h"
+#include "../core/state.h"
 #include "state_identifier.h"
 
 namespace fluid {
@@ -13,14 +13,14 @@ namespace fluid {
     /** \class HoldState
      *  \brief Represents the state when the drone is hovering at a certain altitude
      */
-    class HoldState: public MavrosState {
+    class HoldState: public State {
 
     public:
 
         /**
          * Initializes the hold state.
          */
-        explicit HoldState() : MavrosState(fluid::StateIdentifier::Hold, fluid::PX4::Offboard, false) {}
+        explicit HoldState() : State(fluid::StateIdentifier::Hold, fluid::PX4::Offboard, false) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

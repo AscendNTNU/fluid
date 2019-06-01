@@ -66,13 +66,13 @@ void fluid::MoveOrientedOperation::perform(std::function<bool (void)> shouldAbor
         std::shared_ptr<fluid::State> state_p = path[index];
         
         if (index == path.size() - 2) {
-        	state_p->position_target.position.x = pose.position.x;
-        	state_p->position_target.position.y = pose.position.y;
-        	state_p->position_target.position.z = pose.position.z;
-            state_p->position_target.yaw = position_target.yaw;
+        	state_p->setpoint.position.x = pose.position.x;
+        	state_p->setpoint.position.y = pose.position.y;
+        	state_p->setpoint.position.z = pose.position.z;
+            state_p->setpoint.yaw = position_target.yaw;
         }
         else if (index == path.size() - 1) {
-            state_p->position_target = position_target;
+            state_p->setpoint = position_target;
         }
 
         fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
@@ -92,10 +92,10 @@ void fluid::MoveOrientedOperation::perform(std::function<bool (void)> shouldAbor
             double roll = 0, pitch = 0, yaw = 0;
             tf2::Matrix3x3(tf2Quat).getRPY(roll, pitch, yaw);
 
-            final_state_p->position_target.position = state_p->getCurrentPose().pose.position;
+            final_state_p->setpoint.position = state_p->getCurrentPose().pose.position;
             // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
             // it to zero. 
-            final_state_p->position_target.yaw = static_cast<float>(std::isnan(yaw) ? 0.0 : yaw);
+            final_state_p->setpoint.yaw = static_cast<float>(std::isnan(yaw) ? 0.0 : yaw);
 
             transitionToState(final_state_p);
             completionHandler(false);
@@ -109,7 +109,7 @@ void fluid::MoveOrientedOperation::perform(std::function<bool (void)> shouldAbor
     }
 
     std::shared_ptr<fluid::State> final_state_p = getFinalStatePtr();
-    final_state_p->position_target = position_target;
+    final_state_p->setpoint = position_target;
 
     transitionToState(final_state_p);
     completionHandler(true);

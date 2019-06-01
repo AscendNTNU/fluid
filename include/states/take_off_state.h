@@ -5,7 +5,7 @@
 #ifndef FLUID_FSM_TAKE_OFF_STATE_H
 #define FLUID_FSM_TAKE_OFF_STATE_H
 
-#include "../mavros/mavros_state.h"
+#include "../core/state.h"
 #include "state_identifier.h"
 
 namespace fluid {
@@ -13,12 +13,12 @@ namespace fluid {
     /** \class TakeOffState
      *  \brief Represents the state where the drone is on taking off from ground straight up.
      */
-    class TakeOffState: public MavrosState {
+    class TakeOffState: public State {
     public:
 
         /** Initializes the take off state.
          */
-        explicit TakeOffState() : MavrosState(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard, true) {}
+        explicit TakeOffState() : State(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard, true) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

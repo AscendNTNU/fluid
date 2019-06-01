@@ -10,8 +10,8 @@ bool fluid::IdleState::hasFinishedExecution() {
 }
 
 void fluid::IdleState::tick() {
-    position_target.type_mask = fluid::TypeMask::Idle;
-	position_target.position.x = 0.0;
-	position_target.position.y = 0.0;
-    position_target.position.z = 0.0;
+    setpoint.type_mask = fluid::TypeMask::Idle;
+	setpoint.position.x = 0.0;
+	setpoint.position.y = 0.0;
+    setpoint.position.z = 0.0;
 }

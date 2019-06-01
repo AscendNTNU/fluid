@@ -5,7 +5,8 @@
 #ifndef FLUID_FSM_POSITION_FOLLOW_STATE_H
 #define FLUID_FSM_POSITION_FOLLOW_STATE_H
 
-#include "../mavros/mavros_state.h"
+#include "../../include/core/core.h"
+#include "../core/state.h"
 #include "state_identifier.h"
 
 #include <ros/ros.h>
@@ -16,7 +17,7 @@ namespace fluid {
     /** \class PositionFollow
      *  \brief Represents the state where the drone is following a position.
      */
-    class PositionFollowState: public MavrosState {
+    class PositionFollowState: public State {
 
     private: 
 
@@ -44,7 +45,7 @@ namespace fluid {
         /** Initializes the move state.
          */
         explicit PositionFollowState() : 
-        MavrosState(fluid::StateIdentifier::PositionFollow, fluid::PX4::Offboard, true), 
+        State(fluid::StateIdentifier::PositionFollow, fluid::PX4::Offboard, true), 
         object_target_pose_subscriber_(node_handle_.subscribe("perception/target", 
                                                               Core::message_queue_size, 
                                                               &PositionFollowState::objectTargetPoseCallback, 

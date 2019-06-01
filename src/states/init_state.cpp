@@ -64,13 +64,13 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
 
     //send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within px4
-    position_target.position.x = 0;
-    position_target.position.y = 0;
-    position_target.position.z = 0;
-    position_target.type_mask = fluid::TypeMask::Idle;
+    setpoint.position.x = 0;
+    setpoint.position.y = 0;
+    setpoint.position.z = 0;
+    setpoint.type_mask = fluid::TypeMask::Idle;
 
     for (int i = Core::refresh_rate*2; ros::ok() && i > 0; --i) {
-        position_target_publisher_p->publish(position_target);
+        setpoint_publisher.publish(setpoint);
         fluid::Core::getStatusPublisherPtr()->publish();
         ros::spinOnce();
         rate.sleep();
@@ -114,7 +114,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
         }
 
         fluid::Core::getStatusPublisherPtr()->publish();
-        position_target_publisher_p->publish(position_target);
+        setpoint_publisher.publish(setpoint);
 
         ros::spinOnce();
         rate.sleep();
@@ -152,7 +152,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
         
 
         fluid::Core::getStatusPublisherPtr()->publish();
-        position_target_publisher_p->publish(position_target);
+        setpoint_publisher.publish(setpoint);
 
         ros::spinOnce();
         rate.sleep();

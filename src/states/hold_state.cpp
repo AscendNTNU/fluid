@@ -10,5 +10,5 @@ bool fluid::HoldState::hasFinishedExecution() {
 }
 
 void fluid::HoldState::tick() {
-    position_target.type_mask = fluid::TypeMask::Default;
+    setpoint.type_mask = fluid::TypeMask::Default;
 }

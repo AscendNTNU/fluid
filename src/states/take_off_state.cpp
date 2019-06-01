@@ -8,12 +8,12 @@
 #include "../../include/mavros/type_mask.h"
 
 bool fluid::TakeOffState::hasFinishedExecution() {
-    return PoseUtil::distanceBetween(current_pose_, position_target) < 0.3 && 
+    return PoseUtil::distanceBetween(current_pose_, setpoint) < 0.3 && 
     	   std::abs(getCurrentTwist().twist.linear.x) < 0.05 && 
     	   std::abs(getCurrentTwist().twist.linear.y) < 0.05 && 
     	   std::abs(getCurrentTwist().twist.linear.z) < 0.05;
 }
 
 void fluid::TakeOffState::tick() {
-    position_target.type_mask = fluid::TypeMask::Default;
+    setpoint.type_mask = fluid::TypeMask::Default;
 }

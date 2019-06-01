@@ -11,5 +11,5 @@ bool fluid::LandState::hasFinishedExecution() {
 }
 
 void fluid::LandState::tick() {
-    position_target.type_mask = fluid::TypeMask::Default;
+    setpoint.type_mask = fluid::TypeMask::Default;
 }

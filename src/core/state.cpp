@@ -4,26 +4,24 @@
 
 #include "../../include/core/state.h"
 #include "../../include/core/core.h"
+#include <mavros_msgs/PositionTarget.h>
 #include <utility>
 
 fluid::State::State(std::string identifier,
                     std::string px4_mode,
-                    std::string pose_subscription_topic,
-                    std::string twist_subscription_topic,
-                    std::shared_ptr<fluid::PosePublisher> position_target_publisher_p,
                     bool should_check_obstacle_avoidance_completion) : 
 
 					Identifiable(identifier),
                     px4_mode(px4_mode),
-					pose_subscriber_(node_handle_.subscribe(pose_subscription_topic, 
+					pose_subscriber_(node_handle_.subscribe("mavros/local_position/pose", 
                                      Core::message_queue_size, 
                                      &State::poseCallback, 
                                      this)),
-                    twist_subscriber_(node_handle_.subscribe(twist_subscription_topic, 
+                    twist_subscriber_(node_handle_.subscribe("mavros/local_position/twist", 
                                       Core::message_queue_size,
                                       &State::twistCallback,
                                       this)),
-                    position_target_publisher_p(std::move(position_target_publisher_p)),
+                    setpoint_publisher(node_handle_.advertise<mavros_msgs::PositionTarget>("fluid_fsm/setpoint", Core::message_queue_size)),
                     obstacle_avoidance_completion_subscriber_(node_handle_.subscribe("obstacle_avoidance/completion", 
                                                               Core::message_queue_size, 
                                                               &State::obstacleAvoidanceCompletionCallback, 
@@ -51,9 +49,9 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
 void fluid::State::obstacleAvoidanceCompletionCallback(const ascend_msgs::ObstacleAvoidanceCompletion& msg) {
 
     // Check whether the obstacle avoidance is returning completed on the current setpoint
-    if (msg.setpoint.position.x != position_target.position.x || 
-        msg.setpoint.position.y != position_target.position.y || 
-        msg.setpoint.position.z != position_target.position.z) {
+    if (msg.setpoint.position.x != setpoint.position.x || 
+        msg.setpoint.position.y != setpoint.position.y || 
+        msg.setpoint.position.z != setpoint.position.z) {
         return;
     }
 
@@ -70,7 +68,7 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort) {
     while (ros::ok() && !hasFinishedExecution() && !shouldAbort()) {
         tick();
 
-        position_target_publisher_p->publish(position_target);
+        setpoint_publisher.publish(setpoint);
         fluid::Core::getStatusPublisherPtr()->publish();
 
         ros::spinOnce();

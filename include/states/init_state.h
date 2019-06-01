@@ -5,7 +5,7 @@
 #ifndef FLUID_FSM_INIT_STATE_H
 #define FLUID_FSM_INIT_STATE_H
 
-#include "../mavros/mavros_state.h"
+#include "../core/state.h"
 #include "state_identifier.h"
 
 
@@ -14,7 +14,7 @@ namespace fluid {
     /** \class InitState
      *  \brief Makes sure everything is initialized (link to mavros and px4) before any further transitions are called.
      */
-    class InitState: public MavrosState {
+    class InitState: public State {
 
     private:
 
@@ -24,7 +24,7 @@ namespace fluid {
         
         /** Initializes the init state.
          */
-        explicit InitState() : MavrosState(fluid::StateIdentifier::Init, fluid::PX4::Offboard, false) {}
+        explicit InitState() : State(fluid::StateIdentifier::Init, fluid::PX4::Offboard, false) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

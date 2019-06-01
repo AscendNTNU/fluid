@@ -12,7 +12,7 @@
 #include "../../include/mavros/type_mask.h"
 
 bool fluid::MoveState::hasFinishedExecution() {
-    bool atPositionTarget = PoseUtil::distanceBetween(current_pose_, position_target) < 0.3 && 
+    bool atPositionTarget = PoseUtil::distanceBetween(current_pose_, setpoint) < 0.3 && 
     	   				 	std::abs(getCurrentTwist().twist.linear.x) < 0.1 && 
     	   					std::abs(getCurrentTwist().twist.linear.y) < 0.1 && 
     	   					std::abs(getCurrentTwist().twist.linear.z) < 0.1;
@@ -28,11 +28,11 @@ bool fluid::MoveState::hasFinishedExecution() {
     // it to zero. 
     yaw = std::isnan(yaw) ? 0.0 : yaw;
 
-    bool atYawTarget = std::abs(position_target.yaw - yaw) < 0.2; 
+    bool atYawTarget = std::abs(setpoint.yaw - yaw) < 0.2; 
 
     return atYawTarget && atPositionTarget;
 }
 
 void fluid::MoveState::tick() {
-    position_target.type_mask = fluid::TypeMask::Default;
+    setpoint.type_mask = fluid::TypeMask::Default;
 }

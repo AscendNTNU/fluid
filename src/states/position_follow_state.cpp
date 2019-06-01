@@ -1,6 +1,5 @@
 #include "../../include/states/position_follow_state.h"
 #include "../../include/mavros/type_mask.h"
-#include "../../include/core/core.h"
 
 
 #include <tf2/transform_datatypes.h>
@@ -53,7 +52,7 @@ bool fluid::PositionFollowState::hasFinishedExecution() {
 }
 
 void fluid::PositionFollowState::tick() {
-    position_target.type_mask = fluid::TypeMask::Default;
+    setpoint.type_mask = fluid::TypeMask::Default;
 
     if (!has_target_) {
         if (!set_standby_position_) {
@@ -76,26 +75,26 @@ void fluid::PositionFollowState::tick() {
         }
     }
 
-    position_target.position.x = calculated_pose_.position.x;
-    position_target.position.y = calculated_pose_.position.y;
-    position_target.position.z = calculated_pose_.position.z;
+    setpoint.position.x = calculated_pose_.position.x;
+    setpoint.position.y = calculated_pose_.position.y;
+    setpoint.position.z = calculated_pose_.position.z;
 
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
     if (fluid::Core::minX != 0 || fluid::Core::maxX != 0) {
-        position_target.position.x = std::max(fluid::Core::minX, 
+        setpoint.position.x = std::max(fluid::Core::minX, 
                                               std::min(calculated_pose_.position.x, fluid::Core::maxX));
     }
 
     if (fluid::Core::minY != 0 || fluid::Core::maxY != 0) { 
-        position_target.position.y = std::max(fluid::Core::minY, 
+        setpoint.position.y = std::max(fluid::Core::minY, 
                                               std::min(calculated_pose_.position.y, fluid::Core::maxY));
     }
 
     if (fluid::Core::minZ != 0 || fluid::Core::maxZ != 0) {
-        position_target.position.z = std::max(fluid::Core::minZ, 
+        setpoint.position.z = std::max(fluid::Core::minZ, 
                                               std::min(calculated_pose_.position.z, fluid::Core::maxZ));
     }
 
-    position_target.yaw	= calculated_pose_.yaw;
+    setpoint.yaw	= calculated_pose_.yaw;
 }
