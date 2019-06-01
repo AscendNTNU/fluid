@@ -20,7 +20,7 @@ namespace fluid {
     /** \class State
      *  \brief Interface for states within the finite state machine.
      *
-     *  The state class is an interface which encapsulates an action. It also handles pose publishing.
+     *  The state class is an interface which encapsulates an action. It also handles setpoint publishing.
      */
     class State {
     protected:
@@ -92,6 +92,17 @@ namespace fluid {
               std::string px4_mode,
               bool should_check_obstacle_avoidance_completion_);
 
+
+        /**
+         * @breif      A way to set the pose of the state. 
+         * 
+         *             This is useful if we want to 
+         *             transition to a state which requires to initially know where we are, e. g. 
+         *             land or take off. In that case we can execute the state from the current 
+         *             pose, and we don't have to wait for the pose callback and thus halt the system.
+         */
+        void setCurrentPose(geometry_msgs::PoseStamped currentPose);
+
         /**
          * @brief      Returns the current pose, the last pose that the state estimation published on
          *             the given topic.
@@ -115,6 +126,11 @@ namespace fluid {
          * @return A flag determining whether the state has finished execution.
          */
         virtual bool hasFinishedExecution() = 0;
+
+        /**
+         * Gives the state a chance to do some initial setup before this state is executed.
+         */
+        virtual void initialize() {}
 
         /**
          * Executes logic at given refresh rate.

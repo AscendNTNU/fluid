@@ -30,6 +30,10 @@ fluid::State::State(std::string identifier,
                                                               this)),
                     should_check_obstacle_avoidance_completion_(should_check_obstacle_avoidance_completion) {}
 
+void fluid::State::setCurrentPose(geometry_msgs::PoseStamped currentPose) {
+    current_pose_ = currentPose;
+}
+
 geometry_msgs::PoseStamped fluid::State::getCurrentPose() {
 	return current_pose_;
 }
@@ -66,6 +70,8 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort) {
 
     ros::Rate rate(Core::refresh_rate);
     obstacle_avoidance_completed_ = false;
+
+    initialize();
 
     while (ros::ok() && !hasFinishedExecution() && !shouldAbort()) {
         tick();
