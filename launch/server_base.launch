@@ -2,11 +2,11 @@
   <arg name="fcu_url"/>
   <arg name="px4_id"/>
   <arg name="refresh_rate" default="20" />
-  <arg name="message_queue_size" default="100" />
+  <arg name="message_queue_size" default="10" />
   <arg name="auto_arm" default="false"/>
   <arg name="auto_set_offboard" default="false"/>
   <arg name="setpoint_subscription_topic" default="fluid_fsm/setpoint"/>
-  <arg name="setpoint_publish_topic" default="mavros/setpoint_raw/local"/>
+  <arg name="setpoint_publish_topic" default="obstacle_avoidance/target_position"/>
 
  <!-- obstacle_avoidance/target_position -->
  <!-- mavros/setpoint_raw/local -->
