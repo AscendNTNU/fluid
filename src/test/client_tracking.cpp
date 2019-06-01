@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
             take_off_pose.position.y = 1;
             take_off_pose.position.z = height;
 
-            operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
+            client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
                 initialized = completed;
             });
         }
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
     pose.position.y = 1;
     pose.position.z = 0;
 
-    operation_client.requestOperation(fluid::OperationIdentifier::Land, pose, [](bool completed) {});
+    client.requestOperation(fluid::OperationIdentifier::Land, pose, [](bool completed) {});
 
     ros::spin();
 

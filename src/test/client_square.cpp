@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
             take_off_pose.position.y = startY;
             take_off_pose.position.z = height;
 
-            operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
+            client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
                 initialized = completed;
             });
         }
