@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     fluid::OperationClient operation_client("drone_1", 10);
     
     operation_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
-        //if (completed) {
+        if (completed) {
 
             geometry_msgs::Pose take_off_pose;
             take_off_pose.position.x = startX;
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
             operation_client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
                 initialized = completed;
             });
-//        }
+        }
     });
 
 
@@ -50,8 +50,8 @@ int main(int argc, char** argv) {
     pose.position.y = startY;
     pose.position.z = height;
     
-    operation_client.requestOperation(fluid::OperationIdentifier::MoveOriented, pose, [&](bool completed) {
-        if (completed) {
+    operation_client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
+        /*if (completed) {
                 pose.position.x = startX + distance;
                 pose.position.y = startY + distance;
                 pose.position.z = height;
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
                         });
                     }
                 });
-        }
+        }*/
     });
 
     ros::Rate rate(1);
