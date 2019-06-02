@@ -58,10 +58,8 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         // TODO: What do we do here if the different states require different position targets?
         std::shared_ptr<fluid::State> state_p = path[index];
         
-        if (index == path.size() - 1) {
-            state_p->setpoint = position_target;
-        }
-
+        state_p->setpoint = position_target;
+        
         fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
         fluid::Core::getStatusPublisherPtr()->publish();
 
@@ -109,11 +107,15 @@ void fluid::Operation::transitionToState(std::shared_ptr<fluid::State> state_p) 
     fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
 }
 
-
-std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() {
-    return fluid::Core::getGraphPtr()->getStateWithIdentifier(final_state_identifier_);
+bool fluid::Operation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) const {
+    return fluid::Core::getGraphPtr()->areConnected(current_state_ptr->identifier, destination_state_identifier_);
 }
 
-std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() {    
+
+std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() const {
+    return fluid::Core::getGraphPtr()->getStateWithIdentifier(final_state_map_.at(destination_state_identifier_));
+}
+
+std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() const {    
     return fluid::Core::getGraphPtr()->current_state_ptr;
 }

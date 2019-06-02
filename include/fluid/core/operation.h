@@ -36,9 +36,19 @@ namespace fluid {
                                                                                 ///< to finish at a position hold
                                                                                 ///< state.
 
-    public:
+        const std::map<std::string, std::string> final_state_map_ = {
+            {fluid::StateIdentifier::Init, fluid::StateIdentifier::Idle},
+            {fluid::StateIdentifier::Idle, fluid::StateIdentifier::Idle},
+            {fluid::StateIdentifier::TakeOff, fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::Move, fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::Hold, fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::PositionFollow, fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::Land, fluid::StateIdentifier::Idle},
+        };
 
-        mavros_msgs::PositionTarget position_target;                ///< Position target of the operation.
+        public:
+
+            mavros_msgs::PositionTarget position_target; ///< Position target of the operation.
 
         const std::string identifier;                               ///< Identifier of the operation.
 
@@ -75,7 +85,7 @@ namespace fluid {
          *
          * @return A flag determining the validation of the operation given the current state.
          */
-        virtual bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) = 0;
+        virtual bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) const;
 
         /** 
          * Performs the operation.
@@ -97,12 +107,12 @@ namespace fluid {
         /**
          * @return The state the operation should end at.
          */
-        std::shared_ptr<fluid::State> getFinalStatePtr();
+        std::shared_ptr<fluid::State> getFinalStatePtr() const;
 
         /**
          * @return The current state of the operation.
          */
-        std::shared_ptr<fluid::State> getCurrentStatePtr();
+        std::shared_ptr<fluid::State> getCurrentStatePtr() const;
     };
 }
 
