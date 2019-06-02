@@ -6,4 +6,9 @@ maxX: 0.0
 maxY: 0.0
 maxZ: 0.0
 
+distanceCompletionThreshold: 0.3
+velocityCompletionThreshold: 0.1
+yawCompletionThreshold: 0.1
+defaultHeight: 1.0
+
 positionFollowHeight: 2.3
