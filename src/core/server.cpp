@@ -119,7 +119,7 @@ void fluid::Server::goalCallback() {
         next_operation_p_ = std::make_shared<fluid::MoveOrientedOperation>(position_target);
     }*/
 
-    next_operation_p_ = std::make_shared<fluid::Operation>(operation_identifier, operation_state_identifier_map[operation_identifier.data], "", position_target);
+    next_operation_p_ = std::make_shared<fluid::Operation>(operation_identifier.data, operation_state_identifier_map[operation_identifier.data], "", position_target);
 
     new_operation_requested_ = true;
 }
