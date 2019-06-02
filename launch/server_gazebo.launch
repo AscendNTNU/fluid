@@ -13,6 +13,6 @@
         <arg name="fcu_url" value="udp://localhost:$(arg offboard_api_port)@localhost:$(arg fcu_api_port)"/>
         <arg name="px4_id" value="$(arg px4_id)"/>
         <arg name="auto_arm" value="true"/>
-        <arg name="auto_set_offboard" value="true"/>
+        <arg name="auto_offboard" value="true"/>
     </include>
 </launch>
