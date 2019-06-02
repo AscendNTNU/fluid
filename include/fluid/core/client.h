@@ -15,6 +15,7 @@
 #include <fluid/OperationAction.h>
 
 #include "operation.h"
+#include "core.h"
 
 namespace fluid {
 
@@ -47,6 +48,28 @@ class Client {
      * @param timeout_value The time the operation client waits for a response from the operation server.
      */
     Client(std::string name_space, double timeout_value) : name_space(name_space), timeout_value_(timeout_value) {}
+
+    /**
+     * Issues a take off request to the given height.
+     * 
+     * @param height The height to take off to.
+     * @param completion_handler Fired when this operation has finished (or timed out) 
+     */
+    void requestTakeOff(double height, std::function<void (bool)> completion_handler);
+
+    /**
+     * Issues a take off request to the default height.
+     * 
+     * @param completion_handler Fired when this operation has finished (or timed out) 
+     */
+    void requestTakeOff(std::function<void (bool)> completion_handler);
+
+    /**
+     * Issues a land request at the given position.
+     * 
+     * @param completion_handler Fired when this operation has finished (or timed out) 
+     */
+    void requestLand(std::function<void (bool)> completion_handler);
 
     /**
      * Requests an operation with a given target pose. This function will send a request to a server

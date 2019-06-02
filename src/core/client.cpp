@@ -35,6 +35,29 @@ void fluid::Client::waitForResult(
     }
 }
 
+void fluid::Client::requestTakeOff(double height, std::function<void (bool)> completion_handler) {
+    // We pass in an empty pose here as the take off 
+    // operation is relative, it will take off from
+    // the current pose, so x and y setpoint is not relevant
+    geometry_msgs::Pose pose;
+    pose.position.z = height;
+
+    requestOperation(fluid::OperationIdentifier::TakeOff, pose, completion_handler);    
+}
+
+void fluid::Client::requestTakeOff(std::function<void (bool)> completion_handler) {
+    // We pass in 0 here as it will tell the state machine that we want to take off to the
+    // default height specified from the parameters.
+    requestTakeOff(0, completion_handler);
+}
+
+void fluid::Client::requestLand(std::function<void (bool)> completion_handler) {
+    // We send in an empty pose here as the state machine will automatically land
+    // at the current position.
+    geometry_msgs::Pose pose;
+    requestOperation(fluid::OperationIdentifier::Land, pose, completion_handler);
+}
+
 void fluid::Client::requestOperation(
     std::string operation_identifier,
 	geometry_msgs::Pose target_pose,
