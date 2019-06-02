@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_action_files(DIRECTORY action FILES Operation.action)
-generate_messages(DEPENDENCIES ascend_msgs)
+generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
 
 # Includes headers in include folder
 include_directories(include
@@ -25,15 +25,15 @@ ${catkin_INCLUDE_DIRS}
 )
 
 # Retrieve all the source files using GLOB
-file(GLOB fluid_fsm_operations_SRC "src/operations/*.cpp")
-file(GLOB fluid_fsm_core_SRC "src/core/*.cpp")
-file(GLOB fluid_fsm_states_SRC "src/states/*.cpp")
+file(GLOB fluid_operation_SRC "src/operations/*.cpp")
+file(GLOB fluid_core_SRC "src/core/*.cpp")
+file(GLOB fluid_states_SRC "src/states/*.cpp")
 
 # Add the source files to the library
 add_library(fluid
-        ${fluid_fsm_operations_SRC}
-        ${fluid_fsm_core_SRC}
-        ${fluid_fsm_states_SRC})
+        ${fluid_operation_SRC}
+        ${fluid_core_SRC}
+        ${fluid_states_SRC})
 
 target_link_libraries(fluid ${catkin_LIBRARIES})
 
