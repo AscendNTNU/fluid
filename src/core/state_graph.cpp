@@ -135,6 +135,12 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
     return states_in_plan;
 }
 
+bool fluid::StateGraph::areConnected(std::string start_state_identifier, std::string end_state_identifier) {
+    std::vector<std::shared_ptr<fluid::State>> path = getPathToEndState(start_state_identifier, end_state_identifier);
+
+    return (*path.begin())->identifier == start_state_identifier && (*(path.end() - 1))->identifier == end_state_identifier;
+}
+
 std::shared_ptr<fluid::State> fluid::StateGraph::getStateWithIdentifier(std::string identifier) {
     // Get state with this identifier from the state vector
     for (auto state : getStates()) {
@@ -146,17 +152,20 @@ std::shared_ptr<fluid::State> fluid::StateGraph::getStateWithIdentifier(std::str
     return nullptr;
 }
 
-std::ostream& fluid::StateGraph::operator<<(std::ostream& ostream) {
-for (auto const& item : *adjacency_list_ptr_) {
+namespace fluid {
+
+    std::ostream& operator<<(std::ostream& ostream, const fluid::StateGraph& state_graph) {
+        for (auto const& item : *(state_graph.adjacency_list_ptr_)) {
         
-        ostream << "\n Adjacency list of vertex " << item.first << "\n head ";
+            ostream << item.first << " ";
         
-        for (auto &neighbor : item.second) {
-            ostream << "-> " << neighbor->identifier;
+            for (auto &neighbor : item.second) {
+                ostream << "-> " << neighbor->identifier << " ";
+            }
+
+            ostream << "\n";
         }
+        return ostream;
     }
-
-    return ostream;
 }
-
 

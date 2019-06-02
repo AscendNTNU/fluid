@@ -76,6 +76,11 @@ namespace fluid {
                                                                      std::string end_state_identifier);
 
         /**
+         * @return A flag determining whether two states are connected. 
+         */
+        bool areConnected(std::string start_state_identifier, std::string end_state_identifier);
+
+        /**
          * @return The state with the given identifier in the graph. Will return a nullptr if not found.
          */
         std::shared_ptr<fluid::State> getStateWithIdentifier(std::string identifier);
@@ -83,7 +88,7 @@ namespace fluid {
         /**
          * Returns a stream with information about this state graph.
          */
-        std::ostream& operator<<(std::ostream& ostream);
+        friend std::ostream& operator<<(std::ostream& ostream, const fluid::StateGraph& state_graph);
     };
 }
 
