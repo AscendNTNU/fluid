@@ -12,6 +12,7 @@
 #include <ascend_msgs/ObstacleAvoidanceCompletion.h>
 #include <mavros_msgs/PositionTarget.h>
 
+#include "core.h"
 #include "state_identifier.h"
 #include "type_mask.h"
 
