@@ -6,7 +6,8 @@
 #include "land_state.h"
 
 bool fluid::LandState::hasFinishedExecution() {
-    return current_pose_.pose.position.z - 0.0 < 0.05 && std::abs(getCurrentTwist().twist.linear.z) < 0.1;
+    return current_pose_.pose.position.z - 0.0 < 0.05 && 
+           std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 }
 
 void fluid::LandState::initialize() {

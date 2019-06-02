@@ -7,10 +7,10 @@
 #include "pose_util.h"
 
 bool fluid::TakeOffState::hasFinishedExecution() {
-    return PoseUtil::distanceBetween(current_pose_, setpoint) < 0.3 && 
-    	   std::abs(getCurrentTwist().twist.linear.x) < 0.05 && 
-    	   std::abs(getCurrentTwist().twist.linear.y) < 0.05 && 
-    	   std::abs(getCurrentTwist().twist.linear.z) < 0.05;
+    return PoseUtil::distanceBetween(current_pose_, setpoint) < fluid::Core::distance_completion_threshold &&
+    	   std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold && 
+    	   std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
+    	   std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 }
 
 void fluid::TakeOffState::initialize() {
@@ -18,7 +18,7 @@ void fluid::TakeOffState::initialize() {
     setpoint.position.y = getCurrentPose().pose.position.y;
 
 	if (setpoint.position.z <= 0.1) {
-		setpoint.position.z = 1.0;
+		setpoint.position.z = fluid::Core::default_height;
 	}
 }
 
