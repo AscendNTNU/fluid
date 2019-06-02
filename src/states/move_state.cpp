@@ -11,10 +11,10 @@
 #include "pose_util.h"
 
 bool fluid::MoveState::hasFinishedExecution() {
-    bool atPositionTarget = PoseUtil::distanceBetween(current_pose_, setpoint) < 0.3 && 
-    	   				 	std::abs(getCurrentTwist().twist.linear.x) < 0.1 && 
-    	   					std::abs(getCurrentTwist().twist.linear.y) < 0.1 && 
-    	   					std::abs(getCurrentTwist().twist.linear.z) < 0.1;
+    bool atPositionTarget = PoseUtil::distanceBetween(current_pose_, setpoint) < fluid::Core::distance_completion_threshold && 
+    	   				 	std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold && 
+    	   					std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
+    	   					std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 
     tf2::Quaternion quat(getCurrentPose().pose.orientation.x, 
                          getCurrentPose().pose.orientation.y, 
@@ -27,7 +27,7 @@ bool fluid::MoveState::hasFinishedExecution() {
     // it to zero. 
     yaw = std::isnan(yaw) ? 0.0 : yaw;
 
-    bool atYawTarget = std::abs(setpoint.yaw - yaw) < 0.2; 
+    bool atYawTarget = std::abs(setpoint.yaw - yaw) < fluid::Core::yaw_completion_threshold; 
 
     return atYawTarget && atPositionTarget;
 }
