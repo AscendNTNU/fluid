@@ -51,6 +51,26 @@ namespace fluid {
 																			///< values are set to 0 the drone can
 																			///< move freely.
 
+		static double distance_completion_threshold;						///< Specifies the radius for within we 
+																			///< we can say that we are at the given position. 
+
+		static double velocity_completion_threshold;						///< Specifies how low the velocity has to 
+																			///< be before we issue that a given state
+																			///< is completed. This serves the purpose to prevent
+																			///< oscillations in the case when new operations are
+																			///< fired the moment the previous completes.
+																			///< With this threshold, we have to wait for the 
+																			///< drone to be steady at the current position before
+																			///< carrying on.
+
+		static double yaw_completion_threshold;								///< Specifies the threshold for tolerance
+																			///< of yaw, so the drone's yaw has to be within 
+																			///< this threshold before we continue doing another
+																			///< operation.
+
+		static double default_height;										///< The default height to operate at for
+																			///< take off and move if none is specified.
+		
 		static double positionFollowHeight;									///< The height at which the drone will
 																			///< follow a given target.	
 

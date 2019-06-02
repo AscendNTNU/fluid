@@ -23,11 +23,14 @@ int main(int argc, char** argv) {
     node_handle.getParam("minX", fluid::Core::minX);
     node_handle.getParam("minY", fluid::Core::minY);
     node_handle.getParam("minZ", fluid::Core::minZ);
-
     node_handle.getParam("maxX", fluid::Core::maxX);
     node_handle.getParam("maxY", fluid::Core::maxY);
     node_handle.getParam("maxZ", fluid::Core::maxZ);
 
+    node_handle.getParam("distanceCompletionThreshold", fluid::Core::distance_completion_threshold);
+    node_handle.getParam("velocityCompletionThreshold", fluid::Core::velocity_completion_threshold);
+    node_handle.getParam("yawCompletionThreshold", fluid::Core::yaw_completion_threshold);
+    node_handle.getParam("defaultHeight", fluid::Core::default_height);
     node_handle.getParam("positionFollowHeight", fluid::Core::positionFollowHeight);
 
     fluid::Server server;

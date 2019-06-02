@@ -16,6 +16,10 @@ double fluid::Core::maxX = 0.0;
 double fluid::Core::maxY = 0.0;
 double fluid::Core::maxZ = 0.0;
 
+double fluid::Core::distance_completion_threshold = 0.3;
+double fluid::Core::velocity_completion_threshold = 0.1;
+double fluid::Core::yaw_completion_threshold = 0.1;
+double fluid::Core::default_height = 1.0;
 double fluid::Core::positionFollowHeight = 2.3;
 
 std::shared_ptr<fluid::StateGraph> fluid::Core::getGraphPtr() {
