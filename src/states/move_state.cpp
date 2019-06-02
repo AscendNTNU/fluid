@@ -9,6 +9,7 @@
 
 #include "move_state.h"
 #include "pose_util.h"
+#include "core.h"
 
 bool fluid::MoveState::hasFinishedExecution() {
     bool atPositionTarget = PoseUtil::distanceBetween(current_pose_, setpoint) < fluid::Core::distance_completion_threshold && 
