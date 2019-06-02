@@ -18,7 +18,7 @@ double fluid::Core::maxZ = 0.0;
 
 double fluid::Core::distance_completion_threshold = 0.3;
 double fluid::Core::velocity_completion_threshold = 0.1;
-double fluid::Core::yaw_completion_threshold = 0.1;
+double fluid::Core::yaw_completion_threshold = 0.2;
 double fluid::Core::default_height = 1.0;
 double fluid::Core::positionFollowHeight = 2.3;
 
