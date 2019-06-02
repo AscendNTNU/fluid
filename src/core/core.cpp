@@ -1,8 +1,8 @@
 #include "core.h"
 
 
-unsigned int fluid::Core::refresh_rate = 30;
-unsigned int fluid::Core::message_queue_size = 100;
+int fluid::Core::refresh_rate = 20;
+int fluid::Core::message_queue_size = 10;
 bool fluid::Core::auto_arm = false;
 bool fluid::Core::auto_set_offboard = false;
 

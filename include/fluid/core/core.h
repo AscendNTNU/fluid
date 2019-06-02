@@ -26,7 +26,7 @@ namespace fluid {
         	                                                 				///< of and how they are connected.
 	public: 
 
-		static unsigned int refresh_rate;									///< The unified refresh rate across 
+		static int refresh_rate;											///< The unified refresh rate across 
 																			///< the state machine.
 																			///< Specifies how fast the operation
 																			///< server and its underlying servies 
@@ -35,7 +35,7 @@ namespace fluid {
 																			///< transitions execute their logic every 
 																			///< 100 ms (in best case).
 
-		static unsigned int message_queue_size;								///< The unified message queue size for 
+		static int message_queue_size;										///< The unified message queue size for 
 																			///< the different ros components within
 																			///< the FSM.
 
