@@ -6,6 +6,8 @@
 #include <string>
 #include <mavros_msgs/PositionTarget.h>
 
+#include "core.h"
+
 mavros_msgs::PositionTarget position_target;
 bool position_is_set = false;
 
@@ -20,15 +22,17 @@ int main(int argc, char** argv) {
 
     ROS_INFO("Initiailzing set point publisher.");
 
-    int refersh_rate = static_cast<unsigned int>(atoi(argv[1]));
-
-    std::string subscription_topic = std::string(argv[2]);
-    std::string publishing_topic = std::string(argv[3]);
-
+    int refresh_rate = fluid::Core::refresh_rate;
 	ros::NodeHandle node_handle;
-    ros::Subscriber subscriber = node_handle.subscribe(subscription_topic, 100, subscriptionCallback);
-    ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>(publishing_topic, 100);
-    ros::Rate rate(refersh_rate);
+
+    node_handle.getParam("refresh_rate", refresh_rate);
+
+    std::string subscription_topic = std::string(argv[1]);
+    std::string publishing_topic = std::string(argv[2]);
+
+    ros::Subscriber subscriber = node_handle.subscribe(subscription_topic, 10, subscriptionCallback);
+    ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>(publishing_topic, 10);
+    ros::Rate rate(refresh_rate);
 
     while (ros::ok()) {
 
