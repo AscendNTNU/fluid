@@ -11,6 +11,6 @@ fluid::InitOperation::InitOperation(mavros_msgs::PositionTarget position_target)
 							                  position_target) {}
 
 
-bool fluid::InitOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) {
+bool fluid::InitOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr)const {
     return current_state_ptr->identifier == "init";
 }

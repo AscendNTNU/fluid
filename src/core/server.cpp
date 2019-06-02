@@ -86,8 +86,16 @@ void fluid::Server::goalCallback() {
     position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;
 
 
+    std::map<std::string, std::string> operation_state_identifier_map = {
+        {fluid::OperationIdentifier::Init, fluid::StateIdentifier::Init},
+        {fluid::OperationIdentifier::TakeOff, fluid::StateIdentifier::TakeOff},
+        {fluid::OperationIdentifier::Move, fluid::StateIdentifier::Move},
+        {fluid::OperationIdentifier::Land, fluid::StateIdentifier::Land},
+        {fluid::OperationIdentifier::PositionFollow, fluid::StateIdentifier::PositionFollow},
+    };
+
     // Point the next operation pointer to the newly initialized operation.
-    if (operation_identifier.data == fluid::OperationIdentifier::Init) {
+/*    if (operation_identifier.data == fluid::OperationIdentifier::Init) {
         position_target.position.x = 0.0;
         position_target.position.y = 0.0;
         position_target.position.z = 0.0;
@@ -109,7 +117,9 @@ void fluid::Server::goalCallback() {
     }
     else if (operation_identifier.data == fluid::OperationIdentifier::MoveOriented) {
         next_operation_p_ = std::make_shared<fluid::MoveOrientedOperation>(position_target);
-    }
+    }*/
+
+    next_operation_p_ = std::make_shared<fluid::Operation>(operation_identifier, operation_state_identifier_map[operation_identifier.data], "", position_target);
 
     new_operation_requested_ = true;
 }

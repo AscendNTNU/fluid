@@ -19,6 +19,6 @@ fluid::TakeOffOperation::TakeOffOperation(mavros_msgs::PositionTarget position_t
 	fluid::Core::getStatusPublisherPtr()->status.target_pose_y = this->position_target.position.y;
 }
 
-bool fluid::TakeOffOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) {
+bool fluid::TakeOffOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) const {
     return current_state_ptr->identifier == "idle";
 }

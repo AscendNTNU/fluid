@@ -10,6 +10,6 @@ fluid::PositionFollowOperation::PositionFollowOperation() : Operation(fluid::Ope
 													                  mavros_msgs::PositionTarget()) {}
 
 
-bool fluid::PositionFollowOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) {
+bool fluid::PositionFollowOperation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) const {
     return current_state_ptr->identifier == "hold" || current_state_ptr->identifier == "move";
 }
