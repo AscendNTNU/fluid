@@ -79,7 +79,7 @@ void fluid::MoveOrientedOperation::perform(std::function<bool (void)> shouldAbor
         fluid::Core::getStatusPublisherPtr()->publish();
 
         fluid::Core::getGraphPtr()->current_state_ptr = state_p;
-        state_p->perform(shouldAbort);
+        state_p->perform(shouldAbort, false);
 
         if (shouldAbort()) {
 

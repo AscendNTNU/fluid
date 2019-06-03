@@ -204,7 +204,7 @@ void fluid::Server::start() {
                 last_state_p_->perform([&]() -> bool {
                     // We abort the execution of the current state if there is a new operation.
                     return new_operation_requested_;
-                }, false);
+                }, true);
             }
         }
 

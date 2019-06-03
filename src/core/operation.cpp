@@ -42,20 +42,14 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         return;
     }
 
-
-    // Since the path includes the current state we set the start index to the one after the current only if the path
-    // doesn't consist of a single state (e.g. init operation). In that case we want to only run through that state. 
-    int startIndex = path.size() > 1 ? 1 : 0;
-
     // This will also only fire for operations that consist of more than one state (every operation other than init).
     // And in that case we transition to the next state in the path after the start state.
     if (fluid::Core::getGraphPtr()->current_state_ptr->identifier != destination_state_identifier_) {
         transitionToState(path[1]);
     }
 
-    for (int index = startIndex; index < path.size(); index++) {
+    for (int index = 0; index < path.size(); index++) {
 
-        // TODO: What do we do here if the different states require different position targets?
         std::shared_ptr<fluid::State> state_p = path[index];
         
         state_p->setpoint = position_target;
@@ -64,7 +58,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         fluid::Core::getStatusPublisherPtr()->publish();
 
         fluid::Core::getGraphPtr()->current_state_ptr = state_p;
-        state_p->perform(shouldAbort);
+        state_p->perform(shouldAbort, false);
 
         if (shouldAbort()) {
 
