@@ -12,14 +12,13 @@
 
 #include "core.h"
 #include "transition.h"
+#
 
 fluid::Operation::Operation(std::string identifier,
                             std::string destination_state_identifier,
-                            std::string final_state_identifier,
                             mavros_msgs::PositionTarget position_target) :
                             identifier(std::move(identifier)),
                             destination_state_identifier_(std::move(destination_state_identifier)),
-                            final_state_identifier_(std::move(final_state_identifier)),
                             position_target(std::move(position_target)) {}
 
 void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) {
@@ -31,7 +30,9 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         completionHandler(false);
         return;
     }
+
     
+
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
     std::vector<std::shared_ptr<State>> path = fluid::Core::getGraphPtr()->getPathToEndState(
