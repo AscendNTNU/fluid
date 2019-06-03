@@ -1,44 +1,73 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
-#include <tf2/LinearMath/Quaternion.h>
 #include <fluid/core/client.h>
 #include <fluid/core/state_identifier.h>
 
 #include <random>
 
-fluid::Client client("drone_1", 15);
-
-void foo() {
-
-    mavros_msgs::PositionTarget setpoint;
-
-    setpoint.position.x = rand() % 10 - 5;
-    setpoint.position.y = rand() % 10 - 5;
-    setpoint.position.z = 1.0;
-
-    client.requestOperationToState(fluid::StateIdentifier::Move, setpoint, [&](bool completed) {
-        foo();
-    });
-}
 
 int main(int argc, char** argv) {
 
     ros::init(argc, argv, "client_square");
     ros::NodeHandle nh;
 
+    fluid::Client client("drone_1", 60);
+
+    mavros_msgs::PositionTarget setpoint;
+    setpoint.position.x = 6;
+
+    client.requestOperationToState(fluid::StateIdentifier::Land, setpoint, [&](bool completed) {
+
+            setpoint.position.y = 6;
+            client.requestMove(setpoint, [](bool completed) {});        
+    });
+
+    ros::Rate rate(1);
+
+    while (ros::ok()) {
+            ros::spinOnce();
+            rate.sleep();
+    }
+
+
+    return 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     geometry_msgs::Pose pose;
     bool initialized = false;
     float height = 1.0;
     float startX = 0.0;
     float startY = 0.0;
-
-    pose.position.x = pose.position.y = 5;
-
-    client.requestTakeOff(height, [&](bool completed) {
-        if (completed) {
-            initialized = completed;
-        }
-    });
 
 
     ros::Rate wait_rate(20);
@@ -47,6 +76,7 @@ int main(int argc, char** argv) {
         ros::spinOnce();
         wait_rate.sleep();
     }
+
 
     // Just for demonstration, this will make the drone move in straight lines to form a square. When the current move
     // is finished, the next will execute as one can see in the callback.
@@ -57,7 +87,6 @@ int main(int argc, char** argv) {
     pose.position.y = startY;
     pose.position.z = height;
     
-    //foo();
     
     /*
     client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
@@ -96,13 +125,6 @@ int main(int argc, char** argv) {
                 });
         }
     });*/
-
-    ros::Rate rate(1);
-
-    while (ros::ok()) {
-            ros::spinOnce();
-            rate.sleep();
-    }
 
     return 0;
 }
