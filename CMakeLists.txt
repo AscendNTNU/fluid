@@ -18,20 +18,17 @@ generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
 include_directories(include
                    
 include/fluid/core
-include/fluid/operations
 include/fluid/states
 include/fluid/tools
 ${catkin_INCLUDE_DIRS}
 )
 
 # Retrieve all the source files using GLOB
-file(GLOB fluid_operation_SRC "src/operations/*.cpp")
 file(GLOB fluid_core_SRC "src/core/*.cpp")
 file(GLOB fluid_states_SRC "src/states/*.cpp")
 
 # Add the source files to the library
 add_library(fluid
-        ${fluid_operation_SRC}
         ${fluid_core_SRC}
         ${fluid_states_SRC})
 
