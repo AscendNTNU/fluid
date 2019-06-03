@@ -19,7 +19,7 @@ namespace fluid {
         /**
          * Initializes the land state.
          */
-        explicit LandState() : State(fluid::StateIdentifier::Land, fluid::PX4::Land, false) {}
+        explicit LandState() : State(fluid::StateIdentifier::Land, fluid::PX4::Land, false, false) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

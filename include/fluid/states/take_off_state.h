@@ -18,7 +18,7 @@ namespace fluid {
 
         /** Initializes the take off state.
          */
-        explicit TakeOffState() : State(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard, true) {}
+        explicit TakeOffState() : State(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard, false, true) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

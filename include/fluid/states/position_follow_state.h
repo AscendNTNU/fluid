@@ -43,7 +43,7 @@ namespace fluid {
         /** Initializes the move state.
          */
         explicit PositionFollowState() : 
-        State(fluid::StateIdentifier::PositionFollow, fluid::PX4::Offboard, true), 
+        State(fluid::StateIdentifier::PositionFollow, fluid::PX4::Offboard, false, true), 
         object_target_pose_subscriber_(node_handle_.subscribe("perception/target", 
                                                               Core::message_queue_size, 
                                                               &PositionFollowState::objectTargetPoseCallback, 

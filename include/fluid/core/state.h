@@ -46,12 +46,18 @@ namespace fluid {
                                                                                 ///< avoidance system wants to 
                                                                                 ///< go over to position hold
 
+        const bool steady_;                                                     ///< Determines whether this state is
+                                                                                ///< a state we can be at for longer periods 
+                                                                                ///< of time. E.g. hold or idle.
+
         const bool should_check_obstacle_avoidance_completion_;                 ///< Whether it makes sense to check
                                                                                 ///< that obstacle avoidance is
                                                                                 ///< complete for this state
 
         bool obstacle_avoidance_completed_ = false;                             ///< Keeps track of the state with
                                                                                 ///< obstacle avoidance.
+ 
+
 
         /**
          * Gets fired when the state estimation publishes a pose on the given topic.
@@ -86,11 +92,18 @@ namespace fluid {
          * Sets up the state and the respective publishers and subscribers.
          *
          * @param identifier The identifier of the state.
-         * @param px4Mode The mode/state within px4 this state represents.
+         * @param px4_mode The mode/state within px4 this state represents.
+         * @param steady Defines if this state is a state we can be at for longer periods of time. E.g. idle
+         *               or hold.
+         * @param should_check_obstacle_avoidance_completion Determines whether the state should be affected
+         *                                                   by obstacle avoidance saying we've reached a setpoint or not.
+         *                                                   Used in states which require to run through a set of instructions,
+         *                                                   e.g. an init state.
          */
         State(std::string identifier,
               std::string px4_mode,
-              bool should_check_obstacle_avoidance_completion_);
+              bool steady,
+              bool should_check_obstacle_avoidance_completion);
 
 
         /**
@@ -119,11 +132,11 @@ namespace fluid {
          * Performs the Ros loop for executing logic within this state given the refresh rate.
          *
          * @param shouldAbort Called each tick, makes it possible to abort states in the midst of an execution.
-         * @param ignore_finsihed_execution Will ignore that this state has finished execution, is useful
+         * @param should_halt_if_steady     Will halt at this state if it's steady, is useful
          *                                  if we want to keep at a certain state for some time, e.g. idle
          *                                  or hold.
          */
-        virtual void perform(std::function<bool (void)> shouldAbort, bool ignore_finished_execution);
+        virtual void perform(std::function<bool (void)> shouldAbort, bool should_halt_if_steady);
 
         /**
          * @return A flag determining whether the state has finished execution.
