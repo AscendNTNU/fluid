@@ -8,10 +8,17 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         genmsg
         actionlib
+        tf2
 )
 
 add_action_files(DIRECTORY action)
 generate_messages(DEPENDENCIES mavros_msgs actionlib_msgs)
+
+catkin_package(
+        CATKIN_DEPENDS ascend_msgs roscpp
+        INCLUDE_DIRS include
+        LIBRARIES ${PROJECT_NAME}
+)
 
 # Includes headers in include folder
 include_directories(include
@@ -27,18 +34,11 @@ file(GLOB fluid_core_SRC "src/core/*.cpp")
 file(GLOB fluid_states_SRC "src/states/*.cpp")
 
 # Add the source files to the library
-add_library(fluid
-        ${fluid_core_SRC}
-        ${fluid_states_SRC})
+add_library(${PROJECT_NAME}
+            ${fluid_core_SRC}
+            ${fluid_states_SRC})
 
 target_link_libraries(fluid ${catkin_LIBRARIES})
-
-# Export the library
-catkin_package(
-        CATKIN_DEPENDS ascend_msgs roscpp
-        INCLUDE_DIRS include
-        LIBRARIES fluid
-)
 
 ## Mark libraries for installation
 install(TARGETS fluid
