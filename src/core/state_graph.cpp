@@ -70,7 +70,8 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getStates() {
 }
 
 std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(std::string start_state_identifier,
-                                                                                std::string end_state_identifier) {
+                                                                                std::string end_state_identifier,
+                                                                                bool should_include_move) {
     
     // BFS
     std::list<std::string> queue;
@@ -126,17 +127,35 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
     // Transform plan of state identifiers into a plan of states
     std::vector<std::shared_ptr<fluid::State>> states_in_plan;
 
+    bool includes_move = false;
+
     for (const auto &identifier : path) {
         states_in_plan.push_back(getStateWithIdentifier(identifier));
+
+        if (identifier == fluid::StateIdentifier::Move) {
+            includes_move = true;
+        }
     }
     
     std::reverse(states_in_plan.begin(), states_in_plan.end());
+
+    // If we should include a move and the path include a state after hold, we have to include a move state.
+    // This is ofcourse just in the case the path don't already include a move.
+    if (!includes_move && should_include_move) {
+        auto iterator = std::find_if(states_in_plan.begin(), states_in_plan.end(), [](const std::shared_ptr<fluid::State>& state) {
+            return state->identifier == fluid::StateIdentifier::Hold;
+        });
+
+        if (iterator + 1 != states_in_plan.end()) {
+            states_in_plan.insert(iterator + 1, getStateWithIdentifier(fluid::StateIdentifier::Move));
+        }
+    }
 
     return states_in_plan;
 }
 
 bool fluid::StateGraph::areConnected(std::string start_state_identifier, std::string end_state_identifier) {
-    std::vector<std::shared_ptr<fluid::State>> path = getPathToEndState(start_state_identifier, end_state_identifier);
+    std::vector<std::shared_ptr<fluid::State>> path = getPathToEndState(start_state_identifier, end_state_identifier, false);
 
     return (*path.begin())->identifier == start_state_identifier && (*(path.end() - 1))->identifier == end_state_identifier;
 }

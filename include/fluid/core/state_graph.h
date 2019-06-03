@@ -69,11 +69,13 @@ namespace fluid {
          *
          * @param start_state_identifier The identifier of the start state we begin at.
          * @param end_state_identifier The identifier of the end state we want to transition to.
+         * @param should_include_move Whether we should include a move in the operation or not (if the move is on the path).
          * 
          * @return Vector of states one has to transition to in order to get to the end state.
          */
         std::vector<std::shared_ptr<fluid::State>> getPathToEndState(std::string start_state_identifier,
-                                                                     std::string end_state_identifier);
+                                                                     std::string end_state_identifier, 
+                                                                     bool should_include_move);
 
         /**
          * @return A flag determining whether two states are connected. 
