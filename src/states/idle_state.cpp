@@ -5,7 +5,7 @@
 #include "idle_state.h"
 
 bool fluid::IdleState::hasFinishedExecution() {
-    return false;
+    return true;
 }
 
 void fluid::IdleState::tick() {
