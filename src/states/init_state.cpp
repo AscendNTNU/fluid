@@ -22,7 +22,7 @@ void fluid::InitState::tick() {
     // Not implemented as all logic happens inside perform for the init state has we have to arm and set offboard mode
 }
 
-void fluid::InitState::perform(std::function<bool (void)> shouldAbort) {
+void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool ignore_finished_execution) {
 
     ros::Rate rate(Core::refresh_rate);
     ros::NodeHandle node_handle_;
