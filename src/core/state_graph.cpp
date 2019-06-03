@@ -146,7 +146,7 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
             return state->identifier == fluid::StateIdentifier::Hold;
         });
 
-        if (iterator + 1 != states_in_plan.end()) {
+        if (iterator != states_in_plan.end() && iterator + 1 != states_in_plan.end()) {
             states_in_plan.insert(iterator + 1, getStateWithIdentifier(fluid::StateIdentifier::Move));
         }
     }
