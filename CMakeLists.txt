@@ -15,8 +15,8 @@ add_action_files(DIRECTORY action)
 generate_messages(DEPENDENCIES mavros_msgs actionlib_msgs)
 
 catkin_package(
-        CATKIN_DEPENDS ascend_msgs roscpp
         INCLUDE_DIRS include
+        CATKIN_DEPENDS ascend_msgs roscpp
         LIBRARIES ${PROJECT_NAME}
 )
 
