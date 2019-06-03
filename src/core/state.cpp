@@ -75,7 +75,7 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort, bool should_ha
 
     initialize();
 
-    while (ros::ok() && ((should_halt_if_steady && steady_) && !hasFinishedExecution()) && !shouldAbort()) {
+    while (ros::ok() && ((should_halt_if_steady && steady_) || !hasFinishedExecution()) && !shouldAbort()) {
         tick();
 
         setpoint_publisher.publish(setpoint);
