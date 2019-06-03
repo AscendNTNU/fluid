@@ -12,7 +12,6 @@
 
 #include "core.h"
 #include "transition.h"
-#
 
 fluid::Operation::Operation(std::string identifier,
                             std::string destination_state_identifier,
@@ -31,7 +30,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         return;
     }
 
-    
+    // TODO: Move if needed
 
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
