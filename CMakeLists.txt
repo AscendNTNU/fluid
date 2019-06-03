@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
         actionlib
 )
 
-add_action_files(DIRECTORY action FILES Operation.action)
+add_action_files(DIRECTORY action)
 generate_messages(DEPENDENCIES mavros_msgs actionlib_msgs)
 
 # Includes headers in include folder
