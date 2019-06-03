@@ -12,6 +12,7 @@
 
 #include "core.h"
 #include "transition.h"
+#include "pose_util.h"
 
 fluid::Operation::Operation(std::string identifier,
                             std::string destination_state_identifier,
@@ -30,13 +31,16 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         return;
     }
 
-    // TODO: Move if needed
+    // As the graph will return the shortest path in terms of states, we have to check if
+    // the setpoint is outside where we're currently at so we include a move state (if the move is on the path).
+
+    bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose(), position_target) >= fluid::Core::distance_completion_threshold;
 
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
     std::vector<std::shared_ptr<State>> path = fluid::Core::getGraphPtr()->getPathToEndState(
                         fluid::Core::getGraphPtr()->current_state_ptr->identifier,
-                        destination_state_identifier_);
+                        destination_state_identifier_, shouldIncludeMove);
 
     if (path.empty()) {
         return;
