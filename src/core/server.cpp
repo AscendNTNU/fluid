@@ -90,7 +90,8 @@ void fluid::Server::goalCallback() {
     Core::getStatusPublisherPtr()->status.target_pose_x = target_pose.position.x;
     Core::getStatusPublisherPtr()->status.target_pose_y = target_pose.position.y;
     Core::getStatusPublisherPtr()->status.target_pose_z = target_pose.position.z;
-    
+
+
     // The goal/request is sent with a geometry_pose, so we have to convert to position_target for mavros.
     mavros_msgs::PositionTarget position_target;
     position_target.position = target_pose.position;
@@ -105,33 +106,6 @@ void fluid::Server::goalCallback() {
     // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
     // it to zero. 
     position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;
-
-
-
-    // Point the next operation pointer to the newly initialized operation.
-/*    if (operation_identifier.data == fluid::OperationIdentifier::Init) {
-        position_target.position.x = 0.0;
-        position_target.position.y = 0.0;
-        position_target.position.z = 0.0;
-        next_operation_p_ = std::make_shared<fluid::InitOperation>(position_target);
-
-    }
-    else if (operation_identifier.data == fluid::OperationIdentifier::TakeOff) {
-        next_operation_p_ = std::make_shared<fluid::TakeOffOperation>(position_target);
-
-    }
-    else if (operation_identifier.data == fluid::OperationIdentifier::Move) {
-        next_operation_p_ = std::make_shared<fluid::MoveOperation>(position_target);
-    }
-    else if (operation_identifier.data == fluid::OperationIdentifier::Land) {
-        next_operation_p_ = std::make_shared<fluid::LandOperation>(position_target);
-    }
-    else if (operation_identifier.data == fluid::OperationIdentifier::PositionFollow) {
-        next_operation_p_ = std::make_shared<fluid::PositionFollowOperation>();
-    }
-    else if (operation_identifier.data == fluid::OperationIdentifier::MoveOriented) {
-        next_operation_p_ = std::make_shared<fluid::MoveOrientedOperation>(position_target);
-    }*/
 
     next_operation_p_ = std::make_shared<fluid::Operation>(operation_identifier.data, operation_state_identifier_map[operation_identifier.data], "", position_target);
 
