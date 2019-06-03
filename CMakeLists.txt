@@ -34,7 +34,6 @@ file(GLOB fluid_core_SRC "src/core/*.cpp")
 file(GLOB fluid_states_SRC "src/states/*.cpp")
 
 # Add the source files to the library
-
 add_library(${PROJECT_NAME}
             ${fluid_core_SRC}
             ${fluid_states_SRC})
