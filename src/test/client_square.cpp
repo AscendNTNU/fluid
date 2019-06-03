@@ -10,13 +10,13 @@ fluid::Client client("drone_1", 15);
 
 void foo() {
 
-    geometry_msgs::Pose pose;
+    mavros_msgs::PositionTarget setpoint;
 
-    pose.position.x = rand() % 10 - 5;
-    pose.position.y = rand() % 10 - 5;
-    pose.position.z = 1.0;
+    setpoint.position.x = rand() % 10 - 5;
+    setpoint.position.y = rand() % 10 - 5;
+    setpoint.position.z = 1.0;
 
-    client.requestOperationToState(fluid::StateIdentifier::Move, pose, [&](bool completed) {
+    client.requestOperationToState(fluid::StateIdentifier::Move, setpoint, [&](bool completed) {
         foo();
     });
 }

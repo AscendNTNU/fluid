@@ -3,7 +3,7 @@
 #include <ostream>
 
 #include <ros/ros.h>
-#include <geometry_msgs/Pose.h>
+#include <mavros_msgs/PositionTarget.h>
 #include <fluid/core/operation.h>
 #include <fluid/core/client.h>
 #include <fluid/core/state_identifier.h>
@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "client_tracking");
     ros::NodeHandle nh;
 
-    geometry_msgs::Pose pose;
+    mavros_msgs::PositionTarget setpoint;
     bool initialized = false;
     float height = 1.0;
 
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
         rate.sleep();
     }
 
-    client.requestOperationToState(fluid::StateIdentifier::PositionFollow, pose, [](bool completed) {});
+    client.requestOperationToState(fluid::StateIdentifier::PositionFollow, setpoint, [](bool completed) {});
 
 
     std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();
@@ -44,10 +44,6 @@ int main(int argc, char** argv) {
         ros::spinOnce();
         rate.sleep();
     }
-
-    pose.position.x = 1;
-    pose.position.y = 1;
-    pose.position.z = 0;
 
     client.requestLand([](bool completed) {});
 

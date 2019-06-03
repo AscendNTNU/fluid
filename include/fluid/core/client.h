@@ -10,7 +10,7 @@
 #include <memory>
 
 #include <actionlib/client/simple_action_client.h>
-#include <geometry_msgs/Pose.h>
+#include <mavros_msgs/PositionTarget.h>
 
 #include <fluid/OperationAction.h>
 
@@ -37,7 +37,7 @@ class Client {
      * @brief      Waits for the timeout or the completion from the operation server.
      */
     void waitForResult(std::string identifier, 
-                       geometry_msgs::Pose target_pose,
+                       mavros_msgs::PositionTarget setpoint,
 		                   std::function<void(bool)> completion_handler);
 
   public:
@@ -65,11 +65,11 @@ class Client {
     void requestTakeOff(std::function<void (bool)> completion_handler);
 
      /**
-     * Issues a move request to a given pose.
+     * Issues a move request to a given setpoint.
      * 
      * @param completion_handler Fired when this operation has finished (or timed out) 
      */
-    void requestMove(geometry_msgs::Pose pose, std::function<void (bool)> completion_handler);
+    void requestMove(mavros_msgs::PositionTarget setpoint, std::function<void (bool)> completion_handler);
 
     /**
      * Issues a land request at the given position.
@@ -84,15 +84,15 @@ class Client {
     void requestPositionFollow();
 
     /**
-     * Requests an operation with a given target pose. This function will send a request to a server
+     * Requests an operation with a given setpoint. This function will send a request to a server
      * listening on the fluid operation domain. This function is asynchronous.
      *
      * @param identifier The state to traverse to.
-     * @param target_pose The target pose of the operation.
+     * @param setpoint The setpoint of the operation.
      * @param completion_handler Gets fired when the operation finished, includes a flag whether the operation finished
      *                           before timeout or not.
      */
-    void requestOperationToState(std::string identifier, geometry_msgs::Pose target_pose,
+    void requestOperationToState(std::string identifier, mavros_msgs::PositionTarget setpoint,
 			  std::function<void(bool)> completion_handler);
 };
 }

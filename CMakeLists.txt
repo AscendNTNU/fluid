@@ -8,11 +8,10 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         genmsg
         actionlib
-        tf2
 )
 
 add_action_files(DIRECTORY action FILES Operation.action)
-generate_messages(DEPENDENCIES geometry_msgs actionlib_msgs)
+generate_messages(DEPENDENCIES mavros_msgs actionlib_msgs)
 
 # Includes headers in include folder
 include_directories(include

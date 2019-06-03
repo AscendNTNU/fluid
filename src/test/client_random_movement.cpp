@@ -23,42 +23,42 @@ float xLength, yLength;
 std::shared_ptr<fluid::Client> client_ptr;
 
 bool initialPoseSet = false;
-geometry_msgs::Pose initialPose, pose, lastPose;
+mavros_msgs::PositionTarget initialSetpoint, setpoint, lastSetpoint;
 
 constexpr float height = 2.5;
 
 void runOperation(/* bool completed ignored for this purpose */) {
 
-    float x = initialPose.position.x + (-xLength + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(xLength * 2))));
-    float y = initialPose.position.y + (-yLength + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(yLength * 2))));
+    float x = initialSetpoint.position.x + (-xLength + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(xLength * 2))));
+    float y = initialSetpoint.position.y + (-yLength + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(yLength * 2))));
 
-    ROS_INFO_STREAM("Current pose: " << "(" << pose.position.x << ", " << pose.position.y << ", " << pose.position.z << ")");
-    ROS_INFO_STREAM("Next position: " << "(" << x << ", " << y << ", " << pose.position.z << ")");
+    ROS_INFO_STREAM("Current pose: " << "(" << setpoint.position.x << ", " << setpoint.position.y << ", " << setpoint.position.z << ")");
+    ROS_INFO_STREAM("Next position: " << "(" << x << ", " << y << ", " << setpoint.position.z << ")");
 
-    float yaw = atan2(y - lastPose.position.y, x - lastPose.position.x);
+    float yaw = atan2(y - lastSetpoint.position.y, x - lastSetpoint.position.x);
 
     tf2::Quaternion quaternion;
     quaternion.setRPY(0, 0, yaw);
 /*
-    pose.orientation.x = quaternion.x();
-    pose.orientation.y = quaternion.y();
-    pose.orientation.z = quaternion.z();
-    pose.orientation.w = quaternion.w();
+    setpoint.orientation.x = quaternion.x();
+    setpoint.orientation.y = quaternion.y();
+    setpoint.orientation.z = quaternion.z();
+    setpoint.orientation.w = quaternion.w();
 */
-    pose.position.x = x;
-    pose.position.y = y;
-    pose.position.z = height;
+    setpoint.position.x = x;
+    setpoint.position.y = y;
+    setpoint.position.z = height;
 
 
-    client_ptr->requestOperationToState(fluid::StateIdentifier::Move, pose,/* runOperation*/ [](bool completed) {});
+    client_ptr->requestOperationToState(fluid::StateIdentifier::Move, setpoint,/* runOperation*/ [](bool completed) {});
     /* [=] (bool completed) {
-        pose.position.x = x;
-        pose.position.y = y;
-        pose.position.z = height;
+        setpoint.position.x = x;
+        setpoint.position.y = y;
+        setpoint.position.z = height;
 
-        operation_client_ptr->requestOperation(fluid::OperationIdentifier::Move, pose, runOperation);
+        operation_client_ptr->requestOperation(fluid::OperationIdentifier::Move, setpoint, runOperation);
     
-        lastPose = pose;
+        lastPose = setpoint;
     });*/
 }
 
@@ -67,8 +67,8 @@ void poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
     if (!initialPoseSet && fabs(pose->pose.position.x) > 0.5) {
 
         initialPoseSet = true;
-        initialPose = pose->pose;
-        lastPose = initialPose;
+        initialSetpoint.position = pose->pose.position;
+        lastSetpoint = initialSetpoint;
     }
 }
 
@@ -94,8 +94,8 @@ int main(int argc, char** argv) {
     // Initialization and take off
     bool initialized = false;
     
-    pose.position.x = initialPose.position.x;
-    pose.position.y = initialPose.position.y;
+    setpoint.position.x = initialSetpoint.position.x;
+    setpoint.position.y = initialSetpoint.position.y;
 
     fluid::Client init_client(name_space, 60);
 

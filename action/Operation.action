@@ -1,11 +1,11 @@
 # The action goal
 std_msgs/String type
-geometry_msgs/Pose target_pose
+mavros_msgs/PositionTarget setpoint
 
 ---
 # Action result
-geometry_msgs/Pose final_pose
+mavros_msgs/PositionTarget final_position
 
 ---
 # Action feedback
-geometry_msgs/Pose current_pose
+mavros_msgs/PositionTarget current_position

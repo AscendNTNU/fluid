@@ -5,9 +5,6 @@
 #include <mavros_msgs/PositionTarget.h>
 #include <std_msgs/String.h>
 #include <fluid/OperationGoal.h>
-#include <tf2/transform_datatypes.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Matrix3x3.h>
 
 #include <cmath>
 #include <assert.h>
@@ -18,8 +15,8 @@
 #include "pose_util.h"
 
 fluid::Server::Server() : actionlib_server_(node_handle_, 
-                                                   "fluid_fsm_operation",
-                                                   false) {
+                                            "fluid_fsm_operation",
+                                            false) {
     
     actionlib_server_.registerGoalCallback(boost::bind(&Server::goalCallback, this));
     actionlib_server_.registerPreemptCallback(boost::bind(&Server::preemptCallback, this));
@@ -40,47 +37,33 @@ void fluid::Server::goalCallback() {
     }
 
     auto goal = actionlib_server_.acceptNewGoal();
-    geometry_msgs::Pose target_pose = goal->target_pose;
+    mavros_msgs::PositionTarget setpoint = goal->setpoint;
+
     std::string destination_identifier = goal->type.data;
 
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
     if (fluid::Core::minX != 0 || fluid::Core::maxX != 0) {
-        target_pose.position.x = std::max(fluid::Core::minX, std::min(target_pose.position.x, fluid::Core::maxX));
+        setpoint.position.x = std::max(fluid::Core::minX, std::min(setpoint.position.x, fluid::Core::maxX));
     }
 
     if (fluid::Core::minY != 0 || fluid::Core::maxY != 0) { 
-        target_pose.position.y = std::max(fluid::Core::minY, std::min(target_pose.position.y, fluid::Core::maxY));
+        setpoint.position.y = std::max(fluid::Core::minY, std::min(setpoint.position.y, fluid::Core::maxY));
     }
 
     if (fluid::Core::minZ != 0 || fluid::Core::maxZ != 0) {
-        target_pose.position.z = std::max(fluid::Core::minZ, std::min(target_pose.position.z, fluid::Core::maxZ));
+        setpoint.position.z = std::max(fluid::Core::minZ, std::min(setpoint.position.z, fluid::Core::maxZ));
     }
 
     // Update the status with the target pose
-    Core::getStatusPublisherPtr()->status.target_pose_x = target_pose.position.x;
-    Core::getStatusPublisherPtr()->status.target_pose_y = target_pose.position.y;
-    Core::getStatusPublisherPtr()->status.target_pose_z = target_pose.position.z;
+    Core::getStatusPublisherPtr()->status.target_pose_x = setpoint.position.x;
+    Core::getStatusPublisherPtr()->status.target_pose_y = setpoint.position.y;
+    Core::getStatusPublisherPtr()->status.target_pose_z = setpoint.position.z;
 
 
-    // The goal/request is sent with a geometry_pose, so we have to convert to position_target for mavros.
-    mavros_msgs::PositionTarget position_target;
-    position_target.position = target_pose.position;
+    bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose(), setpoint) >= fluid::Core::distance_completion_threshold;
 
-    tf2::Quaternion quat(target_pose.orientation.x, 
-                         target_pose.orientation.y, 
-                         target_pose.orientation.z, 
-                         target_pose.orientation.w);
-
-    double roll, pitch, yaw;
-    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-    // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
-    // it to zero. 
-    position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;
-
-
-    bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose(), position_target) >= fluid::Core::distance_completion_threshold;
-
+    ROS_INFO_STREAM(fluid::Core::getGraphPtr()->current_state_ptr->identifier);
     auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
     ROS_INFO_STREAM("New operation requested to transition to state: " << destination_identifier);
 
@@ -93,7 +76,7 @@ void fluid::Server::goalCallback() {
     ROS_INFO_STREAM("Will traverse through: " << stringstream.str());
 
 
-    next_operation_p_ = std::make_shared<fluid::Operation>(destination_identifier, position_target);
+    next_operation_p_ = std::make_shared<fluid::Operation>(destination_identifier, setpoint);
 
     new_operation_requested_ = true;
 }
