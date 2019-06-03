@@ -57,9 +57,9 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
 void fluid::State::obstacleAvoidanceCompletionCallback(const ascend_msgs::ObstacleAvoidanceCompletion& msg) {
 
     // Check whether the obstacle avoidance is returning completed on the current setpoint
-    if (msg.setpoint.position.x != setpoint.position.x || 
-        msg.setpoint.position.y != setpoint.position.y || 
-        msg.setpoint.position.z != setpoint.position.z) {
+    if (abs(msg.setpoint.position.x - setpoint.position.x) <= 0.01 || 
+        abs(msg.setpoint.position.y - setpoint.position.y) <= 0.01 || 
+        abs(msg.setpoint.position.z - setpoint.position.z) <= 0.01) {
         return;
     }
 
