@@ -12,9 +12,8 @@
 
 #include "state.h"
 #include "core.h"
-#include "operation_identifier.h"
 #include "state_identifier.h"
-
+#include "operation_identifier.h"
 
 namespace fluid {
 
@@ -27,15 +26,11 @@ namespace fluid {
         const std::string destination_state_identifier_;                        ///< The state the operation should
                                                                                 ///< transition to.
 
-        const std::string final_state_identifier_;                              ///< The state the operation should
-                                                                                ///< transition to after it has carried
-                                                                                ///< out the logic in the destination
-                                                                                ///< state. E.g. if destination state
-                                                                                ///< is set to a move state for a move
-                                                                                ///< operation, we want the operation
-                                                                                ///< to finish at a position hold
-                                                                                ///< state.
-
+        /** The states the operation should transition to after it has carried
+         *  out the logic in the destination state. E.g. if destination state
+         *  is set to a move state for a move operation, we want the operation
+         *  to finish at a position hold state. These states are all steady.
+         */
         const std::map<std::string, std::string> final_state_map_ = {
             {fluid::StateIdentifier::Init, fluid::StateIdentifier::Idle},
             {fluid::StateIdentifier::Idle, fluid::StateIdentifier::Idle},
@@ -46,26 +41,23 @@ namespace fluid {
             {fluid::StateIdentifier::Land, fluid::StateIdentifier::Idle},
         };
 
+
+
         public:
 
-            mavros_msgs::PositionTarget position_target; ///< Position target of the operation.
+        mavros_msgs::PositionTarget position_target;                ///< Position target of the operation.
 
         const std::string identifier;                               ///< Identifier of the operation.
 
         /**
-         * Sets up the operation with a destination state and a final state. The difference between them is that the
-         * destination state is the state the operation will transition to and carry out logic on, whereas final state
-         * is the state we want to be at after the operation. E.g. a move operation would want to be at a final state
-         * of position hold after a given move state.
+         * Sets up the operation. 
          *
          * @param identifier                     The identifier of the operation.
          * @param destination_state_identifier   The destination state identifier of the operation.
-         * @param final_state_identifier         The final state identifier.
          * @param position_target                The target position of this operation.
          */
         Operation(std::string identifier,
                   std::string destination_state_identifier,
-                  std::string final_state_identifier,
                   mavros_msgs::PositionTarget position_target);
 
 
@@ -74,13 +66,6 @@ namespace fluid {
         /**
          * Checks if the operation is valid from the current state. 
          * 
-         * This makes sure that some operations are not
-         * carried out given that they make no sense from the current state. E.g. doing any operation before
-         * everything is initialized or doing a land operation during take off.
-         * 
-         * This is overridden by subclasses which provide the logic given the current state and what is reasonable
-         * for the given operaiton. 
-         *
          * @param current_state_p       The current state.
          *
          * @return A flag determining the validation of the operation given the current state.
