@@ -26,6 +26,11 @@ namespace fluid {
         bool hasFinishedExecution() override;
 
         /**
+         * Overridden function. @see State::initialize
+         */
+        void initialize() override;
+
+        /**
          * Overridden function. @see State::tick
          */
         void tick() override;

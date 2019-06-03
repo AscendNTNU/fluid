@@ -33,6 +33,12 @@ bool fluid::MoveState::hasFinishedExecution() {
     return atYawTarget && atPositionTarget;
 }
 
+void fluid::MoveState::initialize() {
+    if (setpoint.position.z <= 0.1) {
+		setpoint.position.z = fluid::Core::default_height;
+	}
+}
+
 void fluid::MoveState::tick() {
     setpoint.type_mask = fluid::TypeMask::Default;
 }
