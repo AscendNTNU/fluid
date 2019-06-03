@@ -34,9 +34,12 @@ file(GLOB fluid_core_SRC "src/core/*.cpp")
 file(GLOB fluid_states_SRC "src/states/*.cpp")
 
 # Add the source files to the library
+
 add_library(${PROJECT_NAME}
             ${fluid_core_SRC}
             ${fluid_states_SRC})
+
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(fluid ${catkin_LIBRARIES})
 
