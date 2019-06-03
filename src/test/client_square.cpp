@@ -16,7 +16,7 @@ void foo() {
     pose.position.y = rand() % 10 - 5;
     pose.position.z = 1.0;
 
-    client.requestOperation(fluid::OperationIdentifier::MoveOriented, pose, [&](bool completed) {
+    client.requestOperationToState(fluid::StateIdentifier::Move, pose, [&](bool completed) {
         foo();
     });
 }
