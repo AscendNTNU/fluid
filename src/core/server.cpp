@@ -49,7 +49,28 @@ void fluid::Server::goalCallback() {
     geometry_msgs::Pose target_pose = goal->target_pose;
     std_msgs::String operation_identifier = goal->type;
 
-    ROS_INFO_STREAM("New operation requested: " << operation_identifier);
+    std::map<std::string, std::string> operation_state_identifier_map = {
+        {fluid::OperationIdentifier::Init, fluid::StateIdentifier::Init},
+        {fluid::OperationIdentifier::TakeOff, fluid::StateIdentifier::TakeOff},
+        {fluid::OperationIdentifier::Move, fluid::StateIdentifier::Move},
+        {fluid::OperationIdentifier::Land, fluid::StateIdentifier::Land},
+        {fluid::OperationIdentifier::PositionFollow, fluid::StateIdentifier::PositionFollow},
+    };
+
+    std::string destination = operation_state_identifier_map.at(operation_identifier.data);
+
+
+    auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination);
+
+    ROS_INFO_STREAM("New operation requested to transition to state: " << destination);
+
+    std::stringstream stringstream;
+
+    for (auto state : states) {
+        stringstream << state->identifier << " ";
+    }
+
+    ROS_INFO_STREAM("Will traverse through: " << stringstream.str());
 
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
@@ -86,13 +107,6 @@ void fluid::Server::goalCallback() {
     position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;
 
 
-    std::map<std::string, std::string> operation_state_identifier_map = {
-        {fluid::OperationIdentifier::Init, fluid::StateIdentifier::Init},
-        {fluid::OperationIdentifier::TakeOff, fluid::StateIdentifier::TakeOff},
-        {fluid::OperationIdentifier::Move, fluid::StateIdentifier::Move},
-        {fluid::OperationIdentifier::Land, fluid::StateIdentifier::Land},
-        {fluid::OperationIdentifier::PositionFollow, fluid::StateIdentifier::PositionFollow},
-    };
 
     // Point the next operation pointer to the newly initialized operation.
 /*    if (operation_identifier.data == fluid::OperationIdentifier::Init) {
@@ -190,7 +204,7 @@ void fluid::Server::start() {
                 last_state_p_->perform([&]() -> bool {
                     // We abort the execution of the current state if there is a new operation.
                     return new_operation_requested_;
-                });
+                }, false);
             }
         }
 
