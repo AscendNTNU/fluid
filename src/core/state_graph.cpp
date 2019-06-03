@@ -31,7 +31,7 @@ fluid::StateGraph::StateGraph() {
 
     std::vector<fluid::Edge<std::shared_ptr<fluid::State>>> edges;
 
-    current_state_ptr = std::dynamic_pointer_cast<fluid::State>(init_state);
+    current_state_ptr = init_state;
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(init_state, idle_state));
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(idle_state, take_off_state));
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(take_off_state, hold_state));
