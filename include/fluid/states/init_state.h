@@ -37,7 +37,7 @@ namespace fluid {
         /**
          * Overridden function. @see State::perform
          */
-        void perform(std::function<bool (void)> shouldAbort);
+        void perform(std::function<bool (void)> shouldAbort, bool ignore_finshed_execution) override;
     };
 }
 
