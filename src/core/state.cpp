@@ -66,14 +66,14 @@ void fluid::State::obstacleAvoidanceCompletionCallback(const ascend_msgs::Obstac
     }
 }
 
-void fluid::State::perform(std::function<bool(void)> shouldAbort) {
+void fluid::State::perform(std::function<bool(void)> shouldAbort, bool ignore_finshed_execution) {
 
     ros::Rate rate(Core::refresh_rate);
     obstacle_avoidance_completed_ = false;
 
     initialize();
 
-    while (ros::ok() && !hasFinishedExecution() && !shouldAbort()) {
+    while (ros::ok() && (!ignore_finshed_execution && !hasFinishedExecution()) && !shouldAbort()) {
         tick();
 
         setpoint_publisher.publish(setpoint);
