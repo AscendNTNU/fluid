@@ -5,7 +5,7 @@
 #include "hold_state.h"
 
 bool fluid::HoldState::hasFinishedExecution() {
-    return false;
+    return true;
 }
 
 void fluid::HoldState::initialize() {
