@@ -15,7 +15,7 @@
 #include <ostream>
 
 #include <fluid/core/client.h>
-#include <fluid/operations/operation_identifier.h>
+#include <fluid/core/operation_identifier.h>
 #include <fluid/core/state.h>
 
 std::string name_space;

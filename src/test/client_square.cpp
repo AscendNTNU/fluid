@@ -2,7 +2,24 @@
 #include <geometry_msgs/Pose.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <fluid/core/client.h>
-#include <fluid/operations/operation_identifier.h>
+#include <fluid/core/operation_identifier.h>
+
+#include <random>
+
+fluid::Client client("drone_1", 15);
+
+void foo() {
+
+    geometry_msgs::Pose pose;
+
+    pose.position.x = rand() % 10 - 5;
+    pose.position.y = rand() % 10 - 5;
+    pose.position.z = 1.0;
+
+    client.requestOperation(fluid::OperationIdentifier::MoveOriented, pose, [&](bool completed) {
+        foo();
+    });
+}
 
 int main(int argc, char** argv) {
 
@@ -15,19 +32,15 @@ int main(int argc, char** argv) {
     float startX = 0.0;
     float startY = 0.0;
 
-    fluid::Client client("drone_1", 10);
-    
-    client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
+    pose.position.x = pose.position.y = 5;
+
+    client.requestOperation(fluid::OperationIdentifier::Land, pose, [&](bool completed) {
         if (completed) {
+            initialized = completed;
 
-            geometry_msgs::Pose take_off_pose;
-            take_off_pose.position.x = startX;
-            take_off_pose.position.y = startY;
-            take_off_pose.position.z = height;
+            pose.position.x = pose.position.y = 0;
 
-            client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
-                initialized = completed;
-            });
+            client.requestOperation(fluid::OperationIdentifier::Land, pose, [](bool completed) {});
         }
     });
 
@@ -48,8 +61,11 @@ int main(int argc, char** argv) {
     pose.position.y = startY;
     pose.position.z = height;
     
+    //foo();
+    
+    /*
     client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
-        /*if (completed) {
+        if (completed) {
                 pose.position.x = startX + distance;
                 pose.position.y = startY + distance;
                 pose.position.z = height;
@@ -82,8 +98,8 @@ int main(int argc, char** argv) {
                         });
                     }
                 });
-        }*/
-    });
+        }
+    });*/
 
     ros::Rate rate(1);
 

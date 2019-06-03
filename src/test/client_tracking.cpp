@@ -6,7 +6,7 @@
 #include <geometry_msgs/Pose.h>
 #include <fluid/core/operation.h>
 #include <fluid/core/client.h>
-#include <fluid/operations/operation_identifier.h>
+#include <fluid/core/operation_identifier.h>
 
 int main(int argc, char** argv) {
 
