@@ -15,13 +15,8 @@
 
 #include "server.h"
 #include "operation_identifier.h"
-#include "init_operation.h"
-#include "move_operation.h"
-#include "land_operation.h"
-#include "take_off_operation.h"
-#include "move_oriented_operation.h"
-#include "position_follow_operation.h" 
 #include "core.h"
+#include "pose_util.h"
 
 fluid::Server::Server() : actionlib_server_(node_handle_, 
                                                    "fluid_fsm_operation",
@@ -56,21 +51,6 @@ void fluid::Server::goalCallback() {
         {fluid::OperationIdentifier::Land, fluid::StateIdentifier::Land},
         {fluid::OperationIdentifier::PositionFollow, fluid::StateIdentifier::PositionFollow},
     };
-
-    std::string destination = operation_state_identifier_map.at(operation_identifier.data);
-
-
-    auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination);
-
-    ROS_INFO_STREAM("New operation requested to transition to state: " << destination);
-
-    std::stringstream stringstream;
-
-    for (auto state : states) {
-        stringstream << state->identifier << " ";
-    }
-
-    ROS_INFO_STREAM("Will traverse through: " << stringstream.str());
 
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
@@ -107,7 +87,23 @@ void fluid::Server::goalCallback() {
     // it to zero. 
     position_target.yaw = std::isnan(yaw) ? 0.0 : yaw;
 
-    next_operation_p_ = std::make_shared<fluid::Operation>(operation_identifier.data, operation_state_identifier_map[operation_identifier.data], "", position_target);
+
+    bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose(), position_target) >= fluid::Core::distance_completion_threshold;
+
+    std::string destination = operation_state_identifier_map.at(operation_identifier.data);
+    auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination, shouldIncludeMove);
+    ROS_INFO_STREAM("New operation requested to transition to state: " << destination);
+
+    std::stringstream stringstream;
+
+    for (auto state : states) {
+        stringstream << state->identifier << " ";
+    }
+
+    ROS_INFO_STREAM("Will traverse through: " << stringstream.str());
+
+
+    next_operation_p_ = std::make_shared<fluid::Operation>(operation_identifier.data, operation_state_identifier_map[operation_identifier.data], position_target);
 
     new_operation_requested_ = true;
 }
