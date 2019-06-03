@@ -13,7 +13,7 @@
 
 
 void fluid::Client::waitForResult(
-    std::string operation_identifier,
+    std::string identifier,
     geometry_msgs::Pose target_pose,
     std::function<void (bool)> completion_handler) {
 
@@ -24,7 +24,7 @@ void fluid::Client::waitForResult(
     fluid::OperationGoal goal;
     goal.target_pose = target_pose;
     std_msgs::String type;
-    type.data = std::move(operation_identifier);
+    type.data = std::move(identifier);
     goal.type = type;
     actionlib_client.sendGoal(goal);
 
@@ -42,7 +42,7 @@ void fluid::Client::requestTakeOff(double height, std::function<void (bool)> com
     geometry_msgs::Pose pose;
     pose.position.z = height;
 
-    requestOperation(fluid::OperationIdentifier::TakeOff, pose, completion_handler);    
+    requestOperationToState(fluid::StateIdentifier::TakeOff, pose, completion_handler);    
 }
 
 void fluid::Client::requestTakeOff(std::function<void (bool)> completion_handler) {
@@ -51,18 +51,30 @@ void fluid::Client::requestTakeOff(std::function<void (bool)> completion_handler
     requestTakeOff(0, completion_handler);
 }
 
+void fluid::Client::requestMove(geometry_msgs::Pose pose, std::function<void (bool)> completion_handler) {
+    requestOperationToState(fluid::StateIdentifier::Move, pose, completion_handler);
+}
+
 void fluid::Client::requestLand(std::function<void (bool)> completion_handler) {
     // We send in an empty pose here as the state machine will automatically land
     // at the current position.
     geometry_msgs::Pose pose;
-    requestOperation(fluid::OperationIdentifier::Land, pose, completion_handler);
+    requestOperationToState(fluid::StateIdentifier::Land, pose, completion_handler);
 }
 
-void fluid::Client::requestOperation(
-    std::string operation_identifier,
+void fluid::Client::requestPositionFollow() {
+    // We send in an empty pose here as the state machine will fetch the target
+    // to follow. We also ignore the completion handler as the position follow
+    // state will just keep on running until we request another state.
+    geometry_msgs::Pose pose;
+    requestOperationToState(fluid::StateIdentifier::PositionFollow, pose, [](bool completed) {});
+}
+
+void fluid::Client::requestOperationToState(
+    std::string identifier,
 	geometry_msgs::Pose target_pose,
     std::function<void (bool)> completion_handler) {
 
-    std::thread thread(&Client::waitForResult, this, operation_identifier, target_pose, completion_handler);
+    std::thread thread(&Client::waitForResult, this, identifier, target_pose, completion_handler);
     thread.detach();
 }

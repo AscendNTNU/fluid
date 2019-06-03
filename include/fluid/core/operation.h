@@ -13,7 +13,6 @@
 #include "state.h"
 #include "core.h"
 #include "state_identifier.h"
-#include "operation_identifier.h"
 
 namespace fluid {
 
@@ -47,17 +46,13 @@ namespace fluid {
 
         mavros_msgs::PositionTarget position_target;                ///< Position target of the operation.
 
-        const std::string identifier;                               ///< Identifier of the operation.
-
         /**
          * Sets up the operation. 
          *
-         * @param identifier                     The identifier of the operation.
          * @param destination_state_identifier   The destination state identifier of the operation.
          * @param position_target                The target position of this operation.
          */
-        Operation(std::string identifier,
-                  std::string destination_state_identifier,
+        Operation(std::string destination_state_identifier,
                   mavros_msgs::PositionTarget position_target);
 
 
@@ -88,6 +83,11 @@ namespace fluid {
          * This function also sets the current state of the state graph to the state passed as the argument.
          */
         void transitionToState(std::shared_ptr<fluid::State> state_p);
+
+        /**
+         * @return The destination state this operation will traverse to.
+         */
+        std::string getDestinationStateIdentifier() const;
 
         /**
          * @return The state the operation should end at.

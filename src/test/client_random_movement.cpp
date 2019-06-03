@@ -15,7 +15,7 @@
 #include <ostream>
 
 #include <fluid/core/client.h>
-#include <fluid/core/operation_identifier.h>
+#include <fluid/core/state_identifier.h>
 #include <fluid/core/state.h>
 
 std::string name_space;
@@ -50,7 +50,7 @@ void runOperation(/* bool completed ignored for this purpose */) {
     pose.position.z = height;
 
 
-    client_ptr->requestOperation(fluid::OperationIdentifier::Move, pose,/* runOperation*/ [](bool completed) {});
+    client_ptr->requestOperationToState(fluid::StateIdentifier::Move, pose,/* runOperation*/ [](bool completed) {});
     /* [=] (bool completed) {
         pose.position.x = x;
         pose.position.y = y;
@@ -99,14 +99,9 @@ int main(int argc, char** argv) {
 
     fluid::Client init_client(name_space, 60);
 
-    init_client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
+    init_client.requestTakeOff(height, [&](bool completed) {
         if (completed) {
-
-            pose.position.z = height;
-
-            client_ptr->requestOperation(fluid::OperationIdentifier::TakeOff, pose, [&](bool completed) {
-                initialized = completed;
-            });
+            initialized = completed;
         }
     });
 

@@ -14,10 +14,8 @@
 #include "transition.h"
 #include "pose_util.h"
 
-fluid::Operation::Operation(std::string identifier,
-                            std::string destination_state_identifier,
+fluid::Operation::Operation(std::string destination_state_identifier,
                             mavros_msgs::PositionTarget position_target) :
-                            identifier(std::move(identifier)),
                             destination_state_identifier_(std::move(destination_state_identifier)),
                             position_target(std::move(position_target)) {}
 
@@ -25,7 +23,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
     // Check if it makes sense to carry out this operation given the current state.
     if (!validateOperationFromCurrentState(fluid::Core::getGraphPtr()->current_state_ptr)) {
-        ROS_FATAL_STREAM("Operation: " << identifier << "is not a valid operation from current state: " <<
+        ROS_FATAL_STREAM("Operation to: " << destination_state_identifier_ << "is not a valid operation from current state: " <<
                          fluid::Core::getGraphPtr()->current_state_ptr->identifier);
         completionHandler(false);
         return;
@@ -109,6 +107,9 @@ bool fluid::Operation::validateOperationFromCurrentState(std::shared_ptr<fluid::
     return fluid::Core::getGraphPtr()->areConnected(current_state_ptr->identifier, destination_state_identifier_);
 }
 
+std::string fluid::Operation::getDestinationStateIdentifier() const {
+    return destination_state_identifier_;
+}
 
 std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() const {
     return fluid::Core::getGraphPtr()->getStateWithIdentifier(final_state_map_.at(destination_state_identifier_));

@@ -14,7 +14,6 @@
 #include <algorithm>
 
 #include "server.h"
-#include "operation_identifier.h"
 #include "core.h"
 #include "pose_util.h"
 
@@ -42,15 +41,7 @@ void fluid::Server::goalCallback() {
 
     auto goal = actionlib_server_.acceptNewGoal();
     geometry_msgs::Pose target_pose = goal->target_pose;
-    std_msgs::String operation_identifier = goal->type;
-
-    std::map<std::string, std::string> operation_state_identifier_map = {
-        {fluid::OperationIdentifier::Init, fluid::StateIdentifier::Init},
-        {fluid::OperationIdentifier::TakeOff, fluid::StateIdentifier::TakeOff},
-        {fluid::OperationIdentifier::Move, fluid::StateIdentifier::Move},
-        {fluid::OperationIdentifier::Land, fluid::StateIdentifier::Land},
-        {fluid::OperationIdentifier::PositionFollow, fluid::StateIdentifier::PositionFollow},
-    };
+    std::string destination_identifier = goal->type.data;
 
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
@@ -90,9 +81,8 @@ void fluid::Server::goalCallback() {
 
     bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose(), position_target) >= fluid::Core::distance_completion_threshold;
 
-    std::string destination = operation_state_identifier_map.at(operation_identifier.data);
-    auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination, shouldIncludeMove);
-    ROS_INFO_STREAM("New operation requested to transition to state: " << destination);
+    auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
+    ROS_INFO_STREAM("New operation requested to transition to state: " << destination_identifier);
 
     std::stringstream stringstream;
 
@@ -103,7 +93,7 @@ void fluid::Server::goalCallback() {
     ROS_INFO_STREAM("Will traverse through: " << stringstream.str());
 
 
-    next_operation_p_ = std::make_shared<fluid::Operation>(operation_identifier.data, operation_state_identifier_map[operation_identifier.data], position_target);
+    next_operation_p_ = std::make_shared<fluid::Operation>(destination_identifier, position_target);
 
     new_operation_requested_ = true;
 }
@@ -132,7 +122,7 @@ void fluid::Server::start() {
         // Execute the operation if there is any
         if (current_operation_p_) {
 
-            fluid::Core::getStatusPublisherPtr()->status.current_operation = current_operation_p_->identifier;
+            fluid::Core::getStatusPublisherPtr()->status.current_operation = current_operation_p_->getDestinationStateIdentifier();
 
             current_operation_p_->perform(
 

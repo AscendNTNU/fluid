@@ -6,7 +6,7 @@
 #include <geometry_msgs/Pose.h>
 #include <fluid/core/operation.h>
 #include <fluid/core/client.h>
-#include <fluid/core/operation_identifier.h>
+#include <fluid/core/state_identifier.h>
 
 int main(int argc, char** argv) {
 
@@ -19,17 +19,9 @@ int main(int argc, char** argv) {
 
     fluid::Client client("drone_1", 60);
     
-    client.requestOperation(fluid::OperationIdentifier::Init, pose, [&](bool completed) {
+    client.requestTakeOff(height, [&](bool completed) {
         if (completed) {
-
-            geometry_msgs::Pose take_off_pose;
-            take_off_pose.position.x = 1;
-            take_off_pose.position.y = 1;
-            take_off_pose.position.z = height;
-
-            client.requestOperation(fluid::OperationIdentifier::TakeOff, take_off_pose, [&](bool completed) {
-                initialized = completed;
-            });
+            initialized = completed;
         }
     });
 
@@ -40,7 +32,7 @@ int main(int argc, char** argv) {
         rate.sleep();
     }
 
-    client.requestOperation(fluid::OperationIdentifier::PositionFollow, pose, [](bool completed) {});
+    client.requestOperationToState(fluid::StateIdentifier::PositionFollow, pose, [](bool completed) {});
 
 
     std::chrono::time_point<std::chrono::system_clock> startTime = std::chrono::system_clock::now();
@@ -57,7 +49,7 @@ int main(int argc, char** argv) {
     pose.position.y = 1;
     pose.position.z = 0;
 
-    client.requestOperation(fluid::OperationIdentifier::Land, pose, [](bool completed) {});
+    client.requestLand([](bool completed) {});
 
     ros::spin();
 

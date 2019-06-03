@@ -2,7 +2,7 @@
 #include <geometry_msgs/Pose.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <fluid/core/client.h>
-#include <fluid/core/operation_identifier.h>
+#include <fluid/core/state_identifier.h>
 
 #include <random>
 
@@ -34,13 +34,9 @@ int main(int argc, char** argv) {
 
     pose.position.x = pose.position.y = 5;
 
-    client.requestOperation(fluid::OperationIdentifier::Land, pose, [&](bool completed) {
+    client.requestTakeOff(height, [&](bool completed) {
         if (completed) {
             initialized = completed;
-
-            pose.position.x = pose.position.y = 0;
-
-            client.requestOperation(fluid::OperationIdentifier::Land, pose, [](bool completed) {});
         }
     });
 
