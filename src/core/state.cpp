@@ -11,10 +11,12 @@
 
 fluid::State::State(std::string identifier,
                     std::string px4_mode,
+                    bool steady,
                     bool should_check_obstacle_avoidance_completion) : 
 
 					identifier(identifier),
                     px4_mode(px4_mode),
+                    steady_(steady),
 					pose_subscriber_(node_handle_.subscribe("mavros/local_position/pose", 
                                      Core::message_queue_size, 
                                      &State::poseCallback, 
@@ -66,14 +68,14 @@ void fluid::State::obstacleAvoidanceCompletionCallback(const ascend_msgs::Obstac
     }
 }
 
-void fluid::State::perform(std::function<bool(void)> shouldAbort, bool ignore_finshed_execution) {
+void fluid::State::perform(std::function<bool(void)> shouldAbort, bool should_halt_if_steady) {
 
     ros::Rate rate(Core::refresh_rate);
     obstacle_avoidance_completed_ = false;
 
     initialize();
 
-    while (ros::ok() && (!ignore_finshed_execution && !hasFinishedExecution()) && !shouldAbort()) {
+    while (ros::ok() && ((should_halt_if_steady && steady_) && !hasFinishedExecution()) && !shouldAbort()) {
         tick();
 
         setpoint_publisher.publish(setpoint);
