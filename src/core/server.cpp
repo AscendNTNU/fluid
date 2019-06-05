@@ -63,7 +63,6 @@ void fluid::Server::goalCallback() {
 
     bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose(), setpoint) >= fluid::Core::distance_completion_threshold;
 
-    ROS_INFO_STREAM(fluid::Core::getGraphPtr()->current_state_ptr->identifier);
     auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
     ROS_INFO_STREAM("New operation requested to transition to state: " << destination_identifier);
 
