@@ -1,7 +1,5 @@
-- Migrate status message to use position target and point types
 - Update readme and documentation
 - Rethink move oriented with obstacle avoidance pipeline
-- Kp a bit too high for z velocity in OA?
 - How should timeouts affect operations? Maybe if the operation times out, we should stop in the midst of the operation and got to the steady state.
 - init, check if we got local pose.
-- If we land at a position and then move again the drone will jump, fix this, has probably something to do with steady states.
+- Set GND_THR_IDLE
