@@ -26,6 +26,8 @@ void fluid::Client::waitForResult(
     std_msgs::String type;
     type.data = std::move(identifier);
     goal.type = type;
+    goal.timeout.data = timeout_value_;
+
     actionlib_client.sendGoal(goal);
 
     bool finished_before_timeout = actionlib_client.waitForResult(ros::Duration(timeout_value_));

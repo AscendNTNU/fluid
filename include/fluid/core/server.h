@@ -36,6 +36,9 @@ namespace fluid {
         bool new_operation_requested_ = false;                       ///< Determines whether a new operation was
                                                                      ///< requested.
 
+        ros::Duration timeout_;                                      ///< Timout from action lib, specifies how long
+                                                                     ///< we will have the operation running.
+
     public:
 
         /**

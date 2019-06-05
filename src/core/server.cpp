@@ -38,8 +38,8 @@ void fluid::Server::goalCallback() {
 
     auto goal = actionlib_server_.acceptNewGoal();
     mavros_msgs::PositionTarget setpoint = goal->setpoint;
-
     std::string destination_identifier = goal->type.data;
+    timeout_ = ros::Duration(goal->timeout.data);
 
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
@@ -104,11 +104,15 @@ void fluid::Server::start() {
         // Execute the operation if there is any
         if (current_operation_p_) {
 
+            ros::Time start_time = ros::Time::now();
+
             fluid::Core::getStatusPublisherPtr()->status.current_operation = current_operation_p_->getDestinationStateIdentifier();
 
             current_operation_p_->perform(
 
-                [&]() -> bool { return new_operation_requested_; },
+                [&]() -> bool { 
+                    return new_operation_requested_ || (ros::Time::now() - start_time > timeout_); 
+                },
 
                 [&](bool completed) {
                     // We completed the operation and want to end at the final state of the operation (e.g. hold)
