@@ -44,15 +44,18 @@ void fluid::Server::goalCallback() {
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
     if (fluid::Core::min.x != 0 || fluid::Core::max.x != 0) {
-        setpoint.position.x = std::max(fluid::Core::min.x, std::min(setpoint.position.x, fluid::Core::max.x));
+        setpoint.position.x = std::max(fluid::Core::min.x, 
+                                       std::min(static_cast<float>(setpoint.position.x), fluid::Core::max.x));
     }
 
     if (fluid::Core::min.y != 0 || fluid::Core::max.y != 0) { 
-        setpoint.position.y = std::max(fluid::Core::min.y, std::min(setpoint.position.y, fluid::Core::max.y));
+        setpoint.position.y = std::max(fluid::Core::min.y, 
+                                       std::min(static_cast<float>(setpoint.position.y), fluid::Core::max.y));
     }
 
     if (fluid::Core::min.z != 0 || fluid::Core::max.z != 0) {
-        setpoint.position.z = std::max(fluid::Core::min.z, std::min(setpoint.position.z, fluid::Core::max.z));
+        setpoint.position.z = std::max(fluid::Core::min.z, 
+                                       std::min(static_cast<float>(setpoint.position.z), fluid::Core::max.z));
     }
 
     Core::getStatusPublisherPtr()->status.setpoint = setpoint;
