@@ -30,7 +30,7 @@ namespace fluid {
          *  is set to a move state for a move operation, we want the operation
          *  to finish at a position hold state. These states are all steady.
          */
-        const std::map<std::string, std::string> final_state_map_ = {
+        const std::map<std::string, std::string> steady_state_map_ = {
             {fluid::StateIdentifier::Init, fluid::StateIdentifier::Idle},
             {fluid::StateIdentifier::Idle, fluid::StateIdentifier::Idle},
             {fluid::StateIdentifier::TakeOff, fluid::StateIdentifier::Hold},
