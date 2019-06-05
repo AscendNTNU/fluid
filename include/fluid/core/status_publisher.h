@@ -5,7 +5,7 @@
 
 #include <ros/ros.h>
 
-#include <ascend_msgs/FluidFsmStatus.h>
+#include <ascend_msgs/FluidStatus.h>
 
 namespace fluid {
 
@@ -19,7 +19,7 @@ namespace fluid {
 
 	public:
 
-		ascend_msgs::FluidFsmStatus status;									///< Represents the state of the FSM.
+		ascend_msgs::FluidStatus status;									///< Represents the state of the FSM.
 
 
 		/**

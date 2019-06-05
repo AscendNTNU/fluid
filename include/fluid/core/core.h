@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include <geometry_msgs/Point32.h>
+
 namespace fluid {
 
 	class Core {
@@ -46,7 +48,7 @@ namespace fluid {
 																			///< should set itself into offboard
 																			///< automatically or not.
 
-		static double minX, minY, minZ, maxX, maxY, maxZ;					///< The bounding box restricting the
+		static geometry_msgs::Point32 min, max;								///< The bounding box restricting the
 																			///< movement of the drone. When all
 																			///< values are set to 0 the drone can
 																			///< move freely.

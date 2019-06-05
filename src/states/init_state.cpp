@@ -9,7 +9,6 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
-#include <ascend_msgs/FluidFsmStatus.h>
 
 #include "core.h"
 #include "mavros_state_link.h"
@@ -26,17 +25,6 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool igno
 
     ros::Rate rate(Core::refresh_rate);
     ros::NodeHandle node_handle_;
-
-    ascend_msgs::FluidFsmStatus status;
-
-    status.min_x = fluid::Core::minX;
-    status.min_y = fluid::Core::minY;
-    status.min_z = fluid::Core::minZ;
-    status.max_x = fluid::Core::maxX;
-    status.max_y = fluid::Core::maxY;
-    status.max_z = fluid::Core::maxZ;
-
-    fluid::Core::getStatusPublisherPtr()->status = status;
 
     // Establishing contact through mavros with Pixhawk.
 
@@ -64,6 +52,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool igno
 
     for (int i = Core::refresh_rate*2; ros::ok() && i > 0; --i) {
         setpoint_publisher.publish(setpoint);
+        fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint;
         fluid::Core::getStatusPublisherPtr()->publish();
         ros::spinOnce();
         rate.sleep();

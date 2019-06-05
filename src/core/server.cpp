@@ -43,22 +43,19 @@ void fluid::Server::goalCallback() {
 
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
-    if (fluid::Core::minX != 0 || fluid::Core::maxX != 0) {
-        setpoint.position.x = std::max(fluid::Core::minX, std::min(setpoint.position.x, fluid::Core::maxX));
+    if (fluid::Core::min.x != 0 || fluid::Core::max.x != 0) {
+        setpoint.position.x = std::max(fluid::Core::min.x, std::min(setpoint.position.x, fluid::Core::max.x));
     }
 
-    if (fluid::Core::minY != 0 || fluid::Core::maxY != 0) { 
-        setpoint.position.y = std::max(fluid::Core::minY, std::min(setpoint.position.y, fluid::Core::maxY));
+    if (fluid::Core::min.y != 0 || fluid::Core::max.y != 0) { 
+        setpoint.position.y = std::max(fluid::Core::min.y, std::min(setpoint.position.y, fluid::Core::max.y));
     }
 
-    if (fluid::Core::minZ != 0 || fluid::Core::maxZ != 0) {
-        setpoint.position.z = std::max(fluid::Core::minZ, std::min(setpoint.position.z, fluid::Core::maxZ));
+    if (fluid::Core::min.z != 0 || fluid::Core::max.z != 0) {
+        setpoint.position.z = std::max(fluid::Core::min.z, std::min(setpoint.position.z, fluid::Core::max.z));
     }
 
-    // Update the status with the target pose
-    Core::getStatusPublisherPtr()->status.target_pose_x = setpoint.position.x;
-    Core::getStatusPublisherPtr()->status.target_pose_y = setpoint.position.y;
-    Core::getStatusPublisherPtr()->status.target_pose_z = setpoint.position.z;
+    Core::getStatusPublisherPtr()->status.setpoint = setpoint;
 
 
     bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose(), setpoint) >= fluid::Core::distance_completion_threshold;

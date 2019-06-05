@@ -39,7 +39,9 @@ void fluid::Transition::perform() {
 
             destination_state_p->setCurrentPose(source_state_p->getCurrentPose());
             state_is_set = succeeded;
-            Core::getStatusPublisherPtr()->status.px4_mode = destination_state_p->px4_mode;
+            
+            fluid::Core::getStatusPublisherPtr()->status.setpoint = destination_state_p->setpoint;
+            fluid::Core::getStatusPublisherPtr()->status.px4_mode = destination_state_p->px4_mode;
         });
 
         // Publish poses continuously so PX4 won't complain, have to have tick here so the type mask is 
@@ -47,6 +49,7 @@ void fluid::Transition::perform() {
         source_state_p->tick();
         source_state_p->setpoint_publisher.publish(source_state_p->setpoint);
 
+        fluid::Core::getStatusPublisherPtr()->status.setpoint = source_state_p->setpoint;
         fluid::Core::getStatusPublisherPtr()->publish();
 
         ros::spinOnce();

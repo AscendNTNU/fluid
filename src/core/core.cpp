@@ -9,12 +9,7 @@ bool fluid::Core::auto_set_offboard = false;
 std::shared_ptr<fluid::StateGraph> fluid::Core::graph_p_;
 std::shared_ptr<fluid::StatusPublisher> fluid::Core::status_publisher_p_;
 
-double fluid::Core::minX = 0.0;
-double fluid::Core::minY = 0.0;
-double fluid::Core::minZ = 0.0;
-double fluid::Core::maxX = 0.0;
-double fluid::Core::maxY = 0.0;
-double fluid::Core::maxZ = 0.0;
+geometry_msgs::Point32 fluid::Core::min, fluid::Core::max;
 
 double fluid::Core::distance_completion_threshold = 0.3;
 double fluid::Core::velocity_completion_threshold = 0.1;

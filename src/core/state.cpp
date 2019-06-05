@@ -79,6 +79,7 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort, bool should_ha
         tick();
 
         setpoint_publisher.publish(setpoint);
+        fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint;
         fluid::Core::getStatusPublisherPtr()->publish();
 
         ros::spinOnce();

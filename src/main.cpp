@@ -34,6 +34,9 @@ int main(int argc, char** argv) {
     node_handle.getParam("default_height", fluid::Core::default_height);
     node_handle.getParam("position_follow_height", fluid::Core::positionFollowHeight);
 
+    fluid::Core::getStatusPublisherPtr()->status.min = fluid::Core::min;
+    fluid::Core::getStatusPublisherPtr()->status.min = fluid::Core::max;
+
     fluid::Server server;
     server.start();
 
