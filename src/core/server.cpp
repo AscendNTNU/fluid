@@ -110,15 +110,21 @@ void fluid::Server::start() {
 
             current_operation_p_->perform(
 
-                [&]() -> bool { 
+                [&]() -> bool {
                     return new_operation_requested_ || (ros::Time::now() - start_time > timeout_); 
                 },
 
                 [&](bool completed) {
                     // We completed the operation and want to end at the final state of the operation (e.g. hold)
                     // state for move. One can think of this step as making sure that the state machine is at a
-                    // state where it's easy to execute a new operation.
-                    last_state_p_ = current_operation_p_->getFinalStatePtr();
+                    // state where it's easy to execute a new operation. If we did not complete the operation has
+                    // already transitioned to a steady state and we just set the last state to that state.s
+                    if (completed) {
+                        last_state_p_ = current_operation_p_->getFinalStatePtr();
+                    }
+                    else {
+                        last_state_p_ = fluid::Core::getGraphPtr()->current_state_ptr;
+                    }
 
 
                     // Will notify the operation client what the outcome of the operation was. This will end up
@@ -146,7 +152,6 @@ void fluid::Server::start() {
 
             if (last_state_p_) {
 
-                fluid::Core::getStatusPublisherPtr()->status.current_state = last_state_p_->identifier;
                 last_state_p_->perform([&]() -> bool {
                     // We abort the execution of the current state if there is a new operation.
                     return new_operation_requested_;
