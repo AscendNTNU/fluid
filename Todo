@@ -1,5 +1,4 @@
 - Update readme and documentation
 - Rethink move oriented with obstacle avoidance pipeline
-- How should timeouts affect operations? Maybe if the operation times out, we should stop in the midst of the operation and got to the steady state.
-- init, check if we got local pose.
+- How should timeouts affect operations? Maybe if the operation times out, we should stop in the midst of the operation and get to the steady state.
 - Set GND_THR_IDLE
