@@ -14,9 +14,9 @@
 #include <chrono>
 #include <ostream>
 
-#include <fluid/core/client.h>
-#include <fluid/core/state_identifier.h>
-#include <fluid/core/state.h>
+#include <fluid/client.h>
+#include <fluid/state_identifier.h>
+#include <fluid/state.h>
 
 std::string name_space;
 float xLength, yLength;

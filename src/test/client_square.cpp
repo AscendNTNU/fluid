@@ -1,7 +1,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
-#include <fluid/core/client.h>
-#include <fluid/core/state_identifier.h>
+#include <fluid/client.h>
+#include <fluid/state_identifier.h>
 
 #include <random>
 
@@ -12,12 +12,10 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh;
 
     fluid::Client client("drone_1", 60);
-
-    mavros_msgs::PositionTarget setpoint;
-    setpoint.position.x = 6;
-
-    client.requestOperationToState(fluid::StateIdentifier::Land, setpoint, [&](bool completed) {
-
+    
+    client.requestTakeOff([&](bool completed) {
+            mavros_msgs::PositionTarget setpoint;
+            setpoint.position.x = 6;
             setpoint.position.y = 6;
             client.requestMove(setpoint, [](bool completed) {});        
     });
@@ -60,7 +58,7 @@ int main(int argc, char** argv) {
 
 
 
-
+/*
 
 
     geometry_msgs::Pose pose;
@@ -87,7 +85,7 @@ int main(int argc, char** argv) {
     pose.position.y = startY;
     pose.position.z = height;
     
-    
+    */
     /*
     client.requestOperation(fluid::OperationIdentifier::Move, pose, [&](bool completed) {
         if (completed) {

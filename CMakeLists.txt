@@ -22,20 +22,19 @@ catkin_package(
 
 # Includes headers in include folder
 include_directories(include
-                   
-include/fluid/core
+
+include/fluid
 include/fluid/states
-include/fluid/tools
 ${catkin_INCLUDE_DIRS}
 )
 
 # Retrieve all the source files using GLOB
-file(GLOB fluid_core_SRC "src/core/*.cpp")
+file(GLOB fluid_SRC "src/*.cpp")
 file(GLOB fluid_states_SRC "src/states/*.cpp")
 
 # Add the source files to the library
 add_library(${PROJECT_NAME}
-            ${fluid_core_SRC}
+            ${fluid_SRC}
             ${fluid_states_SRC})
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -57,8 +56,8 @@ install(DIRECTORY include/${PROJECT_NAME}
 
 #########################################################################################
 
-add_executable(server src/main.cpp)
-add_executable(setpoint_publisher src/setpoint_publisher_node.cpp)
+add_executable(server src/nodes/main.cpp)
+add_executable(setpoint_publisher src/nodes/setpoint_publisher_node.cpp)
 add_executable(client_square src/test/client_square.cpp)
 add_executable(client_tracking src/test/client_tracking.cpp)
 add_executable(tracking_publisher src/test/tracking_pose_publisher.cpp)

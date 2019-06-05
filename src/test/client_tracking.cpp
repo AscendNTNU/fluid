@@ -4,9 +4,9 @@
 
 #include <ros/ros.h>
 #include <mavros_msgs/PositionTarget.h>
-#include <fluid/core/operation.h>
-#include <fluid/core/client.h>
-#include <fluid/core/state_identifier.h>
+#include <fluid/operation.h>
+#include <fluid/client.h>
+#include <fluid/state_identifier.h>
 
 int main(int argc, char** argv) {
 
