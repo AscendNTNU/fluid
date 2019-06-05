@@ -22,6 +22,12 @@ void fluid::Transition::perform() {
     }
 
     if (source_state_p->px4_mode == destination_state_p->px4_mode) {
+
+        fluid::Core::getStatusPublisherPtr()->status.current_state = destination_state_p->identifier;
+        fluid::Core::getStatusPublisherPtr()->status.setpoint = destination_state_p->setpoint;
+
+        fluid::Core::getGraphPtr()->current_state_ptr = destination_state_p;
+        
         return;
     }
 
@@ -31,18 +37,11 @@ void fluid::Transition::perform() {
 
     bool state_is_set = false;
 
+    fluid::Core::getStatusPublisherPtr()->status.current_state = source_state_p->identifier;
+    fluid::Core::getGraphPtr()->current_state_ptr = source_state_p;
+
     // Go through the ros loop and try to set the state
     while(ros::ok() && !state_is_set) {
-            
-        mavros_state_link_.attemptToSetState(destination_state_p->px4_mode, [&](bool succeeded) {
-            // State set succeeded, break from loop
-
-            destination_state_p->setCurrentPose(source_state_p->getCurrentPose());
-            state_is_set = succeeded;
-            
-            fluid::Core::getStatusPublisherPtr()->status.setpoint = destination_state_p->setpoint;
-            fluid::Core::getStatusPublisherPtr()->status.px4_mode = destination_state_p->px4_mode;
-        });
 
         // Publish poses continuously so PX4 won't complain, have to have tick here so the type mask is 
         // set up correctly
@@ -52,6 +51,20 @@ void fluid::Transition::perform() {
         fluid::Core::getStatusPublisherPtr()->status.setpoint = source_state_p->setpoint;
         fluid::Core::getStatusPublisherPtr()->publish();
 
+        mavros_state_link_.attemptToSetState(destination_state_p->px4_mode, [&](bool succeeded) {
+            // State set succeeded, break from loop
+
+            destination_state_p->setCurrentPose(source_state_p->getCurrentPose());
+            state_is_set = succeeded;
+            
+            fluid::Core::getStatusPublisherPtr()->status.current_state = destination_state_p->identifier;
+            fluid::Core::getStatusPublisherPtr()->status.setpoint = destination_state_p->setpoint;
+            fluid::Core::getStatusPublisherPtr()->status.px4_mode = destination_state_p->px4_mode;
+
+            fluid::Core::getGraphPtr()->current_state_ptr = destination_state_p;
+        });
+
+       
         ros::spinOnce();
         rate.sleep();
     }

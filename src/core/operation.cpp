@@ -98,8 +98,6 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 void fluid::Operation::transitionToState(std::shared_ptr<fluid::State> state_p) {
     fluid::Transition transition(fluid::Core::getGraphPtr()->current_state_ptr, state_p);
     transition.perform();
-    fluid::Core::getGraphPtr()->current_state_ptr = state_p;
-    fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
 }
 
 bool fluid::Operation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) const {
