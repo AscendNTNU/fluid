@@ -64,21 +64,20 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
         if (shouldAbort()) {
 
-            // We have to abort, so we transition to the final state and set the current pose as the final state's
-            // pose.
-            std::shared_ptr<fluid::State> final_state_p = getFinalStatePtr();
+            // We have to abort, so we transition to the steady state for the current state.
+            std::shared_ptr<fluid::State> steady_state_ptr = fluid::Core::getGraphPtr()->getStateWithIdentifier(steady_state_map_.at(state_p->identifier));
 
             geometry_msgs::Quaternion poseQuat = state_p->getCurrentPose().pose.orientation;
             tf2::Quaternion tf2Quat(poseQuat.x, poseQuat.y, poseQuat.z, poseQuat.w);
             double roll = 0, pitch = 0, yaw = 0;
             tf2::Matrix3x3(tf2Quat).getRPY(roll, pitch, yaw);
 
-            final_state_p->setpoint.position = state_p->getCurrentPose().pose.position;
+            steady_state_ptr->setpoint.position = state_p->getCurrentPose().pose.position;
             // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
             // it to zero. 
-            final_state_p->setpoint.yaw = static_cast<float>(std::isnan(yaw) ? 0.0 : yaw);
+            steady_state_ptr->setpoint.yaw = static_cast<float>(std::isnan(yaw) ? 0.0 : yaw);
 
-            transitionToState(final_state_p);
+            transitionToState(steady_state_ptr);
             completionHandler(false);
 
             return;
@@ -112,7 +111,7 @@ std::string fluid::Operation::getDestinationStateIdentifier() const {
 }
 
 std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() const {
-    return fluid::Core::getGraphPtr()->getStateWithIdentifier(final_state_map_.at(destination_state_identifier_));
+    return fluid::Core::getGraphPtr()->getStateWithIdentifier(steady_state_map_.at(destination_state_identifier_));
 }
 
 std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() const {    
