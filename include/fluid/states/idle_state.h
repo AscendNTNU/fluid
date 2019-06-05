@@ -14,7 +14,7 @@ namespace fluid {
      */
     class IdleState: public State {
 
-        const ros::Duration halt_interval_ = ros::Duration(1.0);        ///< The amoun of time to stay at idle before
+        const ros::Duration halt_interval_ = ros::Duration(2.0);        ///< The amoun of time to stay at idle before
                                                                         ///< saying we're finished executing this state.
 
         ros::Time initial_time_;                                        ///< The time the idle state starts up.
