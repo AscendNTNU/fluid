@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 add_action_files(DIRECTORY action)
-generate_messages(DEPENDENCIES mavros_msgs actionlib_msgs)
+generate_messages(DEPENDENCIES mavros_msgs geometry_msgs actionlib_msgs)
 
 catkin_package(
         INCLUDE_DIRS include
