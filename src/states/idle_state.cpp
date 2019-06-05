@@ -5,7 +5,12 @@
 #include "idle_state.h"
 
 bool fluid::IdleState::hasFinishedExecution() {
-    return true;
+
+    return ros::Time::now() - initial_time_ > halt_interval_;
+}
+
+void fluid::IdleState::initialize() {
+    initial_time_ = ros::Time::now();    
 }
 
 void fluid::IdleState::tick() {
