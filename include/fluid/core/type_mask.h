@@ -21,6 +21,7 @@
 #define FORCE 	   		(1 << 9)     	// Force in af vector flag
 #define IGNORE_YAW 		(1 << 10)
 #define IGNORE_YAW_RATE (1 << 11)
+#define IDLE 			0x4000
 
 namespace fluid {
 
@@ -30,7 +31,7 @@ namespace fluid {
                                      IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ |
                               	 	 IGNORE_YAW_RATE;
               	 	 
-		constexpr uint16_t Idle    = IGNORE_PX | IGNORE_PY | IGNORE_PZ;
+		constexpr uint16_t Idle    = IDLE;
 	}
 }
 
