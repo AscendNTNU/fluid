@@ -11,15 +11,18 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "client_square");
     ros::NodeHandle nh;
 
-    fluid::Client client("drone_1", 60);
-    
-    client.requestTakeOff([&](bool completed) {
-            mavros_msgs::PositionTarget setpoint;
-            setpoint.position.x = 6;
-            setpoint.position.y = 6;
-            client.requestMove(setpoint, [](bool completed) {});        
-    });
+    fluid::Client client("drone_1", 120);
 
+    mavros_msgs::PositionTarget setpoint;
+    setpoint.position.x = 3;
+
+    client.requestTakeOff([&](bool completed) {});
+
+/*
+    client.requestOperationToState(fluid::StateIdentifier::Land, setpoint, [](bool completed) {
+        ROS_INFO_STREAM("Got to position (3, 0, 0): " << completed);
+    });
+*/
     ros::Rate rate(1);
 
     while (ros::ok()) {
