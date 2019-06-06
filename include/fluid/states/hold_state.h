@@ -19,7 +19,7 @@ namespace fluid {
         /**
          * Initializes the hold state.
          */
-        explicit HoldState() : State(fluid::StateIdentifier::Hold, fluid::PX4::Offboard, true, true) {}
+        explicit HoldState() : State(fluid::StateIdentifier::Hold, fluid::PX4::Offboard, true, false) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
