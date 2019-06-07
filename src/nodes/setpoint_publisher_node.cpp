@@ -36,6 +36,8 @@ int main(int argc, char** argv) {
 
     while (ros::ok()) {
 
+	position_target.header.stamp = ros::Time::now();
+
         if (position_is_set) {
             publisher.publish(position_target);
         }
