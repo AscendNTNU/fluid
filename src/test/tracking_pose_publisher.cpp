@@ -14,14 +14,16 @@ int main(int argc, char** argv) {
     ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>("obstacle_avoidance/target_position", 100);
 
     mavros_msgs::PositionTarget setpoint;
+    setpoint.position.x = 5;
+    setpoint.position.z = 1;
 
     ros::Rate rate(5);
 
     double theta = 0.0;
 
-    setpoint.position.z = 1.0;
-
     while (ros::ok()) {
+
+	setpoint.header.stamp = ros::Time::now();
 
         publisher.publish(setpoint);
 

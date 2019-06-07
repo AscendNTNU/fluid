@@ -11,18 +11,28 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "client_square");
     ros::NodeHandle nh;
 
-    fluid::Client client("drone_1", 120);
+    fluid::Client client("", 180);
 
     mavros_msgs::PositionTarget setpoint;
-    setpoint.position.x = 3;
+    setpoint.position.x = 0;
+    setpoint.position.z = 1.0;
 
-    client.requestTakeOff([&](bool completed) {});
-
-/*
-    client.requestOperationToState(fluid::StateIdentifier::Land, setpoint, [](bool completed) {
-        ROS_INFO_STREAM("Got to position (3, 0, 0): " << completed);
+    client.requestTakeOff(0.8, [&](bool completed) {
+	/*client.requestMove(setpoint, [&] (bool completed) {
+		setpoint.position.y = 1;
+		client.requestMove(setpoint, [&] (bool completed) {
+			setpoint.position.x = 0;
+			setpoint.position.y = 1;
+			client.requestMove(setpoint, [&] (bool completed) {
+				setpoint.position.x = 0;
+				setpoint.position.y = 0;
+				client.requestOperationToState(fluid::StateIdentifier::Land, setpoint, [&] (bool completed) {});
+			});
+		});
+	});*/
     });
-*/
+
+
     ros::Rate rate(1);
 
     while (ros::ok()) {
