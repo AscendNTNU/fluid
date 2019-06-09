@@ -16,6 +16,7 @@ namespace fluid {
                                          Move           = "move",
                                          Land           = "land",
                                          PositionFollow = "position_follow";
+                                         Rotate         = "rotate";
     }
 
     namespace PX4 {
