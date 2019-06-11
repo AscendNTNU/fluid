@@ -12,7 +12,7 @@ namespace fluid {
     /** \class RotateState 
      *  \brief Represents the state where the is rotating at the current position.
      */
-    class RotateState: public State {
+    class RotateState : public State {
 
     public:
 
