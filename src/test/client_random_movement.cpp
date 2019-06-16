@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
 
     ros::init(argc, argv, name_space + "_random_movement_client");
     ros::NodeHandle node_handle;
-    client_ptr = std::make_shared<fluid::Client>(name_space, 16);
+    client_ptr = std::make_shared<fluid::Client>(name_space);
     ros::Rate rate(20);
 
     // Retrieve initial pose 
@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
     setpoint.position.x = initialSetpoint.position.x;
     setpoint.position.y = initialSetpoint.position.y;
 
-    fluid::Client init_client(name_space, 60);
+    fluid::Client init_client(name_space);
 
     init_client.requestTakeOff(height, [&](bool completed) {
         if (completed) {

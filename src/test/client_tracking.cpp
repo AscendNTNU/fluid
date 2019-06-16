@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     bool initialized = false;
     float height = 1.0;
 
-    fluid::Client client("drone_1", 60);
+    fluid::Client client("drone_1");
     
     client.requestTakeOff(height, [&](bool completed) {
         if (completed) {
