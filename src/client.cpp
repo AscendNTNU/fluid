@@ -23,9 +23,7 @@ void fluid::Client::waitForResult(
 
     fluid::OperationGoal goal;
     goal.setpoint = setpoint;
-    std_msgs::String type;
-    type.data = std::move(identifier);
-    goal.type = type;
+    goal.destination_state_identifier.data = std::move(identifier);
 
     actionlib_client.sendGoal(goal);
 

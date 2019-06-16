@@ -1,5 +1,5 @@
 # The action goal
-std_msgs/String type
+std_msgs/String destination_state_identifier
 mavros_msgs/PositionTarget setpoint
 
 ---
