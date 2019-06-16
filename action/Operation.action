@@ -1,7 +1,6 @@
 # The action goal
 std_msgs/String type
 mavros_msgs/PositionTarget setpoint
-std_msgs/Float64 timeout
 
 ---
 # Action result
