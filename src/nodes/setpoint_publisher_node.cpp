@@ -1,5 +1,9 @@
 //
 // Created by simengangstad on 29.04.19.
+// 
+// This node is a safety measure in case the main thread in the FSM is blocked and
+// we therefore don't will publish setpoints to PX4 regularly. It grabs the last 
+// published setpoint from the FSM and publishes that.
 //
 
 #include <ros/ros.h>
