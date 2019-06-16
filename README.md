@@ -1,15 +1,15 @@
 # Fluid FSM
 
 
-# Installation and use
+## Installation and use
 
-## What you need
+### What you need
 
 1. ROS Kinetic: http://wiki.ros.org/kinetic/Installation 
 2. MAVROS: https://dev.px4.io/en/ros/mavros_installation.html
 3. Control simulator (or plain Gazebo with PX4): https://github.com/AscendNTNU/control_simulator
 
-## Run instructions for gazebo simulator
+### Run instructions for gazebo simulator
 
 1. Make sure you have MAVROS installed and PX4 and gazebo built. 
 2. Clone fluid into your catkin workspace in the src-folder.
@@ -25,7 +25,7 @@ If you're running control_simulator you have to wait until EKF vision fuse is se
 https://confluence.ascendntnu.no/pages/viewpage.action?pageId=21955671
 
 
-## Run instructions for physical drone with Pixhawk flight controller
+### Run instructions for physical drone with Pixhawk flight controller
 
 1. Clone fluid into the catkin workspace on the drone. 
 2. Run `source devel/setup.bash` and `catkin build` at root of the catkin workspace.
@@ -34,7 +34,7 @@ https://confluence.ascendntnu.no/pages/viewpage.action?pageId=21955671
 5. Launch your client node.
 
 
-# Architecture
+## Architecture
 
 Fluid FSM is built around a client-server architecture, where a client requests the server to do something. In other words, we (the client) ask the drone (the server) to do **operations** which consist of a series of *states*. 
 
@@ -42,7 +42,7 @@ It also relies on a graph data structure where all the states in the finite stat
 state to another easy by traversing through the graph. In that way, if we want to move to a certain point, the FSM knows that it has to initialize,
 take off, rotate in the movement direction before it moves. This makes the FSM very flexible and reduces complexity on the client side. 
 
-## Different states
+### Different states
 
 The different states are:
 - Init
@@ -59,7 +59,7 @@ The drone will do certain states relative to the current position. E.g. init, ta
 the drone to move to a certain position from ground, it will take off from the current position rotate so it's facing the
 direction of the movement and then move. 
 
-## Flow
+### Flow
 
 The flow consist of: 
 
@@ -76,7 +76,30 @@ If the operation failed somewhere along the path (if for example another operati
 failed.
 
 
-# Writing clients - example
+### Operations
+
+You can issue a range of operations from a client, all specified in `include/fluid/client.h`. These are:
+
+```cpp
+requestTakeOff(double height, std::function<void (bool)> completion_handler);
+
+requestTakeOff(std::function<void (bool)> completion_handler);
+
+requestMove(mavros_msgs::PositionTarget setpoint, std::function<void (bool)> completion_handler);
+
+requestLand(std::function<void (bool)> completion_handler);
+
+requestPositionFollow();
+
+requestOperationToState(std::string identifier, mavros_msgs::PositionTarget setpoint, std::function<void(bool)> completion_handler);
+```
+
+The one request which is different from the rest is `requestOperationToState`, which gives the client more control if it only wants to
+execute certain states. E.g. if it wants to request an init and wait for some time before doing something else. If `requestTakeOff` is 
+called in that case the FSM would just go through init -> idle -> take off -> hold and not stop on the way.
+
+
+## Writing clients - example
 
 ```cpp
 #include <ros/ros.h>
