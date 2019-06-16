@@ -1,4 +1,6 @@
-# Fluid FSM Blueprint
+Simen Gangstad 16/06/19: This document states the initial thoughts of the FSM, it is not meant as a an accurate reference. 
+
+
 
 ## How to read this document
 References to sources are given with e.g. (1, 2). Where the first number in the tuple is a reference to the source
@@ -149,7 +151,6 @@ end up at the operation. This should not happen of course, as the state graph sh
 every valid transition in the graph is also valid in PX4. But if an error occurs, there should be a set of methods for
 dealing with them. E.g.:
 - Wait and try after a short interval
-- **TODO: More here**
 
 ### Sources
 1. Marco Della Vedova, *Robotics Finite State Machines* - http://robot.unipv.it/toolleeo/teaching/docs_robotics/fsm.pdf

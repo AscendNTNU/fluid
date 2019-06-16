@@ -1,3 +1,6 @@
+Simen Gangstad 16/06/19: This document states the initial thoughts of the FSM, it is not meant as a an accurate reference. 
+
+
 # Mavros link blueprint   
    
 In order to communicate with PX4 fluid will utilize Mavros. The key aspects of that communication is state setting
