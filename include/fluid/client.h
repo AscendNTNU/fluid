@@ -30,9 +30,6 @@ class Client {
 
     const std::string name_space;                 ///< The namespace of the client, have to correspond to the server's namespace.
 
-    const double timeout_value_;                  ///< The time the the client will wait for a response from
-                          				                ///< the server
-
     /**
      * @brief      Waits for the timeout or the completion from the operation server.
      */
@@ -45,9 +42,8 @@ class Client {
     /** Initializes the client with a timeout value.
      *
      * @param name_sspace The namespace of the client server pair, this has to correspond to the server's namespace.
-     * @param timeout_value The time the operation client waits for a response from the operation server.
      */
-    Client(std::string name_space, double timeout_value) : name_space(name_space), timeout_value_(timeout_value) {}
+    Client(std::string name_space) : name_space(name_space) {}
 
     /**
      * Issues a take off request to the given height.
