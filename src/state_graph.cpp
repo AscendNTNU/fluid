@@ -15,6 +15,7 @@
 #include "hold_state.h"
 #include "move_state.h"
 #include "position_follow_state.h"
+#include "rotate_state.h"
 
 fluid::StateGraph::StateGraph() {
 
@@ -27,6 +28,7 @@ fluid::StateGraph::StateGraph() {
     std::shared_ptr<fluid::State> land_state = std::make_shared<fluid::LandState>();
     std::shared_ptr<fluid::State> hold_state = std::make_shared<fluid::HoldState>();
     std::shared_ptr<fluid::State> move_state = std::make_shared<fluid::MoveState>();
+    std::shared_ptr<fluid::State> rotate_state = std::make_shared<fluid::RotateState>();
     std::shared_ptr<fluid::State> position_follow_state = std::make_shared<fluid::PositionFollowState>();
 
     std::vector<fluid::Edge<std::shared_ptr<fluid::State>>> edges;
@@ -35,7 +37,8 @@ fluid::StateGraph::StateGraph() {
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(init_state, idle_state));
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(idle_state, take_off_state));
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(take_off_state, hold_state));
-    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(hold_state, move_state));
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(hold_state, rotate_state));
+    edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(rotate_state, move_state));
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(move_state, hold_state));
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(hold_state, land_state));
     edges.emplace_back(fluid::Edge<std::shared_ptr<fluid::State>>(land_state, idle_state));

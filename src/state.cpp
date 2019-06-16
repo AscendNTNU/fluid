@@ -59,7 +59,8 @@ void fluid::State::obstacleAvoidanceCompletionCallback(const ascend_msgs::Obstac
     // Check whether the obstacle avoidance is returning completed on the current setpoint
     if (abs(msg.setpoint.position.x - setpoint.position.x) >= 0.01 || 
         abs(msg.setpoint.position.y - setpoint.position.y) >= 0.01 || 
-        abs(msg.setpoint.position.z - setpoint.position.z) >= 0.01) {
+        abs(msg.setpoint.position.z - setpoint.position.z) >= 0.01 ||
+        abs(msg.setpoint.yaw - setpoint.yaw) >= 0.01) {
         return;
     }
 
@@ -86,7 +87,8 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort, bool should_ha
         rate.sleep();
 
         if (should_check_obstacle_avoidance_completion_ && obstacle_avoidance_completed_) {
-            // Obstacle avoidance reported that we've come as far as we can in this state            
+            // Obstacle avoidance reported that we've come as far as we can in this state 
+            ROS_INFO_STREAM(identifier << ": " << "OA completed");
             break;
         }        
     }

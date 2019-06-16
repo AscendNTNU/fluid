@@ -5,6 +5,8 @@
 #include "operation.h"
 
 #include <utility>
+#include <algorithm>
+#include <cmath>
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -44,6 +46,38 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         return;
     }
 
+    // Set the setpoint for all the states to the position target.
+    // We can do this as most states are relative to the current position.
+    for (auto state : path) {
+        state->setpoint = position_target;
+    }
+
+    float yaw = position_target.yaw;
+
+    // If we have to move, we want the rotate state to rotate in that direction and all succeeding states to also be in
+    // that yaw.
+    if (shouldIncludeMove) {
+        float dx = position_target.position.x - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.x;
+        float dy = position_target.position.y - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.y;
+
+        yaw = atan2(dy, dx);
+
+        // Go through states after rotate and append the yaw to all of them so we don't snap back to the 
+        // setpoint yaw
+
+        // Retrieve the iterator for rotate in the path
+        auto iterator = std::find_if(path.begin(), path.end(), [] (const std::shared_ptr<fluid::State>& state) -> bool {
+            return state->identifier == fluid::StateIdentifier::Rotate;
+        });
+
+        // Go through all states after rotate and set the yaw pointing in the direction we want to move.
+        while (iterator != path.end()) {
+            (*iterator)->setpoint.yaw = yaw;
+            iterator++;
+        }
+    }
+
+
     // This will also only fire for operations that consist of more than one state (every operation other than init).
     // And in that case we transition to the next state in the path after the start state.
     if (fluid::Core::getGraphPtr()->current_state_ptr->identifier != destination_state_identifier_) {
@@ -53,8 +87,6 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     for (int index = 0; index < path.size(); index++) {
 
         std::shared_ptr<fluid::State> state_p = path[index];
-        
-        state_p->setpoint = position_target;
         
         fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
         fluid::Core::getStatusPublisherPtr()->publish();
@@ -90,6 +122,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
     std::shared_ptr<fluid::State> final_state_p = getFinalStatePtr();
     final_state_p->setpoint = position_target;
+    final_state_p->setpoint.yaw = yaw;
 
     transitionToState(final_state_p);
     completionHandler(true);

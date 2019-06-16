@@ -37,6 +37,7 @@ namespace fluid {
             {fluid::StateIdentifier::Move, fluid::StateIdentifier::Hold},
             {fluid::StateIdentifier::Hold, fluid::StateIdentifier::Hold},
             {fluid::StateIdentifier::PositionFollow, fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::Rotate, fluid::StateIdentifier::Hold},
             {fluid::StateIdentifier::Land, fluid::StateIdentifier::Idle},
         };
 
