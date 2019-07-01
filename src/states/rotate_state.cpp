@@ -1,5 +1,5 @@
 //
-// Created by simengangstad on 11.10.18.
+// Created by simengangstad on 09.06.19.
 //
 
 #include <tf2/transform_datatypes.h>
@@ -7,11 +7,11 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
 
-#include "move_state.h"
+#include "rotate_state.h"
 #include "pose_util.h"
 #include "core.h"
 
-bool fluid::MoveState::hasFinishedExecution() {
+bool fluid::RotateState::hasFinishedExecution() {
     bool atPositionTarget = PoseUtil::distanceBetween(current_pose_, setpoint) < fluid::Core::distance_completion_threshold && 
     	   				 	std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
@@ -33,12 +33,12 @@ bool fluid::MoveState::hasFinishedExecution() {
     return atYawTarget && atPositionTarget;
 }
 
-void fluid::MoveState::initialize() {
-    if (setpoint.position.z <= 0.1) {
-		setpoint.position.z = fluid::Core::default_height;
-	}
+void fluid::RotateState::initialize() {
+    setpoint.position.x = getCurrentPose().pose.position.x;
+    setpoint.position.y = getCurrentPose().pose.position.y;
+    setpoint.position.z = getCurrentPose().pose.position.z;
 }
 
-void fluid::MoveState::tick() {
+void fluid::RotateState::tick() {
     setpoint.type_mask = fluid::TypeMask::Default;
 }

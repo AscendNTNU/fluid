@@ -1,21 +1,21 @@
 <launch>
   <arg name="fcu_url"/>
   <arg name="px4_id"/>
-  <arg name="refresh_rate" default="20" />
-  <arg name="message_queue_size" default="100" />
   <arg name="auto_arm" default="false"/>
-  <arg name="auto_set_offboard" default="false"/>
+  <arg name="auto_offboard" default="false"/>
   <arg name="setpoint_subscription_topic" default="fluid_fsm/setpoint"/>
-  <arg name="setpoint_publish_topic" default="mavros/setpoint_raw/local"/>
+  <arg name="setpoint_publish_topic" default="obstacle_avoidance/target_position"/>
 
  <!-- obstacle_avoidance/target_position -->
  <!-- mavros/setpoint_raw/local -->
 
-  <rosparam command="load" file="$(find fluid_fsm)/params.yaml" />
+  <rosparam command="load" file="$(find fluid)/params.yaml" />
 
-  <node name="server" pkg="fluid_fsm" type="server" output="screen" args="$(arg refresh_rate) $(arg message_queue_size) 
-      $(arg auto_arm) $(arg auto_set_offboard)"/>
-  <node name="setpoint_publisher" pkg="fluid_fsm" type="setpoint_publisher" output="screen" args="$(arg refresh_rate) $(arg setpoint_subscription_topic) $(arg setpoint_publish_topic)"/>
+  <param name="auto_arm" value="$(arg auto_arm)"/>
+  <param name="auto_offboard" value="$(arg auto_offboard)"/>
+
+  <node name="fluid_server" pkg="fluid" type="server" output="screen"/>
+  <node name="setpoint_publisher" pkg="fluid" type="setpoint_publisher" output="screen" args="$(arg setpoint_subscription_topic) $(arg setpoint_publish_topic)"/>
 
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url" value="$(arg fcu_url)"/>

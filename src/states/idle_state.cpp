@@ -2,16 +2,20 @@
 // Created by simengangstad on 11.10.18.
 //
 
-#include "../../include/states/idle_state.h"
-#include "../../include/mavros/type_mask.h"
+#include "idle_state.h"
 
 bool fluid::IdleState::hasFinishedExecution() {
-    return false;
+
+    return ros::Time::now() - initial_time_ > halt_interval_;
+}
+
+void fluid::IdleState::initialize() {
+    initial_time_ = ros::Time::now();    
 }
 
 void fluid::IdleState::tick() {
-    position_target.type_mask = fluid::TypeMask::Idle;
-	position_target.position.x = 0.0;
-	position_target.position.y = 0.0;
-    position_target.position.z = 0.0;
+    setpoint.type_mask = fluid::TypeMask::Idle;
+	setpoint.position.x = 0.0;
+	setpoint.position.y = 0.0;
+    setpoint.position.z = 0.0;
 }

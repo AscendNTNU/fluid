@@ -3,17 +3,25 @@
 //
 
 
-#include "../../include/states/take_off_state.h"
-#include "../../include/tools/pose_util.h"
-#include "../../include/mavros/type_mask.h"
-
+#include "take_off_state.h"
+#include "pose_util.h"
+#include "core.h"
 bool fluid::TakeOffState::hasFinishedExecution() {
-    return PoseUtil::distanceBetween(current_pose_, position_target) < 0.3 && 
-    	   std::abs(getCurrentTwist().twist.linear.x) < 0.05 && 
-    	   std::abs(getCurrentTwist().twist.linear.y) < 0.05 && 
-    	   std::abs(getCurrentTwist().twist.linear.z) < 0.05;
+    return PoseUtil::distanceBetween(current_pose_, setpoint) < 0.1 &&
+    	   std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold && 
+    	   std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
+    	   std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
+}
+
+void fluid::TakeOffState::initialize() {
+    setpoint.position.x = getCurrentPose().pose.position.x;
+    setpoint.position.y = getCurrentPose().pose.position.y;
+
+	if (setpoint.position.z <= 0.1) {
+		setpoint.position.z = fluid::Core::default_height;
+	}
 }
 
 void fluid::TakeOffState::tick() {
-    position_target.type_mask = fluid::TypeMask::Default;
+    setpoint.type_mask = fluid::TypeMask::Default;
 }

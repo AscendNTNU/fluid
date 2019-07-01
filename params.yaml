@@ -1,9 +1,19 @@
-minX: 0.0
-minY: 0.0
-minZ: 0.0
+refresh_rate: 20
+message_queue_size: 10
+auto_arm: false
+auto_offboard: false
 
-maxX: 0.0
-maxY: 0.0
-maxZ: 0.0
+min_z: 0.0
+min_y: 0.0
+min_z: 0.0
 
-positionFollowHeight: 2.3
+max_z: 0.0
+max_y: 0.0
+max_z: 0.0
+
+distance_completion_threshold: 0.3
+velocity_completion_threshold: 0.1
+yaw_completion_threshold: 0.2
+default_height: 1.0
+
+position_follow_height: 2.3
