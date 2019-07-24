@@ -27,8 +27,9 @@ bool fluid::RotateState::hasFinishedExecution() {
     // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
     // it to zero. 
     yaw = std::isnan(yaw) ? 0.0 : yaw;
+    const auto yaw_error = setpoint.yaw - yaw;
 
-    bool atYawTarget = std::abs(setpoint.yaw - yaw) < fluid::Core::yaw_completion_threshold; 
+    bool atYawTarget = std::abs(std::atan2(std::sin(yaw_error), std::cos(yaw_error))) < fluid::Core::yaw_completion_threshold; 
 
     return atYawTarget && atPositionTarget;
 }

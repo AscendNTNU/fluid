@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     fluid::Client client("");
 
     mavros_msgs::PositionTarget setpoint;
-    setpoint.position.x = 6;
+    setpoint.position.x = 8;
     setpoint.position.z = 0.0;
 
     client.requestOperationToState(fluid::StateIdentifier::Land, setpoint, [](bool completed) { });
