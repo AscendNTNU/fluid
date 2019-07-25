@@ -3,7 +3,7 @@
   <arg name="px4_id"/>
   <arg name="auto_arm" default="false"/>
   <arg name="auto_offboard" default="false"/>
-  <arg name="setpoint_subscription_topic" default="fluid_fsm/setpoint"/>
+  <arg name="setpoint_subscription_topic" default="fluid/setpoint"/>
   <arg name="setpoint_publish_topic" default="obstacle_avoidance/target_position"/>
 
  <!-- obstacle_avoidance/target_position -->
