@@ -139,7 +139,7 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
             includes_move = true;
         }
     }
-    
+   
     std::reverse(states_in_plan.begin(), states_in_plan.end());
 
     // If we should include a move and the path include a state after hold, we have to include a move state.
@@ -149,7 +149,8 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
             return state->identifier == fluid::StateIdentifier::Hold;
         });
 
-        if (iterator != states_in_plan.end() && iterator + 1 != states_in_plan.end()) {
+        if (iterator != states_in_plan.end()) {
+            iterator = states_in_plan.insert(iterator + 1, getStateWithIdentifier(fluid::StateIdentifier::Rotate));
             states_in_plan.insert(iterator + 1, getStateWithIdentifier(fluid::StateIdentifier::Move));
         }
     }
