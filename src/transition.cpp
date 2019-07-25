@@ -46,7 +46,7 @@ void fluid::Transition::perform() {
         // Publish poses continuously so PX4 won't complain, have to have tick here so the type mask is 
         // set up correctly
         source_state_p->tick();
-        source_state_p->setpoint_publisher.publish(source_state_p->setpoint);
+        source_state_p->publishSetpoint();
 
         fluid::Core::getStatusPublisherPtr()->status.setpoint = source_state_p->setpoint;
         fluid::Core::getStatusPublisherPtr()->publish();
