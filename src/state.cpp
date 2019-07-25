@@ -25,7 +25,7 @@ fluid::State::State(std::string identifier,
                                       Core::message_queue_size,
                                       &State::twistCallback,
                                       this)),
-                    setpoint_publisher(node_handle_.advertise<mavros_msgs::PositionTarget>("fluid_fsm/setpoint", Core::message_queue_size)),
+                    setpoint_publisher(node_handle_.advertise<ascend_msgs::ObstacleAvoidanceSetpoint>("fluid/setpoint", Core::message_queue_size)),
                     obstacle_avoidance_completion_subscriber_(node_handle_.subscribe("obstacle_avoidance/completion", 
                                                               Core::message_queue_size, 
                                                               &State::obstacleAvoidanceCompletionCallback, 
@@ -69,6 +69,17 @@ void fluid::State::obstacleAvoidanceCompletionCallback(const ascend_msgs::Obstac
     }
 }
 
+void fluid::State::publishSetpoint() {
+    ascend_msgs::ObstacleAvoidanceSetpoint obstacle_avoidance_setpoint;
+
+    obstacle_avoidance_setpoint.setpoint = setpoint;
+    // We pass the current state so the obstaclee avoidance filter can adjust the behaviour for 
+    // the given state.
+    obstacle_avoidance_setpoint.state = identifier;
+    
+    obstacle_avoidance_setpoint_publisher.publish(obstacle_avoidance_setpoint);
+}
+
 void fluid::State::perform(std::function<bool(void)> shouldAbort, bool should_halt_if_steady) {
 
     ros::Rate rate(Core::refresh_rate);
@@ -79,7 +90,7 @@ void fluid::State::perform(std::function<bool(void)> shouldAbort, bool should_ha
     while (ros::ok() && ((should_halt_if_steady && steady_) || !hasFinishedExecution()) && !shouldAbort()) {
         tick();
 
-        setpoint_publisher.publish(setpoint);
+        publishSetpoint();
         fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint;
         fluid::Core::getStatusPublisherPtr()->publish();
 

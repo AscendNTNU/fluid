@@ -10,6 +10,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <ascend_msgs/ObstacleAvoidanceCompletion.h>
+#include <ascend_msgs/ObstacleAvoidanceSetpoint.h>
 #include <mavros_msgs/PositionTarget.h>
 
 #include "state_identifier.h"
@@ -45,6 +46,8 @@ namespace fluid {
         ros::Subscriber obstacle_avoidance_completion_subscriber_;              ///< Tells us when the obstacle 
                                                                                 ///< avoidance system wants to 
                                                                                 ///< go over to position hold
+
+        const ros::Publisher setpoint_publisher;                                ///< Publishes setpoints for this state.
 
         const bool steady_;                                                     ///< Determines whether this state is
                                                                                 ///< a state we can be at for longer periods 
@@ -84,7 +87,6 @@ namespace fluid {
                                                                                ///< within PX4. For example move state
                                                                                ///< would be OFFBOARD. 
 
-        const ros::Publisher setpoint_publisher;                               ///< Publishes setpoints for this state.
 
         mavros_msgs::PositionTarget setpoint;                                  ///< The position target of the state.
         
@@ -137,6 +139,11 @@ namespace fluid {
          *                                  or hold.
          */
         virtual void perform(std::function<bool (void)> shouldAbort, bool should_halt_if_steady);
+
+        /**
+         * Will publish the current setpoint with the custom obstacle avoidance setpoint message.
+         */
+        void publishSetpoint();
 
         /**
          * @return A flag determining whether the state has finished execution.
