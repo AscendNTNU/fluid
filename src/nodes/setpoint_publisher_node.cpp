@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
 
     while (ros::ok()) {
 
-	obstacle_avoidance_setpoint.header.stamp = ros::Time::now();
+	obstacle_avoidance_setpoint.setpoint.header.stamp = ros::Time::now();
 
         if (position_is_set) {
             publisher.publish(obstacle_avoidance_setpoint);
