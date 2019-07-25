@@ -77,7 +77,7 @@ void fluid::State::publishSetpoint() {
     // the given state.
     obstacle_avoidance_setpoint.state = identifier;
     
-    obstacle_avoidance_setpoint_publisher.publish(obstacle_avoidance_setpoint);
+    setpoint_publisher.publish(obstacle_avoidance_setpoint);
 }
 
 void fluid::State::perform(std::function<bool(void)> shouldAbort, bool should_halt_if_steady) {
