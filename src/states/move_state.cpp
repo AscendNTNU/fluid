@@ -17,18 +17,7 @@ bool fluid::MoveState::hasFinishedExecution() {
     	   					std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 
-    tf2::Quaternion quat(getCurrentPose().pose.orientation.x, 
-                         getCurrentPose().pose.orientation.y, 
-                         getCurrentPose().pose.orientation.z, 
-                         getCurrentPose().pose.orientation.w);
-
-    double roll, pitch, yaw;
-    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-    // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
-    // it to zero. 
-    yaw = std::isnan(yaw) ? 0.0 : yaw;
-
-    bool atYawTarget = std::abs(setpoint.yaw - yaw) < fluid::Core::yaw_completion_threshold; 
+    bool atYawTarget = std::abs(PoseUtil::angleBetween(current_pose_.pose.orientation, setpoint.yaw)) < fluid::Core::yaw_completion_threshold; 
 
     return atYawTarget && atPositionTarget;
 }
