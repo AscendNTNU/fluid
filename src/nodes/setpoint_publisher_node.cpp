@@ -8,21 +8,21 @@
 
 #include <ros/ros.h>
 #include <string>
-#include <mavros_msgs/PositionTarget.h>
+#include <ascend_msgs/ObstacleAvoidanceSetpoint.h>
 
 #include "core.h"
 
-mavros_msgs::PositionTarget position_target;
+ascend_msgs::ObstacleAvoidanceSetpoint obstacle_avoidance_setpoint;
 bool position_is_set = false;
 
-void subscriptionCallback(const mavros_msgs::PositionTarget::ConstPtr& pt) {
-    position_target = *pt;
+void subscriptionCallback(const ascend_msgs::ObstacleAvoidanceSetpoint::ConstPtr& pt) {
+    obstacle_avoidance_setpoint = *pt;
     position_is_set = true;
 }
 
 int main(int argc, char** argv) {
 
-    ros::init(argc, argv, "fluid_fsm_setpoint_publisher");
+    ros::init(argc, argv, "fluid_setpoint_publisher");
 
     ROS_INFO("Initiailzing set point publisher.");
 
@@ -34,16 +34,16 @@ int main(int argc, char** argv) {
     std::string subscription_topic = std::string(argv[1]);
     std::string publishing_topic = std::string(argv[2]);
 
-    ros::Subscriber subscriber = node_handle.subscribe(subscription_topic, 10, subscriptionCallback);
-    ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>(publishing_topic, 10);
+    ros::Subscriber subscriber = node_handle.subscribe(subscription_topic, 1, subscriptionCallback);
+    ros::Publisher publisher = node_handle.advertise<ascend_msgs::ObstacleAvoidanceSetpoint>(publishing_topic, 1);
     ros::Rate rate(refresh_rate);
 
     while (ros::ok()) {
 
-	position_target.header.stamp = ros::Time::now();
+	obstacle_avoidance_setpoint.header.stamp = ros::Time::now();
 
         if (position_is_set) {
-            publisher.publish(position_target);
+            publisher.publish(obstacle_avoidance_setpoint);
         }
         
         ros::spinOnce();
