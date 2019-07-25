@@ -51,7 +51,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool igno
     setpoint.type_mask = fluid::TypeMask::Idle;
 
     for (int i = Core::refresh_rate*2; ros::ok() && i > 0; --i) {
-        setpoint_publisher.publish(setpoint);
+        publishSetpoint();
         fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint;
         fluid::Core::getStatusPublisherPtr()->publish();
         ros::spinOnce();
@@ -95,7 +95,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool igno
         }
 
         fluid::Core::getStatusPublisherPtr()->publish();
-        setpoint_publisher.publish(setpoint);
+        publishSetpoint();
 
         ros::spinOnce();
         rate.sleep();
@@ -130,7 +130,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool igno
         
 
         fluid::Core::getStatusPublisherPtr()->publish();
-        setpoint_publisher.publish(setpoint);
+        publishSetpoint();
 
         ros::spinOnce();
         rate.sleep();
