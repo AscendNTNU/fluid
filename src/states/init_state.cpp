@@ -21,7 +21,7 @@ void fluid::InitState::tick() {
     // Not implemented as all logic happens inside perform for the init state has we have to arm and set offboard mode
 }
 
-void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool ignore_finished_execution) {
+void fluid::InitState::perform(std::function<bool (void)> tick, bool ignore_finished_execution) {
 
     ros::Rate rate(Core::refresh_rate);
     ros::NodeHandle node_handle_;
@@ -33,7 +33,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool igno
     ROS_INFO("Attempting to establish contact with PX4...");
 
     // Run until we achieve a connection with mavros
-    while (ros::ok() && !mavros_state_link.getCurrentState().connected) {
+    while (ros::ok() && !mavros_state_link.getCurrentState().connected && tick()) {
         fluid::Core::getStatusPublisherPtr()->publish();
         ros::spinOnce();
         rate.sleep();
@@ -54,6 +54,11 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool igno
         publishSetpoint();
         fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint;
         fluid::Core::getStatusPublisherPtr()->publish();
+
+        if (!tick()) {
+            return;
+        }
+
         ros::spinOnce();
         rate.sleep();
     }
@@ -73,7 +78,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool igno
     bool armed = false;
     double arm_request_interval = 0.5;
 
-    while (ros::ok() && !hasFinishedExecution() && !armed) {
+    while (ros::ok() && !hasFinishedExecution() && !armed && tick()) {
 
         // Send request to arm every interval specified
         if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
@@ -113,7 +118,7 @@ void fluid::InitState::perform(std::function<bool (void)> shouldAbort, bool igno
 
     bool set_offboard = false;
 
-    while(ros::ok() && !hasFinishedExecution() && !set_offboard) {
+    while(ros::ok() && !hasFinishedExecution() && !set_offboard && tick()) {
 
         set_offboard = mavros_state_link.getCurrentState().mode == "OFFBOARD";
 
