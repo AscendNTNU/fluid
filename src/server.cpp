@@ -4,7 +4,7 @@
 
 #include <mavros_msgs/PositionTarget.h>
 #include <std_msgs/String.h>
-#include <fluid/OperationGoal.h>
+#include <ascend_msgs/FluidOperationGoal.h>
 
 #include <cmath>
 #include <assert.h>
@@ -15,7 +15,7 @@
 #include "pose_util.h"
 
 fluid::Server::Server() : actionlib_server_(node_handle_, 
-                                            "fluid_fsm_operation",
+                                            "fluid_operation",
                                             false) {
     
     actionlib_server_.registerGoalCallback(boost::bind(&Server::goalCallback, this));

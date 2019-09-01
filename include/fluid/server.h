@@ -6,7 +6,7 @@
 #define FLUID_FSM_SERVER_H
 
 #include <ros/ros.h>
-#include <fluid/OperationAction.h>
+#include <ascend_msgs/FluidOperationAction.h>
 #include <actionlib/server/simple_action_server.h>
 
 #include "operation.h"
@@ -18,7 +18,7 @@ namespace fluid {
      */
     class Server {
 
-        typedef actionlib::SimpleActionServer<fluid::OperationAction> ActionlibServer;
+        typedef actionlib::SimpleActionServer<ascend_msgs::FluidOperationAction> ActionlibServer;
 
     private:
 
