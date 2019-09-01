@@ -4,7 +4,7 @@
 
 #include <mavros_msgs/PositionTarget.h>
 #include <std_msgs/String.h>
-#include <ascend_msgs/FluidOperationGoal.h>
+#include <ascend_msgs/FluidGoal.h>
 
 #include <cmath>
 #include <assert.h>
@@ -18,27 +18,30 @@ fluid::Server::Server() : actionlib_server_(node_handle_,
                                             "fluid_operation",
                                             false) {
     
-    actionlib_server_.registerGoalCallback(boost::bind(&Server::goalCallback, this));
-    actionlib_server_.registerPreemptCallback(boost::bind(&Server::preemptCallback, this));
 
+    actionlib_server_.registerPreemptCallback(boost::bind(&Server::preemptCallback, this));
+    actionlib_server_.registerPreemptCallback(boost::bind(&Server::goalCallback, this));
     actionlib_server_.start();
 }
 
-
-void fluid::Server::goalCallback() {
+std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
 
     // We accept the new goal and initialize variables for target pose and the type of operation identifier.
     // This is necessary in order to modify some of them before we initiate the different operations further down.
     // E.g. the init operation shouldn't be called with a different pose than (0, 0, 0), so we make sure this is the
     // case.
-    
+
+    if (!actionlib_server_.isNewGoalAvailable()) {
+        return nullptr;
+    }
+
     if (actionlib_server_.isActive()) {
-        actionlib_server_.setAborted();
+        actionlib_server_.setPreempted();
     }
 
     auto goal = actionlib_server_.acceptNewGoal();
     mavros_msgs::PositionTarget setpoint = goal->setpoint;
-    std::string destination_identifier = goal->destination_state_identifier.data;
+    std::string destination_identifier = goal->type.data;
 
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
@@ -73,10 +76,11 @@ void fluid::Server::goalCallback() {
 
     ROS_INFO_STREAM("Will traverse through: " << stringstream.str());
 
+    return std::make_shared<fluid::Operation>(destination_identifier, setpoint);
+}
 
-    next_operation_p_ = std::make_shared<fluid::Operation>(destination_identifier, setpoint);
-
-    new_operation_requested_ = true;
+void fluid::Server::goalCallback() {
+    ROS_INFO_STREAM("got goal!");
 }
 
 void fluid::Server::preemptCallback() {
@@ -91,24 +95,21 @@ void fluid::Server::start() {
     // new operation requested flag is set and we set up the requirements for that operation to run. When it
     // it runs we check every tick if a new operation is requested and abort from the current operation if
     // that is the case. 
+
+    std::shared_ptr<fluid::Operation> current_operation_ptr;
+    std::shared_ptr<fluid::State> last_state_ptr;
+
     while (ros::ok()) {
 
-        // Setup for the new operation.
-        if (new_operation_requested_) {
-            current_operation_p_ = next_operation_p_;
-            next_operation_p_.reset();
-            new_operation_requested_ = false;
-        }
-
         // Execute the operation if there is any
-        if (current_operation_p_) {
+        if (current_operation_ptr) {
 
-            fluid::Core::getStatusPublisherPtr()->status.current_operation = current_operation_p_->getDestinationStateIdentifier();
+            fluid::Core::getStatusPublisherPtr()->status.current_operation = current_operation_ptr->getDestinationStateIdentifier();
 
-            current_operation_p_->perform(
+            current_operation_ptr->perform(
 
                 [&]() -> bool {
-                    return new_operation_requested_; 
+                    return actionlib_server_.isPreemptRequested() || !ros::ok(); 
                 },
 
                 [&](bool completed) {
@@ -117,10 +118,10 @@ void fluid::Server::start() {
                     // state where it's easy to execute a new operation. If we did not complete the operation has
                     // already transitioned to a steady state and we just set the last state to that state.s
                     if (completed) {
-                        last_state_p_ = current_operation_p_->getFinalStatePtr();
+                        last_state_ptr = current_operation_ptr->getFinalStatePtr();
                     }
                     else {
-                        last_state_p_ = fluid::Core::getGraphPtr()->current_state_ptr;
+                        last_state_ptr = fluid::Core::getGraphPtr()->current_state_ptr;
                     }
 
 
@@ -136,27 +137,31 @@ void fluid::Server::start() {
                         actionlib_server_.setSucceeded();
                     }
                     else {
-                        actionlib_server_.setAborted();
+                        ROS_INFO_STREAM("Operation cancelled.");
+                        actionlib_server_.setPreempted();
                     }
                 });
 
-            current_operation_p_.reset();
+            current_operation_ptr.reset();
         }
         // We don't have a current operation, so we just continue executing the last state.
         else {
-
             fluid::Core::getStatusPublisherPtr()->status.current_operation = "none";
 
-            if (last_state_p_) {
-
-                last_state_p_->perform([&]() -> bool {
+            if (last_state_ptr) {
+                last_state_ptr->perform([&]() -> bool {
                     // We abort the execution of the current state if there is a new operation.
-                    return new_operation_requested_;
+                    return actionlib_server_.isNewGoalAvailable();
                 }, true);
             }
         }
 
         fluid::Core::getStatusPublisherPtr()->publish();
+
+        // Setup for the new operation.
+        if (actionlib_server_.isNewGoalAvailable() && !actionlib_server_.isActive()) {
+            current_operation_ptr = retrieveNewOperation();
+        }
 
         ros::spinOnce();
         rate.sleep();
