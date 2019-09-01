@@ -30,7 +30,6 @@ namespace fluid {
         Server();
 
         std::shared_ptr<fluid::Operation> retrieveNewOperation();
-        void goalCallback();
         void preemptCallback();
         void start();
     };

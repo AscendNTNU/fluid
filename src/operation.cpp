@@ -16,12 +16,12 @@
 #include "transition.h"
 #include "pose_util.h"
 
-fluid::Operation::Operation(std::string destination_state_identifier,
-                            mavros_msgs::PositionTarget position_target) :
+fluid::Operation::Operation(const std::string& destination_state_identifier,
+                            const mavros_msgs::PositionTarget& position_target) :
                             destination_state_identifier_(std::move(destination_state_identifier)),
                             position_target(std::move(position_target)) {}
 
-void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) {
+void fluid::Operation::perform(std::function<bool (void)> tick, std::function<void (bool)> completionHandler) {
 
     // Check if it makes sense to carry out this operation given the current state.
     if (!validateOperationFromCurrentState(fluid::Core::getGraphPtr()->current_state_ptr)) {
@@ -92,9 +92,9 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         fluid::Core::getStatusPublisherPtr()->publish();
 
         fluid::Core::getGraphPtr()->current_state_ptr = state_p;
-        state_p->perform(shouldAbort, false);
+        state_p->perform(tick, false);
 
-        if (shouldAbort()) {
+        if (!tick()) {
 
             // We have to abort, so we transition to the steady state for the current state.
             std::shared_ptr<fluid::State> steady_state_ptr = fluid::Core::getGraphPtr()->getStateWithIdentifier(steady_state_map_.at(state_p->identifier));

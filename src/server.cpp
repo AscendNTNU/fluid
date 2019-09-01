@@ -20,7 +20,6 @@ fluid::Server::Server() : actionlib_server_(node_handle_,
     
 
     actionlib_server_.registerPreemptCallback(boost::bind(&Server::preemptCallback, this));
-    actionlib_server_.registerPreemptCallback(boost::bind(&Server::goalCallback, this));
     actionlib_server_.start();
 }
 
@@ -79,10 +78,6 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     return std::make_shared<fluid::Operation>(destination_identifier, setpoint);
 }
 
-void fluid::Server::goalCallback() {
-    ROS_INFO_STREAM("got goal!");
-}
-
 void fluid::Server::preemptCallback() {
     actionlib_server_.setPreempted();
 }
@@ -109,7 +104,14 @@ void fluid::Server::start() {
             current_operation_ptr->perform(
 
                 [&]() -> bool {
-                    return actionlib_server_.isPreemptRequested() || !ros::ok(); 
+
+                    ascend_msgs::FluidFeedback feedback;
+                    std::shared_ptr<fluid::State> current_state_ptr = Core::getGraphPtr()->current_state_ptr;
+                    feedback.pose_stamped = current_state_ptr->getCurrentPose();
+                    feedback.state.data = current_state_ptr->identifier;
+                    actionlib_server_.publishFeedback(feedback);
+
+                    return !actionlib_server_.isPreemptRequested() && ros::ok(); 
                 },
 
                 [&](bool completed) {
@@ -131,14 +133,20 @@ void fluid::Server::start() {
                     if (!actionlib_server_.isActive()) {
                         return;
                     }
+                    
+                    ascend_msgs::FluidResult result;
 
                     if (completed) {
                         ROS_INFO_STREAM("Operation completed.");
-                        actionlib_server_.setSucceeded();
+                        result.pose_stamped = Core::getGraphPtr()->current_state_ptr->getCurrentPose();
+                        result.state.data = last_state_ptr->identifier;
+                        actionlib_server_.setSucceeded(result);
                     }
                     else {
                         ROS_INFO_STREAM("Operation cancelled.");
-                        actionlib_server_.setPreempted();
+                        result.pose_stamped = Core::getGraphPtr()->current_state_ptr->getCurrentPose();
+                        result.state.data = last_state_ptr->identifier;
+                        actionlib_server_.setPreempted(result);
                     }
                 });
 

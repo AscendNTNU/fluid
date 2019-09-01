@@ -53,8 +53,8 @@ namespace fluid {
          * @param destination_state_identifier   The destination state identifier of the operation.
          * @param position_target                The target position of this operation.
          */
-        Operation(std::string destination_state_identifier,
-                  mavros_msgs::PositionTarget position_target);
+        Operation(const std::string& destination_state_identifier,
+                  const mavros_msgs::PositionTarget& position_target);
 
 
         virtual ~Operation() {}
@@ -73,10 +73,11 @@ namespace fluid {
          *
          * Runs through the different states and performs the necessary transitions.
          *
-         * @param shouldAbort Called each tick, makes it possible to abort operations in the midst of an execution.
+         * @param tick Called each tick, makes it possible to check status further up in the pipeline
+         *             and abort operations in the midst of an execution.
          * @param completionHandler Callback function for whether the operation completed or not.
          */
-        virtual void perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler);
+        virtual void perform(std::function<bool (void)> tick, std::function<void (bool)> completionHandler);
 
         /**
          * @brief Sets the pose for a new state and performs the transition to that state from the current state.
