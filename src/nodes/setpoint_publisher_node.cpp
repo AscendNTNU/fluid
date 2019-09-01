@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     std::string publishing_topic = std::string(argv[2]);
 
     ros::Subscriber subscriber = node_handle.subscribe(subscription_topic, 1, subscriptionCallback);
-    ros::Publisher publisher = node_handle.advertise<ascend_msgs::ObstacleAvoidanceSetpoint>(publishing_topic, 1);
+    ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>(publishing_topic, 1);
     ros::Rate rate(refresh_rate);
 
     while (ros::ok()) {
@@ -43,7 +43,7 @@ int main(int argc, char** argv) {
 	obstacle_avoidance_setpoint.setpoint.header.stamp = ros::Time::now();
 
         if (position_is_set) {
-            publisher.publish(obstacle_avoidance_setpoint);
+            publisher.publish(obstacle_avoidance_setpoint.setpoint);
         }
         
         ros::spinOnce();
