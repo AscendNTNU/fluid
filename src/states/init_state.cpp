@@ -33,8 +33,13 @@ void fluid::InitState::perform(std::function<bool (void)> tick, bool ignore_fini
     ROS_INFO("Attempting to establish contact with PX4...");
 
     // Run until we achieve a connection with mavros
-    while (ros::ok() && !mavros_state_link.getCurrentState().connected && tick()) {
+    while (ros::ok() && !mavros_state_link.getCurrentState().connected) {
         fluid::Core::getStatusPublisherPtr()->publish();
+
+        if (!tick()) {
+            return;
+        }
+
         ros::spinOnce();
         rate.sleep();
     }
@@ -78,7 +83,11 @@ void fluid::InitState::perform(std::function<bool (void)> tick, bool ignore_fini
     bool armed = false;
     double arm_request_interval = 0.5;
 
-    while (ros::ok() && !hasFinishedExecution() && !armed && tick()) {
+    while (ros::ok() && !hasFinishedExecution() && !armed) {
+
+        if (!tick()) {
+            return;
+        }
 
         // Send request to arm every interval specified
         if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
@@ -118,8 +127,12 @@ void fluid::InitState::perform(std::function<bool (void)> tick, bool ignore_fini
 
     bool set_offboard = false;
 
-    while(ros::ok() && !hasFinishedExecution() && !set_offboard && tick()) {
+    while(ros::ok() && !hasFinishedExecution() && !set_offboard) {
 
+        if (!tick()) {
+            return;
+        }
+        
         set_offboard = mavros_state_link.getCurrentState().mode == "OFFBOARD";
 
         if (Core::auto_set_offboard) { 
