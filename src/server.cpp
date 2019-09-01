@@ -65,7 +65,7 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose(), setpoint) >= fluid::Core::distance_completion_threshold;
 
     auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
-    ROS_INFO_STREAM("New operation requested to transition to state: " << destination_identifier);
+    ROS_INFO_STREAM("New operation requested to state: " << destination_identifier);
 
     std::stringstream stringstream;
 
@@ -73,7 +73,7 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
         stringstream << state->identifier << " ";
     }
 
-    ROS_INFO_STREAM("Will traverse through: " << stringstream.str());
+    ROS_INFO_STREAM("Will traverse through: " << stringstream.str() << "\n");
 
     return std::make_shared<fluid::Operation>(destination_identifier, setpoint);
 }
