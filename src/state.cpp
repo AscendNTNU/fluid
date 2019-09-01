@@ -87,7 +87,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
 
     initialize();
 
-    while (ros::ok() && ((should_halt_if_steady && steady_) || !hasFinishedExecution()) && !tick()) {
+    while (ros::ok() && ((should_halt_if_steady && steady_) || !hasFinishedExecution()) && tick()) {
         this->tick();
 
         publishSetpoint();
