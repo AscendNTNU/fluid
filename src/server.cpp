@@ -118,7 +118,7 @@ void fluid::Server::start() {
                     // We completed the operation and want to end at the final state of the operation (e.g. hold)
                     // state for move. One can think of this step as making sure that the state machine is at a
                     // state where it's easy to execute a new operation. If we did not complete the operation has
-                    // already transitioned to a steady state and we just set the last state to that state.s
+                    // already transitioned to a steady state and we just set the last state to that state.
                     if (completed) {
                         last_state_ptr = current_operation_ptr->getFinalStatePtr();
                     }
