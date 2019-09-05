@@ -32,6 +32,12 @@ if __name__ == '__main__':
 
         # Creates a goal to send to the action server.
         goal = ascend_msgs.msg.FluidGoal()
+        
+	    # The type of operation we want to execute. Can for example be:
+	    # - take_off
+	    # - land 
+	    # - move
+	    # - position_follow
         goal.type.data = "take_off"
 
         print("Sending goal")

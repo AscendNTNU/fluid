@@ -38,17 +38,21 @@ int main(int argc, char **argv) {
 	// Send Goal
 	ascend_msgs::FluidGoal goal;
 
-	// Can for example be take_off, land 
-	goal.type.data = "move";
-	goal.setpoint.x = 5.0;
+	// The type of operation we want to execute. Can for example be:
+	// - take_off
+	// - land 
+	// - move
+	// - position_follow
+	goal.type.data = "take_off";
 
 	// As the drone is currently at the ground, sending this goal will make
-	// the drone initialize, take off and move to the x position.
-	// Since we didn't provide a z-value, an altitude, the state machine will
+	// the drone initialize and take off.
+	// Since we didn't provide a setpoint with a z-value, an altitude, the state machine will
 	// default to its defaultHeight param.
 	action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
 	action_client.waitForResult();
 
+	// Send a new goal
 	goal.setpoint.y = 5.0;
 	action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
 
