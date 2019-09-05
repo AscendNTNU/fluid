@@ -14,9 +14,9 @@ void fluid::PositionFollowState::objectTargetPoseCallback(geometry_msgs::Pose ob
         return;
     }
 
-    Core::getStatusPublisherPtr()->status.setpoint.position.x = object_target_pose.position.x;
-    Core::getStatusPublisherPtr()->status.setpoint.position.y = object_target_pose.position.y;
-    Core::getStatusPublisherPtr()->status.setpoint.position.z = fluid::Core::positionFollowHeight;
+    Core::getStatusPublisherPtr()->status.setpoint.x = object_target_pose.position.x;
+    Core::getStatusPublisherPtr()->status.setpoint.y = object_target_pose.position.y;
+    Core::getStatusPublisherPtr()->status.setpoint.z = fluid::Core::positionFollowHeight;
  
     set_standby_position_ = false;
     has_target_ = true;

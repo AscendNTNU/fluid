@@ -11,9 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
         tf2
 )
 
-add_action_files(DIRECTORY action)
-generate_messages(DEPENDENCIES mavros_msgs geometry_msgs actionlib_msgs)
-
 catkin_package(
         INCLUDE_DIRS include
         CATKIN_DEPENDS ascend_msgs roscpp
@@ -22,10 +19,9 @@ catkin_package(
 
 # Includes headers in include folder
 include_directories(include
-
-include/fluid
-include/fluid/states
-${catkin_INCLUDE_DIRS}
+        include/fluid
+        include/fluid/states
+        ${catkin_INCLUDE_DIRS}
 )
 
 # Retrieve all the source files using GLOB
@@ -33,48 +29,24 @@ file(GLOB fluid_SRC "src/*.cpp")
 file(GLOB fluid_states_SRC "src/states/*.cpp")
 
 # Add the source files to the library
-add_library(${PROJECT_NAME}
+add_library(fluid
             ${fluid_SRC}
             ${fluid_states_SRC})
 
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
 target_link_libraries(fluid ${catkin_LIBRARIES})
-
-## Mark libraries for installation
-install(TARGETS fluid
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
-
-## Mark header files for installation
-install(DIRECTORY include/${PROJECT_NAME}
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        FILES_MATCHING PATTERN "*.h"
-        PATTERN ".svn" EXCLUDE
-)
 
 #########################################################################################
 
 add_executable(server src/nodes/main.cpp)
 add_executable(setpoint_publisher src/nodes/setpoint_publisher_node.cpp)
-add_executable(client_square src/test/client_square.cpp)
-add_executable(client_tracking src/test/client_tracking.cpp)
-add_executable(tracking_publisher src/test/tracking_pose_publisher.cpp)
-add_executable(client_random_movement src/test/client_random_movement.cpp)
+add_executable(test_client src/test/test_client.cpp)
 
-target_link_libraries(server fluid ${catkin_LIBRARIES})
-target_link_libraries(setpoint_publisher fluid ${catkin_LIBRARIES})
-target_link_libraries(client_square fluid ${catkin_LIBRARIES})
-target_link_libraries(client_tracking fluid ${catkin_LIBRARIES})
-target_link_libraries(tracking_publisher fluid ${catkin_LIBRARIES})
-target_link_libraries(client_random_movement fluid ${catkin_LIBRARIES})
+target_link_libraries(server fluid              ${catkin_LIBRARIES})
+target_link_libraries(setpoint_publisher fluid  ${catkin_LIBRARIES})
+target_link_libraries(test_client fluid         ${catkin_LIBRARIES})
 
 ## Adds a compilation dependency to node_name
-add_dependencies(server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(setpoint_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(client_square ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(client_tracking ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(tracking_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(client_random_movement ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(server                 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(setpoint_publisher     ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(test_client            ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 

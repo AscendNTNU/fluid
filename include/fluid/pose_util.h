@@ -5,8 +5,7 @@
 #ifndef FLUID_FSM_POSE_UTIL_H
 #define FLUID_FSM_POSE_UTIL_H
 
-#include <mavros_msgs/PositionTarget.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Point.h>
 #include <tf2/transform_datatypes.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -15,15 +14,15 @@
 namespace fluid {
     class PoseUtil {
     public:
-        static double distanceBetween(geometry_msgs::PoseStamped current, mavros_msgs::PositionTarget target) {
-            double delta_x = target.position.x - current.pose.position.x;
-            double delta_y = target.position.y - current.pose.position.y;
-            double delta_z = target.position.z - current.pose.position.z;
+        static double distanceBetween(const geometry_msgs::Point& current, geometry_msgs::Point& target) {
+            double delta_x = target.x - current.x;
+            double delta_y = target.y - current.y;
+            double delta_z = target.z - current.z;
 
             return sqrt(delta_x*delta_x + delta_y*delta_y + delta_z*delta_z);
         }
 
-        static double angleBetween(geometry_msgs::Quaternion quaternion, float yaw_angle) {
+        static double angleBetween(const geometry_msgs::Quaternion& quaternion, const float& yaw_angle) {
             tf2::Quaternion quat(quaternion.x, 
                                  quaternion.y, 
                                  quaternion.z, 

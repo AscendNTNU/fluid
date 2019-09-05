@@ -133,12 +133,12 @@ namespace fluid {
         /**
          * Performs the Ros loop for executing logic within this state given the refresh rate.
          *
-         * @param shouldAbort Called each tick, makes it possible to abort states in the midst of an execution.
+         * @param tick Called each tick, makes it possible to abort states in the midst of an execution.
          * @param should_halt_if_steady     Will halt at this state if it's steady, is useful
          *                                  if we want to keep at a certain state for some time, e.g. idle
          *                                  or hold.
          */
-        virtual void perform(std::function<bool (void)> shouldAbort, bool should_halt_if_steady);
+        virtual void perform(std::function<bool (void)> tick, bool should_halt_if_steady);
 
         /**
          * Will publish the current setpoint with the custom obstacle avoidance setpoint message.

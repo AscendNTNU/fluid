@@ -24,7 +24,7 @@ void fluid::Transition::perform() {
     if (source_state_p->px4_mode == destination_state_p->px4_mode) {
 
         fluid::Core::getStatusPublisherPtr()->status.current_state = destination_state_p->identifier;
-        fluid::Core::getStatusPublisherPtr()->status.setpoint = destination_state_p->setpoint;
+        fluid::Core::getStatusPublisherPtr()->status.setpoint = destination_state_p->setpoint.position;
 
         fluid::Core::getGraphPtr()->current_state_ptr = destination_state_p;
         
@@ -48,7 +48,7 @@ void fluid::Transition::perform() {
         source_state_p->tick();
         source_state_p->publishSetpoint();
 
-        fluid::Core::getStatusPublisherPtr()->status.setpoint = source_state_p->setpoint;
+        fluid::Core::getStatusPublisherPtr()->status.setpoint = source_state_p->setpoint.position;
         fluid::Core::getStatusPublisherPtr()->publish();
 
         mavros_state_link_.attemptToSetState(destination_state_p->px4_mode, [&](bool succeeded) {
@@ -58,7 +58,7 @@ void fluid::Transition::perform() {
             state_is_set = succeeded;
             
             fluid::Core::getStatusPublisherPtr()->status.current_state = destination_state_p->identifier;
-            fluid::Core::getStatusPublisherPtr()->status.setpoint = destination_state_p->setpoint;
+            fluid::Core::getStatusPublisherPtr()->status.setpoint = destination_state_p->setpoint.position;
             fluid::Core::getStatusPublisherPtr()->status.px4_mode = destination_state_p->px4_mode;
 
             fluid::Core::getGraphPtr()->current_state_ptr = destination_state_p;

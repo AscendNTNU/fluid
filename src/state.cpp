@@ -80,18 +80,18 @@ void fluid::State::publishSetpoint() {
     setpoint_publisher.publish(obstacle_avoidance_setpoint);
 }
 
-void fluid::State::perform(std::function<bool(void)> shouldAbort, bool should_halt_if_steady) {
+void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_steady) {
 
     ros::Rate rate(Core::refresh_rate);
     obstacle_avoidance_completed_ = false;
 
     initialize();
 
-    while (ros::ok() && ((should_halt_if_steady && steady_) || !hasFinishedExecution()) && !shouldAbort()) {
-        tick();
+    while (ros::ok() && ((should_halt_if_steady && steady_) || !hasFinishedExecution()) && tick()) {
+        this->tick();
 
         publishSetpoint();
-        fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint;
+        fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint.position;
         fluid::Core::getStatusPublisherPtr()->publish();
 
         ros::spinOnce();

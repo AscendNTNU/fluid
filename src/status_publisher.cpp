@@ -7,7 +7,7 @@ fluid::StatusPublisher::StatusPublisher() {
     status.px4_mode	  = "none";
     status.current_operation = "none";
     status.current_state     = "none";
-	status.setpoint.position.x = status.setpoint.position.y = status.setpoint.position.z = 0;
+	status.setpoint.x = status.setpoint.y = status.setpoint.z = 0;
     status.min.x = status.min.y = status.min.z = 0;
 	status.max.x = status.max.y = status.max.z = 0;
 

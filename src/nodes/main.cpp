@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv) {
 
-    ros::init(argc, argv, "fluid_fsm_server");
+    ros::init(argc, argv, "fluid_server");
 
     ROS_INFO("Starting Fluid FSM.");
 

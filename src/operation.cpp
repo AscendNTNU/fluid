@@ -16,12 +16,12 @@
 #include "transition.h"
 #include "pose_util.h"
 
-fluid::Operation::Operation(std::string destination_state_identifier,
-                            mavros_msgs::PositionTarget position_target) :
+fluid::Operation::Operation(const std::string& destination_state_identifier,
+                            const geometry_msgs::Point& setpoint) :
                             destination_state_identifier_(std::move(destination_state_identifier)),
-                            position_target(std::move(position_target)) {}
+                            setpoint(std::move(setpoint)) {}
 
-void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::function<void (bool)> completionHandler) {
+void fluid::Operation::perform(std::function<bool (void)> tick, std::function<void (bool)> completionHandler) {
 
     // Check if it makes sense to carry out this operation given the current state.
     if (!validateOperationFromCurrentState(fluid::Core::getGraphPtr()->current_state_ptr)) {
@@ -33,8 +33,8 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
 
     // As the graph will return the shortest path in terms of states, we have to check if
     // the setpoint is outside where we're currently at so we include a move state (if the move is on the path).
-
-    bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose(), position_target) >= fluid::Core::distance_completion_threshold;
+    float distanceToSetpoint = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, setpoint);
+    bool shouldIncludeMove = distanceToSetpoint >= fluid::Core::distance_completion_threshold;
 
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
@@ -46,19 +46,18 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         return;
     }
 
-    // Set the setpoint for all the states to the position target.
     // We can do this as most states are relative to the current position.
     for (auto state : path) {
-        state->setpoint = position_target;
+        state->setpoint.position = setpoint;
     }
 
-    float yaw = position_target.yaw;
+    float yaw = 0;
 
     // If we have to move, we want the rotate state to rotate in that direction and all succeeding states to also be in
     // that yaw.
     if (shouldIncludeMove) {
-        float dx = position_target.position.x - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.x;
-        float dy = position_target.position.y - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.y;
+        float dx = setpoint.x - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.x;
+        float dy = setpoint.y - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.y;
 
         yaw = atan2(dy, dx);
 
@@ -92,9 +91,9 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
         fluid::Core::getStatusPublisherPtr()->publish();
 
         fluid::Core::getGraphPtr()->current_state_ptr = state_p;
-        state_p->perform(shouldAbort, false);
+        state_p->perform(tick, false);
 
-        if (shouldAbort()) {
+        if (!tick()) {
 
             // We have to abort, so we transition to the steady state for the current state.
             std::shared_ptr<fluid::State> steady_state_ptr = fluid::Core::getGraphPtr()->getStateWithIdentifier(steady_state_map_.at(state_p->identifier));
@@ -121,7 +120,7 @@ void fluid::Operation::perform(std::function<bool (void)> shouldAbort, std::func
     }
 
     std::shared_ptr<fluid::State> final_state_p = getFinalStatePtr();
-    final_state_p->setpoint = position_target;
+    final_state_p->setpoint.position = setpoint;
     final_state_p->setpoint.yaw = yaw;
 
     transitionToState(final_state_p);
