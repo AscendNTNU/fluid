@@ -44,7 +44,7 @@ take off, rotate in the movement direction before it moves. This makes the FSM v
 ### Different states
 
 The different states are:
-- inti
+- init
 - take_off
 - hold (hover)
 - move 
@@ -77,4 +77,4 @@ failed.
 
 ## Writing clients
 
-You have to use ROS actionlib in order to communicate with the state machine. Have a look at the python and C++ examples in the `src/test` folder.
+You have to use ROS actionlib in order to communicate with the state machine. Have a look at the python and C++ examples in the [src/test](https://github.com/AscendNTNU/fluid/tree/master/src/test) folder.
