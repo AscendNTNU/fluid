@@ -5,24 +5,23 @@
 
 ### What you need
 
-1. ![ROS Melodic](http://wiki.ros.org/melodic/Installation) 
-2. ![MAVROS](https://dev.px4.io/en/ros/mavros_installation.html)
-3. ![Control simulator (or plain Gazebo with PX4)](https://github.com/AscendNTNU/control_simulator)
+1. [ROS Melodic](http://wiki.ros.org/melodic/Installation) 
+2. [MAVROS](https://dev.px4.io/en/ros/mavros_installation.html)
+3. [Control simulator (or plain Gazebo with PX4)](https://github.com/AscendNTNU/control_simulator)
 
 ### Run instructions for gazebo simulator
 
 1. Make sure you have MAVROS installed and PX4 and gazebo built. 
 2. Clone fluid into your catkin workspace in the src-folder.
 3. Run `source devel/setup.bash` and `catkin build` at root of the catkin workspace.
-4. Start control_simulator. See documentation here: https://github.com/AscendNTNU/control_simulator
+4. Start control_simulator. See documentation [here](https://github.com/AscendNTNU/control_simulator)
 5. Export the namespace `export ROS_NAMESPACE=your_namespace`.
 6. Start fluid server: `roslaunch fluid square_gazebo.launch`.
 7. Start your client. Remember to construct the client with the same namespace.
 
 There are some examples in the `src/test` folder.
 
-If you're running control_simulator you have to wait until EKF vision fuse is set up. Read more here:
-https://confluence.ascendntnu.no/pages/viewpage.action?pageId=21955671
+If you're running control_simulator you have to wait until EKF vision fuse is set up. Read more [here](https://confluence.ascendntnu.no/pages/viewpage.action?pageId=21955671).
 
 
 ### Run instructions for physical drone with Pixhawk flight controller

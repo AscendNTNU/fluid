@@ -11,7 +11,7 @@ Be aware that an operation within fluid equals an action in ROS actionlib.
 
 ## Operations
 
-All the operation related messages discussed below are located in *ascend_msgs*. Look ![here](https://github.com/AscendNTNU/ascend_msgs/blob/master/action/Fluid.action)
+All the operation related messages discussed below are located in *ascend_msgs*. Look [here](https://github.com/AscendNTNU/ascend_msgs/blob/master/action/Fluid.action)
 
 ### Operation goal
 The request a client makes when it wants the FSM to carry out an operation to a given state. It includes:
@@ -27,7 +27,7 @@ The action server will provide feedback during the operation. It will include:
 The action server will provide a result when the operation is complete, this is fired once. It includes:
 - pose_stamped (geometry_msgs/PoseStamped)
 
-You can check the state of the result in the callback, the different states are documented here ![here](http://docs.ros.org/jade/api/actionlib/html/classactionlib_1_1SimpleClientGoalState.html#a91066f14351d31404a2179da02c518a0acc5ac2bf0cf2a77d87668ad4be866802).
+You can check the state of the result in the callback, the different states are documented here [here](http://docs.ros.org/jade/api/actionlib/html/classactionlib_1_1SimpleClientGoalState.html#a91066f14351d31404a2179da02c518a0acc5ac2bf0cf2a77d87668ad4be866802).
 
 
 
