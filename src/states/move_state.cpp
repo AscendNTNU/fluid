@@ -12,7 +12,7 @@
 #include "core.h"
 
 bool fluid::MoveState::hasFinishedExecution() {
-    bool atPositionTarget = PoseUtil::distanceBetween(current_pose_, setpoint) < fluid::Core::distance_completion_threshold && 
+    bool atPositionTarget = PoseUtil::distanceBetween(current_pose_.pose.position, setpoint.position) < fluid::Core::distance_completion_threshold && 
     	   				 	std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;

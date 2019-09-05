@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include <mavros_msgs/PositionTarget.h>
+#include <geometry_msgs/Point.h>
 
 #include "state.h"
 #include "core.h"
@@ -45,16 +45,16 @@ namespace fluid {
 
         public:
 
-        mavros_msgs::PositionTarget position_target;                ///< Position target of the operation.
+        geometry_msgs::Point setpoint;                
 
         /**
          * Sets up the operation. 
          *
          * @param destination_state_identifier   The destination state identifier of the operation.
-         * @param position_target                The target position of this operation.
+         * @param setpoint The target position of this operation.
          */
         Operation(const std::string& destination_state_identifier,
-                  const mavros_msgs::PositionTarget& position_target);
+                  const geometry_msgs::Point& setpoint);
 
 
         virtual ~Operation() {}

@@ -57,7 +57,7 @@ void fluid::InitState::perform(std::function<bool (void)> tick, bool ignore_fini
 
     for (int i = Core::refresh_rate*2; ros::ok() && i > 0; --i) {
         publishSetpoint();
-        fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint;
+        fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint.position;
         fluid::Core::getStatusPublisherPtr()->publish();
 
         if (!tick()) {

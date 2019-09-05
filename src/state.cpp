@@ -91,7 +91,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
         this->tick();
 
         publishSetpoint();
-        fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint;
+        fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint.position;
         fluid::Core::getStatusPublisherPtr()->publish();
 
         ros::spinOnce();

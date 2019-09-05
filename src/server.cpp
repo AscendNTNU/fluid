@@ -39,30 +39,30 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     }
 
     auto goal = actionlib_server_.acceptNewGoal();
-    mavros_msgs::PositionTarget setpoint = goal->setpoint;
+    geometry_msgs::Point setpoint = goal->setpoint;
     std::string destination_identifier = goal->type.data;
 
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.
     if (fluid::Core::min.x != 0 || fluid::Core::max.x != 0) {
-        setpoint.position.x = std::max(fluid::Core::min.x, 
-                                       std::min(static_cast<float>(setpoint.position.x), fluid::Core::max.x));
+        setpoint.x = std::max(fluid::Core::min.x, 
+                                       std::min(static_cast<float>(setpoint.x), fluid::Core::max.x));
     }
 
     if (fluid::Core::min.y != 0 || fluid::Core::max.y != 0) { 
-        setpoint.position.y = std::max(fluid::Core::min.y, 
-                                       std::min(static_cast<float>(setpoint.position.y), fluid::Core::max.y));
+        setpoint.y = std::max(fluid::Core::min.y, 
+                                       std::min(static_cast<float>(setpoint.y), fluid::Core::max.y));
     }
 
     if (fluid::Core::min.z != 0 || fluid::Core::max.z != 0) {
-        setpoint.position.z = std::max(fluid::Core::min.z, 
-                                       std::min(static_cast<float>(setpoint.position.z), fluid::Core::max.z));
+        setpoint.z = std::max(fluid::Core::min.z, 
+                                       std::min(static_cast<float>(setpoint.z), fluid::Core::max.z));
     }
 
     Core::getStatusPublisherPtr()->status.setpoint = setpoint;
 
 
-    bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose(), setpoint) >= fluid::Core::distance_completion_threshold;
+    bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, setpoint) >= fluid::Core::distance_completion_threshold;
 
     auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
     ROS_INFO_STREAM("New operation requested to state: " << destination_identifier);

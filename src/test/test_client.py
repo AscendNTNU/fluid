@@ -9,7 +9,7 @@ import actionlib
 # goal message and the result message.
 
 import ascend_msgs.msg
-from mavros_msgs.msg import PositionTarget
+from geometry_msgs.msg import Point
 
 def active_callback():
     print("Goal active!")
@@ -24,19 +24,15 @@ def done_callback(state, result):
     # Do something with the pose: feedback.pose_stamped
 
 def send_goal():
-    # Creates the SimpleActionClient, passing the type of the action
-    # (FibonacciAction) to the constructor.
     client = actionlib.SimpleActionClient('drone_1/fluid_operation', ascend_msgs.msg.FluidAction)
-
-    # Waits until the action server has started up and started
-    # listening for goals.
     client.wait_for_server()
 
     # Creates a goal to send to the action server.
-    # setpoint = PositionTarget()
     goal = ascend_msgs.msg.FluidGoal()
-    goal.type.data = "take_off"
-
+    goal.type.data = "move"
+    setpoint = Point()
+    setpoint.x = 4.0 
+    goal.setpoint = setpoint 
     print("Sending goal")
 
     # Sends the goal to the action server.
