@@ -167,8 +167,6 @@ void fluid::Server::start() {
         fluid::Core::getStatusPublisherPtr()->publish();
 
         // Setup for the new operation.
-        ROS_INFO_STREAM("New goal available: " << actionlib_server_.isNewGoalAvailable());
-        ROS_INFO_STREAM("Is active: " << actionlib_server_.isActive());
         if (actionlib_server_.isNewGoalAvailable() && !actionlib_server_.isActive()) {
             current_operation_ptr = retrieveNewOperation();
         }
