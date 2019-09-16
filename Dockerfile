@@ -8,6 +8,11 @@ RUN apt-get update -qq && apt-get install -yqq \
     build-essential \
     ros-melodic-mavros \
     ros-melodic-mavros-extras \
+    cmake \
+    python-catkin-pkg \
+    python-empy \
+    python-nose \
+    libgtest-dev \
     ros-melodic-tf2
 
 
