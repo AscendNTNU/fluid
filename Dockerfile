@@ -10,6 +10,7 @@ RUN apt-get update -qq && apt-get install -yqq \
     ros-melodic-mavros-extras \
     cmake \
     python-catkin-pkg \
+    python-catkin-tools \
     python-empy \
     python-nose \
     libgtest-dev \
