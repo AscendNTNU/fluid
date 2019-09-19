@@ -1,6 +1,5 @@
 <launch>
   <arg name="fcu_url"/>
-  <arg name="px4_id"/>
   <arg name="auto_arm" default="false"/>
   <arg name="auto_offboard" default="false"/>
   <arg name="setpoint_subscription_topic" default="fluid/setpoint"/>
@@ -20,7 +19,7 @@
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url" value="$(arg fcu_url)"/>
     <arg name="log_output" value="log"/>
-    <arg name="tgt_system" value="$(eval 1 + arg('px4_id'))"/>
+    <arg name="tgt_system" value="1"/>
     <arg name="tgt_component" value="1"/>
   </include>
 </launch>
