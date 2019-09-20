@@ -27,7 +27,7 @@ if __name__ == '__main__':
     try:
         rospy.init_node('fluid_client')
         
-        client = actionlib.SimpleActionClient('drone_1/fluid_operation', ascend_msgs.msg.FluidAction)
+        client = actionlib.SimpleActionClient('fluid_operation', ascend_msgs.msg.FluidAction)
         client.wait_for_server()
 
         # Creates a goal to send to the action server.
