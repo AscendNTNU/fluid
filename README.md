@@ -58,23 +58,19 @@ failed.
 1. Make sure you have MAVROS installed and PX4 and gazebo built. 
 2. Clone fluid into your catkin workspace in the src-folder.
 3. Run `source devel/setup.bash` and `catkin build` at root of the catkin workspace.
-4. Start control_simulator. See documentation [here](https://github.com/AscendNTNU/control_simulator)
-5. Export the namespace `export ROS_NAMESPACE=your_namespace`.
-6. Start fluid server: `roslaunch fluid square_gazebo.launch`.
-7. Start your client. Remember to construct the client with the same namespace.
+4. Start Airsim. 
+5. Start fluid server: `roslaunch fluid server_simulator.launch`.
+6. Start your client. 
 
 There are some examples in the `src/test` folder.
-
-If you're running control_simulator you have to wait until EKF vision fuse is set up. Read more [here](https://confluence.ascendntnu.no/pages/viewpage.action?pageId=21955671).
 
 
 ### Run instructions for physical drone with Pixhawk flight controller
 
 1. Clone fluid into the catkin workspace on the drone. 
 2. Run `source devel/setup.bash` and `catkin build` at root of the catkin workspace.
-3. Optional: Run `export ROS_NAMESPACE=your_namespace` (if you want to launch the server in a namespace).
-4. Start fluid server via the roslaunch file: `roslaunch fluid_fsm server_pixhawk.launch`.
-5. Launch your client node.
+3. Start fluid server via the roslaunch file: `roslaunch fluid_fsm server_pixhawk.launch`.
+4. Launch your client node.
 
 ## Writing clients
 
