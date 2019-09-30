@@ -27,7 +27,7 @@ if __name__ == '__main__':
     try:
         rospy.init_node('fluid_client')
         
-        client = actionlib.SimpleActionClient('drone_1/fluid_operation', ascend_msgs.msg.FluidAction)
+        client = actionlib.SimpleActionClient('fluid_operation', ascend_msgs.msg.FluidAction)
         client.wait_for_server()
 
         # Creates a goal to send to the action server.
@@ -38,7 +38,7 @@ if __name__ == '__main__':
 	    # - land 
 	    # - move
 	    # - position_follow
-        goal.type.data = "take_off"
+        goal.mode.data = "take_off"
 
         print("Sending goal")
         # Sends the goal to the action server.
@@ -48,10 +48,16 @@ if __name__ == '__main__':
         client.wait_for_result()
 
         # Send a new goal
-        goal.setpoint.y = 4.0
-        goal.type.data = "move"
+        goal.setpoint.y = 45.0
+        goal.setpoint.x = 0.0
+        goal.setpoint.z = 1.2
+        goal.mode.data = "move"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
 
+        goal.setpoint.z = 20
+
+        client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
+        client.wait_for_result()
     except rospy.ROSInterruptException:
         print("program interrupted before completion")

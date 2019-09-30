@@ -40,7 +40,7 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
 
     auto goal = actionlib_server_.acceptNewGoal();
     geometry_msgs::Point setpoint = goal->setpoint;
-    std::string destination_identifier = goal->type.data;
+    std::string destination_identifier = goal->mode.data;
 
     // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
     // min and max.

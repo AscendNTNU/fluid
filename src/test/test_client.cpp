@@ -28,8 +28,7 @@ int main(int argc, char **argv) {
 	ros::init(argc, argv, "test_fibonacci_callback");
 
 	// Create the action client
-	std::string drone_namespace = "drone_1";
-	Client action_client(drone_namespace + "/fluid_operation", true);
+	Client action_client("fluid_operation", true);
 
 	ROS_INFO("Waiting for action server to start.");
 	action_client.waitForServer();
@@ -43,7 +42,7 @@ int main(int argc, char **argv) {
 	// - land 
 	// - move
 	// - position_follow
-	goal.type.data = "take_off";
+	goal.mode.data = "take_off";
 
 	// As the drone is currently at the ground, sending this goal will make
 	// the drone initialize and take off.
