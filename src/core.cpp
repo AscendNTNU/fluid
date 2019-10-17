@@ -6,8 +6,9 @@ int fluid::Core::message_queue_size = 10;
 bool fluid::Core::auto_arm = false;
 bool fluid::Core::auto_set_offboard = false;
 
-std::shared_ptr<fluid::StateGraph> fluid::Core::graph_p_;
-std::shared_ptr<fluid::StatusPublisher> fluid::Core::status_publisher_p_;
+std::shared_ptr<fluid::StateGraph> fluid::Core::graph_ptr_;
+std::shared_ptr<fluid::StatusPublisher> fluid::Core::status_publisher_ptr_;
+std::shared_ptr<fluid::Controller> fluid::Core::controller_ptr_;
 
 geometry_msgs::Point32 fluid::Core::min, fluid::Core::max;
 
@@ -18,17 +19,30 @@ double fluid::Core::default_height = 1.0;
 double fluid::Core::positionFollowHeight = 2.3;
 
 std::shared_ptr<fluid::StateGraph> fluid::Core::getGraphPtr() {
-	if (!graph_p_) {
-		graph_p_ = std::make_shared<fluid::StateGraph>();
+	if (!graph_ptr_) {
+		graph_ptr_ = std::make_shared<fluid::StateGraph>();
 	}
 
-	return graph_p_;
+	return graph_ptr_;
 }
 
 std::shared_ptr<fluid::StatusPublisher> fluid::Core::getStatusPublisherPtr() {
-	if (!status_publisher_p_) {
-		status_publisher_p_ = std::make_shared<fluid::StatusPublisher>();
+	if (!status_publisher_ptr_) {
+		status_publisher_ptr_ = std::make_shared<fluid::StatusPublisher>();
 	}
 
-	return status_publisher_p_;
+	return status_publisher_ptr_;
+}
+
+void fluid::Core::swapController(std::shared_ptr<Controller> controller_ptr) {
+	controller_ptr_ = controller_ptr;
+}
+
+std::shared_ptr<fluid::Controller> fluid::Core::getControllerPtr() {
+	if (!controller_ptr_) {
+		ROS_ERROR("No controller set!");
+		return nullptr;
+	}
+
+	return controller_ptr_;
 }

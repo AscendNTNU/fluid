@@ -3,6 +3,7 @@
 
 #include "status_publisher.h"
 #include "state_graph.h"
+#include "controller.h"
 
 #include <memory>
 
@@ -20,12 +21,15 @@ namespace fluid {
 		Core(Core const&) {};
 		Core& operator=(Core const&) {};
 
-		static std::shared_ptr<fluid::StateGraph> graph_p_;					///< Interface for publishing 
-																			///< status about the fsm.
+		static std::shared_ptr<fluid::StateGraph> graph_ptr_;				  ///< Interface for publishing 
+																			  ///< status about the fsm.
 		
-		static std::shared_ptr<fluid::StatusPublisher> status_publisher_p_; ///< Provides the states which the
-		                                                                 	///< operation can consists
-        	                                                 				///< of and how they are connected.
+		static std::shared_ptr<fluid::StatusPublisher> status_publisher_ptr_; ///< Provides the states which the
+		                                                                 	  ///< operation can consists
+        	                                                 				  ///< of and how they are connected.
+
+		static std::shared_ptr<fluid::Controller> controller_ptr_;
+
 	public: 
 
 		static int refresh_rate;											///< The unified refresh rate across 
@@ -76,16 +80,10 @@ namespace fluid {
 		static double positionFollowHeight;									///< The height at which the drone will
 																			///< follow a given target.	
 
-		/**
-		 * @return     The shared singleton instance of the graph.
-		 */
 		static std::shared_ptr<fluid::StateGraph> getGraphPtr();
-
-		/**
-		 * 
-		 * @return     The singleton instance of the status publisher.
-		 */
 		static std::shared_ptr<fluid::StatusPublisher> getStatusPublisherPtr(); 
+		static void swapController(std::shared_ptr<Controller> controller_ptr);
+		static std::shared_ptr<fluid::Controller> getControllerPtr();
 	};
 }
 
