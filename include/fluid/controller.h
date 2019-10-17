@@ -18,7 +18,7 @@ namespace fluid {
         public:
 
             Controller(const std::string& topic, const unsigned int& degree);
-            void tick(std::shared_ptr<std::vector<std::vector<float>>> spline_ptr) const;
+            void tick(const double& time, std::shared_ptr<std::vector<std::vector<float>>> spline_ptr) const;
     };
 }
 
