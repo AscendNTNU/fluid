@@ -5,7 +5,8 @@
 fluid::RacingController::RacingController(const std::string& topic, const unsigned int& degree) : Controller(topic, degree) {}
 
 
-void fluid::RacingController::tick(std::shared_ptr<const std::vector<const std::vector<float>>> spline) const {
+void fluid::RacingController::tick(std::shared_ptr<std::vector<std::vector<float>>> spline) const {
+
     double velocity_x = Util::derivePolynomial(ros::Time().toSec(), (*spline)[0]);
     double velocity_y = Util::derivePolynomial(ros::Time().toSec(), (*spline)[1]);
     double velocity_z = Util::derivePolynomial(ros::Time().toSec(), (*spline)[2]);

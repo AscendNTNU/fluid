@@ -9,7 +9,7 @@ namespace fluid {
 
         RacingController(const std::string& topic, const unsigned int& degree);
 
-        void tick(std::shared_ptr<const std::vector<const std::vector<float>>> spline) const override;
+        void tick(std::shared_ptr<std::vector<std::vector<float>>> spline) const override;
     };
 }
 
