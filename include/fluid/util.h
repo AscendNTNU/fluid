@@ -37,6 +37,17 @@ namespace fluid {
 
             return std::atan2(std::sin(yaw_error), std::cos(yaw_error)); 
         }  
+
+        static double derivePolynomial(const double& x, const std::vector<double>& cofficients) {
+            const unsigned int degree = cofficients.size() - 1;
+            double result = 0;
+
+            for (unsigned int i = 0; i < degree; i++) {
+                result += (degree - i) * cofficients[i] * std::pow(x, degree - i - 1); 
+            } 
+
+            return result;
+        }
     };
 }
 
