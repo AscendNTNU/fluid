@@ -1,3 +1,7 @@
+//
+// Created by simengangstad on 08.11.18.
+//
+
 #include <mavros_msgs/PositionTarget.h>
 #include <std_msgs/String.h>
 #include <ascend_msgs/FluidGoal.h>
@@ -8,7 +12,7 @@
 
 #include "server.h"
 #include "core.h"
-#include "util.h"
+#include "pose_util.h"
 
 fluid::Server::Server() : actionlib_server_(node_handle_, 
                                             "fluid_operation",
@@ -58,7 +62,7 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     Core::getStatusPublisherPtr()->status.setpoint = setpoint;
 
 
-    bool shouldIncludeMove = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, setpoint) >= fluid::Core::distance_completion_threshold;
+    bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, setpoint) >= fluid::Core::distance_completion_threshold;
 
     auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
     ROS_INFO_STREAM("New operation requested to state: " << destination_identifier);

@@ -1,3 +1,7 @@
+//
+// Created by simengangstad on 04.10.18.
+//
+
 #include "operation.h"
 
 #include <utility>
@@ -10,7 +14,7 @@
 
 #include "core.h"
 #include "transition.h"
-#include "util.h"
+#include "pose_util.h"
 
 fluid::Operation::Operation(const std::string& destination_state_identifier,
                             const geometry_msgs::Point& setpoint) :
@@ -29,7 +33,7 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
 
     // As the graph will return the shortest path in terms of states, we have to check if
     // the setpoint is outside where we're currently at so we include a move state (if the move is on the path).
-    float distanceToSetpoint = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, setpoint);
+    float distanceToSetpoint = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, setpoint);
     bool shouldIncludeMove = distanceToSetpoint >= fluid::Core::distance_completion_threshold;
 
     // Get shortest path to the destination state from the current state. This will make it possible for

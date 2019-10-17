@@ -8,16 +8,16 @@
 #include <geometry_msgs/Quaternion.h>
 
 #include "move_state.h"
-#include "util.h"
+#include "pose_util.h"
 #include "core.h"
 
 bool fluid::MoveState::hasFinishedExecution() {
-    bool atPositionTarget = Util::distanceBetween(current_pose_.pose.position, setpoint.position) < fluid::Core::distance_completion_threshold && 
+    bool atPositionTarget = PoseUtil::distanceBetween(current_pose_.pose.position, setpoint.position) < fluid::Core::distance_completion_threshold && 
     	   				 	std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 
-    bool atYawTarget = std::abs(Util::angleBetween(current_pose_.pose.orientation, setpoint.yaw)) < fluid::Core::yaw_completion_threshold; 
+    bool atYawTarget = std::abs(PoseUtil::angleBetween(current_pose_.pose.orientation, setpoint.yaw)) < fluid::Core::yaw_completion_threshold; 
 
     return atYawTarget && atPositionTarget;
 }

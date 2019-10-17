@@ -1,9 +1,13 @@
-#include "take_off_state.h"
-#include "util.h"
-#include "core.h"
+//
+// Created by simengangstad on 11.10.18.
+//
 
+
+#include "take_off_state.h"
+#include "pose_util.h"
+#include "core.h"
 bool fluid::TakeOffState::hasFinishedExecution() {
-    return Util::distanceBetween(current_pose_.pose.position, setpoint.position) < 0.1 &&
+    return PoseUtil::distanceBetween(current_pose_.pose.position, setpoint.position) < 0.1 &&
     	   std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold && 
     	   std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
     	   std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
