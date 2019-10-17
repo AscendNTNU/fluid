@@ -8,15 +8,15 @@
 
 #include <ros/ros.h>
 #include <string>
-#include <ascend_msgs/ObstacleAvoidanceSetpoint.h>
+#include <mavros_msgs/PositionTarget.h>
 
 #include "core.h"
 
-ascend_msgs::ObstacleAvoidanceSetpoint obstacle_avoidance_setpoint;
+mavros_msgs::PositionTarget setpoint;
 bool position_is_set = false;
 
-void subscriptionCallback(const ascend_msgs::ObstacleAvoidanceSetpoint::ConstPtr& pt) {
-    obstacle_avoidance_setpoint = *pt;
+void subscriptionCallback(const mavros_msgs::PositionTarget::ConstPtr& pt) {
+    setpoint = *pt;
     position_is_set = true;
 }
 
@@ -40,10 +40,10 @@ int main(int argc, char** argv) {
 
     while (ros::ok()) {
 
-	obstacle_avoidance_setpoint.setpoint.header.stamp = ros::Time::now();
+	setpoint.header.stamp = ros::Time::now();
 
         if (position_is_set) {
-            publisher.publish(obstacle_avoidance_setpoint.setpoint);
+            publisher.publish(setpoint);
         }
         
         ros::spinOnce();
