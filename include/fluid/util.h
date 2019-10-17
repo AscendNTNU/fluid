@@ -2,8 +2,8 @@
 // Created by simengangstad on 22.11.18.
 //
 
-#ifndef FLUID_FSM_POSE_UTIL_H
-#define FLUID_FSM_POSE_UTIL_H
+#ifndef FLUID_FSM_UTIL_H
+#define FLUID_FSM_UTIL_H
 
 #include <geometry_msgs/Point.h>
 #include <tf2/transform_datatypes.h>
@@ -12,7 +12,7 @@
 #include <geometry_msgs/Quaternion.h>
 
 namespace fluid {
-    class PoseUtil {
+    class Util {
     public:
         static double distanceBetween(const geometry_msgs::Point& current, geometry_msgs::Point& target) {
             double delta_x = target.x - current.x;
