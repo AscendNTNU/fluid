@@ -16,3 +16,5 @@ The states should function for possibly all these modes, so we need an outer lay
 ## Interface for controller
 
 The controller should take the input of a spline and the degree of control (position, velocity or acceleration). The degree would be the amount of derivatives. 
+
+Output should be setpoints for Pixhawk.
