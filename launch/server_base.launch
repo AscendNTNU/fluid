@@ -13,7 +13,7 @@
   <param name="auto_arm" value="$(arg auto_arm)"/>
   <param name="auto_offboard" value="$(arg auto_offboard)"/>
 
-  <node name="fluid_server" pkg="fluid" type="server" output="screen"/>
+  <node name="fluid_server" pkg="fluid" type="server" output="screen" args="$(arg setpoint_subscription_topic)"/>
   <node name="setpoint_publisher" pkg="fluid" type="setpoint_publisher" output="screen" args="$(arg setpoint_subscription_topic) $(arg setpoint_publish_topic)"/>
 
   <include file="$(find mavros)/launch/px4.launch">
