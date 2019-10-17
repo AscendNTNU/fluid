@@ -6,6 +6,7 @@
 
 #include "server.h"
 #include "core.h"
+#include "racing_controller.h"
 
 int main(int argc, char** argv) {
 
@@ -15,6 +16,7 @@ int main(int argc, char** argv) {
 
 	ros::NodeHandle node_handle;
 
+    std::string publishing_topic = std::string(argv[1]);
 
     node_handle.getParam("refresh_rate", fluid::Core::refresh_rate);
     node_handle.getParam("message_queue_size", fluid::Core::message_queue_size);
@@ -36,6 +38,7 @@ int main(int argc, char** argv) {
 
     fluid::Core::getStatusPublisherPtr()->status.min = fluid::Core::min;
     fluid::Core::getStatusPublisherPtr()->status.min = fluid::Core::max;
+    fluid::Core::swapController(std::make_shared<fluid::RacingController>(publishing_topic));
 
     fluid::Server server;
     server.start();
