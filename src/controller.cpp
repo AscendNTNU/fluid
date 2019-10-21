@@ -2,8 +2,6 @@
 #include "util.h"
 #include "type_mask.h"
 
-fluid::Controller::Controller(const fluid::ControllerType& controller_type) : controller_type(controller_type) {}
-
 mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const double& time, std::shared_ptr<std::vector<std::vector<float>>> spline_ptr) const {
 
     mavros_msgs::PositionTarget setpoint;
