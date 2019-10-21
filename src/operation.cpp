@@ -13,9 +13,9 @@
 #include "util.h"
 
 fluid::Operation::Operation(const std::string& destination_state_identifier,
-                            const geometry_msgs::Point& setpoint) :
+                            const std::vector<geometry_msgs::Point>& path) :
                             destination_state_identifier_(std::move(destination_state_identifier)),
-                            setpoint(std::move(setpoint)) {}
+                            path(std::move(path)) {}
 
 void fluid::Operation::perform(std::function<bool (void)> tick, std::function<void (bool)> completionHandler) {
 
@@ -28,23 +28,23 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
     }
 
     // As the graph will return the shortest path in terms of states, we have to check if
-    // the setpoint is outside where we're currently at so we include a move state (if the move is on the path).
-    float distanceToSetpoint = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, setpoint);
-    bool shouldIncludeMove = distanceToSetpoint >= fluid::Core::distance_completion_threshold;
+    // the final setpoint is outside where we're currently at so we include a move state (if the move is on the path).
+    float distanceToEndpoint = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, path.back());
+    bool shouldIncludeMove = distanceToEndpoint >= fluid::Core::distance_completion_threshold;
 
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
-    std::vector<std::shared_ptr<State>> path = fluid::Core::getGraphPtr()->getPathToEndState(
+    std::vector<std::shared_ptr<State>> states = fluid::Core::getGraphPtr()->getPathToEndState(
                         fluid::Core::getGraphPtr()->current_state_ptr->identifier,
                         destination_state_identifier_, shouldIncludeMove);
 
-    if (path.empty()) {
+    if (states.empty()) {
         return;
     }
 
     // We can do this as most states are relative to the current position.
-    for (auto state : path) {
-        state->setpoint.position = setpoint;
+    for (auto state : states) {
+        state->path = path;
     }
 
     float yaw = 0;
@@ -52,8 +52,8 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
     // If we have to move, we want the rotate state to rotate in that direction and all succeeding states to also be in
     // that yaw.
     if (shouldIncludeMove) {
-        float dx = setpoint.x - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.x;
-        float dy = setpoint.y - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.y;
+        float dx = path.front().x - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.x;
+        float dy = path.front().y - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.y;
 
         yaw = atan2(dy, dx);
 
@@ -76,12 +76,12 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
     // This will also only fire for operations that consist of more than one state (every operation other than init).
     // And in that case we transition to the next state in the path after the start state.
     if (fluid::Core::getGraphPtr()->current_state_ptr->identifier != destination_state_identifier_) {
-        transitionToState(path[1]);
+        transitionToState(states[1]);
     }
 
-    for (int index = 0; index < path.size(); index++) {
+    for (int index = 0; index < states.size(); index++) {
 
-        std::shared_ptr<fluid::State> state_p = path[index];
+        std::shared_ptr<fluid::State> state_p = states[index];
         
         fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
         fluid::Core::getStatusPublisherPtr()->publish();
@@ -99,10 +99,10 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
             double roll = 0, pitch = 0, yaw = 0;
             tf2::Matrix3x3(tf2Quat).getRPY(roll, pitch, yaw);
 
-            steady_state_ptr->setpoint.position = state_p->getCurrentPose().pose.position;
+            steady_state_ptr->path = {state_p->getCurrentPose().pose.position};
             // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
             // it to zero. 
-            steady_state_ptr->setpoint.yaw = static_cast<float>(std::isnan(yaw) ? 0.0 : yaw);
+            // steady_state_ptr->setpoint.yaw = static_cast<float>(std::isnan(yaw) ? 0.0 : yaw);
 
             transitionToState(steady_state_ptr);
             completionHandler(false);
@@ -111,13 +111,13 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
         }
 
         if (index < path.size() - 1) {
-            transitionToState(path[index + 1]);
+            transitionToState(states[index + 1]);
         }
     }
 
     std::shared_ptr<fluid::State> final_state_p = getFinalStatePtr();
-    final_state_p->setpoint.position = setpoint;
-    final_state_p->setpoint.yaw = yaw;
+    final_state_p->path = {path.back()};
+    // final_state_p->setpoint.yaw = yaw;
 
     transitionToState(final_state_p);
     completionHandler(true);

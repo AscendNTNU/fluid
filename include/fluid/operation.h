@@ -45,16 +45,10 @@ namespace fluid {
 
         public:
 
-        geometry_msgs::Point setpoint;                
+        std::vector<geometry_msgs::Point> path;                
 
-        /**
-         * Sets up the operation. 
-         *
-         * @param destination_state_identifier   The destination state identifier of the operation.
-         * @param setpoint The target position of this operation.
-         */
         Operation(const std::string& destination_state_identifier,
-                  const geometry_msgs::Point& setpoint);
+                  const std::vector<geometry_msgs::Point>& path);
 
 
         virtual ~Operation() {}
