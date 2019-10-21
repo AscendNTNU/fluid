@@ -7,9 +7,7 @@ fluid::StatusPublisher::StatusPublisher() {
     status.px4_mode	  = "none";
     status.current_operation = "none";
     status.current_state     = "none";
-	status.setpoint.x = status.setpoint.y = status.setpoint.z = 0;
-    status.min.x = status.min.y = status.min.z = 0;
-	status.max.x = status.max.y = status.max.z = 0;
+	status.path = {};
 
     publisher_p_ = node_handle_.advertise<ascend_msgs::FluidStatus>("fluid/status/", Core::message_queue_size);
 }
