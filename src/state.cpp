@@ -26,10 +26,6 @@ fluid::State::State(std::string identifier,
                                       &State::twistCallback,
                                       this)),
                     setpoint_publisher(node_handle_.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", Core::message_queue_size)),
-                    obstacle_avoidance_completion_subscriber_(node_handle_.subscribe("obstacle_avoidance/completion", 
-                                                              Core::message_queue_size, 
-                                                              &State::obstacleAvoidanceCompletionCallback, 
-                                                              this)),
                     should_check_obstacle_avoidance_completion_(should_check_obstacle_avoidance_completion) {}
 
 void fluid::State::setCurrentPose(geometry_msgs::PoseStamped currentPose) {
@@ -54,21 +50,6 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
     current_twist_.header = twist->header;
 }
 
-void fluid::State::obstacleAvoidanceCompletionCallback(const ascend_msgs::ObstacleAvoidanceCompletion& msg) {
-  
-    // Check whether the obstacle avoidance is returning completed on the current setpoint
-    if (abs(msg.setpoint.position.x - setpoint.position.x) >= 0.01 || 
-        abs(msg.setpoint.position.y - setpoint.position.y) >= 0.01 || 
-        abs(msg.setpoint.position.z - setpoint.position.z) >= 0.01 ||
-        abs(msg.setpoint.yaw - setpoint.yaw) >= 0.01) {
-        return;
-    }
-
-    if (!obstacle_avoidance_completed_ && msg.completed) {
-        obstacle_avoidance_completed_ = true;
-    }
-}
-
 void fluid::State::publishSetpoint() {
     setpoint_publisher.publish(setpoint);
 }
@@ -88,7 +69,6 @@ unsigned long factorial(unsigned int n) {
 void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_steady) {
 
     ros::Rate rate(Core::refresh_rate);
-    obstacle_avoidance_completed_ = false;
 
     initialize();
 
@@ -119,16 +99,16 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             publishSetpoint();
         }
 
-        fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint.position;
+        fluid::Core::getStatusPublisherPtr()->status.path = path;
         fluid::Core::getStatusPublisherPtr()->publish();
 
         ros::spinOnce();
         rate.sleep();
 
-        if (should_check_obstacle_avoidance_completion_ && obstacle_avoidance_completed_) {
+        /*if (should_check_obstacle_avoidance_completion_ && obstacle_avoidance_completed_) {
             // Obstacle avoidance reported that we've come as far as we can in this state 
             ROS_INFO_STREAM(identifier << ": " << "OA completed");
             break;
-        }        
+        } */       
     }
 }
