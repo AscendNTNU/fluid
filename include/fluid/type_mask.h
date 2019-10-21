@@ -27,7 +27,7 @@ namespace fluid {
 
 	namespace TypeMask {
 
-	    constexpr uint16_t Default  = IGNORE_VX | IGNORE_VY | IGNORE_VZ |
+	    constexpr uint16_t Position = IGNORE_VX | IGNORE_VY | IGNORE_VZ |
                                       IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ |
                               	 	  IGNORE_YAW_RATE;
 										 
