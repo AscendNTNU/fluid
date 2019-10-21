@@ -7,18 +7,17 @@
 #include <string>
 #include <mavros_msgs/PositionTarget.h>
 namespace fluid {
-    class Controller {
 
-        protected:
-            const std::string topic_;
-            const unsigned int degree_;
-            ros::NodeHandle node_handle_;
-            ros::Publisher setpoint_publisher_;
+    enum class ControllerType {
+        Positional, Velocity
+    };
+
+    class Controller {
 
         public:
 
-            Controller(const std::string& topic, const unsigned int& degree);
-            void tick(const double& time, std::shared_ptr<std::vector<std::vector<float>>> spline_ptr) const;
+            fluid::ControllerType controller_type = ControllerType::Positional;
+            mavros_msgs::PositionTarget getSetpoint(const double& time, std::shared_ptr<std::vector<std::vector<float>>> spline_ptr) const;
     };
 }
 

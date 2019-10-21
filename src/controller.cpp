@@ -2,31 +2,32 @@
 #include "util.h"
 #include "type_mask.h"
 
-fluid::Controller::Controller(const std::string& topic, const unsigned int& degree) : topic_(topic), degree_(degree) {
-    setpoint_publisher_ = node_handle_.advertise<mavros_msgs::PositionTarget>(topic_, 10);
-}
+fluid::Controller::Controller(const fluid::ControllerType& controller_type) : controller_type(controller_type) {}
 
-void fluid::Controller::tick(const double& time, std::shared_ptr<std::vector<std::vector<float>>> spline_ptr) const {
-
-    double x, y, z;
-    x = y = z = 0;
-
-    if (degree_ == 1) {
-        x = Util::derivePolynomial(time, (*spline_ptr)[0]);
-        y = Util::derivePolynomial(time, (*spline_ptr)[1]);
-        z = Util::derivePolynomial(time, (*spline_ptr)[2]);
-    }
-
-    // TODO: Implement for different degrees
-
-    double yaw = std::atan2(y, x);
+mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const double& time, std::shared_ptr<std::vector<std::vector<float>>> spline_ptr) const {
 
     mavros_msgs::PositionTarget setpoint;
-    setpoint.type_mask = TypeMask::Velocity;
-    setpoint.coordinate_frame = 1;
-    setpoint.velocity.x = x;
-    setpoint.velocity.y = y;
-    setpoint.velocity.z = z;
 
-    setpoint_publisher_.publish(setpoint);
+    switch (controller_type) {
+        case ControllerType::Positional:
+ 
+            setpoint.position.x = Util::evaluatePolynomial(time, (*spline_ptr)[0]);
+            setpoint.position.y = Util::evaluatePolynomial(time, (*spline_ptr)[1]);
+            setpoint.position.z = Util::evaluatePolynomial(time, (*spline_ptr)[2]);
+            setpoint.yaw = std::atan2(setpoint.position.y, setpoint.position.x);
+            setpoint.type_mask = TypeMask::Position;
+            break;
+
+        case ControllerType::Velocity:
+
+            setpoint.velocity.x = Util::derivePolynomial(time, (*spline_ptr)[0]);
+            setpoint.velocity.y = Util::derivePolynomial(time, (*spline_ptr)[1]);
+            setpoint.velocity.z = Util::derivePolynomial(time, (*spline_ptr)[2]);
+            setpoint.type_mask = TypeMask::Velocity;
+            setpoint.yaw = std::atan2(setpoint.velocity.y, setpoint.velocity.x);
+            setpoint.coordinate_frame = 1;
+        break;
+    }
+
+    return setpoint;
 }
