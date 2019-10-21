@@ -39,10 +39,20 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     std::string destination_identifier = goal->state.data;
     std::string controller = goal->controller.data;
 
+    if (controller == "racing") {
+        Core::getControllerPtr()->controller_type = fluid::ControllerType::Velocity;
+    }
+    else if (controller == "precision") {
+        Core::getControllerPtr()->controller_type = fluid::ControllerType::Positional;
+    }
+    else {
+        Core::getControllerPtr()->controller_type = fluid::ControllerType::Positional;
+    }
+
     Core::getStatusPublisherPtr()->status.path = path;
 
     float distanceToEndpoint = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, path.back());
-    bool shouldIncludeMove = distanceToEndpoint >= fluid::Core::distance_completion_threshold;
+    bool shouldIncludeMove = distanceToEndpoint >= fluid::Core::distance_completion_threshold || path.size() > 1;
 
     auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
     ROS_INFO_STREAM("New operation requested to state: " << destination_identifier);

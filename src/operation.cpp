@@ -30,7 +30,7 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
     // As the graph will return the shortest path in terms of states, we have to check if
     // the final setpoint is outside where we're currently at so we include a move state (if the move is on the path).
     float distanceToEndpoint = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, path.back());
-    bool shouldIncludeMove = distanceToEndpoint >= fluid::Core::distance_completion_threshold;
+    bool shouldIncludeMove = distanceToEndpoint >= fluid::Core::distance_completion_threshold || path.size() > 1;
 
     // Get shortest path to the destination state from the current state. This will make it possible for
     // the FSM to transition to every state in order to get to the state we want to.
