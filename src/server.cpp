@@ -35,12 +35,13 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     }
 
     auto goal = actionlib_server_.acceptNewGoal();
-    geometry_msgs::Point setpoint = goal->setpoint;
-    std::string destination_identifier = goal->mode.data;
+    std::vector<geometry_msgs::Point> path = goal->path;
+    std::string destination_identifier = goal->state.data;
+    std::string controller = goal->controller.data;
 
-    Core::getStatusPublisherPtr()->status.setpoint = setpoint;
+    Core::getStatusPublisherPtr()->status.path = path;
 
-    bool shouldIncludeMove = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, setpoint) >= fluid::Core::distance_completion_threshold;
+    bool shouldIncludeMove = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, path[path.size() - 1]) >= fluid::Core::distance_completion_threshold;
 
     auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
     ROS_INFO_STREAM("New operation requested to state: " << destination_identifier);
@@ -53,7 +54,7 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
 
     ROS_INFO_STREAM("Will traverse through: " << stringstream.str() << "\n");
 
-    return std::make_shared<fluid::Operation>(destination_identifier, setpoint);
+    return std::make_shared<fluid::Operation>(destination_identifier, path);
 }
 
 void fluid::Server::preemptCallback() {
