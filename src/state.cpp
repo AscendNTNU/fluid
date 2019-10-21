@@ -50,11 +50,6 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
     current_twist_.header = twist->header;
 }
 
-std::vector<std::vector<float>> getSplineForPath() {
-
-    // TODO: Fix service
-    return {{0}, {0}, {0}};
-}
 
 
 void fluid::State::publishSetpoint() {
