@@ -43,10 +43,6 @@ namespace fluid {
         geometry_msgs::TwistStamped current_twist_;                             ///< The current twist of the  
                                                                                 ///< drone during the state.
 
-        ros::Subscriber obstacle_avoidance_completion_subscriber_;              ///< Tells us when the obstacle 
-                                                                                ///< avoidance system wants to 
-                                                                                ///< go over to position hold
-
         const ros::Publisher setpoint_publisher;                                ///< Publishes setpoints for this state.
 
         const bool steady_;                                                     ///< Determines whether this state is
@@ -56,10 +52,6 @@ namespace fluid {
         const bool should_check_obstacle_avoidance_completion_;                 ///< Whether it makes sense to check
                                                                                 ///< that obstacle avoidance is
                                                                                 ///< complete for this state
-
-        bool obstacle_avoidance_completed_ = false;                             ///< Keeps track of the state with
-                                                                                ///< obstacle avoidance.
- 
 
 
         /**
@@ -74,11 +66,6 @@ namespace fluid {
          */
         void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
 
-        /**
-         * @brief      Retrieves whether the obstacle avoidance completed or not.
-         */
-        void obstacleAvoidanceCompletionCallback(const ascend_msgs::ObstacleAvoidanceCompletion& msg);
-
     public:
 
 		const std::string identifier;                                          ///< Makes it easy to distinguish between states 
@@ -88,8 +75,8 @@ namespace fluid {
                                                                                ///< would be OFFBOARD. 
 
 
-        mavros_msgs::PositionTarget setpoint;                                  ///< The position target of the state.
-        
+        std::vector<geometry_msgs::Point> path;                                ///< The position targets of the state.
+
         /**
          * Sets up the state and the respective publishers and subscribers.
          *
