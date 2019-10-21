@@ -41,7 +41,8 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
 
     Core::getStatusPublisherPtr()->status.path = path;
 
-    bool shouldIncludeMove = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, path[path.size() - 1]) >= fluid::Core::distance_completion_threshold;
+    float distanceToEndpoint = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, path.back());
+    bool shouldIncludeMove = distanceToEndpoint >= fluid::Core::distance_completion_threshold;
 
     auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
     ROS_INFO_STREAM("New operation requested to state: " << destination_identifier);
