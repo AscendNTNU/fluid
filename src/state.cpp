@@ -50,21 +50,16 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
     current_twist_.header = twist->header;
 }
 
-void fluid::State::publishSetpoint() {
-    setpoint_publisher.publish(setpoint);
+std::vector<std::vector<float>> getSplineForPath() {
+
+    // TODO: Fix service
+    return {{0}, {0}, {0}};
 }
 
 
-unsigned long factorial(unsigned int n) {
-    unsigned long long factorial = 1;
-    
-    for(int i = 1; i <=n; ++i)
-    {
-        factorial *= i;
-    }
-
-    return factorial;
-} 
+void fluid::State::publishSetpoint() {
+    setpoint_publisher.publish(setpoint);
+}
 
 void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_steady) {
 
@@ -77,27 +72,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     while (ros::ok() && ((should_halt_if_steady && steady_) || !hasFinishedExecution()) && tick()) {
         this->tick();
 
-
-        // TODO: Temp, only for test
-        if (identifier == fluid::StateIdentifier::Move) {
-
-            std::vector<float> x = {100.0f/factorial(13), 0, -100.0f/factorial(11), 0, 100.0f/factorial(9), 0, -100.0f/factorial(7), 0, 100.0f/factorial(5), 0.0, -100.0f/factorial(3), 0.0,  100, 0};
-            std::vector<float> y = {10.0f/factorial(12), 0, -10.0f/factorial(10), 0, 10.0f/factorial(8), 0, -10.0f/factorial(6), 0, 10.0f/factorial(4), 0.0, -10.0f/factorial(2),  0, 10};
-            std::vector<float> z = {0, 0, 0, 0, 0};
-            std::vector<std::vector<float>> test_vec;
-            test_vec.push_back(x);
-            test_vec.push_back(y);
-            test_vec.push_back(z);
-
-            ros::Duration duration = ros::Time::now() - startTime;
-
-            std::shared_ptr<std::vector<std::vector<float>>> spline = std::make_shared<std::vector<std::vector<float>>>(test_vec);
-
-            Core::getControllerPtr()->tick(duration.toSec(), spline);
-        }
-        else {
-            publishSetpoint();
-        }
+        publishSetpoint();
 
         fluid::Core::getStatusPublisherPtr()->status.path = path;
         fluid::Core::getStatusPublisherPtr()->publish();

@@ -66,6 +66,8 @@ namespace fluid {
          */
         void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
 
+        std::vector<std::vector<float>> getSplineForPath() const;
+
     public:
 
 		const std::string identifier;                                          ///< Makes it easy to distinguish between states 
@@ -76,6 +78,8 @@ namespace fluid {
 
 
         std::vector<geometry_msgs::Point> path;                                ///< The position targets of the state.
+
+        mavros_msgs::PositionTarget setpoint;                   
 
         /**
          * Sets up the state and the respective publishers and subscribers.
@@ -143,7 +147,7 @@ namespace fluid {
         virtual void initialize() {}
 
         /**
-         * Executes logic at given refresh rate.
+         * Executes logic at given refresh rate. The state has to set up the current setpoint in the tick method.
          */
         virtual void tick() = 0;
     };

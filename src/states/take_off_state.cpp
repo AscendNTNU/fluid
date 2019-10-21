@@ -12,6 +12,7 @@ bool fluid::TakeOffState::hasFinishedExecution() {
 void fluid::TakeOffState::initialize() {
     setpoint.position.x = getCurrentPose().pose.position.x;
     setpoint.position.y = getCurrentPose().pose.position.y;
+	setpoint.position.z = path.front().z;
 
 	if (setpoint.position.z <= 0.1) {
 		setpoint.position.z = fluid::Core::default_height;
