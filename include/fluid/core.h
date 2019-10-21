@@ -52,11 +52,6 @@ namespace fluid {
 																			///< should set itself into offboard
 																			///< automatically or not.
 
-		static geometry_msgs::Point32 min, max;								///< The bounding box restricting the
-																			///< movement of the drone. When all
-																			///< values are set to 0 the drone can
-																			///< move freely.
-
 		static double distance_completion_threshold;						///< Specifies the radius for within we 
 																			///< we can say that we are at the given position. 
 

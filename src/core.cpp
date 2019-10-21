@@ -10,8 +10,6 @@ std::shared_ptr<fluid::StateGraph> fluid::Core::graph_ptr_;
 std::shared_ptr<fluid::StatusPublisher> fluid::Core::status_publisher_ptr_;
 std::shared_ptr<fluid::Controller> fluid::Core::controller_ptr_;
 
-geometry_msgs::Point32 fluid::Core::min, fluid::Core::max;
-
 double fluid::Core::distance_completion_threshold = 0.3;
 double fluid::Core::velocity_completion_threshold = 0.1;
 double fluid::Core::yaw_completion_threshold = 0.2;

@@ -3,14 +3,6 @@ message_queue_size: 10
 auto_arm: false
 auto_offboard: false
 
-min_z: 0.0
-min_y: 0.0
-min_z: 0.0
-
-max_z: 0.0
-max_y: 0.0
-max_z: 0.0
-
 distance_completion_threshold: 0.3
 velocity_completion_threshold: 0.1
 yaw_completion_threshold: 0.5

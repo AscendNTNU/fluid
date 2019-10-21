@@ -38,25 +38,7 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     geometry_msgs::Point setpoint = goal->setpoint;
     std::string destination_identifier = goal->mode.data;
 
-    // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
-    // min and max.
-    if (fluid::Core::min.x != 0 || fluid::Core::max.x != 0) {
-        setpoint.x = std::max(fluid::Core::min.x, 
-                                       std::min(static_cast<float>(setpoint.x), fluid::Core::max.x));
-    }
-
-    if (fluid::Core::min.y != 0 || fluid::Core::max.y != 0) { 
-        setpoint.y = std::max(fluid::Core::min.y, 
-                                       std::min(static_cast<float>(setpoint.y), fluid::Core::max.y));
-    }
-
-    if (fluid::Core::min.z != 0 || fluid::Core::max.z != 0) {
-        setpoint.z = std::max(fluid::Core::min.z, 
-                                       std::min(static_cast<float>(setpoint.z), fluid::Core::max.z));
-    }
-
     Core::getStatusPublisherPtr()->status.setpoint = setpoint;
-
 
     bool shouldIncludeMove = Util::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, setpoint) >= fluid::Core::distance_completion_threshold;
 
