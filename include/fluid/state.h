@@ -43,6 +43,8 @@ namespace fluid {
         geometry_msgs::TwistStamped current_twist_;                             ///< The current twist of the  
                                                                                 ///< drone during the state.
 
+        mavros_msgs::PositionTarget setpoint;                   
+
         const ros::Publisher setpoint_publisher;                                ///< Publishes setpoints for this state.
 
         const bool steady_;                                                     ///< Determines whether this state is
@@ -53,6 +55,10 @@ namespace fluid {
                                                                                 ///< that obstacle avoidance is
                                                                                 ///< complete for this state
 
+
+        const bool is_relative_;                                                ///< Whether the logic of this state should be executed 
+                                                                                ///< relative to the current position, e.g. for land and take off
+                                                                                ///< we don't want to use the path, only the relative position.
 
         /**
          * Gets fired when the state estimation publishes a pose on the given topic.
@@ -66,8 +72,6 @@ namespace fluid {
          */
         void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
 
-        std::vector<std::vector<float>> getSplineForPath() const;
-
     public:
 
 		const std::string identifier;                                          ///< Makes it easy to distinguish between states 
@@ -79,7 +83,6 @@ namespace fluid {
 
         std::vector<geometry_msgs::Point> path;                                ///< The position targets of the state.
 
-        mavros_msgs::PositionTarget setpoint;                   
 
         /**
          * Sets up the state and the respective publishers and subscribers.
@@ -88,6 +91,7 @@ namespace fluid {
          * @param px4_mode The mode/state within px4 this state represents.
          * @param steady Defines if this state is a state we can be at for longer periods of time. E.g. idle
          *               or hold.
+         * @param is_relative Whether we should use the path given to this state or execute the state from the current position.
          * @param should_check_obstacle_avoidance_completion Determines whether the state should be affected
          *                                                   by obstacle avoidance saying we've reached a setpoint or not.
          *                                                   Used in states which require to run through a set of instructions,
@@ -96,6 +100,7 @@ namespace fluid {
         State(std::string identifier,
               std::string px4_mode,
               bool steady,
+              bool is_relative,
               bool should_check_obstacle_avoidance_completion);
 
 
