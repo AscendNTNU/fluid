@@ -131,12 +131,6 @@ namespace fluid {
         virtual void initialize() {}
 
         /**
-         * Executes logic at given refresh rate. The state has to set up the current setpoint in the tick method.
-         */
-        virtual void tick() = 0;
-
-
-        /**
          * The transition class has to be able to e.g. set the current pose if we transition to a state which requires 
          * to initially know where we are, e. g. land or take off. In that case we can execute the state from the 
          * current pose, and we don't have to wait for the pose callback and thus halt the system.
