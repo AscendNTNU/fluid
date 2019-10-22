@@ -16,8 +16,8 @@ namespace fluid {
 
         public:
 
-            fluid::ControllerType controller_type = ControllerType::Positional;
-            mavros_msgs::PositionTarget getSetpoint(const double& time, std::shared_ptr<std::vector<std::vector<float>>> spline_ptr) const;
+           fluid::ControllerType controller_type = ControllerType::Positional;
+           mavros_msgs::PositionTarget getSetpoint(const double& time, const std::vector<std::vector<double>>& spline) const;
     };
 }
 
