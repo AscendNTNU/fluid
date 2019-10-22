@@ -59,7 +59,22 @@ namespace fluid {
 
             return result;
         }
+
+        static std::vector<std::vector<double>> getSplineForSetpoint(const geometry_msgs::Point& current_position, 
+                                                                     const geometry_msgs::Point& setpoint) {
+            std::vector<std::vector<double>> spline;
+
+            double dx = setpoint.x - current_position.x;
+            double dy = setpoint.y - current_position.y;
+            double dz = setpoint.z - current_position.z;
+
+            spline.push_back({dx, current_position.x});
+            spline.push_back({dy, current_position.y});
+            spline.push_back({dz, current_position.z});
+
+            return spline;
+        }
     };
 }
 
-#endif //FLUID_FSM_POSE_UTIL_H
+#endif 
