@@ -1,0 +1,3 @@
+- Rename tick to something more descriptive
+- Remove unecessary comments
+- For every non relative state we have to check that we've been through the whole path
