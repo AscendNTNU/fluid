@@ -16,5 +16,5 @@ void fluid::HoldState::initialize() {
 
 
 void fluid::HoldState::tick() {
-    setpoint.type_mask = fluid::TypeMask::Default;
+    setpoint.type_mask = fluid::TypeMask::Position;
 }

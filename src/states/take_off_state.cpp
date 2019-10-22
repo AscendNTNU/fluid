@@ -20,5 +20,5 @@ void fluid::TakeOffState::initialize() {
 }
 
 void fluid::TakeOffState::tick() {
-    setpoint.type_mask = fluid::TypeMask::Default;
+    setpoint.type_mask = fluid::TypeMask::Position;
 }

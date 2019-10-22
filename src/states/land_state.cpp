@@ -19,5 +19,5 @@ void fluid::LandState::initialize() {
 }
 
 void fluid::LandState::tick() {
-    setpoint.type_mask = fluid::TypeMask::Default;
+    setpoint.type_mask = fluid::TypeMask::Position;
 }
