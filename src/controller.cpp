@@ -2,11 +2,24 @@
 #include "util.h"
 #include "type_mask.h"
 
-mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const double& time, const std::vector<std::vector<double>>& spline) const {
+mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const ControllerType preferred_controller, 
+                                                           const double& time, 
+                                                           const std::vector<std::vector<double>>& spline) const {
 
     mavros_msgs::PositionTarget setpoint;
 
-    switch (controller_type) {
+    ControllerType current_controller = controller_type;
+
+    if (preferred_controller != ControllerType::Passthrough) {
+        current_controller = preferred_controller;
+    }
+
+    switch (current_controller) {
+
+        case ControllerType::Passthrough:
+
+            ROS_FATAL("The default controller is set to passthrough, defaulting to position.");
+
         case ControllerType::Positional:
  
             setpoint.position.x = Util::evaluatePolynomial(time, spline[0]);
