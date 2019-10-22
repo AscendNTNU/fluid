@@ -12,38 +12,40 @@
 fluid::State::State(std::string identifier,
                     std::string px4_mode,
                     bool steady,
-                    bool should_check_obstacle_avoidance_completion) : 
+                    bool override_current_controller, 
+                    bool is_relative) : 
 
 					identifier(identifier),
                     px4_mode(px4_mode),
-                    steady_(steady),
-					pose_subscriber_(node_handle_.subscribe("mavros/local_position/pose", 
+                    steady(steady),
+                    override_current_controller(override_current_controller),
+					pose_subscriber(node_handle.subscribe("mavros/local_position/pose", 
                                      Core::message_queue_size, 
                                      &State::poseCallback, 
                                      this)),
-                    twist_subscriber_(node_handle_.subscribe("mavros/local_position/twist", 
+                    twist_subscriber(node_handle.subscribe("mavros/local_position/twist", 
                                       Core::message_queue_size,
                                       &State::twistCallback,
                                       this)),
-                    setpoint_publisher(node_handle_.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", Core::message_queue_size)),
-                    should_check_obstacle_avoidance_completion_(should_check_obstacle_avoidance_completion) {}
+                    setpoint_publisher(node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", Core::message_queue_size)),
+                    should_check_obstacle_avoidance_completion(should_check_obstacle_avoidance_completion) {}
 
 geometry_msgs::PoseStamped fluid::State::getCurrentPose() const {
-	return current_pose_;
+	return current_pose;
 }
 
 void fluid::State::poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
-    current_pose_.pose = pose->pose;
-    current_pose_.header = pose->header;
+    current_pose.pose = pose->pose;
+    current_pose.header = pose->header;
 }
 
 geometry_msgs::TwistStamped fluid::State::getCurrentTwist() const {
-    return current_twist_;
+    return current_twist;
 }
 
 void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist) {
-    current_twist_.twist = twist->twist;
-    current_twist_.header = twist->header;
+    current_twist.twist = twist->twist;
+    current_twist.header = twist->header;
 }
 
 void fluid::State::publishSetpoint() {
@@ -75,14 +77,14 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     ros::Time startTime = ros::Time::now();
     auto spline = getSplineForPath(path);
 
-    while (ros::ok() && ((should_halt_if_steady && steady_) || !hasFinishedExecution()) && tick()) {
+    while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
         this->tick();
 
-        if (is_relative_) {
-            publishSetpoint();
-        }
-        else {
-            ros::Duration current_time = ros::Time::now() - startTime;
+        ros::Duration current_time = ros::Time::now() - startTime;
+        setpoint = Core::getControllerPtr()->getSetpoint(getPreferredController(), current_time.toSec(), spline);
+
+        publishSetpoint();
+
 
             // TODO: Add check to replan
 
@@ -96,15 +98,12 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             test_vec.push_back(z);
             */
 
-            setpoint = Core::getControllerPtr()->getSetpoint(current_time.toSec(), spline);
 
-            publishSetpoint();
         /*if (should_check_obstacle_avoidance_completion_ && obstacle_avoidance_completed_) {
             // Obstacle avoidance reported that we've come as far as we can in this state 
             ROS_INFO_STREAM(identifier << ": " << "OA completed");
             break;
         } */        
-        }
 
         fluid::Core::getStatusPublisherPtr()->status.path = path;
         fluid::Core::getStatusPublisherPtr()->publish();
