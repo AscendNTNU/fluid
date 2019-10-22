@@ -29,102 +29,84 @@ namespace fluid {
         ros::NodeHandle node_handle_;                                           ///< Node handle for the mavros 
                                                                                 ///< pose publisher
 
+
         ros::Subscriber pose_subscriber_;                                       ///< Keeps track of the drone's pose 
-                                                                                ///< during this state.
-
-
-        ros::Subscriber twist_subscriber_;                                      ///< Keeps track of the drone's twist 
                                                                                 ///< during this state.
 
         geometry_msgs::PoseStamped current_pose_;                               ///< The current pose of the
                                                                                 ///< drone during the state.        
 
+        void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
+
+
+
+        ros::Subscriber twist_subscriber_;                                      ///< Keeps track of the drone's twist 
+                                                                                ///< during this state.
 
         geometry_msgs::TwistStamped current_twist_;                             ///< The current twist of the  
                                                                                 ///< drone during the state.
 
+        void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
+        
+        
         mavros_msgs::PositionTarget setpoint;                   
 
         const ros::Publisher setpoint_publisher;                                ///< Publishes setpoints for this state.
 
+
         const bool steady_;                                                     ///< Determines whether this state is
-                                                                                ///< a state we can be at for longer periods 
-                                                                                ///< of time. E.g. hold or idle.
+                                                                                ///< a state we can be at for longer 
+                                                                                ///< periods of time. E.g. hold or idle.
 
         const bool should_check_obstacle_avoidance_completion_;                 ///< Whether it makes sense to check
                                                                                 ///< that obstacle avoidance is
-                                                                                ///< complete for this state
+                                                                                ///< complete for this state. For e.g. 
+                                                                                ///< an init state it wouldn't make 
+                                                                                ///< sense.
 
 
-        const bool is_relative_;                                                ///< Whether the logic of this state should be executed 
-                                                                                ///< relative to the current position, e.g. for land and take off
-                                                                                ///< we don't want to use the path, only the relative position.
+        const bool is_relative_;                                                ///< Whether the logic of this state 
+                                                                                ///< should be executed relative to the 
+                                                                                ///< current position, e.g. for land and
+                                                                                ///< take off we don't want to use the 
+                                                                                ///< path, only the relative position.
 
-        /**
-         * Gets fired when the state estimation publishes a pose on the given topic.
-         */
-        void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
-
-        /**
-         * @brief      Retrieves the current twist of the drone.
-         *
-         * @param[in]  twist  The twist retrieved from the IMU,
-         */
-        void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
 
     public:
 
-		const std::string identifier;                                          ///< Makes it easy to distinguish between states 
+		const std::string identifier;                                          ///< Makes it easy to distinguish 
+                                                                               ///< between states 
   
         const std::string px4_mode;                                            ///< The mode this state represents 
                                                                                ///< within PX4. For example move state
-                                                                               ///< would be OFFBOARD. 
+                                                                               ///< would be OFFBOARD while land would 
+                                                                               ///< be AUTO_LAND. 
 
 
         std::vector<geometry_msgs::Point> path;                                ///< The position targets of the state.
 
-
-        /**
-         * Sets up the state and the respective publishers and subscribers.
-         *
-         * @param identifier The identifier of the state.
-         * @param px4_mode The mode/state within px4 this state represents.
-         * @param steady Defines if this state is a state we can be at for longer periods of time. E.g. idle
-         *               or hold.
-         * @param is_relative Whether we should use the path given to this state or execute the state from the current position.
-         * @param should_check_obstacle_avoidance_completion Determines whether the state should be affected
-         *                                                   by obstacle avoidance saying we've reached a setpoint or not.
-         *                                                   Used in states which require to run through a set of instructions,
-         *                                                   e.g. an init state.
-         */
-        State(std::string identifier,
-              std::string px4_mode,
-              bool steady,
-              bool is_relative,
+        State(std::string identifier, 
+              std::string px4_mode, 
+              bool steady, 
+              bool is_relative, 
               bool should_check_obstacle_avoidance_completion);
 
-
-        /**
-         * @breif      A way to set the pose of the state. 
-         * 
-         *             This is useful if we want to 
-         *             transition to a state which requires to initially know where we are, e. g. 
-         *             land or take off. In that case we can execute the state from the current 
-         *             pose, and we don't have to wait for the pose callback and thus halt the system.
-         */
-        void setCurrentPose(geometry_msgs::PoseStamped currentPose);
-
-        /**
+       /**
          * @brief      Returns the current pose, the last pose that the state estimation published on
          *             the given topic.
          */
-        geometry_msgs::PoseStamped getCurrentPose();
+        geometry_msgs::PoseStamped getCurrentPose() const;
 
         /**
          * @brief      Returns the current twist, which is the last twist from the IMU.
          * 
          */
-        geometry_msgs::TwistStamped getCurrentTwist();
+        geometry_msgs::TwistStamped getCurrentTwist() const;
+
+        /**
+         * Calls the path optimizer node to retrive a continous function for the discrete path.
+         */
+        std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const;
 
         /**
          * Performs the Ros loop for executing logic within this state given the refresh rate.
@@ -155,6 +137,13 @@ namespace fluid {
          * Executes logic at given refresh rate. The state has to set up the current setpoint in the tick method.
          */
         virtual void tick() = 0;
+
+        /**
+         * The transition class has to be able to e.g. set the current pose if we transition to a state which requires 
+         * to initially know where we are, e. g. land or take off. In that case we can execute the state from the 
+         * current pose, and we don't have to wait for the pose callback and thus halt the system.
+         */
+        friend class Transition;
     };
 }
 #endif
