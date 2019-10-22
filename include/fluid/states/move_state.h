@@ -18,7 +18,7 @@ namespace fluid {
 
         /** Initializes the move state.
          */
-        explicit MoveState() : State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true) {}
+        explicit MoveState() : State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true, false) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

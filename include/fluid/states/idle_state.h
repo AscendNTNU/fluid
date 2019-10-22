@@ -29,7 +29,7 @@ namespace fluid {
         /**
          * Initializes the idle state.
          */
-        explicit IdleState() : State(fluid::StateIdentifier::Idle, fluid::PX4::Offboard, true, false) {}
+        explicit IdleState() : State(fluid::StateIdentifier::Idle, fluid::PX4::Offboard, true, false, true) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution

@@ -18,7 +18,7 @@ namespace fluid {
 
         /** Initializes the rotate state.
          */
-        explicit RotateState() : State(fluid::StateIdentifier::Rotate, fluid::PX4::Offboard, false, true) {}
+        explicit RotateState() : State(fluid::StateIdentifier::Rotate, fluid::PX4::Offboard, false, true, true) {}
 
         /**
          * Overridden function. @see State::hasFinishedExecution
