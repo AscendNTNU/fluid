@@ -26,24 +26,24 @@ namespace fluid {
     class State {
     protected:
 
-        ros::NodeHandle node_handle_;                                           ///< Node handle for the mavros 
+        ros::NodeHandle node_handle;                                            ///< Node handle for the mavros 
                                                                                 ///< pose publisher
 
 
-        ros::Subscriber pose_subscriber_;                                       ///< Keeps track of the drone's pose 
+        ros::Subscriber pose_subscriber;                                        ///< Keeps track of the drone's pose 
                                                                                 ///< during this state.
 
-        geometry_msgs::PoseStamped current_pose_;                               ///< The current pose of the
+        geometry_msgs::PoseStamped current_pose;                                ///< The current pose of the
                                                                                 ///< drone during the state.        
 
         void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
 
 
 
-        ros::Subscriber twist_subscriber_;                                      ///< Keeps track of the drone's twist 
+        ros::Subscriber twist_subscriber;                                       ///< Keeps track of the drone's twist 
                                                                                 ///< during this state.
 
-        geometry_msgs::TwistStamped current_twist_;                             ///< The current twist of the  
+        geometry_msgs::TwistStamped current_twist;                              ///< The current twist of the  
                                                                                 ///< drone during the state.
 
         void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
@@ -54,27 +54,25 @@ namespace fluid {
         const ros::Publisher setpoint_publisher;                                ///< Publishes setpoints for this state.
 
 
-        const bool steady_;                                                     ///< Determines whether this state is
+        const bool steady;                                                      ///< Determines whether this state is
                                                                                 ///< a state we can be at for longer 
                                                                                 ///< periods of time. E.g. hold or idle.
 
-        const bool should_check_obstacle_avoidance_completion_;                 ///< Whether it makes sense to check
+        const bool should_check_obstacle_avoidance_completion;                  ///< Whether it makes sense to check
                                                                                 ///< that obstacle avoidance is
                                                                                 ///< complete for this state. For e.g. 
                                                                                 ///< an init state it wouldn't make 
                                                                                 ///< sense.
 
+    protected:
 
-        const bool is_relative_;                                                ///< Whether the logic of this state 
-                                                                                ///< should be executed relative to the 
-                                                                                ///< current position, e.g. for land and
-                                                                                ///< take off we don't want to use the 
-                                                                                ///< path, only the relative position.
+
+        virtual fluid::ControllerType getPreferredController() = 0;
 
 
     public:
 
-		const std::string identifier;                                          ///< Makes it easy to distinguish 
+		    const std::string identifier;                                          ///< Makes it easy to distinguish 
                                                                                ///< between states 
   
         const std::string px4_mode;                                            ///< The mode this state represents 
@@ -85,11 +83,10 @@ namespace fluid {
 
         std::vector<geometry_msgs::Point> path;                                ///< The position targets of the state.
 
-        State(std::string identifier, 
-              std::string px4_mode, 
-              bool steady, 
-              bool is_relative, 
-              bool should_check_obstacle_avoidance_completion);
+        State(const std::string identifier, 
+              const std::string px4_mode, 
+              const bool steady, 
+              const bool should_check_obstacle_avoidance_completion);
 
        /**
          * @brief      Returns the current pose, the last pose that the state estimation published on
@@ -137,6 +134,7 @@ namespace fluid {
          * Executes logic at given refresh rate. The state has to set up the current setpoint in the tick method.
          */
         virtual void tick() = 0;
+
 
         /**
          * The transition class has to be able to e.g. set the current pose if we transition to a state which requires 
