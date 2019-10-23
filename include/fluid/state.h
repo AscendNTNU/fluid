@@ -15,6 +15,7 @@
 
 #include "state_identifier.h"
 #include "type_mask.h"
+#include "controller.h"
 
 namespace fluid {
     
@@ -24,7 +25,7 @@ namespace fluid {
      *  The state class is an interface which encapsulates an action. It also handles setpoint publishing.
      */
     class State {
-    protected:
+    private:
 
         ros::NodeHandle node_handle;                                            ///< Node handle for the mavros 
                                                                                 ///< pose publisher
@@ -69,10 +70,14 @@ namespace fluid {
 
         virtual fluid::ControllerType getPreferredController() = 0;
 
+        /**
+         * Calls the path optimizer node to retrive a continous function for the discrete path.
+         */
+        virtual std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const;
 
     public:
 
-		    const std::string identifier;                                          ///< Makes it easy to distinguish 
+		const std::string identifier;                                          ///< Makes it easy to distinguish 
                                                                                ///< between states 
   
         const std::string px4_mode;                                            ///< The mode this state represents 
@@ -99,11 +104,6 @@ namespace fluid {
          * 
          */
         geometry_msgs::TwistStamped getCurrentTwist() const;
-
-        /**
-         * Calls the path optimizer node to retrive a continous function for the discrete path.
-         */
-        std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const;
 
         /**
          * Performs the Ros loop for executing logic within this state given the refresh rate.
