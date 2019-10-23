@@ -6,6 +6,7 @@
 #define FLUID_FSM_HOLD_STATE_H
 
 #include "state.h"
+#include "util.h"
 
 namespace fluid {
 
@@ -14,27 +15,16 @@ namespace fluid {
      */
     class HoldState: public State {
 
+    private:
+        geometry_msgs::Point initial_position;
+
     public:
 
-        /**
-         * Initializes the hold state.
-         */
-        explicit HoldState() : State(fluid::StateIdentifier::Hold, fluid::PX4::Offboard, true, false, true) {}
-
-        /**
-         * Overridden function. @see State::hasFinishedExecution
-         */
+        explicit HoldState() : State(StateIdentifier::Hold, PX4::Offboard, true, false) {}
         bool hasFinishedExecution() override;
-
-        /**
-         * Overridden function. @see State::initialize
-         */
         void initialize() override;
-
-        /**
-         * Overridden function. @see State::tick
-         */
-        void tick() override;
+        std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const override;
+        ControllerType getPreferredController() override;
     };
 }
 

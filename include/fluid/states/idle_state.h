@@ -14,6 +14,8 @@ namespace fluid {
      */
     class IdleState: public State {
 
+    private:
+
         const ros::Duration halt_interval_ = ros::Duration(2.0);        ///< The amoun of time to stay at idle before
                                                                         ///< saying we're finished executing this state.
 
@@ -23,29 +25,16 @@ namespace fluid {
                                                                         ///< make sure that we for example are stable
                                                                         ///< at ground after a land before we do 
                                                                         ///< something else.
+        geometry_msgs::Point idle_setpoint;
 
     public:
 
-        /**
-         * Initializes the idle state.
-         */
-        explicit IdleState() : State(fluid::StateIdentifier::Idle, fluid::PX4::Offboard, true, false, true) {}
-
-        /**
-         * Overridden function. @see State::hasFinishedExecution
-         */
+        explicit IdleState() : State(StateIdentifier::Idle, PX4::Offboard, true, false) {}
         bool hasFinishedExecution() override;
-
-        /**
-         * Overridden function. @see State::initialize
-         */
         void initialize() override;
-
-        /**
-         * Overridden function. @see State::tick
-         */
-        void tick() override;
-    };
+        std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const override;
+        ControllerType getPreferredController() override;
+  };
 }
 
 #endif //FLUID_FSM_IDLE_STATE_H

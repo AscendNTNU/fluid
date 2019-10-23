@@ -10,12 +10,15 @@ bool fluid::IdleState::hasFinishedExecution() {
 }
 
 void fluid::IdleState::initialize() {
-    initial_time_ = ros::Time::now();    
+	idle_setpoint.x = 0.0;
+	idle_setpoint.y = 0.0;
+    idle_setpoint.z = 0.0;
 }
 
-void fluid::IdleState::tick() {
-    setpoint.type_mask = fluid::TypeMask::Idle;
-	setpoint.position.x = 0.0;
-	setpoint.position.y = 0.0;
-    setpoint.position.z = 0.0;
+std::vector<std::vector<double>> fluid::IdleState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) const {
+    return fluid::Util::getSpineForSetpoint(idle_setpoint, idle_setpoint);
+}
+
+fluid::ControllerType fluid::IdleState::getPreferredController() {
+    return ControllerType::Positional;
 }

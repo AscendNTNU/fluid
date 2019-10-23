@@ -9,12 +9,15 @@ bool fluid::HoldState::hasFinishedExecution() {
 }
 
 void fluid::HoldState::initialize() {
-    setpoint.position.x = getCurrentPose().pose.position.x;
-    setpoint.position.y = getCurrentPose().pose.position.y;
-    setpoint.position.z = getCurrentPose().pose.position.z;
+    initial_position.x = getCurrentPose().pose.position.x;
+    initial_position.y = getCurrentPose().pose.position.y;
+    initial_position.z = getCurrentPose().pose.position.z;
 }
 
+std::vector<std::vector<double>> fluid::HoldState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) const {
+    return Util::getSpineForSetpoint(initial_position, initial_position);
+}
 
-void fluid::HoldState::tick() {
-    setpoint.type_mask = fluid::TypeMask::Position;
+fluid::ControllerType fluid::HoldState::getPreferredController() {
+    return ControllerType::Positional;
 }
