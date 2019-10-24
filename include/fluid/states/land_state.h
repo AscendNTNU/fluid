@@ -2,6 +2,7 @@
 #define FLUID_FSM_LAND_STATE_H
 
 #include "state.h"
+#include "util.h"
 
 namespace fluid {
 
@@ -9,6 +10,9 @@ namespace fluid {
      *  \brief Represents the state where the drone is landing. This state happens from the current position.
      */
     class LandState: public State {
+
+    private: 
+        geometry_msgs::Point initial_position;
 
     public:
 
@@ -22,4 +26,4 @@ namespace fluid {
    };
 }
 
-#endif //FLUID_FSM_LAND_STATE_H
+#endif 

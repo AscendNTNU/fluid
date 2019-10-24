@@ -3,16 +3,20 @@
 #include "core.h"
 
 bool fluid::LandState::hasFinishedExecution() {
-    return current_pose_.pose.position.z - 0.0 < 0.05 && 
+    return getCurrentPose().pose.position.z - 0.0 < 0.05 && 
            std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 }
 
 void fluid::LandState::initialize() {
-    setpoint.position.x = getCurrentPose().pose.position.x;
-    setpoint.position.y = getCurrentPose().pose.position.y;
-    setpoint.position.z = 0.0;
+    initial_position.x = getCurrentPose().pose.position.x;
+    initial_position.y = getCurrentPose().pose.position.y;
+    initial_position.z = 0.0;
 }
 
-void fluid::LandState::tick() {
-    setpoint.type_mask = fluid::TypeMask::Position;
+std::vector<std::vector<double>> fluid::LandState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) const {
+    return Util::getSplineForSetpoint(initial_position, initial_position);
+}
+
+fluid::ControllerType fluid::LandState::getPreferredController() {
+    return ControllerType::Positional;
 }
