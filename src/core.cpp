@@ -32,10 +32,6 @@ std::shared_ptr<fluid::StatusPublisher> fluid::Core::getStatusPublisherPtr() {
 	return status_publisher_ptr_;
 }
 
-void fluid::Core::swapController(std::shared_ptr<Controller> controller_ptr) {
-	controller_ptr_ = controller_ptr;
-}
-
 std::shared_ptr<fluid::Controller> fluid::Core::getControllerPtr() {
 	if (!controller_ptr_) {
 		ROS_ERROR("No controller set!");
