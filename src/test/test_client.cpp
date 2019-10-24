@@ -9,7 +9,7 @@ typedef actionlib::SimpleActionClient<ascend_msgs::FluidAction> Client;
 void doneCb(const actionlib::SimpleClientGoalState &state,
 			const ascend_msgs::FluidResultConstPtr &result) {
 	ROS_INFO("Finished in state [%s]", state.toString().c_str());
-	ROS_INFO_STREAM("Final state of the drone: " << result->state.data << ". Pose of the drone: " << result->pose_stamped); 
+	ROS_INFO_STREAM("Final state of the drone: " << result->state << ". Pose of the drone: " << result->pose_stamped); 
 
 	// Do something after we've reached the position sent in the goal
 }
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 	// - land 
 	// - move
 	// - position_follow
-	goal.mode.data = "take_off";
+	goal.state = "take_off";
 
 	// As the drone is currently at the ground, sending this goal will make
 	// the drone initialize and take off.
@@ -52,7 +52,9 @@ int main(int argc, char **argv) {
 	action_client.waitForResult();
 
 	// Send a new goal
-	goal.setpoint.y = 5.0;
+	geometry_msgs::Point setpoint;
+	setpoint.x = 5.0;
+	goal.path = {setpoint};
 	action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
 
 	ros::spin();

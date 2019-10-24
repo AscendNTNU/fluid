@@ -98,7 +98,7 @@ void fluid::Server::start() {
                     ascend_msgs::FluidFeedback feedback;
                     std::shared_ptr<fluid::State> current_state_ptr = Core::getGraphPtr()->current_state_ptr;
                     feedback.pose_stamped = current_state_ptr->getCurrentPose();
-                    feedback.state.data = current_state_ptr->identifier;
+                    feedback.state = current_state_ptr->identifier;
                     actionlib_server_.publishFeedback(feedback);
 
                     return !actionlib_server_.isPreemptRequested() && ros::ok(); 

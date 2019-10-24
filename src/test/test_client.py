@@ -38,7 +38,7 @@ if __name__ == '__main__':
 	    # - land 
 	    # - move
 	    # - position_follow
-        goal.mode.data = "take_off"
+        goal.state = "take_off"
 
         print("Sending goal")
         # Sends the goal to the action server.
@@ -48,14 +48,19 @@ if __name__ == '__main__':
         client.wait_for_result()
 
         # Send a new goal
-        goal.setpoint.y = 45.0
-        goal.setpoint.x = 0.0
-        goal.setpoint.z = 1.2
-        goal.mode.data = "move"
+
+        setpoint = Point()
+
+        setpoint.y = 45.0
+        setpoint.x = 0.0
+        setpoint.z = 1.2
+        goal.path = [setpoint]
+        goal.state = "move"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
 
-        goal.setpoint.z = 20
+        setpoint.z = 20
+        goal.path = [setpoint]
 
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
