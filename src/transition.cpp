@@ -24,7 +24,7 @@ void fluid::Transition::perform() {
     if (source_state_p->px4_mode == destination_state_p->px4_mode) {
 
         fluid::Core::getStatusPublisherPtr()->status.current_state = destination_state_p->identifier;
-        fluid::Core::getStatusPublisherPtr()->status.setpoint = destination_state_p->setpoint.position;
+        fluid::Core::getStatusPublisherPtr()->status.path = destination_state_p->path;
 
         fluid::Core::getGraphPtr()->current_state_ptr = destination_state_p;
         
@@ -45,20 +45,19 @@ void fluid::Transition::perform() {
 
         // Publish poses continuously so PX4 won't complain, have to have tick here so the type mask is 
         // set up correctly
-        source_state_p->tick();
         source_state_p->publishSetpoint();
 
-        fluid::Core::getStatusPublisherPtr()->status.setpoint = source_state_p->setpoint.position;
+        fluid::Core::getStatusPublisherPtr()->status.path = source_state_p->path;
         fluid::Core::getStatusPublisherPtr()->publish();
 
         mavros_state_link_.attemptToSetState(destination_state_p->px4_mode, [&](bool succeeded) {
             // State set succeeded, break from loop
 
-            destination_state_p->current_pose_ = source_state_p->getCurrentPose();
+            destination_state_p->current_pose = source_state_p->getCurrentPose();
             state_is_set = succeeded;
             
             fluid::Core::getStatusPublisherPtr()->status.current_state = destination_state_p->identifier;
-            fluid::Core::getStatusPublisherPtr()->status.setpoint = destination_state_p->setpoint.position;
+            fluid::Core::getStatusPublisherPtr()->status.path = destination_state_p->path;
             fluid::Core::getStatusPublisherPtr()->status.px4_mode = destination_state_p->px4_mode;
 
             fluid::Core::getGraphPtr()->current_state_ptr = destination_state_p;
