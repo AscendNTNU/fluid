@@ -9,7 +9,6 @@
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <ascend_msgs/ObstacleAvoidanceSetpoint.h>
 #include <mavros_msgs/PositionTarget.h>
 
 #include "state_identifier.h"
