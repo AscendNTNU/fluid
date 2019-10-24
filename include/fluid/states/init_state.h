@@ -20,7 +20,6 @@ namespace fluid {
         explicit InitState() : State(fluid::StateIdentifier::Init, fluid::PX4::Offboard, false, false) {}
 
         bool hasFinishedExecution() const override;
-        void initialize() override;
 
         std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const override;
         ControllerType getPreferredController() const override;
