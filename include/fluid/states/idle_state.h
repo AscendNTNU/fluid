@@ -2,6 +2,7 @@
 #define FLUID_FSM_IDLE_STATE_H
 
 #include "state.h"
+#include "util.h"
 
 namespace fluid {
 
