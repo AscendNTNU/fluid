@@ -7,8 +7,7 @@
 #include "util.h"
 #include "core.h"
 
-bool fluid::MoveState::hasFinishedExecution()
-{
+bool fluid::MoveState::hasFinishedExecution() const {
     // TODO: Have to check that we've been through the whole path
     bool atPositionTarget = Util::distanceBetween(current_pose_.pose.position, path.back()) < fluid::Core::distance_completion_threshold &&
                             std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold &&

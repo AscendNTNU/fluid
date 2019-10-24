@@ -12,25 +12,14 @@ namespace fluid {
 
     public:
 
-        /** Initializes the move state.
-         */
-        explicit MoveState() : State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true, false) {}
+        explicit MoveState() : State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true) {}
 
-        /**
-         * Overridden function. @see State::hasFinishedExecution
-         */
-        bool hasFinishedExecution() override;
-
-        /**
-         * Overridden function. @see State::initialize
-         */
+        bool hasFinishedExecution() const override;
         void initialize() override;
 
-        /**
-         * Overridden function. @see State::tick
-         */
-        void tick() override;
-    };
+        ControllerType getPreferredController() const override;
+        std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const override;
+   };
 }
 
-#endif //FLUID_FSM_MOVE_STATE_H
+#endif 

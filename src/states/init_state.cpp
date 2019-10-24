@@ -14,7 +14,7 @@
 #include "mavros_state_link.h"
 #include "util.h"
 
-bool fluid::InitState::hasFinishedExecution() {
+bool fluid::InitState::hasFinishedExecution() const {
     return initialized;
 }
 
@@ -24,7 +24,7 @@ std::vector<std::vector<double>> fluid::InitState::getSplineForPath(const std::v
     return fluid::Util::getSplineForSetpoint(origin, origin);
 }
 
-fluid::ControllerType fluid::InitState::getPreferredController() {
+fluid::ControllerType fluid::InitState::getPreferredController() const {
     return ControllerType::Positional;
 } 
 

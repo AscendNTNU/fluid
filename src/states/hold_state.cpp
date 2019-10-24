@@ -1,6 +1,6 @@
 #include "hold_state.h"
 
-bool fluid::HoldState::hasFinishedExecution() {
+bool fluid::HoldState::hasFinishedExecution() const {
     return true;
 }
 
@@ -14,6 +14,6 @@ std::vector<std::vector<double>> fluid::HoldState::getSplineForPath(const std::v
     return Util::getSplineForSetpoint(initial_position, initial_position);
 }
 
-fluid::ControllerType fluid::HoldState::getPreferredController() {
+fluid::ControllerType fluid::HoldState::getPreferredController() const {
     return ControllerType::Positional;
 }

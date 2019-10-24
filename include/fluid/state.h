@@ -68,7 +68,7 @@ namespace fluid {
     protected:
 
 
-        virtual fluid::ControllerType getPreferredController() = 0;
+        virtual fluid::ControllerType getPreferredController() const;
 
         /**
          * Calls the path optimizer node to retrive a continous function for the discrete path.
@@ -123,7 +123,7 @@ namespace fluid {
         /**
          * @return A flag determining whether the state has finished execution.
          */
-        virtual bool hasFinishedExecution() = 0;
+        virtual bool hasFinishedExecution() const = 0;
 
         /**
          * Gives the state a chance to do some initial setup before this state is executed.

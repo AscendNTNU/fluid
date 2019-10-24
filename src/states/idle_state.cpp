@@ -1,6 +1,6 @@
 #include "idle_state.h"
 
-bool fluid::IdleState::hasFinishedExecution() {
+bool fluid::IdleState::hasFinishedExecution() const {
 
     return ros::Time::now() - initial_time_ > halt_interval_;
 }
@@ -13,6 +13,6 @@ std::vector<std::vector<double>> fluid::IdleState::getSplineForPath(const std::v
     return fluid::Util::getSplineForSetpoint(origin, origin);
 }
 
-fluid::ControllerType fluid::IdleState::getPreferredController() {
+fluid::ControllerType fluid::IdleState::getPreferredController() const {
     return ControllerType::Positional;
 }

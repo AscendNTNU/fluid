@@ -2,7 +2,7 @@
 
 #include "core.h"
 
-bool fluid::LandState::hasFinishedExecution() {
+bool fluid::LandState::hasFinishedExecution() const {
     return getCurrentPose().pose.position.z - 0.0 < 0.05 && 
            std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 }
@@ -17,6 +17,6 @@ std::vector<std::vector<double>> fluid::LandState::getSplineForPath(const std::v
     return Util::getSplineForSetpoint(initial_position, initial_position);
 }
 
-fluid::ControllerType fluid::LandState::getPreferredController() {
+fluid::ControllerType fluid::LandState::getPreferredController() const {
     return ControllerType::Positional;
 }
