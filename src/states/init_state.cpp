@@ -12,14 +12,21 @@
 
 #include "core.h"
 #include "mavros_state_link.h"
+#include "util.h"
 
 bool fluid::InitState::hasFinishedExecution() {
     return initialized;
 }
 
-void fluid::InitState::tick() {
-    // Not implemented as all logic happens inside perform for the init state has we have to arm and set offboard mode
+std::vector<std::vector<double>> fluid::InitState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) const {
+    geometry_msgs::Point origin;
+
+    return fluid::Util::getSplineForSetpoint(origin, origin);
 }
+
+fluid::ControllerType fluid::InitState::getPreferredController() {
+    return ControllerType::Positional;
+} 
 
 void fluid::InitState::perform(std::function<bool (void)> tick, bool ignore_finished_execution) {
 
@@ -50,6 +57,8 @@ void fluid::InitState::perform(std::function<bool (void)> tick, bool ignore_fini
 
     //send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within px4
+    mavros_msgs::PositionTarget setpoint;
+
     setpoint.position.x = 0;
     setpoint.position.y = 0;
     setpoint.position.z = 0;
@@ -57,7 +66,7 @@ void fluid::InitState::perform(std::function<bool (void)> tick, bool ignore_fini
 
     for (int i = Core::refresh_rate*2; ros::ok() && i > 0; --i) {
         publishSetpoint();
-        fluid::Core::getStatusPublisherPtr()->status.setpoint = setpoint.position;
+        fluid::Core::getStatusPublisherPtr()->status.path = {setpoint.position};
         fluid::Core::getStatusPublisherPtr()->publish();
 
         if (!tick()) {
