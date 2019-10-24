@@ -18,7 +18,7 @@ namespace fluid {
 
     public:
 
-        explicit TakeOffState() : State(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard, false, true, true) {}
+        explicit TakeOffState() : State(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard, false, true) {}
 
         bool hasFinishedExecution() const override;
         void initialize() override;
