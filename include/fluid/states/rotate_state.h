@@ -2,6 +2,7 @@
 #define FLUID_ROTATE_STATE_H
 
 #include "state.h"
+#include "util.h"
 
 namespace fluid {
 
@@ -9,27 +10,19 @@ namespace fluid {
      *  \brief Represents the state where the is rotating at the current position.
      */
     class RotateState : public State {
+    private:
+
+        geometry_msgs::Point initial_position;
 
     public:
 
-        /** Initializes the rotate state.
-         */
-        explicit RotateState() : State(fluid::StateIdentifier::Rotate, fluid::PX4::Offboard, false, true, true) {}
+        explicit RotateState() : State(fluid::StateIdentifier::Rotate, fluid::PX4::Offboard, false, true) {}
 
-        /**
-         * Overridden function. @see State::hasFinishedExecution
-         */
-        bool hasFinishedExecution() override;
-
-        /**
-         * Overridden function. @see State::initialize
-         */
+        bool hasFinishedExecution() const override;
         void initialize() override;
 
-        /**
-         * Overridden function. @see State::tick
-         */
-        void tick() override;
+        std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const override;
+        ControllerType getPreferredController() const override;
     };
 }
 

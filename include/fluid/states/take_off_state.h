@@ -2,6 +2,7 @@
 #define FLUID_FSM_TAKE_OFF_STATE_H
 
 #include "state.h"
+#include "util.h"
 
 namespace fluid {
 
@@ -10,26 +11,20 @@ namespace fluid {
      *         so the setpoint is irrelevant. 
      */
     class TakeOffState: public State {
+
+    private:
+
+        geometry_msgs::Point initial_position;
+
     public:
 
-        /** Initializes the take off state.
-         */
         explicit TakeOffState() : State(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard, false, true, true) {}
 
-        /**
-         * Overridden function. @see State::hasFinishedExecution
-         */
-        bool hasFinishedExecution() override;
-
-        /**
-         * Overridden function. @see State::initialize
-         */
+        bool hasFinishedExecution() const override;
         void initialize() override;
 
-        /**
-         * Overridden function. @see State::tick
-         */
-        void tick() override;
+        std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const override;
+        ControllerType getPreferredController() const override;
     };
 }
 

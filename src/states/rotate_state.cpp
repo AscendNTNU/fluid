@@ -7,25 +7,29 @@
 #include "util.h"
 #include "core.h"
 
-bool fluid::RotateState::hasFinishedExecution() {
-    bool atPositionTarget = Util::distanceBetween(current_pose_.pose.position, setpoint.position) < fluid::Core::distance_completion_threshold && 
+bool fluid::RotateState::hasFinishedExecution() const {
+    bool atPositionTarget = Util::distanceBetween(getCurrentPose().pose.position, initial_position) < fluid::Core::distance_completion_threshold && 
     	   				 	std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 
 
 
-    bool atYawTarget = std::abs(Util::angleBetween(current_pose_.pose.orientation, setpoint.yaw)) < fluid::Core::yaw_completion_threshold; 
+    // bool atYawTarget = std::abs(Util::angleBetween(current_pose_.pose.orientation, setpoint.yaw)) < fluid::Core::yaw_completion_threshold; 
 
-    return atYawTarget && atPositionTarget;
+    return /*atYawTarget &&*/ atPositionTarget;
 }
 
 void fluid::RotateState::initialize() {
-    setpoint.position.x = getCurrentPose().pose.position.x;
-    setpoint.position.y = getCurrentPose().pose.position.y;
-    setpoint.position.z = getCurrentPose().pose.position.z;
+    initial_position.x = getCurrentPose().pose.position.x;
+    initial_position.y = getCurrentPose().pose.position.y;
+    initial_position.z = getCurrentPose().pose.position.z;
 }
 
-void fluid::RotateState::tick() {
-    setpoint.type_mask = fluid::TypeMask::Position;
+std::vector<std::vector<double>> fluid::RotateState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) const {
+    return Util::getSplineForSetpoint(initial_position, initial_position);
+}
+
+fluid::ControllerType fluid::RotateState::getPreferredController() const {
+    return ControllerType::Positional; 
 }
