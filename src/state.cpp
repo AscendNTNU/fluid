@@ -11,14 +11,12 @@
 
 fluid::State::State(std::string identifier,
                     std::string px4_mode,
-                    bool steady,
-                    bool override_current_controller, 
-                    bool is_relative) : 
+                    bool steady, 
+                    bool should_check_obstalce_avoidance_completion) : 
 
 					identifier(identifier),
                     px4_mode(px4_mode),
                     steady(steady),
-                    override_current_controller(override_current_controller),
 					pose_subscriber(node_handle.subscribe("mavros/local_position/pose", 
                                      Core::message_queue_size, 
                                      &State::poseCallback, 
