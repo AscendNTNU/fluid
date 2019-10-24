@@ -14,7 +14,7 @@
 namespace fluid {
     class Util {
     public:
-        static double distanceBetween(const geometry_msgs::Point& current, geometry_msgs::Point& target) {
+        static double distanceBetween(const geometry_msgs::Point& current, const geometry_msgs::Point& target) {
             double delta_x = target.x - current.x;
             double delta_y = target.y - current.y;
             double delta_z = target.z - current.z;
