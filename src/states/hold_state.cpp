@@ -15,7 +15,7 @@ void fluid::HoldState::initialize() {
 }
 
 std::vector<std::vector<double>> fluid::HoldState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) const {
-    return Util::getSpineForSetpoint(initial_position, initial_position);
+    return Util::getSplineForSetpoint(initial_position, initial_position);
 }
 
 fluid::ControllerType fluid::HoldState::getPreferredController() {
