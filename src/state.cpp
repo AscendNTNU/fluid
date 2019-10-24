@@ -65,27 +65,6 @@ std::vector<std::vector<double>> fluid::State::getSplineForPath(const std::vecto
     spline.push_back({dy, getCurrentPose().pose.position.y});
     spline.push_back({dz, getCurrentPose().pose.position.z});
 
-    return spline;
-}
-
-void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_steady) {
-
-    ros::Rate rate(Core::refresh_rate);
-
-    initialize();
-
-    ros::Time startTime = ros::Time::now();
-    auto spline = getSplineForPath(path);
-
-    while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
-        this->tick();
-
-        ros::Duration current_time = ros::Time::now() - startTime;
-        setpoint = Core::getControllerPtr()->getSetpoint(getPreferredController(), current_time.toSec(), spline);
-
-        publishSetpoint();
-
-
             // TODO: Add check to replan
 
             /*
@@ -99,11 +78,31 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             */
 
 
+    return spline;
+}
+
+void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_steady) {
+
+    ros::Rate rate(Core::refresh_rate);
+
+    initialize();
+
+    ros::Time startTime = ros::Time::now();
+    auto spline = getSplineForPath(path);
+
+    while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
+
+        ros::Duration current_time = ros::Time::now() - startTime;
+        setpoint = Core::getControllerPtr()->getSetpoint(getPreferredController(), current_time.toSec(), spline);
+
+        publishSetpoint();
+
         /*if (should_check_obstacle_avoidance_completion_ && obstacle_avoidance_completed_) {
             // Obstacle avoidance reported that we've come as far as we can in this state 
             ROS_INFO_STREAM(identifier << ": " << "OA completed");
             break;
         } */        
+
 
         fluid::Core::getStatusPublisherPtr()->status.path = path;
         fluid::Core::getStatusPublisherPtr()->publish();
