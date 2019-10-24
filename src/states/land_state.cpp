@@ -1,8 +1,3 @@
-//
-// Created by simengangstad on 11.10.18.
-//
-
-
 #include "land_state.h"
 
 #include "core.h"

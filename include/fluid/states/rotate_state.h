@@ -1,7 +1,3 @@
-//
-// Created by simengangstad on 09.06.19
-//
-
 #ifndef FLUID_ROTATE_STATE_H
 #define FLUID_ROTATE_STATE_H
 

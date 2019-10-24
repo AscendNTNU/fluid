@@ -1,7 +1,3 @@
-//
-// Created by simengangstad on 11.10.18.
-//
-
 #ifndef FLUID_FSM_MOVE_STATE_H
 #define FLUID_FSM_MOVE_STATE_H
 

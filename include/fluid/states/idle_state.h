@@ -1,7 +1,3 @@
-//
-// Created by simengangstad on 11.10.18.
-//
-
 #ifndef FLUID_FSM_IDLE_STATE_H
 #define FLUID_FSM_IDLE_STATE_H
 
@@ -29,8 +25,10 @@ namespace fluid {
     public:
 
         explicit IdleState() : State(StateIdentifier::Idle, PX4::Offboard, true, false) {}
+        
         bool hasFinishedExecution() override;
         void initialize() override;
+
         std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const override;
         ControllerType getPreferredController() override;
   };

@@ -1,7 +1,3 @@
-//
-// Created by simengangstad on 11.10.18.
-//
-
 #ifndef FLUID_FSM_TAKE_OFF_STATE_H
 #define FLUID_FSM_TAKE_OFF_STATE_H
 

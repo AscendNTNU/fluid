@@ -1,7 +1,3 @@
-//
-// Created by simengangstad on 11.10.18.
-//
-
 #include "idle_state.h"
 
 bool fluid::IdleState::hasFinishedExecution() {

@@ -1,7 +1,3 @@
-//
-//  Created by Simen Gangstad on 15/10/2018.
-//
-
 #ifndef FLUID_FSM_INIT_STATE_H
 #define FLUID_FSM_INIT_STATE_H
 
