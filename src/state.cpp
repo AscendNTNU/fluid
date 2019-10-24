@@ -50,6 +50,10 @@ void fluid::State::publishSetpoint() {
     setpoint_publisher.publish(setpoint);
 }
 
+fluid::ControllerType fluid::State::getPreferredController() const {
+    return ControllerType::Passthrough;
+}
+
 std::vector<std::vector<double>> fluid::State::getSplineForPath(const std::vector<geometry_msgs::Point>& path) const {
     // TODO: Temp, have to implement the call to the service
 
