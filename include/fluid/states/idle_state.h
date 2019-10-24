@@ -25,8 +25,7 @@ namespace fluid {
                                                                         ///< make sure that we for example are stable
                                                                         ///< at ground after a land before we do 
                                                                         ///< something else.
-        geometry_msgs::Point idle_setpoint;
-
+                                                                        
     public:
 
         explicit IdleState() : State(StateIdentifier::Idle, PX4::Offboard, true, false) {}
