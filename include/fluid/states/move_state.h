@@ -16,9 +16,6 @@ namespace fluid {
 
         bool hasFinishedExecution() const override;
         void initialize() override;
-
-        ControllerType getPreferredController() const override;
-        std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const override;
    };
 }
 
