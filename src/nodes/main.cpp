@@ -6,7 +6,6 @@
 
 #include "server.h"
 #include "core.h"
-#include "racing_controller.h"
 
 int main(int argc, char** argv) {
 
@@ -31,7 +30,6 @@ int main(int argc, char** argv) {
 
     fluid::Core::getStatusPublisherPtr()->status.min = fluid::Core::min;
     fluid::Core::getStatusPublisherPtr()->status.min = fluid::Core::max;
-    fluid::Core::swapController(std::make_shared<fluid::RacingController>(publishing_topic));
 
     fluid::Server server;
     server.start();
