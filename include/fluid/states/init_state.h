@@ -6,6 +6,7 @@
 #define FLUID_FSM_INIT_STATE_H
 
 #include "state.h"
+#include "controller.h"
 
 namespace fluid {
 
@@ -16,28 +17,19 @@ namespace fluid {
 
     private:
 
-        bool initialized = false;                                       ///< Tells whether the drone is initialized or not.
+        bool initialized = false;                                       
 
     public:
         
-        /** Initializes the init state.
-         */
-        explicit InitState() : State(fluid::StateIdentifier::Init, fluid::PX4::Offboard, false, false, true) {}
-        
-        /**
-         * Overridden function. @see State::hasFinishedExecution
-         */
+        explicit InitState() : State(fluid::StateIdentifier::Init, fluid::PX4::Offboard, false, false) {}
+
         bool hasFinishedExecution() override;
+        void initialize() override;
 
-        /**
-         * Overridden function. @see State::tick
-         */
-        void tick() override;
+        std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const override;
+        ControllerType getPreferredController() override;
 
-        /**
-         * Overridden function. @see State::perform
-         */
-        void perform(std::function<bool (void)> shouldAbort, bool ignore_finshed_execution) override;
+        void perform(std::function<bool (void)> tick, bool should_halt_if_steady) override;
     };
 }
 
