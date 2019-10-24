@@ -36,8 +36,8 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
 
     auto goal = actionlib_server_.acceptNewGoal();
     std::vector<geometry_msgs::Point> path = goal->path;
-    std::string destination_identifier = goal->state.data;
-    std::string controller = goal->controller.data;
+    std::string destination_identifier = goal->state;
+    std::string controller = goal->controller;
 
     if (controller == "racing") {
         Core::getControllerPtr()->controller_type = fluid::ControllerType::Velocity;
@@ -129,13 +129,13 @@ void fluid::Server::start() {
                     if (completed) {
                         ROS_INFO_STREAM("Operation completed.");
                         result.pose_stamped = Core::getGraphPtr()->current_state_ptr->getCurrentPose();
-                        result.state.data = last_state_ptr->identifier;
+                        result.state = last_state_ptr->identifier;
                         actionlib_server_.setSucceeded(result);
                     }
                     else {
                         ROS_INFO_STREAM("Operation cancelled.");
                         result.pose_stamped = Core::getGraphPtr()->current_state_ptr->getCurrentPose();
-                        result.state.data = last_state_ptr->identifier;
+                        result.state = last_state_ptr->identifier;
                         actionlib_server_.setPreempted(result);
                     }
                 });
