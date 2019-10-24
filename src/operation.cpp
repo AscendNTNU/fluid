@@ -61,15 +61,15 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
         // setpoint yaw
 
         // Retrieve the iterator for rotate in the path
-        auto iterator = std::find_if(path.begin(), path.end(), [] (const std::shared_ptr<fluid::State>& state) -> bool {
+        auto iterator = std::find_if(states.begin(), states.end(), [] (const std::shared_ptr<fluid::State>& state) -> bool {
             return state->identifier == fluid::StateIdentifier::Rotate;
         });
 
         // Go through all states after rotate and set the yaw pointing in the direction we want to move.
-        while (iterator != path.end()) {
+        /*while (iterator != path.end()) {
             (*iterator)->setpoint.yaw = yaw;
             iterator++;
-        }
+        }*/
     }
 
 
