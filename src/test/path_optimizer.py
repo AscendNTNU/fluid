@@ -2,7 +2,7 @@
 
 import rospy
 
-import ascend_msgs.msg
+from ascend_msgs.msg import Spline
 from ascend_msgs.srv import PathOptimizerService, PathOptimizerServiceResponse, PathOptimizerServiceRequest
 from geometry_msgs.msg import Point, PoseStamped, TwistStamped
 from sensor_msgs.msg import Imu
@@ -24,28 +24,19 @@ def constructSpline(request):
 
         time += sqrt(dx*dx + dy*dy + dz*dz) * 10.0
 
-        splines.extend([0, 0, 0, 0, dx, start_point.x])
-        splines.extend([0, 0, 0, 0, dy, start_point.y])
-        splines.extend([0, 0, 0, 0, dz, start_point.z])
-        timestamps.append(time)
+        spline = Spline()
 
-    return PathOptimizerServiceResponse(splines, timestamps)
+        spline.x = [0, 0, 0, 0, dx, start_point.x]
+        spline.y = [0, 0, 0, 0, dy, start_point.y]
+        spline.z = [0, 0, 0, 0, dz, start_point.z]
+        spline.timestamp = time;
+
+        splines.append(spline)
+
+
+    return PathOptimizerServiceResponse(splines)
 
 if __name__ == '__main__':
     rospy.init_node('path_optimizer')
     service = rospy.Service("/control/path_optimizer", PathOptimizerService, constructSpline)
-    rospy.wait_for_service("/control/path_optimizer")
-    pathOptimizer = rospy.ServiceProxy("/control/path_optimizer", PathOptimizerService)
-    pose_stamped = PoseStamped()
-    twist_stamped = TwistStamped()
-    imu = Imu()
-    path = []
-    first = Point()
-    first.x = 2.0
-    path.append(first)
-    second = Point()
-    second.x = 0.0
-    second.y = 2.0
-    path.append(second)
-    response = pathOptimizer(pose_stamped, twist_stamped, imu, path) 
     rospy.spin()
