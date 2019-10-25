@@ -10,7 +10,8 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/PositionTarget.h>
-
+#include <ascend_msgs/Spline.h>
+#include <ascend_msgs/PathOptimizerService.h>
 
 #include "state_identifier.h"
 #include "type_mask.h"
@@ -73,7 +74,7 @@ namespace fluid {
         /**
          * Calls the path optimizer node to retrive a continous function for the discrete path.
          */
-        virtual std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path);
+        virtual std::vector<ascend_msgs::Spline> getSplineForPath(const std::vector<geometry_msgs::Point>& path);
 
     public:
 
