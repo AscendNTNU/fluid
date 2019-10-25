@@ -18,7 +18,7 @@ bool fluid::InitState::hasFinishedExecution() const {
     return initialized;
 }
 
-std::vector<std::vector<double>> fluid::InitState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) const {
+std::vector<std::vector<double>> fluid::InitState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) {
     geometry_msgs::Point origin;
 
     return fluid::Util::getSplineForSetpoint(origin, origin);
