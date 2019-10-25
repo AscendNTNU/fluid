@@ -6,10 +6,12 @@
 
     <!-- Test for path optimizer -->
     <node name="path_optimizer" pkg="fluid" type="path_optimizer.py" output="screen"/>
+    <node name="path_publisher" pkg="fluid" type="path_publisher.py" output="screen"/>
 
     <include file="$(find fluid)/launch/server_base.launch">
         <arg name="fcu_url" value="udp://localhost:$(arg offboard_api_port)@localhost:$(arg fcu_api_port)"/>
         <arg name="auto_arm" value="true"/>
         <arg name="auto_offboard" value="true"/>
+        <arg name="flip_xy" value="true"/>
     </include>
 </launch>
