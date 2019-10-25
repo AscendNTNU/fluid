@@ -1,4 +1,10 @@
 <launch>
+    <arg name="start_full_feedback" default="false"/>
+
+    <group if="$(arg start_full_feedback)">
+        <include file="$(find control_test_nodes)/launch/fullFeedback.launch"/>
+    </group>
+
     <include file="$(find fluid)/launch/server_base.launch">
         <arg name="fcu_url" value="/dev/ttyPixhawk:921600"/>
         <arg name="px4_id" value="0"/>
