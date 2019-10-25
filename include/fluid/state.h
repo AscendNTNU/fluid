@@ -11,6 +11,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/PositionTarget.h>
 
+
 #include "state_identifier.h"
 #include "type_mask.h"
 #include "controller.h"
@@ -50,7 +51,7 @@ namespace fluid {
         
         mavros_msgs::PositionTarget setpoint;                   
 
-        const ros::Publisher setpoint_publisher;                                ///< Publishes setpoints for this state.
+        ros::Publisher setpoint_publisher;                                      ///< Publishes setpoints for this state.
 
 
         const bool steady;                                                      ///< Determines whether this state is
@@ -65,13 +66,14 @@ namespace fluid {
 
     protected:
 
+        ros::ServiceClient path_optimizer_client;
 
         virtual fluid::ControllerType getPreferredController() const;
 
         /**
          * Calls the path optimizer node to retrive a continous function for the discrete path.
          */
-        virtual std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path) const;
+        virtual std::vector<std::vector<double>> getSplineForPath(const std::vector<geometry_msgs::Point>& path);
 
     public:
 
