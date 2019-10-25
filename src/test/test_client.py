@@ -16,11 +16,11 @@ def active_callback():
     print("Goal active!")
 
 def feedback_callback(feedback):
-    print("Feedback - " + "Current state: " + feedback.state.data + "\n Current pose: " + str(feedback.pose_stamped))
+    print("Feedback - " + "Current state: " + feedback.state + "\n Current pose: " + str(feedback.pose_stamped))
     # Do something with the pose: feedback.pose_stamped
 
 def done_callback(state, result):
-    print("Finshed with state: " + str(state) + "\nFinal Fluid state: " + result.state.data + "\n Final pose: " + str(result.pose_stamped))
+    print("Finshed with state: " + str(state) + "\nFinal Fluid state: " + result.state + "\n Final pose: " + str(result.pose_stamped))
     # Do something with the pose: feedback.pose_stamped
 
 if __name__ == '__main__':
@@ -39,6 +39,7 @@ if __name__ == '__main__':
 	    # - move
 	    # - position_follow
         goal.state = "take_off"
+        goal.controller = "racing"
 
         print("Sending goal")
         # Sends the goal to the action server.
@@ -49,18 +50,24 @@ if __name__ == '__main__':
 
         # Send a new goal
 
-        setpoint = Point()
+        first = Point()
+        second = Point()
 
-        setpoint.y = 45.0
-        setpoint.x = 0.0
-        setpoint.z = 1.2
-        goal.path = [setpoint]
+        first.x = 10.0
+        first.y = 0.0
+        first.z = 1.0
+
+        second.x = 10.0
+        second.y = 0.0
+        second.z = 1.0
+
+        goal.path = [first]
         goal.state = "move"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
 
-        setpoint.z = 20
-        goal.path = [setpoint]
+        first.z = 15
+        goal.path = [first]
 
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
