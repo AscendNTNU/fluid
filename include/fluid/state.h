@@ -74,7 +74,7 @@ namespace fluid {
         /**
          * Calls the path optimizer node to retrive a continous function for the discrete path.
          */
-        virtual std::vector<ascend_msgs::Spline> getSplineForPath(const std::vector<geometry_msgs::Point>& path);
+        virtual std::vector<ascend_msgs::Spline> getSplinesForPath(const std::vector<geometry_msgs::Point>& path);
 
     public:
 

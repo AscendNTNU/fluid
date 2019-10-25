@@ -19,7 +19,7 @@ void fluid::TakeOffState::initialize() {
 	}
 }
 
-std::vector<ascend_msgs::Spline> fluid::TakeOffState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) {
+std::vector<ascend_msgs::Spline> fluid::TakeOffState::getSplinesForPath(const std::vector<geometry_msgs::Point>& path) {
     return Util::getSplineForSetpoint(initial_position, initial_position);
 }
 

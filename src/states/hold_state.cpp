@@ -10,7 +10,7 @@ void fluid::HoldState::initialize() {
     initial_position.z = getCurrentPose().pose.position.z;
 }
 
-std::vector<ascend_msgs::Spline> fluid::HoldState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) {
+std::vector<ascend_msgs::Spline> fluid::HoldState::getSplinesForPath(const std::vector<geometry_msgs::Point>& path) {
     return Util::getSplineForSetpoint(initial_position, initial_position);
 }
 

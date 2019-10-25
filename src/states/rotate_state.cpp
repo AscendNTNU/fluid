@@ -26,7 +26,7 @@ void fluid::RotateState::initialize() {
     initial_position.z = getCurrentPose().pose.position.z;
 }
 
-std::vector<ascend_msgs::Spline> fluid::RotateState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) {
+std::vector<ascend_msgs::Spline> fluid::RotateState::getSplinesForPath(const std::vector<geometry_msgs::Point>& path) {
     return Util::getSplineForSetpoint(initial_position, initial_position);
 }
 

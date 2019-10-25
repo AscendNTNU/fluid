@@ -21,7 +21,7 @@ namespace fluid {
 
         bool hasFinishedExecution() const override;
 
-        std::vector<ascend_msgs::Spline> getSplineForPath(const std::vector<geometry_msgs::Point>& path) override;
+        std::vector<ascend_msgs::Spline> getSplinesForPath(const std::vector<geometry_msgs::Point>& path) override;
         ControllerType getPreferredController() const override;
 
         void perform(std::function<bool (void)> tick, bool should_halt_if_steady) override;

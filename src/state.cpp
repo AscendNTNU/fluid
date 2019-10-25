@@ -62,7 +62,7 @@ fluid::ControllerType fluid::State::getPreferredController() const {
     return ControllerType::Passthrough;
 }
 
-std::vector<ascend_msgs::Spline> fluid::State::getSplineForPath(const std::vector<geometry_msgs::Point>& path) {
+std::vector<ascend_msgs::Spline> fluid::State::getSplinesForPath(const std::vector<geometry_msgs::Point>& path) {
     ascend_msgs::PathOptimizerService path_optimizer_service;
     path_optimizer_service.request.pose = getCurrentPose();
     path_optimizer_service.request.twist = getCurrentTwist();
@@ -85,7 +85,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     initialize();
 
     ros::Time startTime = ros::Time::now();
-    auto spline = getSplineForPath(path);
+    std::vector<ascend_msgs::Spline> splines = getSplinesForPath(path);
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
 
