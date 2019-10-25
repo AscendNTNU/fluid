@@ -3,6 +3,10 @@
     <arg name="offboard_api_port" default="14540"/> <!-- port which mavros listens to px4 on -->
     <arg name="fcu_api_port" default="14550"/> <!-- port which px4 listens to mavros on -->
 
+
+    <!-- Test for path optimizer -->
+    <node name="path_optimizer" pkg="fluid" type="path_optimizer.py" output="screen"/>
+
     <include file="$(find fluid)/launch/server_base.launch">
         <arg name="fcu_url" value="udp://localhost:$(arg offboard_api_port)@localhost:$(arg fcu_api_port)"/>
         <arg name="auto_arm" value="true"/>
