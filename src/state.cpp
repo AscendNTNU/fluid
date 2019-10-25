@@ -86,11 +86,19 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
 
     ros::Time startTime = ros::Time::now();
     std::vector<ascend_msgs::Spline> splines = getSplinesForPath(path);
+    ascend_msgs::Spline current_spline = splines[0];
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
 
         ros::Duration current_time = ros::Time::now() - startTime;
-        setpoint = Core::getControllerPtr()->getSetpoint(getPreferredController(), current_time.toSec(), spline);
+
+        for (auto spline : splines) {
+            if (current_time.toSec() < spline.timestamp) {
+                current_spline = spline;
+            }
+        }
+
+        setpoint = Core::getControllerPtr()->getSetpoint(getPreferredController(), current_time.toSec(), current_spline);
 
         publishSetpoint();
 
