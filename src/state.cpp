@@ -63,8 +63,6 @@ fluid::ControllerType fluid::State::getPreferredController() const {
 }
 
 std::vector<ascend_msgs::Spline> fluid::State::getSplineForPath(const std::vector<geometry_msgs::Point>& path) {
-    // TODO: Temp, have to implement the call to the service
-
     ascend_msgs::PathOptimizerService path_optimizer_service;
     path_optimizer_service.request.pose = getCurrentPose();
     path_optimizer_service.request.twist = getCurrentTwist();

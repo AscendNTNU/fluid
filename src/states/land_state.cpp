@@ -13,7 +13,7 @@ void fluid::LandState::initialize() {
     initial_position.z = 0.0;
 }
 
-std::vector<std::vector<double>> fluid::LandState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) {
+std::vector<ascend_msgs::Spline> fluid::LandState::getSplineForPath(const std::vector<geometry_msgs::Point>& path) {
     return Util::getSplineForSetpoint(initial_position, initial_position);
 }
 
