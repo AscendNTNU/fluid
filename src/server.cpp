@@ -49,9 +49,14 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
         Core::getControllerPtr()->controller_type = fluid::ControllerType::Positional;
     }
 
+    geometry_msgs::Point current_position = fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position;
+
+    if (path.empty()) {
+        path.push_back(current_position);
+    }
+
     Core::getStatusPublisherPtr()->status.path = path;
 
-    geometry_msgs::Point current_position = fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position;
     current_position.z = 0;
     geometry_msgs::Point last_setpoint = path.back();
     last_setpoint.z = 0;
