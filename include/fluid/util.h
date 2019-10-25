@@ -10,6 +10,8 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
+#include <ascend_msgs/Spline.h>
+#include <vector>
 
 namespace fluid {
     class Util {
@@ -60,19 +62,26 @@ namespace fluid {
             return result;
         }
 
-        static std::vector<std::vector<double>> getSplineForSetpoint(const geometry_msgs::Point& current_position, 
+        static std::vector<ascend_msgs::Spline> getSplineForSetpoint(const geometry_msgs::Point& current_position, 
                                                                      const geometry_msgs::Point& setpoint) {
-            std::vector<std::vector<double>> spline;
+            ascend_msgs::Spline spline;
 
             double dx = setpoint.x - current_position.x;
             double dy = setpoint.y - current_position.y;
             double dz = setpoint.z - current_position.z;
 
-            spline.push_back({dx, current_position.x});
-            spline.push_back({dy, current_position.y});
-            spline.push_back({dz, current_position.z});
+            double timestamp = std::sqrt(dx*dx + dy*dy + dz*dz) * 10;
 
-            return spline;
+            std::vector<double> x = {0, 0, 0, 0, dx, current_position.x};
+            std::vector<double> y = {0, 0, 0, 0, dy, current_position.y};
+            std::vector<double> z = {0, 0, 0, 0, dz, current_position.z};
+
+            spline.x.insert(spline.x.end(), x.begin(), x.end());
+            spline.y.insert(spline.y.end(), y.begin(), y.end());
+            spline.z.insert(spline.z.end(), z.begin(), z.end());
+            spline.timestamp = timestamp;
+
+            return {spline};
         }
     };
 }
