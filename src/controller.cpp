@@ -4,7 +4,7 @@
 
 mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const ControllerType preferred_controller, 
                                                            const double& time, 
-                                                           const std::vector<std::vector<double>>& spline) const {
+                                                           const ascend_msgs::Spline& spline) const {
 
     mavros_msgs::PositionTarget setpoint;
 
@@ -22,18 +22,18 @@ mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const ControllerType 
 
         case ControllerType::Positional:
  
-            setpoint.position.x = Util::evaluatePolynomial(time, spline[0]);
-            setpoint.position.y = Util::evaluatePolynomial(time, spline[1]);
-            setpoint.position.z = Util::evaluatePolynomial(time, spline[2]);
+            setpoint.position.x = Util::evaluatePolynomial(time, spline.x);
+            setpoint.position.y = Util::evaluatePolynomial(time, spline.y);
+            setpoint.position.z = Util::evaluatePolynomial(time, spline.z);
             setpoint.yaw = std::atan2(setpoint.position.y, setpoint.position.x);
             setpoint.type_mask = TypeMask::Position;
             break;
 
         case ControllerType::Velocity:
 
-            setpoint.velocity.x = Util::derivePolynomial(time, spline[0]);
-            setpoint.velocity.y = Util::derivePolynomial(time, spline[1]);
-            setpoint.velocity.z = Util::derivePolynomial(time, spline[2]);
+            setpoint.velocity.x = Util::derivePolynomial(time, spline.x);
+            setpoint.velocity.y = Util::derivePolynomial(time, spline.y);
+            setpoint.velocity.z = Util::derivePolynomial(time, spline.z);
             setpoint.type_mask = TypeMask::Velocity;
             setpoint.yaw = std::atan2(setpoint.velocity.y, setpoint.velocity.x);
             setpoint.coordinate_frame = 1;

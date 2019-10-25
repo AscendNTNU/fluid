@@ -6,6 +6,8 @@
 #include <vector>
 #include <string>
 #include <mavros_msgs/PositionTarget.h>
+#include <ascend_msgs/Spline.h>
+
 namespace fluid {
 
     enum class ControllerType {
@@ -21,7 +23,7 @@ namespace fluid {
 
            mavros_msgs::PositionTarget getSetpoint(const ControllerType preferred_controller, 
                                                    const double& time, 
-                                                   const std::vector<std::vector<double>>& spline) const;
+                                                   const ascend_msgs::Spline& spline) const;
     };
 }
 
