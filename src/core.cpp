@@ -34,8 +34,7 @@ std::shared_ptr<fluid::StatusPublisher> fluid::Core::getStatusPublisherPtr() {
 
 std::shared_ptr<fluid::Controller> fluid::Core::getControllerPtr() {
 	if (!controller_ptr_) {
-		ROS_ERROR("No controller set!");
-		return nullptr;
+		controller_ptr_ = std::make_shared<fluid::Controller>();
 	}
 
 	return controller_ptr_;
