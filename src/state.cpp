@@ -9,6 +9,7 @@
 
 #include <utility>
 
+#include "util.h"
 #include "core.h"
 
 fluid::State::State(std::string identifier,
@@ -71,7 +72,7 @@ std::vector<ascend_msgs::Spline> fluid::State::getSplineForPath(const std::vecto
     path_optimizer_service.request.path = path;
 
     if (path_optimizer_client.call(path_optimizer_service)) {
-        return path_optimizer_service.response.splines
+        return path_optimizer_service.response.splines;
     }
     else {
         ROS_FATAL("Could not call path optimizer! Returning a spline containing the current position...");
