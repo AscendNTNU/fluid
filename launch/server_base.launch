@@ -17,6 +17,12 @@
   <node name="fluid_server" pkg="fluid" type="server" output="screen" args="$(arg setpoint_subscription_topic)"/>
   <node name="setpoint_publisher" pkg="fluid" type="setpoint_publisher" output="screen" args="$(arg setpoint_subscription_topic) $(arg setpoint_publish_topic) $(arg flip_xy)"/>
 
+  <node name="path_optimizer" pkg="fluid" type="path_optimizer.py" output="screen"/>
+  <node name="spline_generator" pkg="fluid" type="spline_generator.py" output="screen"/>
+  <node name="path_publisher" pkg="fluid" type="path_publisher.py" output="screen"/>
+  <node name="lqr" pkg="fluid" type="lqr.py" output="screen"/>
+
+
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url" value="$(arg fcu_url)"/>
     <arg name="log_output" value="log"/>
