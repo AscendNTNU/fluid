@@ -22,7 +22,11 @@ def constructSpline(request):
         dy = end_point.y - start_point.y
         dz = end_point.z - start_point.z
 
-        time += sqrt(dx*dx + dy*dy + dz*dz) * 10.0
+        time += sqrt(dx*dx + dy*dy + dz*dz)
+
+        dx /= time
+        dy /= time
+        dz /= time
 
         spline = Spline()
 
@@ -33,6 +37,8 @@ def constructSpline(request):
 
         splines.append(spline)
 
+
+    print(spline)
 
     return PathOptimizerServiceResponse(splines)
 
