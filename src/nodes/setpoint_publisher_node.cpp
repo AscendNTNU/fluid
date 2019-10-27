@@ -45,14 +45,6 @@ int main(int argc, char** argv) {
 
         if (position_is_set) {
             if (flip_xy) {
-                double temp = setpoint.position.x;
-                setpoint.position.x = setpoint.position.y;
-                setpoint.position.y = temp;
-
-                temp = setpoint.velocity.x;
-                setpoint.velocity.x = setpoint.velocity.y;
-                setpoint.velocity.y = temp;
-
                 setpoint.yaw += M_PI / 2.0;
             }
 
