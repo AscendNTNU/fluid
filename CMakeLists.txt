@@ -3,6 +3,10 @@ project(fluid)
 add_compile_options(-std=c++14)
 
 # Find catkin macros and libraries
+
+find_package(catkin REQUIRED cmake_modules)
+find_package(Eigen3)
+
 find_package(catkin REQUIRED COMPONENTS
         ascend_msgs
         roscpp
@@ -10,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
         actionlib
         tf2
 )
-
 catkin_package(
         INCLUDE_DIRS include
         CATKIN_DEPENDS ascend_msgs roscpp
@@ -23,6 +26,7 @@ include_directories(include
         include/fluid/states
         include/fluid/controllers
         ${catkin_INCLUDE_DIRS}
+        ${Eigen_INCLUDE_DIRS}
 )
 
 # Retrieve all the source files using GLOB
