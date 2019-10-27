@@ -10,6 +10,7 @@ import actionlib
 
 import ascend_msgs.msg
 from geometry_msgs.msg import Point
+from ascend_msgs.srv import SplineService, LQR
 
 
 def active_callback():
@@ -26,7 +27,7 @@ def done_callback(state, result):
 if __name__ == '__main__':
     try:
         rospy.init_node('fluid_client')
-        
+
         client = actionlib.SimpleActionClient('fluid_operation', ascend_msgs.msg.FluidAction)
         client.wait_for_server()
 
@@ -53,21 +54,21 @@ if __name__ == '__main__':
         first = Point()
         second = Point()
 
-        first.x = 10.0
-        first.y = 0.0
+        first.x = 20.0
+        first.y = 20.0
         first.z = 1.0
 
-        second.x = 10.0
+        second.x = 40.0
         second.y = 0.0
         second.z = 1.0
 
-        goal.path = [first]
+        goal.path = [first, second]
         goal.state = "move"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
 
-        first.z = 15
-        goal.path = [first]
+        second.z = 15
+        goal.path = [second]
 
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
