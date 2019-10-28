@@ -20,7 +20,7 @@ namespace fluid {
     };
 
     struct Result {
-        const double delta, error, error_in_yaw, acceleration;
+        const double delta, error, error_in_yaw, target_yaw, acceleration;
     };
 
     class LQR {

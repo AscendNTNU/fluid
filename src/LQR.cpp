@@ -128,5 +128,5 @@ fluid::Result fluid::LQR::control_law(geometry_msgs::Pose pose,
     double delta = feed_forward_steering_angle + feedback_steering_angle;
     double acceleration = u(1, 0);
 
-    return Result {delta, nearest_index_result.error, error_in_yaw, acceleration};
+    return Result {delta, nearest_index_result.error, error_in_yaw, path.yaw[nearest_index_result.index], acceleration};
 }
