@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         genmsg
         actionlib
+        visualization_msgs
         tf2
 )
 catkin_package(
