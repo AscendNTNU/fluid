@@ -4,6 +4,11 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include "core.h"
 
+
+fluid::LQR::LQR() {
+    Q(0, 0) = 10.0;
+}
+
 double fluid::LQR::clampAngle(double angle) const {
     return std::fmod(angle + M_PI, 2.0 * M_PI) - M_PI;
 }
@@ -80,8 +85,6 @@ fluid::Result fluid::LQR::control_law(geometry_msgs::Pose pose,
                                       std::vector<double> speed_profile) {
 
     
-    Q(0, 0) = 10.0;
-
     const NearestIndexResult nearest_index_result = calculateNearestIndex(pose, twist, path);
 
     const double target_speed     = speed_profile[nearest_index_result.index];
@@ -125,8 +128,8 @@ fluid::Result fluid::LQR::control_law(geometry_msgs::Pose pose,
 
     double feed_forward_steering_angle = std::atan2(curvature, 1);
     double feedback_steering_angle     = clampAngle(u(0, 0));
-    double delta = feed_forward_steering_angle + feedback_steering_angle;
-    double acceleration = u(1, 0);
+    double delta                       = feed_forward_steering_angle + feedback_steering_angle;
+    double acceleration                = u(1, 0);
 
-    return Result {delta, nearest_index_result.error, error_in_yaw, path.yaw[nearest_index_result.index], acceleration};
+    return Result {delta, path.x[nearest_index_result.index], path.y[nearest_index_result.index], nearest_index_result.error, error_in_yaw, path.yaw[nearest_index_result.index], acceleration};
 }

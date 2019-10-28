@@ -20,7 +20,7 @@ namespace fluid {
     };
 
     struct Result {
-        const double delta, error, error_in_yaw, target_yaw, acceleration;
+        const double delta, x, y, error, error_in_yaw, target_yaw, acceleration;
     };
 
     class LQR {
@@ -47,6 +47,8 @@ namespace fluid {
                                              const Eigen::Matrix<double, 2, 2>& R) const;
 
         public:
+
+            LQR();
 
             Result control_law(geometry_msgs::Pose pose, geometry_msgs::Twist twist, Path path, double previous_error, double previous_error_in_yaw, std::vector<double> speed_profile);
  
