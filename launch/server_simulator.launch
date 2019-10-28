@@ -2,6 +2,9 @@
     <!-- Derived parameters -->
     <arg name="offboard_api_port" default="14540"/> <!-- port which mavros listens to px4 on -->
     <arg name="fcu_api_port" default="14550"/> <!-- port which px4 listens to mavros on -->
+    <arg name="launch_rviz" default="True"/>
+
+    <node if="$(arg launch_rviz)" type="rviz" name="rviz" pkg="rviz" args="-d $(find fluid)/rviz_configs/fluid.rviz" />
 
     <include file="$(find fluid)/launch/server_base.launch">
         <arg name="fcu_url" value="udp://localhost:$(arg offboard_api_port)@localhost:$(arg fcu_api_port)"/>
