@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 
         if (position_is_set) {
             if (flip_xy) {
-                setpoint.yaw += M_PI / 2.0;
+                // setpoint.yaw += M_PI / 2.0;
             }
 
             publisher.publish(setpoint);
