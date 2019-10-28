@@ -146,6 +146,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     fluid::LQR lqr;
     ros::Publisher spline_path_publisher = node_handle.advertise<visualization_msgs::Marker>("spline_path", 10);
     ros::Publisher target_odometry_publisher = node_handle.advertise<visualization_msgs::Marker>("target_odometry", 10);
+    ros::Publisher nearest_point_publisher = node_handle.advertise<visualization_msgs::Marker>("nearest_point", 10);
 
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
@@ -186,7 +187,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
         if (getPreferredController() != ControllerType::Positional) {
 
             fluid::Path path{spline_response.cx, spline_response.cy, spline_response.cyaw, spline_response.ck};
-            fluid::Result result = lqr.control_law(getCurrentPose().pose, getCurrentTwist().twist, path, e, e_th, calculateSpeedProfile(path.yaw, 10.0 / 3.6));
+            fluid::Result result = lqr.control_law(getCurrentPose().pose, getCurrentTwist().twist, path, e, e_th, calculateSpeedProfile(path.yaw, 2.0 / 3.6));
 
             e = result.error;
             e_th = result.error_in_yaw;
@@ -198,14 +199,17 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             if (!std::isfinite(yaw)) {
                 yaw = 0;
             }
- 
+
+            double dx = getCurrentTwist().twist.linear.x;
+            double dy = getCurrentTwist().twist.linear.y;
+
             setpoint.type_mask = TypeMask::Velocity;
-            setpoint.yaw = result.target_yaw; 
-            setpoint.velocity.x += result.acceleration * std::cos(M_PI - setpoint.yaw) * 0.05;
-            setpoint.velocity.y += result.acceleration * std::sin(M_PI - setpoint.yaw) * 0.05;
+            setpoint.yaw = yaw + sqrt(dx*dx + dy*dy) * tan(result.delta) * 0.05;
+            setpoint.velocity.x = dx + result.acceleration * std::cos(setpoint.yaw) * 0.05; 
+            setpoint.velocity.y = dy + result.acceleration * std::sin(setpoint.yaw) * 0.05;
             setpoint.velocity.z = 0.0;
             setpoint.coordinate_frame = 1; 
-            
+
             visualization_msgs::Marker target_odometry;
             target_odometry.header.frame_id = "odom";
             target_odometry.header.stamp = ros::Time();
@@ -215,7 +219,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             target_odometry.pose.position.x = getCurrentPose().pose.position.x;
             target_odometry.pose.position.y = getCurrentPose().pose.position.y;
             target_odometry.pose.position.z = getCurrentPose().pose.position.z;
-            target_odometry.scale.x = 1.0;
+            target_odometry.scale.x = result.acceleration;
             target_odometry.scale.y = 0.05;
             target_odometry.scale.z = 0.05;
 
@@ -226,7 +230,26 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
 
             target_odometry.color.a = 1.0;
             target_odometry.color.b = 1.0;
+
             target_odometry_publisher.publish(target_odometry);
+
+            visualization_msgs::Marker nearest_point;
+            nearest_point.header.frame_id = "map";
+            nearest_point.header.stamp = ros::Time();
+            nearest_point.id = 2;
+            nearest_point.type = visualization_msgs::Marker::SPHERE;
+            nearest_point.action = visualization_msgs::Marker::ADD;
+            nearest_point.pose.position.x = result.x; 
+            nearest_point.pose.position.y = result.y;
+            nearest_point.pose.position.z = 1.0;
+            nearest_point.scale.x = 0.5;
+            nearest_point.scale.y = 0.5;
+            nearest_point.scale.z = 0.5;
+            nearest_point.color.a = 1.0;
+            nearest_point.color.r = 1.0;
+            nearest_point.color.g = 1.0;
+
+            nearest_point_publisher.publish(nearest_point);
 
        }
         else {
