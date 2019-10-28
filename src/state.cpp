@@ -6,6 +6,8 @@
 
 #include <mavros_msgs/PositionTarget.h>
 #include <sensor_msgs/Imu.h>
+#include <visualization_msgs/Marker.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <ascend_msgs/SplineService.h>
 #include <ascend_msgs/LQR.h>
@@ -141,22 +143,46 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
 
     e = e_th = 0;
 
-
-    ros::ServiceClient lqr_client = node_handle.serviceClient<ascend_msgs::LQR>("/control/lqr");
     fluid::LQR lqr;
+    ros::Publisher spline_path_publisher = node_handle.advertise<visualization_msgs::Marker>("spline_path", 10);
+    ros::Publisher target_odometry_publisher = node_handle.advertise<visualization_msgs::Marker>("target_odometry", 10);
+
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
 
-         
-        ros::Duration current_time = ros::Time::now() - startTime;
 
+        visualization_msgs::Marker spline_path;
+        spline_path.header.frame_id = "/map";
+        spline_path.header.stamp = ros::Time::now();
+        spline_path.action = visualization_msgs::Marker::ADD;
+        spline_path.id = 0;
+        spline_path.type = visualization_msgs::Marker::LINE_STRIP;
+        spline_path.scale.x = 0.05;
+        spline_path.color.b = 1.0;
+        spline_path.color.a = 1.0;
+
+        for (unsigned int i = 0; i < spline_response.cx.size(); ++i) {
+
+            geometry_msgs::Point p;
+            p.x = spline_response.cx[i];
+            p.y = spline_response.cy[i]; 
+            p.z = 1.0;
+
+            spline_path.points.push_back(p);
+        }
+
+
+        spline_path_publisher.publish(spline_path);
+
+        ros::Duration current_time = ros::Time::now() - startTime;
+/*
         for (auto spline : splines) {
 
             if (current_time.toSec() < spline.timestamp) {
                 current_spline = spline;
             }
         }
-
+*/
         if (getPreferredController() != ControllerType::Positional) {
 
             fluid::Path path{spline_response.cx, spline_response.cy, spline_response.cyaw, spline_response.ck};
@@ -172,14 +198,37 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             if (!std::isfinite(yaw)) {
                 yaw = 0;
             }
-
+ 
             setpoint.type_mask = TypeMask::Velocity;
-            setpoint.yaw += sqrt(pow(setpoint.velocity.x, 2) + pow(setpoint.velocity.y, 2)) * tan(result.delta) * 0.05;
-            setpoint.velocity.x += result.acceleration * std::cos(yaw) * 0.05;
-            setpoint.velocity.y += result.acceleration * std::sin(yaw) * 0.05;
+            setpoint.yaw = result.target_yaw; 
+            setpoint.velocity.x += result.acceleration * std::cos(M_PI - setpoint.yaw) * 0.05;
+            setpoint.velocity.y += result.acceleration * std::sin(M_PI - setpoint.yaw) * 0.05;
             setpoint.velocity.z = 0.0;
             setpoint.coordinate_frame = 1; 
-        }
+            
+            visualization_msgs::Marker target_odometry;
+            target_odometry.header.frame_id = "odom";
+            target_odometry.header.stamp = ros::Time();
+            target_odometry.id = 1;
+            target_odometry.type = visualization_msgs::Marker::ARROW;
+            target_odometry.action = visualization_msgs::Marker::ADD;
+            target_odometry.pose.position.x = getCurrentPose().pose.position.x;
+            target_odometry.pose.position.y = getCurrentPose().pose.position.y;
+            target_odometry.pose.position.z = getCurrentPose().pose.position.z;
+            target_odometry.scale.x = 1.0;
+            target_odometry.scale.y = 0.05;
+            target_odometry.scale.z = 0.05;
+
+            tf2::Quaternion quat;
+            quat.setRPY(0, 0, setpoint.yaw);
+
+            target_odometry.pose.orientation = tf2::toMsg(quat);
+
+            target_odometry.color.a = 1.0;
+            target_odometry.color.b = 1.0;
+            target_odometry_publisher.publish(target_odometry);
+
+       }
         else {
             setpoint = Core::getControllerPtr()->getSetpoint(getPreferredController(), current_time.toSec(), current_spline);
         }
