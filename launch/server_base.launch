@@ -4,7 +4,6 @@
   <arg name="auto_offboard" default="false"/>
   <arg name="setpoint_subscription_topic" default="fluid/setpoint"/>
   <arg name="setpoint_publish_topic" default="mavros/setpoint_raw/local"/>
-  <arg name="flip_xy" default="false"/>
 
  <!-- obstacle_avoidance/target_position -->
  <!-- mavros/setpoint_raw/local -->
@@ -15,7 +14,7 @@
   <param name="auto_offboard" value="$(arg auto_offboard)"/>
 
   <node name="fluid_server" pkg="fluid" type="server" output="screen" args="$(arg setpoint_subscription_topic)"/>
-  <node name="setpoint_publisher" pkg="fluid" type="setpoint_publisher" output="screen" args="$(arg setpoint_subscription_topic) $(arg setpoint_publish_topic) $(arg flip_xy)"/>
+  <node name="setpoint_publisher" pkg="fluid" type="setpoint_publisher" output="screen" args="$(arg setpoint_subscription_topic) $(arg setpoint_publish_topic)"/>
 
   <node name="path_optimizer" pkg="fluid" type="path_optimizer.py" output="screen"/>
   <node name="spline_generator" pkg="fluid" type="spline_generator.py" output="screen"/>
