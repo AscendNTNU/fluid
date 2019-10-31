@@ -54,7 +54,7 @@ std::vector<double> fluid::Path::calculateSpeedProfile(const std::vector<double>
     return speed_profile;
 }
 
-fluid::PathPoint fluid::Path::calculateNearestPathPoint(const geometry_msgs::Point& position) const {
+fluid::PathPointResult fluid::Path::calculateNearestPathPoint(const geometry_msgs::Point& position) const {
     double shortest_distance = 1000000;
     unsigned int shortest_distance_index = 0;
 
@@ -70,5 +70,9 @@ fluid::PathPoint fluid::Path::calculateNearestPathPoint(const geometry_msgs::Poi
         }
     }
 
-    return path_points[shortest_distance_index];
+    return PathPointResult{path_points[shortest_distance_index], shortest_distance};
+}
+
+std::vector<fluid::PathPoint> fluid::Path::getPathPoints() const {
+    return path_points;
 }

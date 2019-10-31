@@ -13,6 +13,11 @@ namespace fluid {
         const double x, y, speed, yaw, curvature;
     };
 
+    struct PathPointResult {
+        const PathPoint path_point;
+        const double error;
+    };
+
     class Path {
 
         private:
@@ -27,7 +32,9 @@ namespace fluid {
 
             Path(const double& target_speed);
 
-            PathPoint calculateNearestPathPoint(const geometry_msgs::Point& position) const;
+            PathPointResult calculateNearestPathPoint(const geometry_msgs::Point& position) const;
+
+            std::vector<fluid::PathPoint> getPathPoints() const;
 
     };
 }
