@@ -166,7 +166,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             break;
         } */        
 
-        fluid::Core::getStatusPublisherPtr()->status.path = path;
+        fluid::Core::getStatusPublisherPtr()->status.path = this->path;
         fluid::Core::getStatusPublisherPtr()->publish();
         ros::spinOnce();
         rate.sleep();
