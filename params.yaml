@@ -7,7 +7,3 @@ distance_completion_threshold: 0.3
 velocity_completion_threshold: 0.1
 yaw_completion_threshold: 0.5
 default_height: 1.0
-
-yaw_kp: 1.0
-yaw_ki: 1.0
-yaw_kd: 1.0
