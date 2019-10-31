@@ -4,15 +4,9 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
 #include <eigen3/Eigen/Dense>
+#include "path.h"
 
 namespace fluid {
-
-    struct Path {
-        std::vector<double> x;
-        std::vector<double> y;
-        std::vector<double> yaw;
-        std::vector<double> curvature;
-    };
 
     struct NearestIndexResult {
         const unsigned int index;
@@ -30,12 +24,6 @@ namespace fluid {
             Eigen::Matrix<double, 5, 5> Q = Eigen::Matrix<double, 5, 5>::Identity(5, 5);
             Eigen::Matrix<double, 2, 2> R = Eigen::Matrix<double, 2, 2>::Identity(2, 2);
 
-            double clampAngle(double angle) const;
-
-            NearestIndexResult calculateNearestIndex(const geometry_msgs::Pose& pose, 
-                                                     const geometry_msgs::Twist& twist, 
-                                                     const Path& path) const;
-
             Eigen::Matrix<double, 5, 5> solveDARE(const Eigen::Matrix<double, 5, 5>& A, 
                                                   const Eigen::Matrix<double, 5, 2>& B,
                                                   const Eigen::Matrix<double, 5, 5>& Q,
@@ -50,7 +38,7 @@ namespace fluid {
 
             LQR();
 
-            Result control_law(geometry_msgs::Pose pose, geometry_msgs::Twist twist, Path path, double previous_error, double previous_error_in_yaw, std::vector<double> speed_profile);
+            Result control_law(geometry_msgs::Pose pose, geometry_msgs::Twist twist, fluid::Path path, double previous_error, double previous_error_in_yaw, std::vector<double> speed_profile);
  
     };
 }
