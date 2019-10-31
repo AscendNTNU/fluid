@@ -66,6 +66,7 @@ if __name__ == '__main__':
         goal.state = "move"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
+        rospy.sleep(3);
 
         second.z = 15
         goal.path = [second]
