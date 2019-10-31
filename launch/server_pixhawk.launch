@@ -1,5 +1,6 @@
 <launch>
     <arg name="start_full_feedback" default="false"/>
+    <arg name="launch_reconfigure" default="false"/>
 
     <group if="$(arg start_full_feedback)">
         <include file="$(find control_test_nodes)/launch/fullFeedback.launch"/>
@@ -9,5 +10,6 @@
         <arg name="fcu_url" value="/dev/ttyPixhawk:921600"/>
         <arg name="auto_arm" value="false"/>
         <arg name="auto_offboard" value="false"/>
+        <arg name="launch_reconfigure" value="$(arg launch_reconfigure)"/>
     </include>
 </launch>
