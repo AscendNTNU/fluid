@@ -1,6 +1,6 @@
 #include "path.h"
 
-fluid::Path::Path(const double& target_speed) {
+fluid::Path::Path(const double& target_speed, const double& curvature_gain) {
 
     ros::ServiceClient generate_spline = node_handle.serviceClient<ascend_msgs::SplineService>("/control/spline_generator");
 
@@ -12,7 +12,7 @@ fluid::Path::Path(const double& target_speed) {
     spline_service_message.request.ds = 0.1;
     generate_spline.call(spline_service_message);
 
-    const std::vector<double> speed_profile = calculateSpeedProfile(spline_service_message.response.cyaw, spline_service_message.response.ck, target_speed);
+    const std::vector<double> speed_profile = calculateSpeedProfile(spline_service_message.response.cyaw, spline_service_message.response.ck, curvature_gain, target_speed);
 
     for (unsigned int i = 0; i < spline_service_message.response.cx.size(); i++) {
         double x         = spline_service_message.response.cx[i];
@@ -23,14 +23,15 @@ fluid::Path::Path(const double& target_speed) {
     }
 }
 
-std::vector<double> fluid::Path::calculateSpeedProfile(const std::vector<double>& yaws, const std::vector<double>& curvatures, const double& target_speed) {
+std::vector<double> fluid::Path::calculateSpeedProfile(const std::vector<double>& yaws, const std::vector<double>& curvatures, const double& curvature_gain, const double& target_speed) {
     std::vector<double> speed_profile(yaws.size(), target_speed);
 
     for (unsigned int i = 0; i < speed_profile.size() - 1; i++) {
-        double curvature = 1 + std::abs(curvatures[i]);
+        double curvature = 1 + curvature_gain * std::abs(curvatures[i]);
         speed_profile[i] = target_speed / curvature;
     }
 
+    /*
     for (unsigned int i = speed_profile.size() - 1; i > speed_profile.size() - 10; i--) {
         speed_profile[i] = target_speed / (50 - i);
 
@@ -38,6 +39,7 @@ std::vector<double> fluid::Path::calculateSpeedProfile(const std::vector<double>
             speed_profile[i] = 1.0 / 3.6;
         }
     }
+*/
 
     return speed_profile;
 }
