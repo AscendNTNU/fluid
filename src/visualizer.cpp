@@ -50,7 +50,7 @@ void fluid::Visualizer::publish(const geometry_msgs::Pose& pose,
     target_point_on_path.color.r = 1.0;
     target_point_on_path.color.g = 1.0;
 
-    target_point_on_path_publisher.publish(target_point_on_path_publisher);
+    target_point_on_path_publisher.publish(target_point_on_path);
 
 
     visualization_msgs::Marker path_marker;

@@ -34,7 +34,7 @@ namespace fluid {
                          const geometry_msgs::Twist& twist, 
                          const Path& path, 
                          const PathPoint& path_point, 
-                         const mavros_msgs::PositionTarget& setpoint);
+                         const mavros_msgs::PositionTarget& setpoint) const;
     };
 }
 
