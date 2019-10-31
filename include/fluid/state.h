@@ -16,9 +16,10 @@
 #include "state_identifier.h"
 #include "type_mask.h"
 #include "controller.h"
+#include "LQR.h"
 
 namespace fluid {
-    
+
     /** \class State
      *  \brief Interface for states within the finite state machine.
      *
@@ -64,7 +65,6 @@ namespace fluid {
                                                                                 ///< complete for this state. For e.g. 
                                                                                 ///< an init state it wouldn't make 
                                                                                 ///< sense.
-
     protected:
 
         ros::ServiceClient path_optimizer_client;
