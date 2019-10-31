@@ -33,7 +33,6 @@ int main(int argc, char** argv) {
 
     std::string subscription_topic = std::string(argv[1]);
     std::string publishing_topic = std::string(argv[2]);
-    bool flip_xy = argv[3];
 
     ros::Subscriber subscriber = node_handle.subscribe(subscription_topic, 1, subscriptionCallback);
     ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>(publishing_topic, 1);
@@ -44,10 +43,6 @@ int main(int argc, char** argv) {
         setpoint.header.stamp = ros::Time::now();
 
         if (position_is_set) {
-            if (flip_xy) {
-                // setpoint.yaw += M_PI / 2.0;
-            }
-
             publisher.publish(setpoint);
         }
         
