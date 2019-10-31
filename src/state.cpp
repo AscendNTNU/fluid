@@ -100,16 +100,14 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     ascend_msgs::Spline current_spline = splines[0];
 
     fluid::PID yaw_regulator(1.0, 0.0, 0.0);
-    const double speed = 1.0;
-    fluid::Path path(speed);
+    const double target_speed = 8.0;
+    fluid::Path path(target_speed);
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
 
-        node_handle.param<double>("yaw_kp", yaw_regulator.kp, 1.0);
-        node_handle.param<double>("yaw_ki", yaw_regulator.ki, 0.0);
-        node_handle.param<double>("yaw_kd", yaw_regulator.kd, 0.0);
-
-        ROS_INFO_STREAM(yaw_regulator.kp << ", " << yaw_regulator.ki << ", " << yaw_regulator.kd);
+        yaw_regulator.kp = fluid::Core::yaw_kp;
+        yaw_regulator.ki = fluid::Core::yaw_ki;
+        yaw_regulator.kd = fluid::Core::yaw_kd;
 
         ros::Time current_time = ros::Time::now();
         double delta_time = (current_time - last_frame_time).toSec();
@@ -128,27 +126,45 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             double dx = getCurrentTwist().twist.linear.x;
             double dy = getCurrentTwist().twist.linear.y;
 
-            geometry_msgs::Point future_point = getCurrentPose().pose.position;
-            future_point.x += dx;
-            future_point.y += dy;
+            // Find the current position closest to the path, apply the velocity vector in that direction from the
+            // path's yaw and set that as the following point
+            PathPoint current_path_point, following_path_point;
+            current_path_point = following_path_point = path.calculateNearestPathPoint(getCurrentPose().pose.position).path_point;
+            following_path_point.x += target_speed * cos(current_path_point.yaw);
+            following_path_point.y += target_speed * sin(current_path_point.yaw);
 
-            PathPointResult future_path_point = path.calculateNearestPathPoint(future_point);
+            geometry_msgs::Point point;
+            point.x = following_path_point.x;
+            point.y = following_path_point.y;
+            following_path_point = path.calculateNearestPathPoint(point).path_point;
+
+            tf2::Quaternion quat(getCurrentPose().pose.orientation.x, 
+                                 getCurrentPose().pose.orientation.y, 
+                                 getCurrentPose().pose.orientation.z, 
+                                 getCurrentPose().pose.orientation.w);
+
+            double roll, pitch, yaw;
+            tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+            // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
+            // it to zero. 
+            yaw = std::isnan(yaw) ? 0.0 : yaw;
 
             // double error = -std::atan(future_path_point.error);
-            double error = atan2(future_path_point.path_point.y - getCurrentPose().pose.position.y, 
-                                 future_path_point.path_point.x - getCurrentPose().pose.position.x);
+            double error = atan2(following_path_point.y - getCurrentPose().pose.position.y, 
+                                 following_path_point.x - getCurrentPose().pose.position.x);
 
+            double steering_yaw = yaw_regulator.getActuation(error, delta_time);
             setpoint.type_mask = TypeMask::Velocity;
-            setpoint.yaw = yaw_regulator.getActuation(error, delta_time);
-            setpoint.velocity.x = speed * std::cos(setpoint.yaw); 
-            setpoint.velocity.y = speed * std::sin(setpoint.yaw);
+            setpoint.yaw = error; 
+            setpoint.velocity.x = target_speed * std::cos(setpoint.yaw); 
+            setpoint.velocity.y = target_speed * std::sin(setpoint.yaw);
             setpoint.velocity.z = 0.0;
             setpoint.coordinate_frame = 1; 
 
             mavros_msgs::PositionTarget yaw_target;
             yaw_target.yaw = error;
 
-            visualizer.publish(getCurrentPose().pose, getCurrentTwist().twist, path, future_path_point.path_point, setpoint);
+            visualizer.publish(getCurrentPose().pose, getCurrentTwist().twist, path, following_path_point, setpoint);
         }
         else {
             setpoint = Core::getControllerPtr()->getSetpoint(getPreferredController(), current_time.toSec(), current_spline);
