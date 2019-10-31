@@ -75,6 +75,8 @@ namespace fluid {
 		static double positionFollowHeight;									///< The height at which the drone will
 																			///< follow a given target.	
 
+		static double yaw_kp, yaw_kd, yaw_ki;
+
 		static std::shared_ptr<fluid::StateGraph> getGraphPtr();
 		static std::shared_ptr<fluid::StatusPublisher> getStatusPublisherPtr(); 
 		static std::shared_ptr<fluid::Controller> getControllerPtr();

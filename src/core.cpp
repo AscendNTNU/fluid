@@ -16,6 +16,10 @@ double fluid::Core::yaw_completion_threshold = 0.2;
 double fluid::Core::default_height = 1.0;
 double fluid::Core::positionFollowHeight = 2.3;
 
+double fluid::Core::yaw_kp = 1.0;
+double fluid::Core::yaw_ki = 0.0;
+double fluid::Core::yaw_kd = 0.0;
+
 std::shared_ptr<fluid::StateGraph> fluid::Core::getGraphPtr() {
 	if (!graph_ptr_) {
 		graph_ptr_ = std::make_shared<fluid::StateGraph>();
