@@ -62,7 +62,7 @@ Visualization Manager:
       Marker Topic: /spline_path
       Name: Marker
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
     - Class: rviz/TF
@@ -161,15 +161,15 @@ Visualization Manager:
       Marker Topic: /target_odometry
       Name: Marker
       Namespaces:
-        {}
+        "": true
       Queue Size: 1
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /nearest_point
+      Marker Topic: /target_point
       Name: Marker
       Namespaces:
-        {}
+        "": true
       Queue Size: 100
       Value: true
   Enabled: true
@@ -200,16 +200,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 40.117034912109375
+      Distance: 44.93107986450195
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 7.517314910888672
-        Y: 1.650071620941162
-        Z: 4.730264663696289
+        X: 7.7105889320373535
+        Y: 1.7497648000717163
+        Z: 5.504922866821289
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
@@ -236,5 +236,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1050
-  X: 1928
-  Y: 54
+  X: 1936
+  Y: 85
