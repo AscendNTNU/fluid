@@ -83,6 +83,10 @@ namespace fluid {
 
             return {spline};
         }
+
+        static double clampAngle(double angle) {
+            return std::fmod(angle + M_PI, 2.0 * M_PI) - M_PI;
+        }
     };
 }
 

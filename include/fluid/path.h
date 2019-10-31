@@ -7,6 +7,8 @@
 #include <geometry_msgs/Point.h>
 #include <ascend_msgs/SplineService.h>
 
+#include "util.h"
+
 namespace fluid {
 
     struct PathPoint {
@@ -22,8 +24,8 @@ namespace fluid {
 
         private:
 
-            double clampAngle(double angle) const;
-
+            ros::NodeHandle node_handle;
+            
             std::vector<double> calculateSpeedProfile(const std::vector<double>& yaws, const double& target_speed);
 
             std::vector<fluid::PathPoint> path_points;

@@ -2,7 +2,6 @@
 
 fluid::Path::Path(const double& target_speed) {
 
-    ros::NodeHandle node_handle;
     ros::ServiceClient generate_spline = node_handle.serviceClient<ascend_msgs::SplineService>("/control/spline_generator");
 
     ascend_msgs::SplineService spline_service_message;
@@ -11,28 +10,24 @@ fluid::Path::Path(const double& target_speed) {
     spline_service_message.request.ds = 0.1;
     generate_spline.call(spline_service_message);
 
-    const std::vector<double> speed_profile = calculateSpeedProfile(spline_service_message.response.cyaw, target_speed);
+    // const std::vector<double> speed_profile = calculateSpeedProfile(spline_service_message.response.cyaw, target_speed);
 
     for (unsigned int i = 0; i < spline_service_message.response.cx.size(); i++) {
         double x         = spline_service_message.response.cx[i];
-        double y         = spline_service_message.response.cx[i];
-        double yaw       = clampAngle(spline_service_message.response.cyaw[i]);
+        double y         = spline_service_message.response.cy[i];
+        double yaw       = Util::clampAngle(spline_service_message.response.cyaw[i]);
         double curvature = spline_service_message.response.ck[i];
-        path_points.push_back(PathPoint{x, y, speed_profile[i], yaw, curvature});
+        path_points.push_back(PathPoint{x, y, 1.0, yaw, curvature});
     }
 }
 
-double fluid::Path::clampAngle(double angle) const {
-    return std::fmod(angle + M_PI, 2.0 * M_PI) - M_PI;
-}
-
 std::vector<double> fluid::Path::calculateSpeedProfile(const std::vector<double>& yaws, const double& target_speed) {
-    std::vector<double> speed_profile(path_points.size(), target_speed);
+    std::vector<double> speed_profile(yaws.size(), target_speed);
 
     double direction = 1.0;
 
     for (unsigned int i = 0; i < speed_profile.size() - 1; i++) {
-        double delta_yaw = std::abs(path_points[i + 1].yaw - path_points[i].yaw);
+        double delta_yaw = std::abs(yaws[i + 1] - yaws[i]);
         bool toggle = M_PI / 4.0 <= delta_yaw < M_PI / 2.0;
 
         if (toggle) {
@@ -47,7 +42,7 @@ std::vector<double> fluid::Path::calculateSpeedProfile(const std::vector<double>
         }
     }
 
-    for (unsigned int i = speed_profile.size() - 1; i > speed_profile.size() - 40; i--) {
+    for (unsigned int i = speed_profile.size() - 1; i > speed_profile.size() - 10; i--) {
         speed_profile[i] = target_speed / (50 - i);
 
         if (speed_profile[i] <= 1.0 / 3.6) {
@@ -72,6 +67,15 @@ fluid::PathPointResult fluid::Path::calculateNearestPathPoint(const geometry_msg
            shortest_distance = distance; 
            shortest_distance_index = i;
         }
+    }
+
+    // Check if we are on the left or right side of the path
+    double dx = path_points[shortest_distance_index].x - position.x;
+    double dy = path_points[shortest_distance_index].y - position.y;
+    double angle = Util::clampAngle(path_points[shortest_distance_index].yaw - std::atan2(dy, dx));
+
+    if (angle < 0) {
+        shortest_distance *= -1;
     }
 
     return PathPointResult{path_points[shortest_distance_index], shortest_distance};
