@@ -116,6 +116,8 @@ fluid::Result fluid::LQR::control_law(geometry_msgs::Pose pose,
 
     Eigen::Matrix<double, 2, 5> K = dlqr(A, B, Q, R);
 
+
+    // State vector
     Eigen::Matrix<double, 5, 1> x;
     x(0, 0) = nearest_index_result.error;
     x(1, 0) = (nearest_index_result.error - previous_error) / delta_time;
@@ -124,12 +126,13 @@ fluid::Result fluid::LQR::control_law(geometry_msgs::Pose pose,
     x(4, 0) = current_speed - target_speed;
 
 
-    Eigen::Matrix<double, 2, 1> u = -K * x;
+    Eigen::Matrix<double, 2, 1> u = -(K * x);
 
     double feed_forward_steering_angle = std::atan2(curvature, 1);
     double feedback_steering_angle     = clampAngle(u(0, 0));
-    double delta                       = feed_forward_steering_angle + feedback_steering_angle;
+
+    double angle                       = feedback_steering_angle;
     double acceleration                = u(1, 0);
 
-    return Result {delta, path.x[nearest_index_result.index], path.y[nearest_index_result.index], nearest_index_result.error, error_in_yaw, path.yaw[nearest_index_result.index], acceleration};
+    return Result {angle, path.x[nearest_index_result.index], path.y[nearest_index_result.index], nearest_index_result.error, error_in_yaw, path.yaw[nearest_index_result.index], acceleration};
 }
