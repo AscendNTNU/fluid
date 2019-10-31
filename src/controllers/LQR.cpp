@@ -9,39 +9,6 @@ fluid::LQR::LQR() {
     Q(0, 0) = 10.0;
 }
 
-double fluid::LQR::clampAngle(double angle) const {
-    return std::fmod(angle + M_PI, 2.0 * M_PI) - M_PI;
-}
-
-fluid::NearestIndexResult fluid::LQR::calculateNearestIndex(const geometry_msgs::Pose& pose,
-                                                            const geometry_msgs::Twist& twist, 
-                                                            const Path& path) const {
-    
-    double shortest_distance = 1000000;
-    unsigned int shortest_distance_index = 0;
-
-    for (unsigned int i = 0; i < path.x.size(); i++) {
-        double dx = pose.position.x - path.x[i];
-        double dy = pose.position.y - path.y[i];
-        double distance = sqrt(dx*dx + dy*dy);
-
-        if (distance < shortest_distance) {
-           shortest_distance = distance; 
-           shortest_distance_index = i;
-        }
-    }
-
-    double dx = path.x[shortest_distance_index] - pose.position.x;
-    double dy = path.y[shortest_distance_index] - pose.position.y;
-    double angle = clampAngle(path.yaw[shortest_distance_index] - std::atan2(dy, dx));
-
-    if (angle < 0) {
-        shortest_distance *= -1;
-    }   
-
-    return NearestIndexResult{shortest_distance_index, shortest_distance};
-}
-
 Eigen::Matrix<double, 5, 5> fluid::LQR::solveDARE(const Eigen::Matrix<double, 5, 5>& A, 
                                                   const Eigen::Matrix<double, 5, 2>& B,
                                                   const Eigen::Matrix<double, 5, 5>& Q,
@@ -84,11 +51,12 @@ fluid::Result fluid::LQR::control_law(geometry_msgs::Pose pose,
                                       double previous_error_in_yaw, 
                                       std::vector<double> speed_profile) {
 
-    
-    const NearestIndexResult nearest_index_result = calculateNearestIndex(pose, twist, path);
 
-    const double target_speed     = speed_profile[nearest_index_result.index];
-    const double curvature        = path.curvature[nearest_index_result.index];
+    // TODO: Fix
+    const PathPointResult path_point_result = path.calculateNearestPathPoint(geometry_msgs::Point());
+
+    const double target_speed     = path_point_result.path_point.speed; 
+    const double curvature        = path_point_result.path_point.curvature;
     const double current_speed    = sqrt(pow(twist.linear.x, 2) + pow(twist.linear.y, 2));
     const double delta_time       = 1.0 / fluid::Core::refresh_rate;
 
@@ -100,6 +68,7 @@ fluid::Result fluid::LQR::control_law(geometry_msgs::Pose pose,
         yaw = 0;
     }
 
+    /*
     double error_in_yaw = clampAngle(yaw - path.yaw[nearest_index_result.index]);
 
     Eigen::Matrix<double, 5, 5> A = Eigen::Matrix<double, 5, 5>::Zero(5, 5);
@@ -135,4 +104,7 @@ fluid::Result fluid::LQR::control_law(geometry_msgs::Pose pose,
     double acceleration                = u(1, 0);
 
     return Result {angle, path.x[nearest_index_result.index], path.y[nearest_index_result.index], nearest_index_result.error, error_in_yaw, path.yaw[nearest_index_result.index], acceleration};
+    */
+
+   return Result{0, 0, 0, 0, 0, 0, 0};
 }
