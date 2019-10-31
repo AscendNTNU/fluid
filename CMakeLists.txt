@@ -14,10 +14,16 @@ find_package(catkin REQUIRED COMPONENTS
         actionlib
         visualization_msgs
         tf2
+        dynamic_reconfigure
 )
+
+generate_dynamic_reconfigure_options(
+  cfg/Server.cfg
+)
+
 catkin_package(
         INCLUDE_DIRS include
-        CATKIN_DEPENDS ascend_msgs roscpp
+        CATKIN_DEPENDS ascend_msgs roscpp dynamic_reconfigure
         LIBRARIES ${PROJECT_NAME}
 )
 
@@ -54,7 +60,7 @@ target_link_libraries(setpoint_publisher fluid  ${catkin_LIBRARIES})
 target_link_libraries(test_client fluid         ${catkin_LIBRARIES})
 
 ## Adds a compilation dependency to node_name
-add_dependencies(server                 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(server                 ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 add_dependencies(setpoint_publisher     ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(test_client            ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
