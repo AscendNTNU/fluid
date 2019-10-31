@@ -43,6 +43,8 @@ int main(int argc, char** argv) {
     f = boost::bind(&callback, _1, _2);
     dynamic_reconfigure_server.setCallback(f);
 
+    ros::spinOnce();
+
     fluid::Server server;
     server.start();
 
