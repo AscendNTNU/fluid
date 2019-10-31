@@ -10,7 +10,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 #include <ascend_msgs/SplineService.h>
-#include <ascend_msgs/LQR.h>
 
 #include <tf/tf.h>
 
@@ -92,6 +91,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
 
     initialize();
 
+
     ros::Time startTime = ros::Time::now();
     ros::Time last_frame_time = ros::Time::now();
 
@@ -99,11 +99,17 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     std::vector<ascend_msgs::Spline> splines = getSplinesForPath(path);
     ascend_msgs::Spline current_spline = splines[0];
 
-    fluid::PID yaw_regulator(1.0, 0.5, 0.2);
+    fluid::PID yaw_regulator(1.0, 0.0, 0.0);
     const double speed = 1.0;
     fluid::Path path(speed);
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
+
+        node_handle.param<double>("yaw_kp", yaw_regulator.kp, 1.0);
+        node_handle.param<double>("yaw_ki", yaw_regulator.ki, 0.0);
+        node_handle.param<double>("yaw_kd", yaw_regulator.kd, 0.0);
+
+        ROS_INFO_STREAM(yaw_regulator.kp << ", " << yaw_regulator.ki << ", " << yaw_regulator.kd);
 
         ros::Time current_time = ros::Time::now();
         double delta_time = (current_time - last_frame_time).toSec();
@@ -121,20 +127,26 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
 
             double dx = getCurrentTwist().twist.linear.x;
             double dy = getCurrentTwist().twist.linear.y;
-           
+
             geometry_msgs::Point future_point = getCurrentPose().pose.position;
             future_point.x += dx;
-            future_point.y += dy; 
+            future_point.y += dy;
+
             PathPointResult future_path_point = path.calculateNearestPathPoint(future_point);
 
-            double error = std::atan(future_path_point.error);
- 
+            // double error = -std::atan(future_path_point.error);
+            double error = atan2(future_path_point.path_point.y - getCurrentPose().pose.position.y, 
+                                 future_path_point.path_point.x - getCurrentPose().pose.position.x);
+
             setpoint.type_mask = TypeMask::Velocity;
-            setpoint.yaw = -yaw_regulator.getActuation(error, delta_time);
+            setpoint.yaw = yaw_regulator.getActuation(error, delta_time);
             setpoint.velocity.x = speed * std::cos(setpoint.yaw); 
             setpoint.velocity.y = speed * std::sin(setpoint.yaw);
             setpoint.velocity.z = 0.0;
             setpoint.coordinate_frame = 1; 
+
+            mavros_msgs::PositionTarget yaw_target;
+            yaw_target.yaw = error;
 
             visualizer.publish(getCurrentPose().pose, getCurrentTwist().twist, path, future_path_point.path_point, setpoint);
         }
