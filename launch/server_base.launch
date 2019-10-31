@@ -4,7 +4,7 @@
   <arg name="auto_offboard" default="false"/>
   <arg name="setpoint_subscription_topic" default="fluid/setpoint"/>
   <arg name="setpoint_publish_topic" default="mavros/setpoint_raw/local"/>
-  <arg name="launch_reconfigure" defualt="false"/>
+  <arg name="launch_reconfigure" default="false"/>
 
  <!-- obstacle_avoidance/target_position -->
  <!-- mavros/setpoint_raw/local -->
