@@ -18,7 +18,7 @@
 
 #include "util.h"
 #include "core.h"
-#include "LQR.h"
+#include "PID.h"
 
 fluid::State::State(std::string identifier,
                     std::string px4_mode,
@@ -34,9 +34,9 @@ fluid::State::State(std::string identifier,
                                             Core::message_queue_size, 
                                             &State::poseCallback, 
                                             this);
-    twist_subscriber = node_handle.subscribe("mavros/local_position/twist", 
+    twist_subscriber = node_handle.subscribe("mavros/local_position/velocity_local", 
                                              Core::message_queue_size, 
-                                             &State::poseCallback, 
+                                             &State::twistCallback, 
                                              this);
 
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", Core::message_queue_size);
@@ -86,39 +86,6 @@ std::vector<ascend_msgs::Spline> fluid::State::getSplinesForPath(const std::vect
     }
 }
 
-std::vector<double> calculateSpeedProfile(const std::vector<double>& yaws, const double& target_speed) {
-    std::vector<double> speed_profile(yaws.size(), target_speed);
-
-    double direction = 1.0;
-
-    for (unsigned int i = 0; i < speed_profile.size() - 1; i++) {
-        double delta_yaw = std::abs(yaws[i + 1] - yaws[i]);
-        bool toggle = M_PI / 4.0 <= delta_yaw < M_PI / 2.0;
-
-        if (toggle) {
-            direction *= -1;
-        }
-
-        if (direction != 1) {
-            speed_profile[i] = -target_speed;
-        }
-        else {
-            speed_profile[i] = target_speed;
-        }
-    }
-
-    for (unsigned int i = speed_profile.size() - 1; i > speed_profile.size() - 40; i--) {
-        speed_profile[i] = target_speed / (50 - i);
-
-        if (speed_profile[i] <= 1.0 / 3.6) {
-            speed_profile[i] = 1.0 / 3.6;
-        }
-    }
-
-    return speed_profile;
-}
-
-
 void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_steady) {
 
     ros::Rate rate(Core::refresh_rate);
@@ -126,31 +93,18 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     initialize();
 
     ros::Time startTime = ros::Time::now();
-    std::vector<ascend_msgs::Spline> splines = getSplinesForPath(path);
-    ascend_msgs::Spline current_spline = splines[0];
+    ros::Time last_frame_time = ros::Time::now();
+    // std::vector<ascend_msgs::Spline> splines = getSplinesForPath(path);
+    // ascend_msgs::Spline current_spline = splines[0];
 
-
-    ros::ServiceClient generate_spline = node_handle.serviceClient<ascend_msgs::SplineService>("/control/spline_generator");
-
-    ascend_msgs::SplineService spline_service_message;
-    spline_service_message.request.waypoints_x = {0.0,  6.0,  12.5, 10.0, 17.5, 20.0, 25.0};
-    spline_service_message.request.waypoints_y = {0.0, -3.0, -5.0,   6.5,  3.0,  0.0,  0.0};
-    spline_service_message.request.ds = 0.1;
-    generate_spline.call(spline_service_message);
-
-    auto spline_response = spline_service_message.response; 
-    double e, e_th;
-
-    e = e_th = 0;
-
-    fluid::LQR lqr;
+    fluid::PID yaw_regulator(1.0, 0.5, 0.0);
     ros::Publisher spline_path_publisher = node_handle.advertise<visualization_msgs::Marker>("spline_path", 10);
     ros::Publisher target_odometry_publisher = node_handle.advertise<visualization_msgs::Marker>("target_odometry", 10);
     ros::Publisher nearest_point_publisher = node_handle.advertise<visualization_msgs::Marker>("nearest_point", 10);
 
+    fluid::Path path;
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
-
 
         visualization_msgs::Marker spline_path;
         spline_path.header.frame_id = "/map";
@@ -162,7 +116,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
         spline_path.color.b = 1.0;
         spline_path.color.a = 1.0;
 
-        for (unsigned int i = 0; i < spline_response.cx.size(); ++i) {
+        for (unsigned int i = 0; i < path.x_values.size(); ++i) {
 
             geometry_msgs::Point p;
             p.x = spline_response.cx[i];
@@ -175,7 +129,9 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
 
         spline_path_publisher.publish(spline_path);
 
-        ros::Duration current_time = ros::Time::now() - startTime;
+        ros::Time current_time = ros::Time::now();
+        double delta_time = (current_time - last_frame_time).toSec();
+        last_frame_time = current_time;
 /*
         for (auto spline : splines) {
 
@@ -186,11 +142,6 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
 */
         if (getPreferredController() != ControllerType::Positional) {
 
-            fluid::Path path{spline_response.cx, spline_response.cy, spline_response.cyaw, spline_response.ck};
-            fluid::Result result = lqr.control_law(getCurrentPose().pose, getCurrentTwist().twist, path, e, e_th, calculateSpeedProfile(path.yaw, 2.0 / 3.6));
-
-            e = result.error;
-            e_th = result.error_in_yaw;
 
             tf2::Quaternion quaternion(getCurrentPose().pose.orientation.x, getCurrentPose().pose.orientation.y, getCurrentPose().pose.orientation.z, getCurrentPose().pose.orientation.w);
             double roll, pitch, yaw;
@@ -199,14 +150,26 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             if (!std::isfinite(yaw)) {
                 yaw = 0;
             }
-
+ 
             double dx = getCurrentTwist().twist.linear.x;
             double dy = getCurrentTwist().twist.linear.y;
+           
+            geometry_msgs::Pose future_pose = getCurrentPose().pose;
+            future_pose.position.x += dx;
+            future_pose.position.y += dy; 
+            NearestStateIndexResult result = calculateNearestIndex(future_pose, path);
 
+            ROS_INFO_STREAM(dx << ", " << dy);
+
+
+            double speed = 1.0;
+            double error = std::atan(result.error);
+
+ 
             setpoint.type_mask = TypeMask::Velocity;
-            setpoint.yaw = yaw + sqrt(dx*dx + dy*dy) * tan(result.delta) * 0.05;
-            setpoint.velocity.x = dx + result.acceleration * std::cos(setpoint.yaw) * 0.05; 
-            setpoint.velocity.y = dy + result.acceleration * std::sin(setpoint.yaw) * 0.05;
+            setpoint.yaw = -pid.getActuation(error, delta_time);
+            setpoint.velocity.x = speed * std::cos(setpoint.yaw); 
+            setpoint.velocity.y = speed * std::sin(setpoint.yaw);
             setpoint.velocity.z = 0.0;
             setpoint.coordinate_frame = 1; 
 
@@ -219,7 +182,7 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             target_odometry.pose.position.x = getCurrentPose().pose.position.x;
             target_odometry.pose.position.y = getCurrentPose().pose.position.y;
             target_odometry.pose.position.z = getCurrentPose().pose.position.z;
-            target_odometry.scale.x = result.acceleration;
+            target_odometry.scale.x = speed;
             target_odometry.scale.y = 0.05;
             target_odometry.scale.z = 0.05;
 
@@ -239,8 +202,8 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
             nearest_point.id = 2;
             nearest_point.type = visualization_msgs::Marker::SPHERE;
             nearest_point.action = visualization_msgs::Marker::ADD;
-            nearest_point.pose.position.x = result.x; 
-            nearest_point.pose.position.y = result.y;
+            nearest_point.pose.position.x = path.x[result.index]; 
+            nearest_point.pose.position.y = path.y[result.index];
             nearest_point.pose.position.z = 1.0;
             nearest_point.scale.x = 0.5;
             nearest_point.scale.y = 0.5;
