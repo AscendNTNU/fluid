@@ -1,13 +1,15 @@
 #ifndef FLUID_VISUALIZER_H
 #define FLUID_VISUALIZER_H
 
-#include "path.h"
+#include <ros/ros.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Twist.h>
 #include <visualization_msgs/Marker.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf/tf.h>
 #include <mavros_msgs/PositionTarget.h>
+
+#include "path.h"
 
 namespace fluid {
 
@@ -27,13 +29,13 @@ namespace fluid {
         public:
 
             Visualizer();
-            
+
             void publish(const geometry_msgs::Pose& pose, 
                          const geometry_msgs::Twist& twist, 
                          const Path& path, 
                          const PathPoint& path_point, 
-                         const mavros_msgs::PositionTarget& setpoint) const;
-    }
+                         const mavros_msgs::PositionTarget& setpoint);
+    };
 }
 
 #endif
