@@ -7,6 +7,16 @@
 #include "server.h"
 #include "core.h"
 
+#include <dynamic_reconfigure/server.h>
+#include <fluid/ServerConfig.h>
+
+void callback(fluid::ServerConfig &config, uint32_t level) {
+    
+    fluid::Core::yaw_kp = config.yaw_kp;
+    fluid::Core::yaw_ki = config.yaw_ki;
+    fluid::Core::yaw_kd = config.yaw_kd;
+}
+
 int main(int argc, char** argv) {
 
     ros::init(argc, argv, "fluid_server");
@@ -27,6 +37,11 @@ int main(int argc, char** argv) {
     node_handle.getParam("yaw_completion_threshold", fluid::Core::yaw_completion_threshold);
     node_handle.getParam("default_height", fluid::Core::default_height);
     node_handle.getParam("position_follow_height", fluid::Core::positionFollowHeight);
+
+    dynamic_reconfigure::Server<fluid::ServerConfig> dynamic_reconfigure_server;
+    dynamic_reconfigure::Server<fluid::ServerConfig>::CallbackType f;
+    f = boost::bind(&callback, _1, _2);
+    dynamic_reconfigure_server.setCallback(f);
 
     fluid::Server server;
     server.start();
