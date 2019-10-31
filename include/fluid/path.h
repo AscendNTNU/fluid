@@ -12,7 +12,7 @@
 namespace fluid {
 
     struct PathPoint {
-        const double x, y, speed, yaw, curvature;
+        double x, y, speed, yaw, curvature;
     };
 
     struct PathPointResult {
@@ -26,7 +26,7 @@ namespace fluid {
 
             ros::NodeHandle node_handle;
             
-            std::vector<double> calculateSpeedProfile(const std::vector<double>& yaws, const double& target_speed);
+            std::vector<double> calculateSpeedProfile(const std::vector<double>& yaws, const std::vector<double>& curvatures, const double& target_speed);
 
             std::vector<fluid::PathPoint> path_points;
 
