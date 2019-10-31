@@ -66,7 +66,7 @@ namespace fluid {
                                                                                 ///< complete for this state. For e.g. 
                                                                                 ///< an init state it wouldn't make 
                                                                                 ///< sense.
-        const Visualizer visualizer;
+        Visualizer visualizer;
 
     protected:
 
