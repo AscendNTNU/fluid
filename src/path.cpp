@@ -22,6 +22,10 @@ fluid::Path::Path(const double& target_speed) {
     }
 }
 
+double fluid::Path::clampAngle(double angle) const {
+    return std::fmod(angle + M_PI, 2.0 * M_PI) - M_PI;
+}
+
 std::vector<double> fluid::Path::calculateSpeedProfile(const std::vector<double>& yaws, const double& target_speed) {
     std::vector<double> speed_profile(path_points.size(), target_speed);
 
