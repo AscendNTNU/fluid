@@ -16,7 +16,8 @@
 #include "state_identifier.h"
 #include "type_mask.h"
 #include "controller.h"
-#include "LQR.h"
+#include "path.h"
+#include "visualizer.h"
 
 namespace fluid {
 
@@ -65,6 +66,8 @@ namespace fluid {
                                                                                 ///< complete for this state. For e.g. 
                                                                                 ///< an init state it wouldn't make 
                                                                                 ///< sense.
+        const Visualizer visualizer;
+
     protected:
 
         ros::ServiceClient path_optimizer_client;
