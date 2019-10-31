@@ -22,7 +22,7 @@ void fluid::Visualizer::publish(const geometry_msgs::Pose& pose,
     target_odometry.pose.position.x = pose.position.x;
     target_odometry.pose.position.y = pose.position.y;
     target_odometry.pose.position.z = pose.position.z;
-    target_odometry.scale.x = path_point.speed;
+    target_odometry.scale.x = 1.0;
     target_odometry.scale.y = 0.05;
     target_odometry.scale.z = 0.05;
 
@@ -41,7 +41,7 @@ void fluid::Visualizer::publish(const geometry_msgs::Pose& pose,
     target_point_on_path.type = visualization_msgs::Marker::SPHERE;
     target_point_on_path.action = visualization_msgs::Marker::ADD;
     target_point_on_path.pose.position.x = path_point.x; 
-    target_point_on_path.pose.position.y = path_point.x;
+    target_point_on_path.pose.position.y = path_point.y;
     target_point_on_path.pose.position.z = 1.0;
     target_point_on_path.scale.x = 0.5;
     target_point_on_path.scale.y = 0.5;
@@ -67,6 +67,7 @@ void fluid::Visualizer::publish(const geometry_msgs::Pose& pose,
         geometry_msgs::Point point;
         point.x = path_point.x;
         point.y = path_point.y;
+        point.z = 1.0;
         path_marker.points.push_back(point);
     }
 
