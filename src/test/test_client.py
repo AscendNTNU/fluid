@@ -10,7 +10,7 @@ import actionlib
 
 import ascend_msgs.msg
 from geometry_msgs.msg import Point
-from ascend_msgs.srv import SplineService, LQR
+from ascend_msgs.srv import SplineService 
 
 
 def active_callback():
@@ -56,11 +56,11 @@ if __name__ == '__main__':
 
         first.x = 20.0
         first.y = 20.0
-        first.z = 1.0
+        first.z = 2.0
 
         second.x = 40.0
         second.y = 0.0
-        second.z = 1.0
+        second.z = 2.0
 
         goal.path = [first, second]
         goal.state = "move"
