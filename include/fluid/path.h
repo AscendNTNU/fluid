@@ -26,13 +26,13 @@ namespace fluid {
 
             ros::NodeHandle node_handle;
             
-            std::vector<double> calculateSpeedProfile(const std::vector<double>& yaws, const std::vector<double>& curvatures, const double& target_speed);
+            std::vector<double> calculateSpeedProfile(const std::vector<double>& yaws, const std::vector<double>& curvatures, const double& curvature_gain, const double& target_speed);
 
             std::vector<fluid::PathPoint> path_points;
 
         public:
 
-            Path(const double& target_speed);
+            Path(const double& target_speed, const double& curvature_gain);
 
             PathPointResult calculateNearestPathPoint(const geometry_msgs::Point& position) const;
 
