@@ -3,3 +3,6 @@
 - For every non relative state we have to check that we've been through the whole path
 - Find a better system for queue size
 - How do we handle yaw?
+- Remove namespace?
+- Fix bug with speed profile crashing
+- Which racing tuning the drone oscillates some
