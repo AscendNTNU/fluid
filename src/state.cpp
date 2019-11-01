@@ -100,8 +100,8 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     ascend_msgs::Spline current_spline = splines[0];
 
     fluid::PID yaw_regulator(1.0, 0.0, 0.0);
-    const double target_speed = 8.0;
-    fluid::Path path(target_speed);
+    const double target_speed = 20.0, curvature_gain = 10.0;
+    fluid::Path path(target_speed, curvature_gain);
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
 
@@ -128,10 +128,12 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
 
             // Find the current position closest to the path, apply the velocity vector in that direction from the
             // path's yaw and set that as the following point
+            double velocity = sqrt(dx*dx + dy*dy);
+            ROS_INFO_STREAM(velocity);
             PathPoint current_path_point, following_path_point;
             current_path_point = following_path_point = path.calculateNearestPathPoint(getCurrentPose().pose.position).path_point;
-            following_path_point.x += target_speed * cos(current_path_point.yaw);
-            following_path_point.y += target_speed * sin(current_path_point.yaw);
+            following_path_point.x += velocity * cos(current_path_point.yaw);
+            following_path_point.y += velocity * sin(current_path_point.yaw);
 
             geometry_msgs::Point point;
             point.x = following_path_point.x;
@@ -155,9 +157,9 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
 
             double steering_yaw = yaw_regulator.getActuation(error, delta_time);
             setpoint.type_mask = TypeMask::Velocity;
-            setpoint.yaw = error; 
-            setpoint.velocity.x = target_speed * std::cos(setpoint.yaw); 
-            setpoint.velocity.y = target_speed * std::sin(setpoint.yaw);
+            setpoint.yaw = steering_yaw; 
+            setpoint.velocity.x = following_path_point.speed * std::cos(setpoint.yaw); 
+            setpoint.velocity.y = following_path_point.speed * std::sin(setpoint.yaw);
             setpoint.velocity.z = 0.0;
             setpoint.coordinate_frame = 1; 
 
