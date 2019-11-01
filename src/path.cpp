@@ -7,8 +7,11 @@ fluid::Path::Path(const double& target_speed, const double& curvature_gain) {
     ascend_msgs::SplineService spline_service_message;
     // spline_service_message.request.waypoints_x = {1.0,  6.0,  12.5, 10.0, 17.5, 20.0, 25.0};
     // spline_service_message.request.waypoints_y = {0.0, -3.0, -5.0,   6.5,  3.0,  0.0,  0.0};
-    spline_service_message.request.waypoints_x = {1.0, 40.0, 40, 1.0, 1.0};
-    spline_service_message.request.waypoints_y = {0.0,  0.0, 40, 40.0, 1.0};
+    // spline_service_message.request.waypoints_x = {1.0, 40.0, 40, 1.0, 1.0};
+    // spline_service_message.request.waypoints_y = {0.0,  0.0, 40, 40.0, 1.0};
+    spline_service_message.request.waypoints_x = {1.0,  100, 200, 300, 400.0,  400.0, 400, 400, 400, 300, 200, 100, 0};
+    spline_service_message.request.waypoints_y = {0.0,  0.0, 0.0, 0.0,   0.0,  -10.0, -20, -30, -40, -40, -40, -40, -40};
+ 
     spline_service_message.request.ds = 0.1;
     generate_spline.call(spline_service_message);
 
