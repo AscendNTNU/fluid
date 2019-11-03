@@ -21,8 +21,9 @@
   <node name="spline_generator" pkg="fluid" type="spline_generator.py" output="screen"/>
   <node name="path_publisher" pkg="fluid" type="path_publisher.py" output="screen"/>
 
-  <node name="map_to_base_link_transform_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 map base_link 10"/>
-  <node name="map_to_odom_transform_publisher"      pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 map odom 10"/>
+  <node name="world_to_map_transform_publisher"       pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 world map 10"/>
+  <node name="world_to_base_link_transform_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 world base_link 10"/>
+  <node name="world_to_odom_transform_publisher"      pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 world odom 10"/>
 
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url" value="$(arg fcu_url)"/>
