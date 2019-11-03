@@ -1,5 +1,6 @@
 <launch>
     <arg name="start_full_feedback" default="false"/>
+    <arg name="launch_rviz" default="true"/>
     <arg name="launch_reconfigure" default="false"/>
 
     <group if="$(arg start_full_feedback)">
@@ -11,5 +12,6 @@
         <arg name="auto_arm" value="false"/>
         <arg name="auto_offboard" value="false"/>
         <arg name="launch_reconfigure" value="$(arg launch_reconfigure)"/>
+        <arg name="launch_rviz"        value="$(arg launch_rviz)"/>
     </include>
 </launch>
