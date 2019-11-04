@@ -8,7 +8,7 @@
 #include "core.h"
 
 bool fluid::RotateState::hasFinishedExecution() const {
-    bool atPositionTarget = Util::distanceBetween(getCurrentPose().pose.position, initial_position) < fluid::Core::distance_completion_threshold && 
+    bool atPositionTarget = Util::distanceBetween(getCurrentPose().pose.position, setpoint.position) < fluid::Core::distance_completion_threshold && 
     	   				 	std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
@@ -21,8 +21,8 @@ bool fluid::RotateState::hasFinishedExecution() const {
 }
 
 void fluid::RotateState::initialize() {
-    setpoint.x = getCurrentPose().pose.position.x;
-    setpoint.y = getCurrentPose().pose.position.y;
-    setpoint.z = getCurrentPose().pose.position.z;
+    setpoint.position.x = getCurrentPose().pose.position.x;
+    setpoint.position.y = getCurrentPose().pose.position.y;
+    setpoint.position.z = getCurrentPose().pose.position.z;
     setpoint.type_mask = TypeMask::Position;
 }

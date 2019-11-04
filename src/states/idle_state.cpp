@@ -6,7 +6,7 @@ bool fluid::IdleState::hasFinishedExecution() const {
 }
 
 void fluid::IdleState::initialize() {
-    setpoint.x = setpoint.y = setpoint.z = 0.0;
+    setpoint.position.x = setpoint.position.y = setpoint.position.z = 0.0;
     setpoint.type_mask = TypeMask::Idle;
 
 }
