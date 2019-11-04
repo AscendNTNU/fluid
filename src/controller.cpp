@@ -8,7 +8,9 @@ fluid::Controller::Controller(const PID& pid) : pid(pid) {}
 mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const Trajectory& trajectory,
                                                            const geometry_msgs::Pose& pose,
                                                            const geometry_msgs::Twist& twist,
-                                                           const double& delta_time) {
+                                                           const double& delta_time,
+                                                           double& error,
+                                                           TrajectoryPoint& following_trajectory_point) {
 
     double dx = twist.linear.x;
     double dy = twist.linear.y;
@@ -17,7 +19,7 @@ mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const Trajectory& tra
     // path's yaw and set that as the following point
     double velocity = sqrt(dx*dx + dy*dy);
     ROS_INFO_STREAM(velocity);
-    TrajectoryPoint current_trajectory_point, following_trajectory_point;
+    TrajectoryPoint current_trajectory_point;
     current_trajectory_point = following_trajectory_point = trajectory.calculateNearestTrajectoryPoint(pose.position).trajectory_point;
     following_trajectory_point.x += velocity * cos(current_trajectory_point.yaw);
     following_trajectory_point.y += velocity * sin(current_trajectory_point.yaw);
@@ -39,8 +41,8 @@ mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const Trajectory& tra
     yaw = std::isnan(yaw) ? 0.0 : yaw;
 
     // double error = -std::atan(future_path_point.error);
-    double error = atan2(following_trajectory_point.y - pose.position.y, 
-                         following_trajectory_point.x - pose.position.x);
+    error = atan2(following_trajectory_point.y - pose.position.y, 
+                  following_trajectory_point.x - pose.position.x);
 
     double steering_yaw = pid.getActuation(error, delta_time);
 

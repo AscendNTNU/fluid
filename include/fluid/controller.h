@@ -15,19 +15,18 @@ namespace fluid {
 
     class Controller {
 
-        private:
+        public:
 
             PID pid;
-
-
-        public:
 
             Controller(const PID& pid);
 
             mavros_msgs::PositionTarget getSetpoint(const Trajectory& trajectory,
                                                     const geometry_msgs::Pose& pose, 
                                                     const geometry_msgs::Twist& twist, 
-                                                    const double& delta_time);
+                                                    const double& delta_time,
+                                                    double& error, 
+                                                    TrajectoryPoint& following_trajectory_point);
     };
 }
 
