@@ -22,20 +22,20 @@
 fluid::State::State(std::string identifier,
                     std::string px4_mode,
                     bool steady, 
-                    bool should_check_obstalce_avoidance_completion) : 
+                    bool should_check_obstalce_avoidance_completion,
+                    bool is_relative) : 
 
 					identifier(identifier),
                     px4_mode(px4_mode),
                     steady(steady), 
-                    should_check_obstacle_avoidance_completion(should_check_obstacle_avoidance_completion) {
+                    should_check_obstacle_avoidance_completion(should_check_obstacle_avoidance_completion),
+                    is_relative(is_relative) {
 
     pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &State::poseCallback, this);
     twist_subscriber = node_handle.subscribe("mavros/local_position/velocity_local", 1, &State::twistCallback, this);
     imu_subscriber = node_handle.subscribe("mavros/imu/data", 1, &State::imuCallback, this);
 
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", Core::message_queue_size);
-
-    path_optimizer_client = node_handle.serviceClient<ascend_msgs::PathOptimizerService>("path_optimizer");
 }
 
 geometry_msgs::PoseStamped fluid::State::getCurrentPose() const {
@@ -75,26 +75,31 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     ros::Time last_frame_time = ros::Time::now();
 
     fluid::PID yaw_regulator(1.0, 0.0, 0.0);
-    const double target_speed = 20.0, curvature_gain = 10.0;
+    fluid::Controller controller(yaw_regulator);
 
+    const double target_speed = 20.0, curvature_gain = 10.0;
     fluid::Trajectory trajectory(path, getCurrentPose(), getCurrentTwist(), current_imu, target_speed, curvature_gain);
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
         
         // The state will not set the setpoint itself, we issue custom controller
         if (!is_relative) {
-            yaw_regulator.kp = fluid::Core::yaw_kp;
-            yaw_regulator.ki = fluid::Core::yaw_ki;
-            yaw_regulator.kd = fluid::Core::yaw_kd;
+            controller.pid.kp = fluid::Core::yaw_kp;
+            controller.pid.ki = fluid::Core::yaw_ki;
+            controller.pid.kd = fluid::Core::yaw_kd;
 
             ros::Time current_time = ros::Time::now();
             double delta_time = (current_time - last_frame_time).toSec();
             last_frame_time = current_time;
 
+            double error = 0;
+            TrajectoryPoint following_trajectory_point;
+            setpoint = controller.getSetpoint(trajectory, getCurrentPose().pose, getCurrentTwist().twist, delta_time, error, following_trajectory_point);
+
             mavros_msgs::PositionTarget yaw_target;
             yaw_target.yaw = error;
 
-            visualizer.publish(getCurrentPose().pose, getCurrentTwist().twist, path, following_path_point, setpoint);
+            visualizer.publish(getCurrentPose().pose, getCurrentTwist().twist, trajectory, following_trajectory_point, setpoint);
         }
 
         publishSetpoint();
