@@ -9,8 +9,8 @@ fluid::Visualizer::Visualizer() {
 
 void fluid::Visualizer::publish(const geometry_msgs::Pose& pose, 
                                 const geometry_msgs::Twist& twist, 
-                                const Path& path, 
-                                const PathPoint& path_point, 
+                                const Trajectory& trajectory, 
+                                const TrajectoryPoint& trajectory_point, 
                                 const mavros_msgs::PositionTarget& setpoint) const {
 
     visualization_msgs::Marker target_odometry;
@@ -40,8 +40,8 @@ void fluid::Visualizer::publish(const geometry_msgs::Pose& pose,
     target_point_on_path.id = 2;
     target_point_on_path.type = visualization_msgs::Marker::SPHERE;
     target_point_on_path.action = visualization_msgs::Marker::ADD;
-    target_point_on_path.pose.position.x = path_point.x; 
-    target_point_on_path.pose.position.y = path_point.y;
+    target_point_on_path.pose.position.x = trajectory_point.x; 
+    target_point_on_path.pose.position.y = trajectory_point.y;
     target_point_on_path.pose.position.z = 1.0;
     target_point_on_path.scale.x = 0.5;
     target_point_on_path.scale.y = 0.5;
@@ -63,10 +63,10 @@ void fluid::Visualizer::publish(const geometry_msgs::Pose& pose,
     path_marker.color.b = 1.0;
     path_marker.color.a = 1.0;
 
-    for (PathPoint path_point : path.getPathPoints()) {
+    for (TrajectoryPoint trajectory_point : trajectory.getTrajectoryPoints()) {
         geometry_msgs::Point point;
-        point.x = path_point.x;
-        point.y = path_point.y;
+        point.x = trajectory_point.x;
+        point.y = trajectory_point.y;
         point.z = 1.0;
         path_marker.points.push_back(point);
     }

@@ -9,7 +9,7 @@
 #include <tf/tf.h>
 #include <mavros_msgs/PositionTarget.h>
 
-#include "path.h"
+#include "trajectory.h"
 
 namespace fluid {
 
@@ -32,8 +32,8 @@ namespace fluid {
 
             void publish(const geometry_msgs::Pose& pose, 
                          const geometry_msgs::Twist& twist, 
-                         const Path& path, 
-                         const PathPoint& path_point, 
+                         const Trajectory& trajectory, 
+                         const TrajectoryPoint& trajectory_point, 
                          const mavros_msgs::PositionTarget& setpoint) const;
     };
 }
