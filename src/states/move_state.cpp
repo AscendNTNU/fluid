@@ -14,9 +14,8 @@ bool fluid::MoveState::hasFinishedExecution() const {
                             std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold &&
                             std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 
-    //bool atYawTarget = std::abs(Util::angleBetween(getCurrentPose().pose.orientation, path.yaw)) < fluid::Core::yaw_completion_threshold;
 
-    return /* atYawTarget && */ atPositionTarget;
+    return atPositionTarget;
 }
 
 void fluid::MoveState::initialize() {
