@@ -12,7 +12,6 @@
   <param name="auto_arm" value="$(arg auto_arm)"/>
   <param name="auto_offboard" value="$(arg auto_offboard)"/>
 
-  <node name="path_optimizer" pkg="fluid" type="path_optimizer.py" output="screen"/>
   <node name="spline_generator" pkg="fluid" type="spline_generator.py" output="screen"/>
   <node name="path_publisher" pkg="fluid" type="path_publisher.py" output="screen"/>
 
