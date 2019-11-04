@@ -70,7 +70,7 @@ namespace fluid {
             double dy = setpoint.y - current_position.y;
             double dz = setpoint.z - current_position.z;
 
-            double timestamp = std::sqrt(dx*dx + dy*dy + dz*dz) * 10;
+            double timestamp = std::sqrt(dx*dx + dy*dy + dz*dz);
 
             std::vector<double> x = {0, 0, 0, 0, dx, current_position.x};
             std::vector<double> y = {0, 0, 0, 0, dy, current_position.y};
@@ -79,7 +79,8 @@ namespace fluid {
             spline.x.insert(spline.x.end(), x.begin(), x.end());
             spline.y.insert(spline.y.end(), y.begin(), y.end());
             spline.z.insert(spline.z.end(), z.begin(), z.end());
-            spline.timestamp = timestamp;
+            spline.start = 0;
+            spline.end = timestamp;
 
             return {spline};
         }
