@@ -29,18 +29,13 @@ fluid::State::State(std::string identifier,
                     steady(steady), 
                     should_check_obstacle_avoidance_completion(should_check_obstacle_avoidance_completion) {
 
-    pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 
-                                            Core::message_queue_size, 
-                                            &State::poseCallback, 
-                                            this);
-    twist_subscriber = node_handle.subscribe("mavros/local_position/velocity_local", 
-                                             Core::message_queue_size, 
-                                             &State::twistCallback, 
-                                             this);
+    pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &State::poseCallback, this);
+    twist_subscriber = node_handle.subscribe("mavros/local_position/velocity_local", 1, &State::twistCallback, this);
+    imu_subscriber = node_handle.subscribe("mavros/imu/data", 1, &State::imuCallback, this);
 
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", Core::message_queue_size);
 
-    path_optimizer_client = node_handle.serviceClient<ascend_msgs::PathOptimizerService>("/control/path_optimizer");
+    path_optimizer_client = node_handle.serviceClient<ascend_msgs::PathOptimizerService>("path_optimizer");
 }
 
 geometry_msgs::PoseStamped fluid::State::getCurrentPose() const {
@@ -61,6 +56,11 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
     current_twist.header = twist->header;
 }
 
+
+void fluid::State::imuCallback(const sensor_msgs::ImuConstPtr imu) {
+    current_imu = *imu;
+}
+
 void fluid::State::publishSetpoint() {
     setpoint_publisher.publish(setpoint);
 }
@@ -69,41 +69,29 @@ fluid::ControllerType fluid::State::getPreferredController() const {
     return ControllerType::Passthrough;
 }
 
-std::vector<ascend_msgs::Spline> fluid::State::getSplinesForPath(const std::vector<geometry_msgs::Point>& path) {
-    ascend_msgs::PathOptimizerService path_optimizer_service;
-    path_optimizer_service.request.pose = getCurrentPose();
-    path_optimizer_service.request.twist = getCurrentTwist();
-    path_optimizer_service.request.imu_data = sensor_msgs::Imu();
-    path_optimizer_service.request.path = path;
-
-    if (path_optimizer_client.call(path_optimizer_service)) {
-        return path_optimizer_service.response.splines;
-    }
-    else {
-        ROS_FATAL("Could not call path optimizer! Returning a spline containing the current position...");
-        return Util::getSplineForSetpoint(getCurrentPose().pose.position, getCurrentPose().pose.position);
-    }
-}
-
 void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_steady) {
 
     ros::Rate rate(Core::refresh_rate);
 
     initialize();
 
-
     ros::Time startTime = ros::Time::now();
     ros::Time last_frame_time = ros::Time::now();
 
-    // TODO: temp, should be included from path
-    std::vector<ascend_msgs::Spline> splines = getSplinesForPath(path);
-    ascend_msgs::Spline current_spline = splines[0];
-
     fluid::PID yaw_regulator(1.0, 0.0, 0.0);
     const double target_speed = 20.0, curvature_gain = 10.0;
-    fluid::Path path(target_speed, curvature_gain);
+
+    fluid::Trajectory trajectory(path, getCurrentPose(), getCurrentTwist(), current_imu, target_speed, curvature_gain);
+
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
+
+        if (is_relative) {
+               
+        }
+        else {
+
+        }
 
         yaw_regulator.kp = fluid::Core::yaw_kp;
         yaw_regulator.ki = fluid::Core::yaw_ki;
@@ -112,16 +100,8 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
         ros::Time current_time = ros::Time::now();
         double delta_time = (current_time - last_frame_time).toSec();
         last_frame_time = current_time;
-/*
-        for (auto spline : splines) {
 
-            if (current_time.toSec() < spline.timestamp) {
-                current_spline = spline;
-            }
-        }
-*/
-
-        if (getPreferredController() != ControllerType::Positional) {
+        if (getPreferredController() != ControllerType::Racing) {
 
             double dx = getCurrentTwist().twist.linear.x;
             double dy = getCurrentTwist().twist.linear.y;

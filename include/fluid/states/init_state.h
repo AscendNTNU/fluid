@@ -17,7 +17,7 @@ namespace fluid {
 
     public:
         
-        explicit InitState() : State(fluid::StateIdentifier::Init, fluid::PX4::Offboard, false, false) {}
+        explicit InitState() : State(fluid::StateIdentifier::Init, fluid::PX4::Offboard, false, false, true) {}
 
         bool hasFinishedExecution() const override;
 

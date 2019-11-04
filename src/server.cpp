@@ -40,13 +40,13 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     std::string controller = goal->controller;
 
     if (controller == "racing") {
-        Core::getControllerPtr()->controller_type = fluid::ControllerType::Velocity;
+        Core::getControllerPtr()->controller_type = fluid::ControllerType::Racing;
     }
-    else if (controller == "precision") {
-        Core::getControllerPtr()->controller_type = fluid::ControllerType::Positional;
+    else if (controller == "exploration") {
+        Core::getControllerPtr()->controller_type = fluid::ControllerType::Exploration;
     }
     else {
-        Core::getControllerPtr()->controller_type = fluid::ControllerType::Positional;
+        Core::getControllerPtr()->controller_type = fluid::ControllerType::Exploration;
     }
 
     geometry_msgs::Point current_position = fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position;

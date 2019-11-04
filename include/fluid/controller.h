@@ -12,18 +12,20 @@ namespace fluid {
 
     enum class ControllerType {
         // Passthrough will use the current controller 
-        Positional, Velocity, Passthrough
+        Racing, Exploration, Passthrough
     };
 
     class Controller {
 
         public:
 
-           ControllerType controller_type = ControllerType::Positional;
+            Controller(const double& target_speed);
 
-           mavros_msgs::PositionTarget getSetpoint(const ControllerType preferred_controller, 
-                                                   const double& time, 
-                                                   const ascend_msgs::Spline& spline) const;
+            ControllerType controller_type = ControllerType::Exploration;
+
+            mavros_msgs::PositionTarget getSetpoint(const ControllerType preferred_controller, 
+                                                    const double& time, 
+                                                    const ascend_msgs::Spline& spline) const;
     };
 }
 

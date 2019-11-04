@@ -25,7 +25,7 @@ namespace fluid {
                                                                         
     public:
 
-        explicit IdleState() : State(StateIdentifier::Idle, PX4::Offboard, true, false) {}
+        explicit IdleState() : State(StateIdentifier::Idle, PX4::Offboard, true, false, true) {}
         
         bool hasFinishedExecution() const override;
         void initialize() override;

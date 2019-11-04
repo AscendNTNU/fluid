@@ -12,11 +12,12 @@
 #include <mavros_msgs/PositionTarget.h>
 #include <ascend_msgs/Spline.h>
 #include <ascend_msgs/PathOptimizerService.h>
+#include <sensor_msgs/Imu.h>
 
 #include "state_identifier.h"
 #include "type_mask.h"
 #include "controller.h"
-#include "path.h"
+#include "trajectory.h"
 #include "visualizer.h"
 
 namespace fluid {
@@ -39,6 +40,8 @@ namespace fluid {
         geometry_msgs::PoseStamped current_pose;                                ///< The current pose of the
                                                                                 ///< drone during the state.        
 
+
+
         void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
 
 
@@ -50,8 +53,14 @@ namespace fluid {
                                                                                 ///< drone during the state.
 
         void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
-        
-        
+                
+        ros::Subscriber imu_subscriber;                                         
+
+        sensor_msgs::Imu current_imu;
+
+        void imuCallback(const sensor_msgs::ImuConstPtr imu);
+
+
         mavros_msgs::PositionTarget setpoint;                   
 
         ros::Publisher setpoint_publisher;                                      ///< Publishes setpoints for this state.
@@ -66,18 +75,14 @@ namespace fluid {
                                                                                 ///< complete for this state. For e.g. 
                                                                                 ///< an init state it wouldn't make 
                                                                                 ///< sense.
+
+        const bool is_relative;
+        
         Visualizer visualizer;
 
     protected:
 
-        ros::ServiceClient path_optimizer_client;
-
         virtual fluid::ControllerType getPreferredController() const;
-
-        /**
-         * Calls the path optimizer node to retrive a continous function for the discrete path.
-         */
-        virtual std::vector<ascend_msgs::Spline> getSplinesForPath(const std::vector<geometry_msgs::Point>& path);
 
     public:
 
@@ -95,7 +100,8 @@ namespace fluid {
         State(const std::string identifier, 
               const std::string px4_mode, 
               const bool steady, 
-              const bool should_check_obstacle_avoidance_completion);
+              const bool should_check_obstacle_avoidance_completion, 
+              const bool is_relative);
 
        /**
          * @brief      Returns the current pose, the last pose that the state estimation published on

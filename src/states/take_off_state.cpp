@@ -12,11 +12,7 @@ bool fluid::TakeOffState::hasFinishedExecution() const {
 void fluid::TakeOffState::initialize() {
     initial_position.x = getCurrentPose().pose.position.x;
     initial_position.y = getCurrentPose().pose.position.y;
-	initial_position.z = path.front().z;
-
-	if (initial_position.z <= 0.1) {
-		initial_position.z = fluid::Core::default_height;
-	}
+	initial_position.z = Core::default_height;
 }
 
 std::vector<ascend_msgs::Spline> fluid::TakeOffState::getSplinesForPath(const std::vector<geometry_msgs::Point>& path) {

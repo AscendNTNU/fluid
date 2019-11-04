@@ -12,7 +12,7 @@ namespace fluid {
 
     public:
 
-        explicit MoveState() : State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true) {}
+        explicit MoveState() : State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true, false) {}
 
         bool hasFinishedExecution() const override;
         void initialize() override;
