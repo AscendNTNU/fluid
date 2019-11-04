@@ -61,7 +61,6 @@ namespace fluid {
         void imuCallback(const sensor_msgs::ImuConstPtr imu);
 
 
-        mavros_msgs::PositionTarget setpoint;                   
 
         ros::Publisher setpoint_publisher;                                      ///< Publishes setpoints for this state.
 
@@ -77,12 +76,14 @@ namespace fluid {
                                                                                 ///< sense.
 
         const bool is_relative;
-        
+
         Visualizer visualizer;
+
 
     protected:
 
-        virtual fluid::ControllerType getPreferredController() const;
+        mavros_msgs::PositionTarget setpoint;                   
+
 
     public:
 
