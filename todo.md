@@ -2,7 +2,7 @@
 - Remove unecessary comments
 - For every non relative state we have to check that we've been through the whole path
 - Find a better system for queue size
-- How do we handle yaw?
+- How do we handle yaw? We don't for the regular states, but when we are exploring we rotate towards an anchor 
 - Remove namespace?
 - Fix bug with speed profile crashing
 - Which racing tuning the drone oscillates some
