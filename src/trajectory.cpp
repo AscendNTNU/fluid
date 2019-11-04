@@ -6,7 +6,7 @@ fluid::Trajectory::Trajectory(const std::vector<geometry_msgs::Point>& path,
                               const sensor_msgs::Imu& imu,
                               const double& target_speed, 
                               const double& curvature_gain) {
-
+    /*
     std::vector<ascend_msgs::Spline> splines;
 
     ros::ServiceClient path_optimizer_client = node_handle.serviceClient<ascend_msgs::PathOptimizerService>("path_optimizer");
@@ -25,7 +25,7 @@ fluid::Trajectory::Trajectory(const std::vector<geometry_msgs::Point>& path,
     }
 
     // TODO: Do magic with the returned splines
-
+    */
 
     // TODO: Temp, incorporate the spline service
     ros::ServiceClient generate_spline = node_handle.serviceClient<ascend_msgs::SplineService>("/control/spline_generator");
