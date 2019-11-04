@@ -18,16 +18,6 @@ bool fluid::InitState::hasFinishedExecution() const {
     return initialized;
 }
 
-std::vector<ascend_msgs::Spline> fluid::InitState::getSplinesForPath(const std::vector<geometry_msgs::Point>& path) {
-    geometry_msgs::Point origin;
-
-    return fluid::Util::getSplineForSetpoint(origin, origin);
-}
-
-fluid::ControllerType fluid::InitState::getPreferredController() const {
-    return ControllerType::Positional;
-} 
-
 void fluid::InitState::perform(std::function<bool (void)> tick, bool ignore_finished_execution) {
 
     ros::Rate rate(Core::refresh_rate);

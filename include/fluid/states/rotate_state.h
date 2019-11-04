@@ -10,9 +10,6 @@ namespace fluid {
      *  \brief Represents the state where the is rotating at the current position.
      */
     class RotateState : public State {
-    private:
-
-        geometry_msgs::Point initial_position;
 
     public:
 
@@ -20,9 +17,6 @@ namespace fluid {
 
         bool hasFinishedExecution() const override;
         void initialize() override;
-
-        std::vector<ascend_msgs::Spline> getSplinesForPath(const std::vector<geometry_msgs::Point>& path) override;
-        ControllerType getPreferredController() const override;
     };
 }
 

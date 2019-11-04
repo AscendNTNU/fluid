@@ -12,19 +12,12 @@ namespace fluid {
      */
     class TakeOffState: public State {
 
-    private:
-
-        geometry_msgs::Point initial_position;
-
     public:
 
         explicit TakeOffState() : State(fluid::StateIdentifier::TakeOff, fluid::PX4::Offboard, false, true, true) {}
 
         bool hasFinishedExecution() const override;
         void initialize() override;
-
-        std::vector<ascend_msgs::Spline> getSplinesForPath(const std::vector<geometry_msgs::Point>& path) override;
-        ControllerType getPreferredController() const override;
     };
 }
 

@@ -8,15 +8,8 @@ bool fluid::LandState::hasFinishedExecution() const {
 }
 
 void fluid::LandState::initialize() {
-    initial_position.x = getCurrentPose().pose.position.x;
-    initial_position.y = getCurrentPose().pose.position.y;
-    initial_position.z = 0.0;
-}
-
-std::vector<ascend_msgs::Spline> fluid::LandState::getSplinesForPath(const std::vector<geometry_msgs::Point>& path) {
-    return Util::getSplineForSetpoint(initial_position, initial_position);
-}
-
-fluid::ControllerType fluid::LandState::getPreferredController() const {
-    return ControllerType::Positional;
+    setpoint.x = getCurrentPose().pose.position.x;
+    setpoint.y = getCurrentPose().pose.position.y;
+    setpoint.z = 0.0;
+    setpoint.type_mask = TypeMask::Position;
 }

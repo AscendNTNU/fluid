@@ -11,18 +11,12 @@ namespace fluid {
      */
     class LandState: public State {
 
-    private: 
-        geometry_msgs::Point initial_position;
-
     public:
 
         explicit LandState() : State(fluid::StateIdentifier::Land, fluid::PX4::Land, false, false, true) {}
 
         bool hasFinishedExecution() const override;
         void initialize() override;
-
-        std::vector<ascend_msgs::Spline> getSplinesForPath(const std::vector<geometry_msgs::Point>& path) override;
-        ControllerType getPreferredController() const override;
    };
 }
 
