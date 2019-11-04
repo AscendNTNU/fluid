@@ -37,9 +37,13 @@ std::shared_ptr<fluid::StatusPublisher> fluid::Core::getStatusPublisherPtr() {
 }
 
 std::shared_ptr<fluid::Controller> fluid::Core::getControllerPtr() {
+
+
 	if (!controller_ptr_) {
-		controller_ptr_ = std::make_shared<fluid::Controller>();
+		// controller_ptr_ = std::make_shared<fluid::Controller>();
 	}
+
+	throw "Fatal, not implemented yet";
 
 	return controller_ptr_;
 }
