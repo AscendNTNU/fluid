@@ -8,24 +8,27 @@
 #include <mavros_msgs/PositionTarget.h>
 #include <ascend_msgs/Spline.h>
 
-namespace fluid {
+#include "trajectory.h"
+#include "PID.h"
 
-    enum class ControllerType {
-        // Passthrough will use the current controller 
-        Racing, Exploration, Passthrough
-    };
+namespace fluid {
 
     class Controller {
 
+        private:
+
+            const double target_speed;
+            PID pid;
+
+
         public:
 
-            Controller(const double& target_speed);
+            Controller(const double& target_speed, const PID& pid);
 
-            ControllerType controller_type = ControllerType::Exploration;
-
-            mavros_msgs::PositionTarget getSetpoint(const ControllerType preferred_controller, 
-                                                    const double& time, 
-                                                    const ascend_msgs::Spline& spline) const;
+            mavros_msgs::PositionTarget getSetpoint(const Trajectory& trajectory,
+                                                    const geometry_msgs::Pose& pose, 
+                                                    const geometry_msgs::Twist& twist, 
+                                                    const double& delta_time);
     };
 }
 
