@@ -12,6 +12,7 @@ Panels:
         - /Marker2
         - /Marker3
         - /Obstacles1
+        - /LaserScan1
       Splitter Ratio: 0.5
     Tree Height: 762
   - Class: rviz/Selection
@@ -32,7 +33,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: LaserScan
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -89,8 +90,6 @@ Visualization Manager:
           Value: true
         base_link_frd:
           Value: true
-        front_scanner:
-          Value: true
         map:
           Value: true
         map_ned:
@@ -98,10 +97,6 @@ Visualization Manager:
         odom:
           Value: true
         odom_ned:
-          Value: true
-        rear_scanner:
-          Value: true
-        robot:
           Value: true
         world:
           Value: true
@@ -115,17 +110,12 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          map_ned:
-            {}
-          robot:
-            front_scanner:
-              {}
-            rear_scanner:
-              {}
         world:
           base_link:
             base_link_frd:
+              {}
+          map:
+            map_ned:
               {}
           odom:
             odom_ned:
@@ -231,6 +221,36 @@ Visualization Manager:
       Topic: /obstacles
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 4096
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.029999999329447746
+      Style: Flat Squares
+      Topic: /scan
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -259,25 +279,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 30.61927604675293
+      Distance: 16.11505889892578
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.6462022662162781
-        Y: -1.434548020362854
-        Z: 6.758725166320801
+        X: -1.4300798177719116
+        Y: 1.1211597919464111
+        Z: 5.324913024902344
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0466594696044922
+      Pitch: 1.0766594409942627
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.6898802518844604
+      Yaw: 1.7748801708221436
     Saved: ~
 Window Geometry:
   Displays:
@@ -295,5 +315,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1920
-  X: 8
-  Y: 54
+  X: 0
+  Y: 23
