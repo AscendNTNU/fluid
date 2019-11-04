@@ -17,13 +17,12 @@ namespace fluid {
 
         private:
 
-            const double target_speed;
             PID pid;
 
 
         public:
 
-            Controller(const double& target_speed, const PID& pid);
+            Controller(const PID& pid);
 
             mavros_msgs::PositionTarget getSetpoint(const Trajectory& trajectory,
                                                     const geometry_msgs::Pose& pose, 

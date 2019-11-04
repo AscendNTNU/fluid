@@ -3,13 +3,12 @@
 #include "type_mask.h"
 #include "core.h"
 
-fluid::Controller::Controller(const double& target_speed, const PID& pid) : target_speed(target_speed), pid(pid) {}
+fluid::Controller::Controller(const PID& pid) : pid(pid) {}
 
 mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const Trajectory& trajectory,
                                                            const geometry_msgs::Pose& pose,
                                                            const geometry_msgs::Twist& twist,
                                                            const double& delta_time) {
-
 
     double dx = twist.linear.x;
     double dy = twist.linear.y;
