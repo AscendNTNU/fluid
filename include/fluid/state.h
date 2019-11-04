@@ -19,6 +19,7 @@
 #include "controller.h"
 #include "trajectory.h"
 #include "visualizer.h"
+#include "controller.h"
 
 namespace fluid {
 
