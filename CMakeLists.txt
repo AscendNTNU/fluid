@@ -32,7 +32,6 @@ catkin_package(
 include_directories(include
         include/fluid
         include/fluid/states
-        include/fluid/controllers
         ${catkin_INCLUDE_DIRS}
         ${Eigen_INCLUDE_DIRS}
 )
@@ -40,12 +39,10 @@ include_directories(include
 # Retrieve all the source files using GLOB
 file(GLOB fluid_SRC "src/*.cpp")
 file(GLOB fluid_states_SRC "src/states/*.cpp")
-file(GLOB fluid_controllers_SRC "src/controllers/*.cpp")
 
 # Add the source files to the library
 add_library(fluid
             ${fluid_SRC}
-            ${fluid_controllers_SRC}
             ${fluid_states_SRC})
 
 target_link_libraries(fluid ${catkin_LIBRARIES})
