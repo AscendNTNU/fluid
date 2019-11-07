@@ -6,6 +6,7 @@
 #include "controller.h"
 
 #include <memory>
+#include <map>
 
 #include <geometry_msgs/Point32.h>
 
@@ -29,6 +30,10 @@ namespace fluid {
         	                                                 				  ///< of and how they are connected.
 
 		static std::shared_ptr<fluid::Controller> controller_ptr_;
+
+		static std::map<fluid::ControllerType, fluid::ControllerConfig> controller_config_map;
+
+		static fluid::ControllerType current_controller_type;
 
 	public: 
 
@@ -75,10 +80,14 @@ namespace fluid {
 		static double positionFollowHeight;									///< The height at which the drone will
 																			///< follow a given target.	
 
-		static double yaw_kp, yaw_kd, yaw_ki;
+		static double racing_yaw_kp, racingyaw_kd, yaw_ki;
 
 		static std::shared_ptr<fluid::StateGraph> getGraphPtr();
 		static std::shared_ptr<fluid::StatusPublisher> getStatusPublisherPtr(); 
+
+		static fluid::ControllerConfig getCurrentControllerConfig();
+		static void swapController(const fluid::ControllerType& controller_type);
+		static void updateControllerConfig(const fluid::ControllerType& controller_type, const fluid::ControllerConfig& controller_config);
 		static std::shared_ptr<fluid::Controller> getControllerPtr();
 	};
 }

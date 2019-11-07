@@ -13,6 +13,16 @@
 
 namespace fluid {
 
+    struct ControllerConfig {
+        double kp, ki, kd;
+        double target_speed;
+        double curvature_gain;
+    };
+
+    enum class ControllerType {
+        Racing, Exploration
+    };
+
     class Controller {
 
         public:

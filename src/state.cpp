@@ -84,9 +84,6 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
         
         // The state will not set the setpoint itself, we issue custom controller
         if (!is_relative) {
-            controller.pid.kp = fluid::Core::yaw_kp;
-            controller.pid.ki = fluid::Core::yaw_ki;
-            controller.pid.kd = fluid::Core::yaw_kd;
 
             ros::Time current_time = ros::Time::now();
             double delta_time = (current_time - last_frame_time).toSec();

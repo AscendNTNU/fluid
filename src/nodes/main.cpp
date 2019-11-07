@@ -11,10 +11,19 @@
 #include <fluid/ServerConfig.h>
 
 void callback(fluid::ServerConfig &config, uint32_t level) {
-    
-    fluid::Core::yaw_kp = config.yaw_kp;
-    fluid::Core::yaw_ki = config.yaw_ki;
-    fluid::Core::yaw_kd = config.yaw_kd;
+
+
+    fluid::Core::updateControllerConfig(fluid::ControllerType::Racing, fluid::ControllerConfig{config.racing_kp,
+                                                                                               config.racing_ki,
+                                                                                               config.racing_kd,
+                                                                                               config.racing_speed,
+                                                                                               config.racing_curvature_gain});
+
+    fluid::Core::updateControllerConfig(fluid::ControllerType::Exploration, fluid::ControllerConfig{config.exploration_kp,
+                                                                                                    config.exploration_ki,
+                                                                                                    config.exploration_kd,
+                                                                                                    config.exploration_speed,
+                                                                                                    config.exploration_curvature_gain});
 }
 
 int main(int argc, char** argv) {
