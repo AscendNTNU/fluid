@@ -40,7 +40,6 @@ if __name__ == '__main__':
 	    # - move
 	    # - position_follow
         goal.state = "take_off"
-        goal.controller = "racing"
 
         print("Sending goal")
         # Sends the goal to the action server.
