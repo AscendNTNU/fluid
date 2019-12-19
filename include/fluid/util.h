@@ -10,7 +10,6 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
-#include <ascend_msgs/Spline.h>
 #include <vector>
 
 namespace fluid {
@@ -39,52 +38,7 @@ namespace fluid {
 
             return std::atan2(std::sin(yaw_error), std::cos(yaw_error)); 
         }  
-
-        static double derivePolynomial(const double& x, const std::vector<double>& coefficients) {
-            const unsigned int degree = coefficients.size() - 1;
-            double result = 0;
-
-            for (unsigned int i = 0; i < degree; i++) {
-                result += (degree - i) * coefficients[i] * std::pow(x, degree - i - 1); 
-            } 
-
-            return result;
-        }
-
-        static double evaluatePolynomial(const double& x, const std::vector<double>& coefficients) {
-            const unsigned int degree = coefficients.size() - 1;
-            double result = 0;
-
-            for (unsigned int i = 0; i < coefficients.size(); i++) {
-                result += coefficients[i] * std::pow(x, degree - i); 
-            } 
-
-            return result;
-        }
-
-        static std::vector<ascend_msgs::Spline> getSplineForSetpoint(const geometry_msgs::Point& current_position, 
-                                                                     const geometry_msgs::Point& setpoint) {
-            ascend_msgs::Spline spline;
-
-            double dx = setpoint.x - current_position.x;
-            double dy = setpoint.y - current_position.y;
-            double dz = setpoint.z - current_position.z;
-
-            double timestamp = std::sqrt(dx*dx + dy*dy + dz*dz);
-
-            std::vector<double> x = {0, 0, 0, 0, dx, current_position.x};
-            std::vector<double> y = {0, 0, 0, 0, dy, current_position.y};
-            std::vector<double> z = {0, 0, 0, 0, dz, current_position.z};
-
-            spline.x.insert(spline.x.end(), x.begin(), x.end());
-            spline.y.insert(spline.y.end(), y.begin(), y.end());
-            spline.z.insert(spline.z.end(), z.begin(), z.end());
-            spline.start = 0;
-            spline.end = timestamp;
-
-            return {spline};
-        }
-
+        
         static double clampAngle(double angle) {
             return std::fmod(angle + M_PI, 2.0 * M_PI) - M_PI;
         }
