@@ -74,44 +74,8 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     ros::Time startTime = ros::Time::now();
     ros::Time last_frame_time = ros::Time::now();
 
-    fluid::Trajectory trajectory(path, 
-                                 getCurrentPose(), 
-                                 getCurrentTwist(), 
-                                 current_imu, 
-                                 Core::getControllerConfig().target_speed, 
-                                 Core::getControllerConfig().curvature_gain);
-
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
         
-        // The state will not set the setpoint itself, we issue custom controller
-        if (!is_relative) {
-
-            fluid::Trajectory sub_trajectory = trajectory.generateSubTrajectory(getCurrentPose().pose.position, 200);
-
-            ros::Time current_time = ros::Time::now();
-            double delta_time = (current_time - last_frame_time).toSec();
-            last_frame_time = current_time;
-
-            double out_error = 0;
-            TrajectoryPoint out_following_trajectory_point;
-            setpoint = Core::getControllerPtr()->getSetpoint(sub_trajectory, 
-                                                             getCurrentPose().pose, 
-                                                             getCurrentTwist().twist, 
-                                                             delta_time, 
-                                                             out_error, 
-                                                             out_following_trajectory_point);
-
-            mavros_msgs::PositionTarget yaw_target;
-            yaw_target.yaw = out_error;
-
-            visualizer.publish(getCurrentPose().pose, 
-                               getCurrentTwist().twist,
-                               trajectory, 
-                               sub_trajectory, 
-                               out_following_trajectory_point, 
-                               setpoint);
-        }
-
         publishSetpoint();
 
         fluid::Core::getStatusPublisherPtr()->status.path = path;
