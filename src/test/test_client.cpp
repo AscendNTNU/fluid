@@ -25,7 +25,7 @@ void feedbackCb(const ascend_msgs::FluidFeedbackConstPtr &feedback) {
 }
 
 int main(int argc, char **argv) {
-	ros::init(argc, argv, "test_fibonacci_callback");
+	ros::init(argc, argv, "fluid_client");
 
 	// Create the action client
 	Client action_client("fluid_operation", true);
