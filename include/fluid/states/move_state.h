@@ -14,15 +14,14 @@ namespace fluid {
         bool been_to_all_points = false;
         std::vector<geometry_msgs::Point>::iterator current_destination_point_iterator;
 
-    public:
-
-        explicit MoveState(double speed, double position_threshold, double velocity_threshold) : 
-        State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true, false), 
+    protected:
+        explicit MoveState(fluid::StateIdentifier state_identifier, double speed, double position_threshold, double velocity_threshold) : 
+        State(state_identifier, fluid::PX4::Offboard, false, true, false), 
         speed(speed),
         position_threshold(position_threshold),
         velocity_threshold(velocity_threshold) {}
-        
-        virtual ~MoveState() = 0;
+
+    public:
 
         bool hasFinishedExecution() const override;
         void tick() override;
