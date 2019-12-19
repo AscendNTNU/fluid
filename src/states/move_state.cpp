@@ -2,6 +2,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <geometry_msgs/Quaternion.h>
+#include <mavros_msgs/ParamSet.h>
 
 #include "move_state.h"
 #include "util.h"
@@ -13,19 +14,22 @@ bool fluid::MoveState::hasFinishedExecution() const {
 
 void fluid::MoveState::tick() {
 
-    bool at_position_target  = Util::distanceBetween(getCurrentPose().pose.position, *current_destination_point_iterator) < fluid::Core::distance_completion_threshold;
-    bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold &&
-                               std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold &&
-                               std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
+    bool at_position_target  = Util::distanceBetween(getCurrentPose().pose.position, *current_destination_point_iterator) < position_threshold;
+    bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < velocity_threshold &&
+                               std::abs(getCurrentTwist().twist.linear.y) < velocity_threshold &&
+                               std::abs(getCurrentTwist().twist.linear.z) < velocity_threshold;
 
 
     if (at_position_target && low_enough_velocity) {
         if (current_destination_point_iterator < path.end() - 1) {
             current_destination_point_iterator++;
             setpoint.position = *current_destination_point_iterator;
+
+            double dx = current_destination_point_iterator->x - getCurrentPose().pose.position.x;
+            double dy = current_destination_point_iterator->y - getCurrentPose().pose.position.y;
+            setpoint.yaw = std::atan2(dy, dx);
         }
         else {
-            // We are at the final point
             been_to_all_points = true;
         }
     } 
@@ -42,4 +46,20 @@ void fluid::MoveState::initialize() {
     setpoint.type_mask = TypeMask::Position;
     been_to_all_points = false;
     current_destination_point_iterator = path.begin();
+    setpoint.position = *current_destination_point_iterator;
+
+    double dx = current_destination_point_iterator->x - getCurrentPose().pose.position.x;
+    double dy = current_destination_point_iterator->y - getCurrentPose().pose.position.y;
+    setpoint.yaw = std::atan2(dy, dx);
+
+    ros::ServiceClient param_set_service_client = node_handle.serviceClient<mavros_msgs::ParamSet>("mavros/param/set");
+
+    mavros_msgs::ParamSet param_set_service;
+
+    param_set_service.request.param_id = "MPC_XY_VEL_MAX";
+    param_set_service.request.value.real = speed;
+    ROS_INFO_STREAM("Setting speed to: " << speed);
+    if (!param_set_service_client.call(param_set_service)) {
+        ROS_FATAL_STREAM("Could not set the MPC_XY_VEL_MAX for PX4.");
+    }
 }

@@ -5,19 +5,24 @@
 
 namespace fluid {
 
-    /** \class MoveState
-     *  \brief Represents the state where the drone is moving from a to b.
-     */
     class MoveState: public State {
 
     private:
-
+        const double position_threshold;
+        const double velocity_threshold;
+        const double speed;
         bool been_to_all_points = false;
         std::vector<geometry_msgs::Point>::iterator current_destination_point_iterator;
 
     public:
 
-        explicit MoveState() : State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true, false) {}
+        explicit MoveState(double speed, double position_threshold, double velocity_threshold) : 
+        State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true, false), 
+        speed(speed),
+        position_threshold(position_threshold),
+        velocity_threshold(velocity_threshold) {}
+        
+        virtual ~MoveState() = 0;
 
         bool hasFinishedExecution() const override;
         void tick() override;
