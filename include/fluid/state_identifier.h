@@ -13,7 +13,8 @@ namespace fluid {
                                          Idle           = "idle",
                                          TakeOff        = "take_off",
                                          Hold           = "hold",
-                                         Move           = "move",
+                                         Exploration    = "exploration",
+                                         Travelling     = "travelling",
                                          Land           = "land",
                                          PositionFollow = "position_follow",
                                          Rotate         = "rotate";
