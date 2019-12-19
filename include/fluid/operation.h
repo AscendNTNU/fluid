@@ -1,7 +1,3 @@
-//
-// Created by simengangstad on 04.10.18.
-//
-
 #ifndef FLUID_FSM_OPERATION_H
 #define FLUID_FSM_OPERATION_H
 
@@ -22,8 +18,7 @@ namespace fluid {
     class Operation {
     protected:
 
-        const std::string destination_state_identifier_;                        ///< The state the operation should
-                                                                                ///< transition to.
+        const std::string destination_state_identifier_;                        
 
         /** The states the operation should transition to after it has carried
          *  out the logic in the destination state. E.g. if destination state
@@ -53,18 +48,9 @@ namespace fluid {
 
         virtual ~Operation() {}
 
-        /**
-         * Checks if the operation is valid from the current state. 
-         * 
-         * @param current_state_p       The current state.
-         *
-         * @return A flag determining the validation of the operation given the current state.
-         */
         virtual bool validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) const;
 
         /** 
-         * Performs the operation.
-         *
          * Runs through the different states and performs the necessary transitions.
          *
          * @param tick Called each tick, makes it possible to check status further up in the pipeline
@@ -73,28 +59,12 @@ namespace fluid {
          */
         virtual void perform(std::function<bool (void)> tick, std::function<void (bool)> completionHandler);
 
-        /**
-         * @brief Sets the pose for a new state and performs the transition to that state from the current state.
-         * 
-         * This function also sets the current state of the state graph to the state passed as the argument.
-         */
         void transitionToState(std::shared_ptr<fluid::State> state_p);
 
-        /**
-         * @return The destination state this operation will traverse to.
-         */
         std::string getDestinationStateIdentifier() const;
-
-        /**
-         * @return The state the operation should end at.
-         */
         std::shared_ptr<fluid::State> getFinalStatePtr() const;
-
-        /**
-         * @return The current state of the operation.
-         */
         std::shared_ptr<fluid::State> getCurrentStatePtr() const;
     };
 }
 
-#endif //FLUID_FSM_OPERATION_H
+#endif
