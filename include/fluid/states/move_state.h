@@ -15,7 +15,7 @@ namespace fluid {
         std::vector<geometry_msgs::Point>::iterator current_destination_point_iterator;
 
     protected:
-        explicit MoveState(fluid::StateIdentifier state_identifier, double speed, double position_threshold, double velocity_threshold) : 
+        explicit MoveState(std::string state_identifier, double speed, double position_threshold, double velocity_threshold) : 
         State(state_identifier, fluid::PX4::Offboard, false, true, false), 
         speed(speed),
         position_threshold(position_threshold),
