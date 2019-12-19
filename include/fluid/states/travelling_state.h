@@ -8,7 +8,7 @@ namespace fluid {
     class TravellingState : public MoveState {
 
         public: 
-            TravellingState() : MoveState(fluid::StateIdentifier::Travelling, 20, 20, 22) {}
+            TravellingState() : MoveState(fluid::StateIdentifier::Travelling, 20, 10, 22) {}
     };
 }
 
