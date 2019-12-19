@@ -50,10 +50,19 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
         return;
     }
 
-    // We can do this as most states are relative to the current position.
     for (auto state : states) {
         state->path = path;
     }
+
+    ROS_INFO_STREAM("New operation requested to state: " << destination_state_identifier_);
+
+    std::stringstream stringstream;
+
+    for (auto state : states) {
+        stringstream << state->identifier << " ";
+    }
+
+    ROS_INFO_STREAM("Will traverse through: " << stringstream.str() << "\n");
 
     float yaw = 0;
 
@@ -90,7 +99,8 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
     for (int index = 0; index < states.size(); index++) {
 
         std::shared_ptr<fluid::State> state_p = states[index];
-        
+
+        ROS_INFO_STREAM("Executing state: " << state_p->identifier);
         fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
         fluid::Core::getStatusPublisherPtr()->publish();
 
