@@ -37,15 +37,7 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     auto goal = actionlib_server_.acceptNewGoal();
     std::vector<geometry_msgs::Point> path = goal->path;
     std::string destination_identifier = goal->state;
-    std::string controller = goal->controller;
 
-    if (controller == "racing") {
-        Core::swapController(fluid::ControllerType::Racing);
-    }
-    else {
-        Core::swapController(fluid::ControllerType::Exploration);
-    }
-   
     geometry_msgs::Point current_position = fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position;
 
     if (path.empty()) {
