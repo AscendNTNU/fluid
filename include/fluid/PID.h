@@ -9,6 +9,7 @@ namespace fluid {
 
             double integrated_error = 0;
             double previous_error = 0;
+            double previous_derivative_error = 0;
 
         public:
 
