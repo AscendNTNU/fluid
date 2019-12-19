@@ -35,8 +35,8 @@ namespace fluid {
                                                     const geometry_msgs::Pose& pose, 
                                                     const geometry_msgs::Twist& twist, 
                                                     const double& delta_time,
-                                                    double& error, 
-                                                    TrajectoryPoint& following_trajectory_point);
+                                                    double& out_error, 
+                                                    TrajectoryPoint& out_following_trajectory_point);
     };
 }
 

@@ -9,25 +9,18 @@ mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const Trajectory& tra
                                                            const geometry_msgs::Pose& pose,
                                                            const geometry_msgs::Twist& twist,
                                                            const double& delta_time,
-                                                           double& error,
-                                                           TrajectoryPoint& following_trajectory_point) {
+                                                           double& out_error,
+                                                           TrajectoryPoint& out_following_trajectory_point) {
 
-    double dx = twist.linear.x;
-    double dy = twist.linear.y;
+    double vdx = twist.linear.x;
+    double vdy = twist.linear.y;
 
     // Find the current position closest to the path, apply the velocity vector in that direction from the
     // path's yaw and set that as the following point
-    double velocity = sqrt(dx*dx + dy*dy);
-    ROS_INFO_STREAM(velocity);
-    TrajectoryPoint current_trajectory_point;
-    current_trajectory_point = following_trajectory_point = trajectory.calculateNearestTrajectoryPoint(pose.position).trajectory_point;
-    following_trajectory_point.x += velocity * cos(current_trajectory_point.yaw);
-    following_trajectory_point.y += velocity * sin(current_trajectory_point.yaw);
-
-    geometry_msgs::Point point;
-    point.x = following_trajectory_point.x;
-    point.y = following_trajectory_point.y;
-    following_trajectory_point = trajectory.calculateNearestTrajectoryPoint(point).trajectory_point;
+    double velocity = sqrt(vdx*vdx + vdy*vdy);
+    TrajectoryPointResult current_trajectory_point = trajectory.calculateNearestTrajectoryPoint(pose.position);
+    out_following_trajectory_point = trajectory.getTrajectoryPoints()[std::min(trajectory.calculateNearestTrajectoryPoint(pose.position).index + 300, 
+                                                                               static_cast<unsigned int>(trajectory.getTrajectoryPoints().size()) - 1)];
 
     tf2::Quaternion quat(pose.orientation.x, 
                          pose.orientation.y, 
@@ -40,17 +33,17 @@ mavros_msgs::PositionTarget fluid::Controller::getSetpoint(const Trajectory& tra
     // it to zero. 
     yaw = std::isnan(yaw) ? 0.0 : yaw;
 
-    // double error = -std::atan(future_path_point.error);
-    error = atan2(following_trajectory_point.y - pose.position.y, 
-                  following_trajectory_point.x - pose.position.x);
+    // out_error = -std::atan(current_trajectory_point.error);
+    out_error = atan2(out_following_trajectory_point.y - pose.position.y, 
+                      out_following_trajectory_point.x - pose.position.x);
 
-    double steering_yaw = pid.getActuation(error, delta_time);
+    double steering_yaw = pid.getActuation(out_error, delta_time);
 
     mavros_msgs::PositionTarget setpoint;
     setpoint.type_mask = TypeMask::Velocity;
     setpoint.yaw = steering_yaw; 
-    setpoint.velocity.x = following_trajectory_point.speed * std::cos(setpoint.yaw); 
-    setpoint.velocity.y = following_trajectory_point.speed * std::sin(setpoint.yaw);
+    setpoint.velocity.x = out_following_trajectory_point.speed * std::cos(setpoint.yaw); 
+    setpoint.velocity.y = out_following_trajectory_point.speed * std::sin(setpoint.yaw);
     setpoint.velocity.z = 0.0;
     setpoint.coordinate_frame = 1; 
 
