@@ -9,8 +9,6 @@
 #include <visualization_msgs/Marker.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-#include <ascend_msgs/SplineService.h>
-
 #include <tf/tf.h>
 
 #include <utility>
