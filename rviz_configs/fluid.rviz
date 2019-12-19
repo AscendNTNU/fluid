@@ -8,13 +8,15 @@ Panels:
         - /Status1
         - /Marker1
         - /TF1
+        - /Odometry1
         - /Path1
         - /Marker2
         - /Marker3
         - /Obstacles1
         - /LaserScan1
+        - /Pose1
       Splitter Ratio: 0.5
-    Tree Height: 762
+    Tree Height: 1392
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -33,7 +35,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -72,20 +74,6 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
-        Lidar1:
-          Value: true
-        MyCamera1_body:
-          Value: true
-        MyCamera1_body/static:
-          Value: true
-        MyCamera1_optical:
-          Value: true
-        MyCamera1_optical/static:
-          Value: true
-        PX4:
-          Value: true
-        PX4/odom_local_ned:
-          Value: true
         base_link:
           Value: true
         base_link_frd:
@@ -99,8 +87,6 @@ Visualization Manager:
         odom_ned:
           Value: true
         world:
-          Value: true
-        world_enu:
           Value: true
         world_ned:
           Value: true
@@ -121,20 +107,7 @@ Visualization Manager:
             odom_ned:
               {}
           world_ned:
-            PX4:
-              MyCamera1_body:
-                {}
-              MyCamera1_optical:
-                {}
-              PX4/odom_local_ned:
-                Lidar1:
-                  {}
-                MyCamera1_body/static:
-                  {}
-                MyCamera1_optical/static:
-                  {}
-            world_enu:
-              {}
+            {}
       Update Interval: 0
       Value: true
     - Angle Tolerance: 0.10000000149011612
@@ -167,7 +140,7 @@ Visualization Manager:
         Head Radius: 0.10000000149011612
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
-        Value: Arrow
+        Value: Axes
       Topic: /mavros/local_position/odom
       Unreliable: false
       Value: true
@@ -175,7 +148,7 @@ Visualization Manager:
       Buffer Length: 1
       Class: rviz/Path
       Color: 255; 25; 0
-      Enabled: true
+      Enabled: false
       Head Diameter: 0.30000001192092896
       Head Length: 0.20000000298023224
       Length: 0.30000001192092896
@@ -193,7 +166,7 @@ Visualization Manager:
       Shaft Length: 0.10000000149011612
       Topic: /current_odometry_path
       Unreliable: false
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /target_odometry
@@ -251,6 +224,52 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /viz/trajectory
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /trajectory/pose_history
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: Pose
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Axes
+      Topic: /trajectory/reference_pose
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -279,33 +298,33 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 16.11505889892578
+      Distance: 182.19772338867188
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -1.4300798177719116
-        Y: 1.1211597919464111
-        Z: 5.324913024902344
+        X: 14.569422721862793
+        Y: 1.6550228595733643
+        Z: 6.790122985839844
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0766594409942627
+      Pitch: 0.6666597723960876
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.7748801708221436
+      Yaw: 1.5498803853988647
     Saved: ~
 Window Geometry:
   Displays:
-    collapsed: false
-  Height: 1027
-  Hide Left Dock: false
-  Hide Right Dock: false
-  QMainWindow State: 000000ff00000000fd0000000400000000000001860000037bfc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000004a00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002e0000037b0000009b00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f0000037bfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000002e0000037b0000008400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d0065010000000000000780000001bf00fffffffb0000000800540069006d00650100000000000004500000000000000000000004e30000037b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+    collapsed: true
+  Height: 1657
+  Hide Left Dock: true
+  Hide Right Dock: true
+  QMainWindow State: 000000ff00000000fd000000040000000000000150000005f1fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000004a00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073000000002e000005f10000009b00fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c0000026100000001000000fc000005f1fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000002e000005f10000008400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000041a0000003efc0100000002fb0000000800540069006d006501000000000000041a000001bf00fffffffb0000000800540069006d006501000000000000045000000000000000000000041a000005f100000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -313,7 +332,7 @@ Window Geometry:
   Tool Properties:
     collapsed: false
   Views:
-    collapsed: false
-  Width: 1920
-  X: 0
+    collapsed: true
+  Width: 1050
+  X: 1920
   Y: 23
