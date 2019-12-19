@@ -85,10 +85,10 @@ namespace fluid {
 		static std::shared_ptr<fluid::StateGraph> getGraphPtr();
 		static std::shared_ptr<fluid::StatusPublisher> getStatusPublisherPtr(); 
 
-		static fluid::ControllerConfig getCurrentControllerConfig();
+		static std::shared_ptr<fluid::Controller> getControllerPtr();
+		static fluid::ControllerConfig getControllerConfig();
 		static void swapController(const fluid::ControllerType& controller_type);
 		static void updateControllerConfig(const fluid::ControllerType& controller_type, const fluid::ControllerConfig& controller_config);
-		static std::shared_ptr<fluid::Controller> getControllerPtr();
 	};
 }
 

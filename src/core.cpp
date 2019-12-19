@@ -6,7 +6,7 @@ bool fluid::Core::auto_arm = false;
 bool fluid::Core::auto_set_offboard = false;
 
 std::map<fluid::ControllerType, fluid::ControllerConfig> fluid::Core::controller_config_map {
-	{fluid::ControllerType::Racing, fluid::ControllerConfig {1.0, 0.0, 1.5, 20, 10}},
+	{fluid::ControllerType::Racing, fluid::ControllerConfig {1.0, 0.0, 1.5, 20, 15}},
 	{fluid::ControllerType::Exploration, fluid::ControllerConfig {1.0, 0.0, 1.5, 1.0, 1.0}}
 };
 
@@ -39,7 +39,7 @@ std::shared_ptr<fluid::StatusPublisher> fluid::Core::getStatusPublisherPtr() {
 }
 
 
-fluid::ControllerConfig fluid::Core::getCurrentControllerConfig() {
+fluid::ControllerConfig fluid::Core::getControllerConfig() {
 	return Core::controller_config_map[Core::current_controller_type];
 }
 
