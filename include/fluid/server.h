@@ -1,7 +1,3 @@
-//
-// Created by simengangstad on 18.10.18.
-//
-
 #ifndef FLUID_FSM_SERVER_H
 #define FLUID_FSM_SERVER_H
 
@@ -22,15 +18,15 @@ namespace fluid {
 
     private:
 
-        ros::NodeHandle node_handle_;                                ///< Used to instantiate the ROS action server
+        ros::NodeHandle node_handle_;                                
         ActionlibServer actionlib_server_;                         
-
-    public:
-
-        Server();
 
         std::shared_ptr<fluid::Operation> retrieveNewOperation();
         void preemptCallback();
+ 
+    public:
+
+        Server();
         void start();
     };
 }

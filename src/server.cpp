@@ -10,11 +10,7 @@
 #include "core.h"
 #include "util.h"
 
-fluid::Server::Server() : actionlib_server_(node_handle_, 
-                                            "fluid_operation",
-                                            false) {
-    
-
+fluid::Server::Server() : actionlib_server_(node_handle_, "fluid_operation", false) {
     actionlib_server_.registerPreemptCallback(boost::bind(&Server::preemptCallback, this));
     actionlib_server_.start();
 }
@@ -53,7 +49,9 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     float distanceToEndpoint = Util::distanceBetween(current_position, last_setpoint);
     bool shouldIncludeMove = (distanceToEndpoint >= fluid::Core::distance_completion_threshold) || path.size() > 1;
 
-    auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
+    auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, 
+                                                                destination_identifier, 
+                                                                shouldIncludeMove);
     ROS_INFO_STREAM("New operation requested to state: " << destination_identifier);
 
     std::stringstream stringstream;
@@ -75,17 +73,11 @@ void fluid::Server::start() {
 
     ros::Rate rate(fluid::Core::refresh_rate);
 
-    // Main loop of Fluid FSM. This is where all the magic happens. If a new operaiton is requested, the 
-    // new operation requested flag is set and we set up the requirements for that operation to run. When it
-    // it runs we check every tick if a new operation is requested and abort from the current operation if
-    // that is the case. 
-
     std::shared_ptr<fluid::Operation> current_operation_ptr;
     std::shared_ptr<fluid::State> last_state_ptr;
 
     while (ros::ok()) {
 
-        // Execute the operation if there is any
         if (current_operation_ptr) {
 
             fluid::Core::getStatusPublisherPtr()->status.current_operation = current_operation_ptr->getDestinationStateIdentifier();
