@@ -10,11 +10,17 @@ namespace fluid {
      */
     class MoveState: public State {
 
+    private:
+
+        bool been_to_all_points = false;
+        std::vector<geometry_msgs::Point>::iterator current_destination_point_iterator;
+
     public:
 
         explicit MoveState() : State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true, false) {}
 
         bool hasFinishedExecution() const override;
+        void tick() override;
         void initialize() override;
    };
 }

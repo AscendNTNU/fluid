@@ -8,14 +8,27 @@
 #include "core.h"
 
 bool fluid::MoveState::hasFinishedExecution() const {
-    // TODO: Have to check that we've been through the whole path
-    bool atPositionTarget = Util::distanceBetween(getCurrentPose().pose.position, path.back()) < fluid::Core::distance_completion_threshold &&
-                            std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold &&
-                            std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold &&
-                            std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
+    return been_to_all_points;
+}
+
+void fluid::MoveState::tick() {
+
+    bool at_position_target  = Util::distanceBetween(getCurrentPose().pose.position, *current_destination_point_iterator) < fluid::Core::distance_completion_threshold;
+    bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < fluid::Core::velocity_completion_threshold &&
+                               std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold &&
+                               std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 
 
-    return atPositionTarget;
+    if (at_position_target && low_enough_velocity) {
+        if (current_destination_point_iterator < path.end() - 1) {
+            current_destination_point_iterator++;
+            setpoint.position = *current_destination_point_iterator;
+        }
+        else {
+            // We are at the final point
+            been_to_all_points = true;
+        }
+    } 
 }
 
 void fluid::MoveState::initialize() {
@@ -25,4 +38,8 @@ void fluid::MoveState::initialize() {
             iterator->z = fluid::Core::default_height;
         }
     }
+
+    setpoint.type_mask = TypeMask::Position;
+    been_to_all_points = false;
+    current_destination_point_iterator = path.begin();
 }

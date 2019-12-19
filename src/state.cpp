@@ -30,7 +30,7 @@ fluid::State::State(std::string identifier,
 
     pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &State::poseCallback, this);
     twist_subscriber = node_handle.subscribe("mavros/local_position/velocity_local", 1, &State::twistCallback, this);
-    
+
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", Core::message_queue_size);
 }
 
@@ -57,17 +57,15 @@ void fluid::State::publishSetpoint() {
     setpoint_publisher.publish(setpoint);
 }
 
-void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_steady) {
+void fluid::State::perform(std::function<bool(void)> should_tick, bool should_halt_if_steady) {
 
     ros::Rate rate(Core::refresh_rate);
 
     initialize();
 
-    ros::Time startTime = ros::Time::now();
-    ros::Time last_frame_time = ros::Time::now();
+    while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && should_tick()) {
 
-    while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
-        
+        tick();
         publishSetpoint();
 
         fluid::Core::getStatusPublisherPtr()->status.path = path;

@@ -84,11 +84,12 @@ namespace fluid {
          *                                  if we want to keep at a certain state for some time, e.g. idle
          *                                  or hold.
          */
-        virtual void perform(std::function<bool (void)> tick, bool should_halt_if_steady);
+        virtual void perform(std::function<bool (void)> should_tick, bool should_halt_if_steady);
 
         void publishSetpoint();
         virtual bool hasFinishedExecution() const = 0;
         virtual void initialize() {}
+        virtual void tick() {}
 
         /**
          * The transition class has to be able to e.g. set the current pose if we transition to a state which requires 
