@@ -135,7 +135,7 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
     for (const auto &identifier : path) {
         states_in_plan.push_back(getStateWithIdentifier(identifier));
 
-        if (identifier == fluid::StateIdentifier::Move) {
+        if (identifier == fluid::StateIdentifier::Exploration || identifier == fluid::StateIdentifier::Travelling) {
             includes_move = true;
         }
     }
@@ -151,7 +151,7 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
 
         if (iterator != states_in_plan.end()) {
             iterator = states_in_plan.insert(iterator + 1, getStateWithIdentifier(fluid::StateIdentifier::Rotate));
-            states_in_plan.insert(iterator + 1, getStateWithIdentifier(fluid::StateIdentifier::Move));
+            states_in_plan.insert(iterator + 1, getStateWithIdentifier(fluid::StateIdentifier::Exploration));
         }
     }
 
