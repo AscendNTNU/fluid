@@ -24,7 +24,6 @@ namespace fluid {
     class State {
     private:
 
-        ros::NodeHandle node_handle;                                            
                                                                                 
         ros::Subscriber pose_subscriber;                                        
         geometry_msgs::PoseStamped current_pose;                                
@@ -52,6 +51,7 @@ namespace fluid {
 
     protected:
 
+        ros::NodeHandle node_handle;                                            
         mavros_msgs::PositionTarget setpoint;                   
 
 
