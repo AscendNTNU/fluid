@@ -34,33 +34,11 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
     std::vector<geometry_msgs::Point> path = goal->path;
     std::string destination_identifier = goal->state;
 
-    geometry_msgs::Point current_position = fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position;
-
     if (path.empty()) {
-        path.push_back(current_position);
+        path.push_back(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position);
     }
 
     Core::getStatusPublisherPtr()->status.path = path;
-
-    current_position.z = 0;
-    geometry_msgs::Point last_setpoint = path.back();
-    last_setpoint.z = 0;
-
-    float distanceToEndpoint = Util::distanceBetween(current_position, last_setpoint);
-    bool shouldIncludeMove = (distanceToEndpoint >= fluid::Core::distance_completion_threshold) || path.size() > 1;
-
-    auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, 
-                                                                destination_identifier, 
-                                                                shouldIncludeMove);
-    ROS_INFO_STREAM("New operation requested to state: " << destination_identifier);
-
-    std::stringstream stringstream;
-
-    for (auto state : states) {
-        stringstream << state->identifier << " ";
-    }
-
-    ROS_INFO_STREAM("Will traverse through: " << stringstream.str() << "\n");
 
     return std::make_shared<fluid::Operation>(destination_identifier, path);
 }
