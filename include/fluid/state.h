@@ -10,16 +10,10 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/PositionTarget.h>
-#include <ascend_msgs/Spline.h>
-#include <ascend_msgs/PathOptimizerService.h>
 #include <sensor_msgs/Imu.h>
 
 #include "state_identifier.h"
 #include "type_mask.h"
-#include "controller.h"
-#include "trajectory.h"
-#include "visualizer.h"
-#include "controller.h"
 
 namespace fluid {
 
@@ -77,8 +71,6 @@ namespace fluid {
                                                                                 ///< sense.
 
         const bool is_relative;
-
-        Visualizer visualizer;
 
 
     protected:
