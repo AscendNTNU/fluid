@@ -26,14 +26,15 @@ namespace fluid {
          *  to finish at a position hold state. These states are all steady.
          */
         const std::map<std::string, std::string> steady_state_map_ = {
-            {fluid::StateIdentifier::Init, fluid::StateIdentifier::Idle},
-            {fluid::StateIdentifier::Idle, fluid::StateIdentifier::Idle},
-            {fluid::StateIdentifier::TakeOff, fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::Move, fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::Hold, fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::PositionFollow, fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::Rotate, fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::Land, fluid::StateIdentifier::Idle},
+            {fluid::StateIdentifier::Init,              fluid::StateIdentifier::Idle},
+            {fluid::StateIdentifier::Idle,              fluid::StateIdentifier::Idle},
+            {fluid::StateIdentifier::TakeOff,           fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::Exploration,       fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::Travelling,        fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::Hold,              fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::PositionFollow,    fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::Rotate,            fluid::StateIdentifier::Hold},
+            {fluid::StateIdentifier::Land,              fluid::StateIdentifier::Idle},
         };
 
 
