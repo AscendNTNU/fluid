@@ -74,29 +74,42 @@ void fluid::State::perform(std::function<bool(void)> tick, bool should_halt_if_s
     ros::Time startTime = ros::Time::now();
     ros::Time last_frame_time = ros::Time::now();
 
-    fluid::PID yaw_regulator(1.0, 0.0, 0.0);
-    fluid::Controller controller(yaw_regulator);
-
-    const double target_speed = 20.0, curvature_gain = 10.0;
-    fluid::Trajectory trajectory(path, getCurrentPose(), getCurrentTwist(), current_imu, target_speed, curvature_gain);
+    fluid::Trajectory trajectory(path, 
+                                 getCurrentPose(), 
+                                 getCurrentTwist(), 
+                                 current_imu, 
+                                 Core::getControllerConfig().target_speed, 
+                                 Core::getControllerConfig().curvature_gain);
 
     while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && tick()) {
         
         // The state will not set the setpoint itself, we issue custom controller
         if (!is_relative) {
 
+            fluid::Trajectory sub_trajectory = trajectory.generateSubTrajectory(getCurrentPose().pose.position, 200);
+
             ros::Time current_time = ros::Time::now();
             double delta_time = (current_time - last_frame_time).toSec();
             last_frame_time = current_time;
 
-            double error = 0;
-            TrajectoryPoint following_trajectory_point;
-            setpoint = controller.getSetpoint(trajectory, getCurrentPose().pose, getCurrentTwist().twist, delta_time, error, following_trajectory_point);
+            double out_error = 0;
+            TrajectoryPoint out_following_trajectory_point;
+            setpoint = Core::getControllerPtr()->getSetpoint(sub_trajectory, 
+                                                             getCurrentPose().pose, 
+                                                             getCurrentTwist().twist, 
+                                                             delta_time, 
+                                                             out_error, 
+                                                             out_following_trajectory_point);
 
             mavros_msgs::PositionTarget yaw_target;
-            yaw_target.yaw = error;
+            yaw_target.yaw = out_error;
 
-            visualizer.publish(getCurrentPose().pose, getCurrentTwist().twist, trajectory, following_trajectory_point, setpoint);
+            visualizer.publish(getCurrentPose().pose, 
+                               getCurrentTwist().twist,
+                               trajectory, 
+                               sub_trajectory, 
+                               out_following_trajectory_point, 
+                               setpoint);
         }
 
         publishSetpoint();
