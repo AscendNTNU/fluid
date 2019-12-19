@@ -4,3 +4,8 @@
 - Find a better system for queue size
 - How do we handle yaw? We don't for the regular states, but when we are exploring we rotate towards an anchor 
 - Remove namespace?
+- Make status publisher publish the path
+- Remove is relative
+- Fix dynamic reconfigure
+- Rewrite documentation for exploration and travelling states
+- typdef state identifier
