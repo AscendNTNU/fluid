@@ -28,11 +28,13 @@ if __name__ == '__main__':
         rospy.init_node('fluid_client')
 
         client = actionlib.SimpleActionClient('fluid_operation', ascend_msgs.msg.FluidAction)
+        print("Waiting for server...")
         client.wait_for_server()
-
+        print("Got contact with server")
+        
         # Creates a goal to send to the action server.
         goal = ascend_msgs.msg.FluidGoal()
-        
+        """ 
 	    # The type of operation we want to execute. Can for example be:
 	    # - take_off
 	    # - land 
@@ -53,7 +55,7 @@ if __name__ == '__main__':
         second = Point()
 
         first.x = 20.0
-        first.y = 20.0
+        first.y = 0.0
         first.z = 2.0
 
         second.x = 40.0
@@ -64,12 +66,23 @@ if __name__ == '__main__':
         goal.state = "move"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
-        rospy.sleep(3);
+        """
 
-        second.z = 15
-        goal.path = [second]
+        goal.state = "travelling"
+        first = Point()
+        second = Point()
 
+        first.x = 400.0
+        first.y = 0.0
+        first.z = 2.0
+
+        second.x = 0.0
+        second.y = 0.0
+        second.z = 2.0
+
+        goal.path = [first, second, first, second, first, second, first, second]
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
+
     except rospy.ROSInterruptException:
         print("program interrupted before completion")
