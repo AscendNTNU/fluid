@@ -2,7 +2,6 @@
 #define FLUID_FSM_INIT_STATE_H
 
 #include "state.h"
-#include "controller.h"
 
 namespace fluid {
 
