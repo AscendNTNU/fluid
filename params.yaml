@@ -6,4 +6,4 @@ auto_offboard: false
 distance_completion_threshold: 0.3
 velocity_completion_threshold: 0.1
 yaw_completion_threshold: 0.5
-default_height: 1.0
+default_height: 2.0
