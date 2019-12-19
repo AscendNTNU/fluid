@@ -11,5 +11,5 @@ void fluid::LandState::initialize() {
     setpoint.position.x = getCurrentPose().pose.position.x;
     setpoint.position.y = getCurrentPose().pose.position.y;
     setpoint.position.z = 0.0;
-    setpoint.type_mask = TypeMask::Position;
+    setpoint.type_mask = TypeMask::Position | TypeMask::IgnoreYaw;
 }
