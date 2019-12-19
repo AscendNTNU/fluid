@@ -13,11 +13,9 @@ bool fluid::RotateState::hasFinishedExecution() const {
     	   					std::abs(getCurrentTwist().twist.linear.y) < fluid::Core::velocity_completion_threshold && 
     	   					std::abs(getCurrentTwist().twist.linear.z) < fluid::Core::velocity_completion_threshold;
 
+    bool atYawTarget = std::abs(Util::angleBetween(getCurrentPose().pose.orientation, setpoint.yaw)) < fluid::Core::yaw_completion_threshold; 
 
-
-    // bool atYawTarget = std::abs(Util::angleBetween(current_pose_.pose.orientation, setpoint.yaw)) < fluid::Core::yaw_completion_threshold; 
-
-    return /*atYawTarget &&*/ atPositionTarget;
+    return atYawTarget && atPositionTarget;
 }
 
 void fluid::RotateState::initialize() {
@@ -25,4 +23,8 @@ void fluid::RotateState::initialize() {
     setpoint.position.y = getCurrentPose().pose.position.y;
     setpoint.position.z = getCurrentPose().pose.position.z;
     setpoint.type_mask = TypeMask::Position;
+
+    double dx = path.front().x - getCurrentPose().pose.position.x;
+    double dy = path.front().y - getCurrentPose().pose.position.y;
+    setpoint.yaw = std::atan2(dy, dx);
 }
