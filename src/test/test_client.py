@@ -10,7 +10,6 @@ import actionlib
 
 import ascend_msgs.msg
 from geometry_msgs.msg import Point
-from ascend_msgs.srv import SplineService 
 
 
 def active_callback():
