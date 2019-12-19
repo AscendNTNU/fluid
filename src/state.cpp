@@ -30,8 +30,7 @@ fluid::State::State(std::string identifier,
 
     pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &State::poseCallback, this);
     twist_subscriber = node_handle.subscribe("mavros/local_position/velocity_local", 1, &State::twistCallback, this);
-    imu_subscriber = node_handle.subscribe("mavros/imu/data", 1, &State::imuCallback, this);
-
+    
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", Core::message_queue_size);
 }
 
@@ -53,10 +52,6 @@ void fluid::State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist
     current_twist.header = twist->header;
 }
 
-
-void fluid::State::imuCallback(const sensor_msgs::ImuConstPtr imu) {
-    current_imu = *imu;
-}
 
 void fluid::State::publishSetpoint() {
     setpoint_publisher.publish(setpoint);

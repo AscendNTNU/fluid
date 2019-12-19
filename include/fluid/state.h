@@ -10,7 +10,6 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <mavros_msgs/PositionTarget.h>
-#include <sensor_msgs/Imu.h>
 
 #include "state_identifier.h"
 #include "type_mask.h"
@@ -25,39 +24,17 @@ namespace fluid {
     class State {
     private:
 
-        ros::NodeHandle node_handle;                                            ///< Node handle for the mavros 
-                                                                                ///< pose publisher
-
-
-        ros::Subscriber pose_subscriber;                                        ///< Keeps track of the drone's pose 
-                                                                                ///< during this state.
-
-        geometry_msgs::PoseStamped current_pose;                                ///< The current pose of the
-                                                                                ///< drone during the state.        
-
-
-
+        ros::NodeHandle node_handle;                                            
+                                                                                
+        ros::Subscriber pose_subscriber;                                        
+        geometry_msgs::PoseStamped current_pose;                                
         void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
 
-
-
-        ros::Subscriber twist_subscriber;                                       ///< Keeps track of the drone's twist 
-                                                                                ///< during this state.
-
-        geometry_msgs::TwistStamped current_twist;                              ///< The current twist of the  
-                                                                                ///< drone during the state.
-
+        ros::Subscriber twist_subscriber;                                      
+        geometry_msgs::TwistStamped current_twist;                              
         void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
                 
-        ros::Subscriber imu_subscriber;                                         
-
-        sensor_msgs::Imu current_imu;
-
-        void imuCallback(const sensor_msgs::ImuConstPtr imu);
-
-
-
-        ros::Publisher setpoint_publisher;                                      ///< Publishes setpoints for this state.
+        ros::Publisher setpoint_publisher;                                     
 
 
         const bool steady;                                                      ///< Determines whether this state is
@@ -80,8 +57,7 @@ namespace fluid {
 
     public:
 
-		const std::string identifier;                                          ///< Makes it easy to distinguish 
-                                                                               ///< between states 
+		const std::string identifier;                                          
   
         const std::string px4_mode;                                            ///< The mode this state represents 
                                                                                ///< within PX4. For example move state
@@ -97,16 +73,7 @@ namespace fluid {
               const bool should_check_obstacle_avoidance_completion, 
               const bool is_relative);
 
-       /**
-         * @brief      Returns the current pose, the last pose that the state estimation published on
-         *             the given topic.
-         */
         geometry_msgs::PoseStamped getCurrentPose() const;
-
-        /**
-         * @brief      Returns the current twist, which is the last twist from the IMU.
-         * 
-         */
         geometry_msgs::TwistStamped getCurrentTwist() const;
 
         /**
@@ -119,19 +86,8 @@ namespace fluid {
          */
         virtual void perform(std::function<bool (void)> tick, bool should_halt_if_steady);
 
-        /**
-         * Will publish the current setpoint with the custom obstacle avoidance setpoint message.
-         */
         void publishSetpoint();
-
-        /**
-         * @return A flag determining whether the state has finished execution.
-         */
         virtual bool hasFinishedExecution() const = 0;
-
-        /**
-         * Gives the state a chance to do some initial setup before this state is executed.
-         */
         virtual void initialize() {}
 
         /**
