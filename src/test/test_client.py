@@ -68,19 +68,29 @@ if __name__ == '__main__':
         client.wait_for_result()
         """
 
-        goal.state = "travelling"
+        goal.state = "exploration"
         first = Point()
         second = Point()
+        third = Point()
+        fourth = Point()
 
-        first.x = 400.0
+        first.x = 10.0
         first.y = 0.0
         first.z = 2.0
 
-        second.x = 0.0
-        second.y = 0.0
+        second.x = 10.0
+        second.y = 10.0
         second.z = 2.0
 
-        goal.path = [first, second, first, second, first, second, first, second]
+        third.x = 0.0
+        third.y = 10.0
+        third.z = 2.0
+
+        fourth.x = 0.0
+        fourth.y = 0.0
+        fourth.z = 2.0
+
+        goal.path = [first, second, third, fourth]
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
 
