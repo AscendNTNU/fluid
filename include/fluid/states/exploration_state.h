@@ -9,6 +9,7 @@ namespace fluid {
 
         private:
 
+            bool retrieved_point_of_interest = false;
             geometry_msgs::Point point_of_interest;
             ros::Subscriber point_of_interest_subscriber;
 
