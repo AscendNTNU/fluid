@@ -15,7 +15,7 @@ namespace fluid {
             void pointOfInterestCallback(const geometry_msgs::PointConstPtr& point);
             
         public:
-            ExplorationState() : MoveState(fluid::StateIdentifier::Exploration, 1.0, 0.3, 1.0) {}
+            ExplorationState() : MoveState(fluid::StateIdentifier::Exploration, 0.3, 0.3, 0.3) {}
 
             void initialize() override;
             void tick() override;
