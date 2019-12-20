@@ -19,10 +19,12 @@ fluid::Operation::Operation(const std::string& destination_state_identifier,
 
 void fluid::Operation::perform(std::function<bool (void)> tick, std::function<void (bool)> completionHandler) {
 
+    
+    
     if (!validateOperationFromCurrentState(fluid::Core::getGraphPtr()->current_state_ptr)) {
         ROS_FATAL_STREAM("Operation to: " << 
                          destination_state_identifier_ << 
-                         "is not a valid operation from current state: " <<
+                         " is not a valid operation from current state: " <<
                          fluid::Core::getGraphPtr()->current_state_ptr->identifier);
 
         completionHandler(false);
@@ -64,32 +66,6 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
 
     ROS_INFO_STREAM("Will traverse through: " << stringstream.str() << "\n");
 
-    float yaw = 0;
-
-    // If we have to move, we want the rotate state to rotate in that direction and all succeeding states to also be in
-    // that yaw.
-    if (shouldIncludeMove) {
-        float dx = path.front().x - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.x;
-        float dy = path.front().y - fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position.y;
-
-        yaw = atan2(dy, dx);
-
-        // Go through states after rotate and append the yaw to all of them so we don't snap back to the 
-        // setpoint yaw
-
-        // Retrieve the iterator for rotate in the path
-        auto iterator = std::find_if(states.begin(), states.end(), [] (const std::shared_ptr<fluid::State>& state) -> bool {
-            return state->identifier == fluid::StateIdentifier::Rotate;
-        });
-
-        // Go through all states after rotate and set the yaw pointing in the direction we want to move.
-        /*while (iterator != path.end()) {
-            (*iterator)->setpoint.yaw = yaw;
-            iterator++;
-        }*/
-    }
-
-
     // This will also only fire for operations that consist of more than one state (every operation other than init).
     // And in that case we transition to the next state in the path after the start state.
     if (fluid::Core::getGraphPtr()->current_state_ptr->identifier != destination_state_identifier_) {
@@ -111,17 +87,7 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
 
             // We have to abort, so we transition to the steady state for the current state.
             std::shared_ptr<fluid::State> steady_state_ptr = fluid::Core::getGraphPtr()->getStateWithIdentifier(steady_state_map_.at(state_p->identifier));
-
-            geometry_msgs::Quaternion poseQuat = state_p->getCurrentPose().pose.orientation;
-            tf2::Quaternion tf2Quat(poseQuat.x, poseQuat.y, poseQuat.z, poseQuat.w);
-            double roll = 0, pitch = 0, yaw = 0;
-            tf2::Matrix3x3(tf2Quat).getRPY(roll, pitch, yaw);
-
             steady_state_ptr->path = {state_p->getCurrentPose().pose.position};
-            // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set 
-            // it to zero. 
-            // steady_state_ptr->setpoint.yaw = static_cast<float>(std::isnan(yaw) ? 0.0 : yaw);
-
             transitionToState(steady_state_ptr);
             completionHandler(false);
 
@@ -135,7 +101,6 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
 
     std::shared_ptr<fluid::State> final_state_p = getFinalStatePtr();
     final_state_p->path = {path.back()};
-    // final_state_p->setpoint.yaw = yaw;
 
     transitionToState(final_state_p);
     completionHandler(true);

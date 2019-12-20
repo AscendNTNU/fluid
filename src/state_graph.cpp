@@ -75,7 +75,22 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getStates() {
 std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(std::string start_state_identifier,
                                                                                 std::string end_state_identifier,
                                                                                 bool should_include_move) {
-    
+
+    bool state_in_graph = false;
+
+    for (auto state : getStates()) {
+        if (state->identifier == end_state_identifier) {
+            state_in_graph = true;
+
+            break;
+        }
+    }
+
+    if (!state_in_graph) {
+        ROS_FATAL_STREAM("Destination state (" << end_state_identifier << ") is not in the graph. Did you spell it correctly?");
+        return std::vector<std::shared_ptr<fluid::State>>();
+    }
+
     // BFS
     std::list<std::string> queue;
     std::map<std::string, bool> visited;
@@ -113,7 +128,6 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
             }
         }
     }
-
 
     // Get shortest back by backtracing
 
@@ -155,13 +169,19 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
         }
     }
 
+
     return states_in_plan;
 }
 
 bool fluid::StateGraph::areConnected(std::string start_state_identifier, std::string end_state_identifier) {
     std::vector<std::shared_ptr<fluid::State>> path = getPathToEndState(start_state_identifier, end_state_identifier, false);
 
-    return (*path.begin())->identifier == start_state_identifier && (*(path.end() - 1))->identifier == end_state_identifier;
+    if (path.empty()) {
+        return false;
+    }
+    else {
+        return (*path.begin())->identifier == start_state_identifier && (*(path.end() - 1))->identifier == end_state_identifier;
+    }
 }
 
 std::shared_ptr<fluid::State> fluid::StateGraph::getStateWithIdentifier(std::string identifier) {

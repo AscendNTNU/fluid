@@ -24,8 +24,8 @@ namespace fluid {
     public:
 
         bool hasFinishedExecution() const override;
-        void tick() override;
-        void initialize() override;
+        virtual void tick() override;
+        virtual void initialize() override;
    };
 }
 
