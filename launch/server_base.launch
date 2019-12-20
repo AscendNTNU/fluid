@@ -18,7 +18,7 @@
   <node name="world_to_base_link_transform_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 world base_link 10"/>
   <node name="world_to_odom_transform_publisher"      pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 world odom 10"/>
 
-  <node name="fluid_server" pkg="fluid" type="server" output="screen" args="$(arg setpoint_subscription_topic)"/>
+  <node name="fluid_server" pkg="fluid" type="server" launch-prefix="gdb -ex run --args" output="screen" args="$(arg setpoint_subscription_topic)"/>
   <node name="setpoint_publisher" pkg="fluid" type="setpoint_publisher" output="screen" args="$(arg setpoint_subscription_topic) $(arg setpoint_publish_topic)"/>
 
   <include file="$(find mavros)/launch/px4.launch">
