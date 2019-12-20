@@ -7,10 +7,10 @@ void fluid::ExplorationState::initialize() {
     std::string point_of_interest_topic;
 
     node_handle.param<std::string>("exploration_point_of_interest_topic", point_of_interest_topic, "ai/exploration_point_of_interest");
-    point_of_interest_subscriber = node_handle.subscribe<geometry_msgs::Point>(point_of_interest_topic, 1, &ExplorationState::pointOfInterestCallback);
+    point_of_interest_subscriber = node_handle.subscribe<geometry_msgs::Point>(point_of_interest_topic, 1, &ExplorationState::pointOfInterestCallback, this);
 }
 
-void fluid::ExplorationState::pointOfInterestCallback(const geometry_msgs::PointConstPtr point) {
+void fluid::ExplorationState::pointOfInterestCallback(const geometry_msgs::PointConstPtr& point) {
    point_of_interest = *point; 
 }
 
