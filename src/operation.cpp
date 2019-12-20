@@ -19,10 +19,12 @@ fluid::Operation::Operation(const std::string& destination_state_identifier,
 
 void fluid::Operation::perform(std::function<bool (void)> tick, std::function<void (bool)> completionHandler) {
 
+    
+    
     if (!validateOperationFromCurrentState(fluid::Core::getGraphPtr()->current_state_ptr)) {
         ROS_FATAL_STREAM("Operation to: " << 
                          destination_state_identifier_ << 
-                         "is not a valid operation from current state: " <<
+                         " is not a valid operation from current state: " <<
                          fluid::Core::getGraphPtr()->current_state_ptr->identifier);
 
         completionHandler(false);
