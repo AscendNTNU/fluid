@@ -121,8 +121,8 @@ void fluid::Server::start() {
             if (last_state_ptr) {
                 if (last_state_ptr->identifier == StateIdentifier::Init) {
                     fluid::Core::getStatusPublisherPtr()->status.current_state = "none";    
-                else {
                 }
+                else {
                     last_state_ptr->perform([&]() -> bool {
                         // We abort the execution of the current state if there is a new operation.
                         return !actionlib_server_.isNewGoalAvailable();
