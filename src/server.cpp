@@ -26,6 +26,7 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
         return nullptr;
     }
 
+
     if (actionlib_server_.isActive()) {
         actionlib_server_.setPreempted();
     }
@@ -115,13 +116,18 @@ void fluid::Server::start() {
         else {
             fluid::Core::getStatusPublisherPtr()->status.current_operation = "none";
 
-            if (last_state_ptr) {
-                last_state_ptr->perform([&]() -> bool {
-                    // We abort the execution of the current state if there is a new operation.
-                    return !actionlib_server_.isNewGoalAvailable();
-                }, true);
+            if (last_state_ptr->identifier == StateIdentifier::Init) {
+                fluid::Core::getStatusPublisherPtr()->status.current_state = "none";    
             }
-        }
+            else {
+                if (last_state_ptr) {
+                    last_state_ptr->perform([&]() -> bool {
+                        // We abort the execution of the current state if there is a new operation.
+                        return !actionlib_server_.isNewGoalAvailable();
+                    }, true);
+                }
+            }
+       }
 
         fluid::Core::getStatusPublisherPtr()->publish();
 
