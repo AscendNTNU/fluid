@@ -17,7 +17,7 @@ fluid::Operation::Operation(const std::string& destination_state_identifier,
                             destination_state_identifier_(std::move(destination_state_identifier)),
                             path(std::move(path)) {}
 
-void fluid::Operation::perform(std::function<bool (void)> tick, std::function<void (bool)> completionHandler) {
+void fluid::Operation::perform(std::function<bool (void)> should_tick, std::function<void (bool)> completionHandler) {
 
     
     
@@ -81,9 +81,9 @@ void fluid::Operation::perform(std::function<bool (void)> tick, std::function<vo
         fluid::Core::getStatusPublisherPtr()->publish();
 
         fluid::Core::getGraphPtr()->current_state_ptr = state_p;
-        state_p->perform(tick, false);
+        state_p->perform(should_tick, false);
 
-        if (!tick()) {
+        if (should_tick()) {
 
             // We have to abort, so we transition to the steady state for the current state.
             std::shared_ptr<fluid::State> steady_state_ptr = fluid::Core::getGraphPtr()->getStateWithIdentifier(steady_state_map_.at(state_p->identifier));

@@ -54,11 +54,11 @@ namespace fluid {
         /** 
          * Runs through the different states and performs the necessary transitions.
          *
-         * @param tick Called each tick, makes it possible to check status further up in the pipeline
-         *             and abort operations in the midst of an execution.
+         * @param should_tick Called each tick, makes it possible to check status further up in the pipeline
+         *                    and abort operations in the midst of an execution.
          * @param completionHandler Callback function for whether the operation completed or not.
          */
-        virtual void perform(std::function<bool (void)> tick, std::function<void (bool)> completionHandler);
+        virtual void perform(std::function<bool (void)> should_tick, std::function<void (bool)> completionHandler);
 
         void transitionToState(std::shared_ptr<fluid::State> state_p);
 

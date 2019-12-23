@@ -1,10 +1,9 @@
-- Rename tick to something more descriptive
 - Remove unecessary comments
-- For every non relative state we have to check that we've been through the whole path
-- Find a better system for queue size
 - Remove namespace?
+- typdef state identifier
+- Simplify cmakelists file
+
+- Find a better system for queue size
 - Make status publisher publish the path
 - Fix dynamic reconfigure
 - Rewrite documentation for exploration and travelling states
-- typdef state identifier
-- Simplify cmakelists file
