@@ -34,6 +34,8 @@ void StatusPublisher::publish() {
 
     for (auto point : status.path) {
         geometry_msgs::PoseStamped pose_stamped;
+        pose_stamped.header.frame_id = "map";
+        pose_stamped.header.stamp = ros::Time::now();
         pose_stamped.pose.position = point;
         path.poses.push_back(pose_stamped);
     }
