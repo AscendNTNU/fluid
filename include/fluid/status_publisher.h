@@ -3,12 +3,18 @@
 
 #include <ascend_msgs/FluidStatus.h>
 #include <ros/ros.h>
+#include <nav_msgs/Path.h>
 
 class StatusPublisher {
 private:
     ros::NodeHandle node_handle;
 
-    ros::Publisher publisher;
+    ros::Subscriber pose_subscriber;
+    ros::Publisher status_publisher, trace_publisher, path_publisher;
+
+    void poseCallback(const geometry_msgs::PoseStampedConstPtr pose_ptr);
+
+    nav_msgs::Path trace_path, path;
 
 public:
     ascend_msgs::FluidStatus status;

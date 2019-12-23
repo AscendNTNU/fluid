@@ -12,8 +12,6 @@
   <param name="auto_arm" value="$(arg auto_arm)"/>
   <param name="auto_offboard" value="$(arg auto_offboard)"/>
 
-  <node name="path_publisher" pkg="fluid" type="path_publisher.py" output="screen"/>
-
   <node name="world_to_map_transform_publisher"       pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 world map 10"/>
   <node name="world_to_base_link_transform_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 world base_link 10"/>
   <node name="world_to_odom_transform_publisher"      pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 1 world odom 10"/>

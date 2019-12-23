@@ -1,3 +1,1 @@
-- Make status publisher publish the path
-- Fix dynamic reconfigure
 - Rewrite documentation for exploration and travelling states
