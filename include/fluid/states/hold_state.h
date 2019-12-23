@@ -1,23 +1,18 @@
-#ifndef FLUID_FSM_HOLD_STATE_H
-#define FLUID_FSM_HOLD_STATE_H
+#ifndef HOLD_STATE_H
+#define HOLD_STATE_H
 
 #include "state.h"
 #include "util.h"
 
-namespace fluid {
+/** 
+ *  \brief Drone is hovering at a certain altitude
+ */
+class HoldState : public State {
+public:
+    explicit HoldState() : State(StateIdentifier::Hold, PX4StateIdentifier::Offboard, true, false) {}
 
-    /** \class HoldState
-     *  \brief Represents the state when the drone is hovering at a certain altitude
-     */
-    class HoldState: public State {
+    bool hasFinishedExecution() const override;
+    void initialize() override;
+};
 
-    public:
-
-        explicit HoldState() : State(StateIdentifier::Hold, PX4::Offboard, true, false) {}
-
-        bool hasFinishedExecution() const override;
-        void initialize() override;
-    };
-}
-
-#endif 
+#endif

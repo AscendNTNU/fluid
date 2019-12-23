@@ -1,10 +1,5 @@
-- Rename tick to something more descriptive
-- Remove unecessary comments
-- For every non relative state we have to check that we've been through the whole path
-- Find a better system for queue size
-- Remove namespace?
-- Make status publisher publish the path
-- Fix dynamic reconfigure
-- Rewrite documentation for exploration and travelling states
-- typdef state identifier
-- Simplify cmakelists file
+- Incorporate obstacle avoidance 
+- Rename state to action for fluid goal?
+- When setting mpc_xy_vel_max it takes some time before the pixhawk reacts, have to investigate
+- The server experiences a segfault after an operation is completed
+- Paths in rviz don't have the correct frame

@@ -8,4 +8,4 @@ velocity_completion_threshold: 0.1
 yaw_completion_threshold: 0.5
 default_height: 2.0
 
-exploration_point_of_interest_topic: ai/exploration_point_of_interest
+explore_point_of_interest_topic: ai/explore_point_of_interest
