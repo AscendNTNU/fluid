@@ -1,40 +1,21 @@
-// Created by simengangstad 31.02.19
-
-#ifndef FLUID_FSM_STATUS_PUBLISHER_H
-#define FLUID_FSM_STATUS_PUBLISHER_H
-
-#include <ros/ros.h>
+#ifndef STATUS_PUBLISHER_H
+#define STATUS_PUBLISHER_H
 
 #include <ascend_msgs/FluidStatus.h>
+#include <ros/ros.h>
 
-namespace fluid {
+class StatusPublisher {
+private:
+    ros::NodeHandle node_handle;
 
-	class StatusPublisher {
+    ros::Publisher publisher;
 
-	private:
-		
-		ros::NodeHandle node_handle_;										///< Used to set up the publisher.
+public:
+    ascend_msgs::FluidStatus status;
 
-		ros::Publisher publisher_p_;										///< Used to publish messages.
+    StatusPublisher();
 
-	public:
-
-		ascend_msgs::FluidStatus status;									///< Represents the state of the FSM.
-
-
-		/**
-		 * @brief      The status publisher is not set up here as it is used as a static variable and the
-		 * 			   ros node handle will complain if it's initialized before ros::init. 
-		 */
-		StatusPublisher();
-
-		/**
-		 * @brief      Publishes the status on the topic.
-		 */
-		void publish(); 
-
-	};
-}
-
+    void publish();
+};
 
 #endif

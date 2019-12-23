@@ -1,34 +1,28 @@
-#ifndef FLUID_FSM_SERVER_H
-#define FLUID_FSM_SERVER_H
+#ifndef SERVER_H
+#define SERVER_H
 
-#include <ros/ros.h>
-#include <ascend_msgs/FluidAction.h>
 #include <actionlib/server/simple_action_server.h>
+#include <ascend_msgs/FluidAction.h>
+#include <ros/ros.h>
 
 #include "operation.h"
 
-namespace fluid {
+/** 
+ *  \brief Encapsulates a ROS action server which performs operations based on requests.
+ */
+class Server {
+    typedef actionlib::SimpleActionServer<ascend_msgs::FluidAction> ActionlibServer;
 
-    /** \class Server
-     *  \brief Encapsulates a ROS action server which performs operations based on requests.
-     */
-    class Server {
+private:
+    ros::NodeHandle node_handle_;
+    ActionlibServer actionlib_server_;
 
-        typedef actionlib::SimpleActionServer<ascend_msgs::FluidAction> ActionlibServer;
+    std::shared_ptr<Operation> retrieveNewOperation();
+    void preemptCallback();
 
-    private:
-
-        ros::NodeHandle node_handle_;                                
-        ActionlibServer actionlib_server_;                         
-
-        std::shared_ptr<fluid::Operation> retrieveNewOperation();
-        void preemptCallback();
- 
-    public:
-
-        Server();
-        void start();
-    };
-}
+public:
+    Server();
+    void start();
+};
 
 #endif

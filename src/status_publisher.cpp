@@ -1,17 +1,15 @@
 #include "status_publisher.h"
 #include "core.h"
 
-fluid::StatusPublisher::StatusPublisher() {
-    status.armed	     = 0;
-    status.linked_with_px4   = 0;
-    status.px4_mode	  = "none";
+StatusPublisher::StatusPublisher() {
+    status.armed = 0;
+    status.linked_with_px4 = 0;
+    status.px4_mode = "none";
     status.current_operation = "none";
-    status.current_state     = "none";
-	status.path = {};
+    status.current_state = "none";
+    status.path = {};
 
-    publisher_p_ = node_handle_.advertise<ascend_msgs::FluidStatus>("fluid/status/", Core::message_queue_size);
+    publisher = node_handle.advertise<ascend_msgs::FluidStatus>("fluid/status/", 1);
 }
 
-void fluid::StatusPublisher::publish() {
-	publisher_p_.publish(status);
-}
+void StatusPublisher::publish() { publisher.publish(status); }

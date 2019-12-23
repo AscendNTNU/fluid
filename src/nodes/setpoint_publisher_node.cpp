@@ -1,14 +1,14 @@
 //
 // Created by simengangstad on 29.04.19.
-// 
+//
 // This node is a safety measure in case the main thread in the FSM is blocked and
-// we therefore don't will publish setpoints to PX4 regularly. It grabs the last 
+// we therefore don't will publish setpoints to PX4 regularly. It grabs the last
 // published setpoint from the FSM and publishes that.
 //
 
+#include <mavros_msgs/PositionTarget.h>
 #include <ros/ros.h>
 #include <string>
-#include <mavros_msgs/PositionTarget.h>
 
 #include "core.h"
 
@@ -21,13 +21,12 @@ void subscriptionCallback(const mavros_msgs::PositionTarget::ConstPtr& pt) {
 }
 
 int main(int argc, char** argv) {
-
     ros::init(argc, argv, "fluid_setpoint_publisher");
 
     ROS_INFO("Initiailzing set point publisher.");
 
-    int refresh_rate = fluid::Core::refresh_rate;
-	ros::NodeHandle node_handle;
+    int refresh_rate = Core::refresh_rate;
+    ros::NodeHandle node_handle;
 
     node_handle.getParam("refresh_rate", refresh_rate);
 
@@ -39,13 +38,12 @@ int main(int argc, char** argv) {
     ros::Rate rate(refresh_rate);
 
     while (ros::ok()) {
-
         setpoint.header.stamp = ros::Time::now();
 
         if (position_is_set) {
             publisher.publish(setpoint);
         }
-        
+
         ros::spinOnce();
         rate.sleep();
     }
