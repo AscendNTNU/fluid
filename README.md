@@ -7,7 +7,7 @@
 
 1. [ROS Melodic](http://wiki.ros.org/melodic/Installation) 
 2. [MAVROS](https://dev.px4.io/en/ros/mavros_installation.html)
-3. [Control simulator (or plain Gazebo with PX4)](https://github.com/AscendNTNU/control_simulator)
+3. [Control simulator (or plain Gazebo with PX4 or AirSim)](https://github.com/AscendNTNU/control_simulator)
 
 ## Architecture
 
