@@ -12,7 +12,7 @@ namespace fluid {
 
     enum class StateIdentifier {
         // Null is here to make the bredth first search possible in state graph
-        Init, Idle, TakeOff, Hold, Exploration, Travelling, Land, Rotate, Null
+        Init, Idle, TakeOff, Hold, Explore, Travel, Land, Rotate, Null
 
     };
 
@@ -21,8 +21,8 @@ namespace fluid {
         {StateIdentifier::Idle,             "idle"},
         {StateIdentifier::TakeOff,          "take_off"},
         {StateIdentifier::Hold,             "hold"},
-        {StateIdentifier::Exploration,      "exploration"},
-        {StateIdentifier::Travelling,       "travelling"},
+        {StateIdentifier::Explore,          "explore"},
+        {StateIdentifier::Travel,           "travel"},
         {StateIdentifier::Land,             "land"},
         {StateIdentifier::Rotate,           "rotate"}
     };

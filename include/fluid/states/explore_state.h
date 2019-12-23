@@ -1,11 +1,11 @@
-#ifndef FLUID_EXPLORATION_STATE_H
-#define FLUID_EXPLORATION_STATE_H
+#ifndef FLUID_EXPLORE_STATE_H
+#define FLUID_EXPLORE_STATE_H
 
 #include "move_state.h"
 #include "state_identifier.h"
 
 namespace fluid {
-    class ExplorationState : public MoveState {
+    class ExploreState : public MoveState {
 
         private:
 
@@ -16,7 +16,7 @@ namespace fluid {
             void pointOfInterestCallback(const geometry_msgs::PointConstPtr& point);
             
         public:
-            ExplorationState() : MoveState(StateIdentifier::Exploration, 0.3, 0.3, 0.3) {}
+            ExploreState() : MoveState(StateIdentifier::Explore, 0.3, 0.3, 0.3) {}
 
             void initialize() override;
             void tick() override;
