@@ -75,7 +75,7 @@ void Operation::perform(std::function<bool(void)> should_tick, std::function<voi
         Core::getGraphPtr()->current_state_ptr = state_p;
         state_p->perform(should_tick, false);
 
-        if (should_tick()) {
+        if (!should_tick()) {
             // We have to abort, so we transition to the steady state for the current state.
             std::shared_ptr<State> steady_state_ptr =
                 Core::getGraphPtr()->getStateWithIdentifier(steady_state_map.at(state_p->identifier));
