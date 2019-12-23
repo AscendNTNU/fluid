@@ -4,7 +4,7 @@
 - Find a better system for queue size
 - Remove namespace?
 - Make status publisher publish the path
-- Remove is relative
 - Fix dynamic reconfigure
 - Rewrite documentation for exploration and travelling states
 - typdef state identifier
+- Simplify cmakelists file

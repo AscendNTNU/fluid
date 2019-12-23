@@ -13,7 +13,7 @@ namespace fluid {
 
     public:
 
-        explicit HoldState() : State(StateIdentifier::Hold, PX4::Offboard, true, false, true) {}
+        explicit HoldState() : State(StateIdentifier::Hold, PX4::Offboard, true, false) {}
 
         bool hasFinishedExecution() const override;
         void initialize() override;

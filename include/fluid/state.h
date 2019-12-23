@@ -46,9 +46,6 @@ namespace fluid {
                                                                                 ///< an init state it wouldn't make 
                                                                                 ///< sense.
 
-        const bool is_relative;
-
-
     protected:
 
         ros::NodeHandle node_handle;                                            
@@ -70,8 +67,7 @@ namespace fluid {
         State(const std::string identifier, 
               const std::string px4_mode, 
               const bool steady, 
-              const bool should_check_obstacle_avoidance_completion, 
-              const bool is_relative);
+              const bool should_check_obstacle_avoidance_completion);
 
         geometry_msgs::PoseStamped getCurrentPose() const;
         geometry_msgs::TwistStamped getCurrentTwist() const;

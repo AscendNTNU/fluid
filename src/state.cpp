@@ -19,14 +19,12 @@
 fluid::State::State(std::string identifier,
                     std::string px4_mode,
                     bool steady, 
-                    bool should_check_obstalce_avoidance_completion,
-                    bool is_relative) : 
+                    bool should_check_obstalce_avoidance_completion) : 
 
 					identifier(identifier),
                     px4_mode(px4_mode),
                     steady(steady), 
-                    should_check_obstacle_avoidance_completion(should_check_obstacle_avoidance_completion),
-                    is_relative(is_relative) {
+                    should_check_obstacle_avoidance_completion(should_check_obstacle_avoidance_completion) {
 
     pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &State::poseCallback, this);
     twist_subscriber = node_handle.subscribe("mavros/local_position/velocity_local", 1, &State::twistCallback, this);

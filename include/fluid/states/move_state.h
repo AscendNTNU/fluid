@@ -16,7 +16,7 @@ namespace fluid {
 
     protected:
         explicit MoveState(std::string state_identifier, double speed, double position_threshold, double velocity_threshold) : 
-        State(state_identifier, fluid::PX4::Offboard, false, true, false), 
+        State(state_identifier, fluid::PX4::Offboard, false, true), 
         speed(speed),
         position_threshold(position_threshold),
         velocity_threshold(velocity_threshold) {}
