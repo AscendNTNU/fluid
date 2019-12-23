@@ -13,7 +13,7 @@ namespace fluid {
 
     public:
 
-        explicit RotateState() : State(fluid::StateIdentifier::Rotate, fluid::PX4::Offboard, false, true) {}
+        explicit RotateState() : State(StateIdentifier::Rotate, PX4StateIdentifier::Offboard, false, true) {}
 
         bool hasFinishedExecution() const override;
         void initialize() override;

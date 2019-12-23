@@ -12,20 +12,18 @@
 #include "transition.h"
 #include "util.h"
 
-fluid::Operation::Operation(const std::string& destination_state_identifier,
+fluid::Operation::Operation(const StateIdentifier& destination_state_identifier,
                             const std::vector<geometry_msgs::Point>& path) :
-                            destination_state_identifier_(std::move(destination_state_identifier)),
+                            destination_state_identifier(std::move(destination_state_identifier)),
                             path(std::move(path)) {}
 
 void fluid::Operation::perform(std::function<bool (void)> should_tick, std::function<void (bool)> completionHandler) {
 
-    
-    
     if (!validateOperationFromCurrentState(fluid::Core::getGraphPtr()->current_state_ptr)) {
         ROS_FATAL_STREAM("Operation to: " << 
-                         destination_state_identifier_ << 
-                         " is not a valid operation from current state: " <<
-                         fluid::Core::getGraphPtr()->current_state_ptr->identifier);
+                         StateIdentifierStringMap.at(destination_state_identifier) << 
+                         " is not a valid operation from current state: " << 
+                         StateIdentifierStringMap.at(fluid::Core::getGraphPtr()->current_state_ptr->identifier));
 
         completionHandler(false);
         return;
@@ -46,7 +44,7 @@ void fluid::Operation::perform(std::function<bool (void)> should_tick, std::func
     // the FSM to transition to every state in order to get to the state we want to.
     std::vector<std::shared_ptr<State>> states = fluid::Core::getGraphPtr()->getPathToEndState(
                         fluid::Core::getGraphPtr()->current_state_ptr->identifier,
-                        destination_state_identifier_, shouldIncludeMove);
+                        destination_state_identifier, shouldIncludeMove);
 
     if (states.empty()) {
         return;
@@ -56,19 +54,19 @@ void fluid::Operation::perform(std::function<bool (void)> should_tick, std::func
         state->path = path;
     }
 
-    ROS_INFO_STREAM("New operation requested to state: " << destination_state_identifier_);
+    ROS_INFO_STREAM("New operation requested to state: " << StateIdentifierStringMap.at(destination_state_identifier));
 
     std::stringstream stringstream;
 
     for (auto state : states) {
-        stringstream << state->identifier << " ";
+        stringstream << StateIdentifierStringMap.at(state->identifier) << " ";
     }
 
     ROS_INFO_STREAM("Will traverse through: " << stringstream.str() << "\n");
 
     // This will also only fire for operations that consist of more than one state (every operation other than init).
     // And in that case we transition to the next state in the path after the start state.
-    if (fluid::Core::getGraphPtr()->current_state_ptr->identifier != destination_state_identifier_) {
+    if (fluid::Core::getGraphPtr()->current_state_ptr->identifier != destination_state_identifier) {
         transitionToState(states[1]);
     }
 
@@ -76,8 +74,8 @@ void fluid::Operation::perform(std::function<bool (void)> should_tick, std::func
 
         std::shared_ptr<fluid::State> state_p = states[index];
 
-        ROS_INFO_STREAM("Executing state: " << state_p->identifier);
-        fluid::Core::getStatusPublisherPtr()->status.current_state = state_p->identifier;
+        ROS_INFO_STREAM("Executing state: " << StateIdentifierStringMap.at(state_p->identifier));
+        fluid::Core::getStatusPublisherPtr()->status.current_state = StateIdentifierStringMap.at(state_p->identifier);
         fluid::Core::getStatusPublisherPtr()->publish();
 
         fluid::Core::getGraphPtr()->current_state_ptr = state_p;
@@ -86,7 +84,7 @@ void fluid::Operation::perform(std::function<bool (void)> should_tick, std::func
         if (should_tick()) {
 
             // We have to abort, so we transition to the steady state for the current state.
-            std::shared_ptr<fluid::State> steady_state_ptr = fluid::Core::getGraphPtr()->getStateWithIdentifier(steady_state_map_.at(state_p->identifier));
+            std::shared_ptr<fluid::State> steady_state_ptr = fluid::Core::getGraphPtr()->getStateWithIdentifier(steady_state_map.at(state_p->identifier));
             steady_state_ptr->path = {state_p->getCurrentPose().pose.position};
             transitionToState(steady_state_ptr);
             completionHandler(false);
@@ -112,15 +110,15 @@ void fluid::Operation::transitionToState(std::shared_ptr<fluid::State> state_p) 
 }
 
 bool fluid::Operation::validateOperationFromCurrentState(std::shared_ptr<fluid::State> current_state_ptr) const {
-    return fluid::Core::getGraphPtr()->areConnected(current_state_ptr->identifier, destination_state_identifier_);
+    return fluid::Core::getGraphPtr()->areConnected(current_state_ptr->identifier, destination_state_identifier);
 }
 
-std::string fluid::Operation::getDestinationStateIdentifier() const {
-    return destination_state_identifier_;
+fluid::StateIdentifier fluid::Operation::getDestinationStateIdentifier() const {
+    return destination_state_identifier;
 }
 
 std::shared_ptr<fluid::State> fluid::Operation::getFinalStatePtr() const {
-    return fluid::Core::getGraphPtr()->getStateWithIdentifier(steady_state_map_.at(destination_state_identifier_));
+    return fluid::Core::getGraphPtr()->getStateWithIdentifier(steady_state_map.at(destination_state_identifier));
 }
 
 std::shared_ptr<fluid::State> fluid::Operation::getCurrentStatePtr() const {    

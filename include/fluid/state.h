@@ -54,9 +54,9 @@ namespace fluid {
 
     public:
 
-		const std::string identifier;                                          
+		const StateIdentifier identifier;                                          
   
-        const std::string px4_mode;                                            ///< The mode this state represents 
+        const PX4StateIdentifier px4_mode;                                     ///< The mode this state represents 
                                                                                ///< within PX4. For example move state
                                                                                ///< would be OFFBOARD while land would 
                                                                                ///< be AUTO_LAND. 
@@ -64,10 +64,10 @@ namespace fluid {
 
         std::vector<geometry_msgs::Point> path;                                ///< The position targets of the state.
 
-        State(const std::string identifier, 
-              const std::string px4_mode, 
-              const bool steady, 
-              const bool should_check_obstacle_avoidance_completion);
+        State(const StateIdentifier& identifier, 
+              const PX4StateIdentifier& px4_mode, 
+              const bool& steady, 
+              const bool& should_check_obstacle_avoidance_completion);
 
         geometry_msgs::PoseStamped getCurrentPose() const;
         geometry_msgs::TwistStamped getCurrentTwist() const;

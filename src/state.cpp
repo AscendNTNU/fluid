@@ -16,10 +16,10 @@
 #include "util.h"
 #include "core.h"
 
-fluid::State::State(std::string identifier,
-                    std::string px4_mode,
-                    bool steady, 
-                    bool should_check_obstalce_avoidance_completion) : 
+fluid::State::State(const StateIdentifier& identifier,
+                    const PX4StateIdentifier& px4_mode,
+                    const bool& steady, 
+                    const bool& should_check_obstalce_avoidance_completion) : 
 
 					identifier(identifier),
                     px4_mode(px4_mode),

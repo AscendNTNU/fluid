@@ -33,7 +33,6 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
 
     auto goal = actionlib_server_.acceptNewGoal();
     std::vector<geometry_msgs::Point> path = goal->path;
-    std::string destination_identifier = goal->state;
 
     if (path.empty()) {
         path.push_back(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position);
@@ -41,7 +40,20 @@ std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
 
     Core::getStatusPublisherPtr()->status.path = path;
 
-    return std::make_shared<fluid::Operation>(destination_identifier, path);
+    StateIdentifier state_identifier = StateIdentifier::Null;
+
+    auto result = std::find_if(StateIdentifierStringMap.begin(), StateIdentifierStringMap.end(), [goal](const auto& entry) {
+        return entry.second == goal->state; 
+    });
+
+    if (result != StateIdentifierStringMap.end()) {
+        state_identifier = result->first;
+    }
+    else {
+        ROS_FATAL_STREAM("Could not find the state (" << goal->state << ") passed, did you spell it correctly?");
+    }
+
+    return std::make_shared<fluid::Operation>(state_identifier, path);
 }
 
 void fluid::Server::preemptCallback() {
@@ -59,7 +71,7 @@ void fluid::Server::start() {
 
         if (current_operation_ptr) {
 
-            fluid::Core::getStatusPublisherPtr()->status.current_operation = current_operation_ptr->getDestinationStateIdentifier();
+            fluid::Core::getStatusPublisherPtr()->status.current_operation = StateIdentifierStringMap.at(current_operation_ptr->getDestinationStateIdentifier());
 
             current_operation_ptr->perform(
 
@@ -68,7 +80,7 @@ void fluid::Server::start() {
                     ascend_msgs::FluidFeedback feedback;
                     std::shared_ptr<fluid::State> current_state_ptr = Core::getGraphPtr()->current_state_ptr;
                     feedback.pose_stamped = current_state_ptr->getCurrentPose();
-                    feedback.state = current_state_ptr->identifier;
+                    feedback.state = StateIdentifierStringMap.at(current_state_ptr->identifier);
                     actionlib_server_.publishFeedback(feedback);
 
                     return !actionlib_server_.isPreemptRequested() && ros::ok(); 
@@ -101,13 +113,13 @@ void fluid::Server::start() {
                     if (completed) {
                         ROS_INFO_STREAM("Operation completed.");
                         result.pose_stamped = Core::getGraphPtr()->current_state_ptr->getCurrentPose();
-                        result.state = last_state_ptr->identifier;
+                        result.state = StateIdentifierStringMap.at(last_state_ptr->identifier);
                         actionlib_server_.setSucceeded(result);
                     }
                     else {
                         ROS_INFO_STREAM("Operation cancelled.");
                         result.pose_stamped = Core::getGraphPtr()->current_state_ptr->getCurrentPose();
-                        result.state = last_state_ptr->identifier;
+                        result.state = StateIdentifierStringMap.at(last_state_ptr->identifier);
                         actionlib_server_.setPreempted(result);
                     }
                 });

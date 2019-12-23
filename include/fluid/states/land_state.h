@@ -13,7 +13,7 @@ namespace fluid {
 
     public:
 
-        explicit LandState() : State(fluid::StateIdentifier::Land, fluid::PX4::Land, false, false) {}
+        explicit LandState() : State(StateIdentifier::Land, PX4StateIdentifier::Land, false, false) {}
 
         bool hasFinishedExecution() const override;
         void initialize() override;

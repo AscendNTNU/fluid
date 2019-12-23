@@ -8,6 +8,7 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 
+#include "state_identifier.h"
 #include "core.h"
 
 fluid::Transition::Transition(std::shared_ptr<State> source_state_p, std::shared_ptr<State> destination_state_p) :
@@ -23,7 +24,7 @@ void fluid::Transition::perform() {
 
     if (source_state_p->px4_mode == destination_state_p->px4_mode) {
 
-        fluid::Core::getStatusPublisherPtr()->status.current_state = destination_state_p->identifier;
+        fluid::Core::getStatusPublisherPtr()->status.current_state = StateIdentifierStringMap.at(destination_state_p->identifier);
         fluid::Core::getStatusPublisherPtr()->status.path = destination_state_p->path;
 
         fluid::Core::getGraphPtr()->current_state_ptr = destination_state_p;
@@ -37,7 +38,7 @@ void fluid::Transition::perform() {
 
     bool state_is_set = false;
 
-    fluid::Core::getStatusPublisherPtr()->status.current_state = source_state_p->identifier;
+    fluid::Core::getStatusPublisherPtr()->status.current_state = StateIdentifierStringMap.at(source_state_p->identifier);
     fluid::Core::getGraphPtr()->current_state_ptr = source_state_p;
 
     // Go through the ros loop and try to set the state
@@ -50,15 +51,15 @@ void fluid::Transition::perform() {
         fluid::Core::getStatusPublisherPtr()->status.path = source_state_p->path;
         fluid::Core::getStatusPublisherPtr()->publish();
 
-        mavros_state_link_.attemptToSetState(destination_state_p->px4_mode, [&](bool succeeded) {
+        mavros_state_link_.attemptToSetState(PX4StateIdentifierStringMap.at(destination_state_p->px4_mode), [&](bool succeeded) {
             // State set succeeded, break from loop
 
             destination_state_p->current_pose = source_state_p->getCurrentPose();
             state_is_set = succeeded;
             
-            fluid::Core::getStatusPublisherPtr()->status.current_state = destination_state_p->identifier;
+            fluid::Core::getStatusPublisherPtr()->status.current_state = StateIdentifierStringMap.at(destination_state_p->identifier);
             fluid::Core::getStatusPublisherPtr()->status.path = destination_state_p->path;
-            fluid::Core::getStatusPublisherPtr()->status.px4_mode = destination_state_p->px4_mode;
+            fluid::Core::getStatusPublisherPtr()->status.px4_mode = PX4StateIdentifierStringMap.at(destination_state_p->px4_mode);
 
             fluid::Core::getGraphPtr()->current_state_ptr = destination_state_p;
         });

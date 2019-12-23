@@ -2,6 +2,7 @@
 - Remove namespace?
 - typdef state identifier
 - Simplify cmakelists file
+- Rename exploration and travelling to explore and travel
 
 - Find a better system for queue size
 - Make status publisher publish the path

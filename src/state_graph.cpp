@@ -1,7 +1,3 @@
-//
-//  Created by Simen Gangstad on 24/01/2019.
-//
-
 #include "state_graph.h"
 
 #include <iterator>
@@ -19,7 +15,7 @@
 
 fluid::StateGraph::StateGraph() {
 
-    adjacency_list_ptr_ = std::make_unique<AdjacencyList>();
+    adjacency_list_ptr = std::make_unique<AdjacencyList>();
 
     // Set up the graph
     std::shared_ptr<fluid::State> init_state = std::make_shared<fluid::InitState>();
@@ -48,33 +44,33 @@ fluid::StateGraph::StateGraph() {
     addEdges(edges);
 }
 
-void fluid::StateGraph::addEdges(std::vector<fluid::Edge<std::shared_ptr<State>>> edges) {
+void fluid::StateGraph::addEdges(const std::vector<fluid::Edge<std::shared_ptr<State>>>& edges) {
     for (auto edge : edges) {
 
         // If the node isn't added in the adjacency list, we add the the node and its neighbour (edge destination).
-        if (adjacency_list_ptr_->find(edge.source->identifier) == adjacency_list_ptr_->end()) {
+        if (adjacency_list_ptr->find(edge.source->identifier) == adjacency_list_ptr->end()) {
 
             std::vector<std::shared_ptr<fluid::State>> neighbours;
             neighbours.push_back(edge.destination);
-            adjacency_list_ptr_->insert(std::make_pair(edge.source->identifier, neighbours));
+            adjacency_list_ptr->insert(std::make_pair(edge.source->identifier, neighbours));
 
             // As this node didn't exist in the graph, we add it the list of nodes
-            states_.push_back(edge.source);
+            states.push_back(edge.source);
         }
         // Node exists in graph, just add the new neighbour
         else {
-            adjacency_list_ptr_->at(edge.source->identifier).push_back(edge.destination);
+            adjacency_list_ptr->at(edge.source->identifier).push_back(edge.destination);
         }
     }
 }
 
-std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getStates() {
-    return states_;
+std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getStates() const {
+    return states;
 }
 
-std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(std::string start_state_identifier,
-                                                                                std::string end_state_identifier,
-                                                                                bool should_include_move) {
+std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(const StateIdentifier& start_state_identifier,
+                                                                                const StateIdentifier& end_state_identifier,
+                                                                                const bool& should_include_move) const {
 
     bool state_in_graph = false;
 
@@ -87,22 +83,25 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
     }
 
     if (!state_in_graph) {
-        ROS_FATAL_STREAM("Destination state (" << end_state_identifier << ") is not in the graph. Did you spell it correctly?");
+        ROS_FATAL_STREAM("Destination state (" << StateIdentifierStringMap.at(end_state_identifier) 
+                                               << ") is not in the graph. Did you spell it correctly?");
         return std::vector<std::shared_ptr<fluid::State>>();
     }
 
     // BFS
-    std::list<std::string> queue;
-    std::map<std::string, bool> visited;
-    std::map<std::string, std::string> pred;
+    std::list<StateIdentifier> queue;
+    std::map<StateIdentifier, bool> visited;
+    std::map<StateIdentifier, StateIdentifier> pred;
 
-    for (auto const& item : *adjacency_list_ptr_) {
+    for (auto const& item : *adjacency_list_ptr) {
         visited[item.first] = false;
-        pred[item.first] = "no_val";
+        pred[item.first] = StateIdentifier::Null; 
     }
 
-    visited[start_state_identifier] = true;
-    queue.push_back(start_state_identifier);
+    StateIdentifier start = start_state_identifier;
+
+    visited[start] = true;
+    queue.push_back(start);
     
     std::vector<std::string> plan;
 
@@ -110,13 +109,13 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
 
     while (!queue.empty() && searching) {
 
-        start_state_identifier = queue.front();
+        start = queue.front();
         queue.pop_front();
 
-        for(const auto &neighborState : adjacency_list_ptr_->at(start_state_identifier)) {
+        for(const auto &neighborState : adjacency_list_ptr->at(start)) {
             if(!visited[neighborState->identifier]) {
                 visited[neighborState->identifier] = true;
-                pred[neighborState->identifier] = start_state_identifier;
+                pred[neighborState->identifier] = start;
 
                 queue.push_back(neighborState->identifier);
 
@@ -131,12 +130,12 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
 
     // Get shortest back by backtracing
 
-    std::vector<std::string> path;
-    std::string crawl = end_state_identifier;
+    std::vector<StateIdentifier> path;
+    StateIdentifier crawl = end_state_identifier;
 
     path.push_back(end_state_identifier);
 
-    while (pred[crawl] != "no_val") {
+    while (pred[crawl] != StateIdentifier::Null) {
         path.push_back(pred[crawl]);
         crawl = pred[crawl];
     }
@@ -173,7 +172,7 @@ std::vector<std::shared_ptr<fluid::State>> fluid::StateGraph::getPathToEndState(
     return states_in_plan;
 }
 
-bool fluid::StateGraph::areConnected(std::string start_state_identifier, std::string end_state_identifier) {
+bool fluid::StateGraph::areConnected(const StateIdentifier& start_state_identifier, const StateIdentifier& end_state_identifier) const {
     std::vector<std::shared_ptr<fluid::State>> path = getPathToEndState(start_state_identifier, end_state_identifier, false);
 
     if (path.empty()) {
@@ -184,7 +183,7 @@ bool fluid::StateGraph::areConnected(std::string start_state_identifier, std::st
     }
 }
 
-std::shared_ptr<fluid::State> fluid::StateGraph::getStateWithIdentifier(std::string identifier) {
+std::shared_ptr<fluid::State> fluid::StateGraph::getStateWithIdentifier(const StateIdentifier& identifier) const {
     // Get state with this identifier from the state vector
     for (auto state : getStates()) {
         if (state->identifier == identifier) {
@@ -194,21 +193,3 @@ std::shared_ptr<fluid::State> fluid::StateGraph::getStateWithIdentifier(std::str
 
     return nullptr;
 }
-
-namespace fluid {
-
-    std::ostream& operator<<(std::ostream& ostream, const fluid::StateGraph& state_graph) {
-        for (auto const& item : *(state_graph.adjacency_list_ptr_)) {
-        
-            ostream << item.first << " ";
-        
-            for (auto &neighbor : item.second) {
-                ostream << "-> " << neighbor->identifier << " ";
-            }
-
-            ostream << "\n";
-        }
-        return ostream;
-    }
-}
-

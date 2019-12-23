@@ -18,23 +18,22 @@ namespace fluid {
     class Operation {
     protected:
 
-        const std::string destination_state_identifier_;                        
+        const StateIdentifier destination_state_identifier;
 
         /** The states the operation should transition to after it has carried
          *  out the logic in the destination state. E.g. if destination state
          *  is set to a move state for a move operation, we want the operation
          *  to finish at a position hold state. These states are all steady.
          */
-        const std::map<std::string, std::string> steady_state_map_ = {
-            {fluid::StateIdentifier::Init,              fluid::StateIdentifier::Idle},
-            {fluid::StateIdentifier::Idle,              fluid::StateIdentifier::Idle},
-            {fluid::StateIdentifier::TakeOff,           fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::Exploration,       fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::Travelling,        fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::Hold,              fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::PositionFollow,    fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::Rotate,            fluid::StateIdentifier::Hold},
-            {fluid::StateIdentifier::Land,              fluid::StateIdentifier::Idle},
+        const std::map<StateIdentifier, StateIdentifier> steady_state_map = {
+            {StateIdentifier::Init,              StateIdentifier::Idle},
+            {StateIdentifier::Idle,              StateIdentifier::Idle},
+            {StateIdentifier::TakeOff,           StateIdentifier::Hold},
+            {StateIdentifier::Exploration,       StateIdentifier::Hold},
+            {StateIdentifier::Travelling,        StateIdentifier::Hold},
+            {StateIdentifier::Hold,              StateIdentifier::Hold},
+            {StateIdentifier::Rotate,            StateIdentifier::Hold},
+            {StateIdentifier::Land,              StateIdentifier::Idle},
         };
 
 
@@ -43,7 +42,7 @@ namespace fluid {
 
         std::vector<geometry_msgs::Point> path;                
 
-        Operation(const std::string& destination_state_identifier,
+        Operation(const StateIdentifier& destination_state_identifier,
                   const std::vector<geometry_msgs::Point>& path);
 
 
@@ -62,7 +61,7 @@ namespace fluid {
 
         void transitionToState(std::shared_ptr<fluid::State> state_p);
 
-        std::string getDestinationStateIdentifier() const;
+        StateIdentifier getDestinationStateIdentifier() const;
         std::shared_ptr<fluid::State> getFinalStatePtr() const;
         std::shared_ptr<fluid::State> getCurrentStatePtr() const;
     };
