@@ -47,6 +47,9 @@ std::shared_ptr<Operation> Server::retrieveNewOperation() {
         state_identifier = result->first;
     } else {
         ROS_FATAL_STREAM("Could not find the state (" << goal->state << ") passed, did you spell it correctly?");
+
+        actionlib_server_.setAborted();
+        return nullptr;
     }
 
     return std::make_shared<Operation>(state_identifier, path);
