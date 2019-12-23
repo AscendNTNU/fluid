@@ -53,8 +53,20 @@ void MoveState::initialize() {
 
     param_set_service.request.param_id = "MPC_XY_VEL_MAX";
     param_set_service.request.value.real = speed;
-    ROS_INFO_STREAM("Setting speed to: " << speed);
-    if (!param_set_service_client.call(param_set_service)) {
-        ROS_FATAL_STREAM("Could not set the MPC_XY_VEL_MAX for PX4.");
+
+    ros::Rate rate(Core::refresh_rate);
+
+    bool failed_setting = false;
+
+    while (!param_set_service_client.call(param_set_service) && ros::ok()) {
+        if (!failed_setting) {
+            ROS_FATAL_STREAM("Failed to set param for MPC_XY_VEL_MAX for PX4. Retrying...");
+            failed_setting = true;
+        }
+
+        rate.sleep();
+        ros::spinOnce();
     }
+
+    ROS_INFO_STREAM("Sat speed to: " << speed);
 }
