@@ -1,7 +1,3 @@
-//
-// Created by simengangstad on 27.09.18.
-//
-
 #include <ros/ros.h>
 
 #include "core.h"
@@ -10,7 +6,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <fluid/ServerConfig.h>
 
-void callback(ServerConfig& config, uint32_t level) {}
+void callback(fluid::ServerConfig& config, uint32_t level) {}
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fluid_server");
@@ -30,8 +26,8 @@ int main(int argc, char** argv) {
     node_handle.getParam("yaw_completion_threshold", Core::yaw_completion_threshold);
     node_handle.getParam("default_height", Core::default_height);
 
-    dynamic_reconfigure::Server<ServerConfig> dynamic_reconfigure_server;
-    dynamic_reconfigure::Server<ServerConfig>::CallbackType f;
+    dynamic_reconfigure::Server<fluid::ServerConfig> dynamic_reconfigure_server;
+    dynamic_reconfigure::Server<fluid::ServerConfig>::CallbackType f;
     f = boost::bind(&callback, _1, _2);
     dynamic_reconfigure_server.setCallback(f);
 
