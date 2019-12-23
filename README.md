@@ -23,12 +23,12 @@ The different states are:
 - init
 - take_off
 - hold (hover)
-- move 
+- explore
+  - Move slowly between a series of points while (optionally) facing a certain point. This point is given by the topic specified in the parameters file under "explore_point_of_interest_topic".
+- travel
+  - Move at max speed between a series of points
 - rotate
 - land
-- position_follow (follow a given position, can be a person or an object)
-    - In the position follow state the the drone will follow a position given on a topic. If there isn't anything
-      published on that topic it will just hover.
 
 The drone will do certain states relative to the current position. E.g. init, take off, land and rotate. So if you request 
 the drone to move to a certain position from ground, it will take off from the current position rotate so it's facing the

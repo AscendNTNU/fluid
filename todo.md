@@ -1,1 +1,1 @@
-- Rewrite documentation for exploration and travelling states
+- Incorporate obstacle avoidance 
