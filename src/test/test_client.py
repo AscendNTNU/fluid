@@ -16,11 +16,13 @@ def active_callback():
     print("Goal active!")
 
 def feedback_callback(feedback):
-    print("Feedback - " + "Current state: " + feedback.state + "\n Current pose: " + str(feedback.pose_stamped))
+    a = 1
+    # print("Feedback - " + "Current state: " + feedback.state + "\n Current pose: " + str(feedback.pose_stamped))
     # Do something with the pose: feedback.pose_stamped
 
 def done_callback(state, result):
-    print("Finshed with state: " + str(state) + "\nFinal Fluid state: " + result.state + "\n Final pose: " + str(result.pose_stamped))
+    b = 1
+    # print("Finshed with state: " + str(state) + "\nFinal Fluid state: " + result.state + "\n Final pose: " + str(result.pose_stamped))
     # Do something with the pose: feedback.pose_stamped
 
 if __name__ == '__main__':
@@ -68,13 +70,23 @@ if __name__ == '__main__':
         client.wait_for_result()
         """
 
-        goal.state = "exploration"
         first = Point()
+        first.x = 400
+
         second = Point()
+        second.x = 0
+
+        goal.path = [first, second]
+        goal.state = "travel"
+        client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
+        client.wait_for_result()
+ 
+
+        goal.state = "explore"
         third = Point()
         fourth = Point()
 
-        first.x = 10.0
+        first.x = 11.0
         first.y = 0.0
         first.z = 2.0
 
