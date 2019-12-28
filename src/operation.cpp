@@ -86,7 +86,7 @@ void Operation::perform(std::function<bool(void)> should_tick, std::function<voi
             return;
         }
 
-        if (index < path.size() - 1) {
+        if (index < states.size() - 1) {
             transitionToState(states[index + 1]);
         }
     }
