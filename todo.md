@@ -1,4 +1,3 @@
 - Incorporate obstacle avoidance 
 - When setting mpc_xy_vel_max it takes some time before the pixhawk reacts, have to investigate
-- The server experiences a segfault after an operation is completed
-- Paths in rviz don't have the correct frame
+- at 30 m/s the quad becomes unstable 
