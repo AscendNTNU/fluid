@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
     // - land
     // - move
     // - position_follow
-    goal.state = "take_off";
+    goal.action = "take_off";
 
     // As the drone is currently at the ground, sending this goal will make
     // the drone initialize and take off.

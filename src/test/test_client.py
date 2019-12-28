@@ -77,12 +77,12 @@ if __name__ == '__main__':
         second.x = 0
 
         goal.path = [first, second]
-        goal.state = "travel"
+        goal.action = "travel"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
  
 
-        goal.state = "explore"
+        goal.action = "explore"
         third = Point()
         fourth = Point()
 

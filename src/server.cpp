@@ -16,15 +16,11 @@ Server::Server() : actionlib_server_(node_handle_, "fluid_operation", false) {
 }
 
 std::shared_ptr<Operation> Server::retrieveNewOperation() {
-    // We accept the new goal and initialize variables for target pose and the type of operation identifier.
-    // This is necessary in order to modify some of them before we initiate the different operations further down.
-    // E.g. the init operation shouldn't be called with a different pose than (0, 0, 0), so we make sure this is the
-    // case.
-
     if (!actionlib_server_.isNewGoalAvailable()) {
         return nullptr;
     }
 
+    // Discard current operation if there is one running
     if (actionlib_server_.isActive()) {
         actionlib_server_.setPreempted();
     }
@@ -32,21 +28,23 @@ std::shared_ptr<Operation> Server::retrieveNewOperation() {
     auto goal = actionlib_server_.acceptNewGoal();
     std::vector<geometry_msgs::Point> path = goal->path;
 
+    // If the path doesn't include any points we just remain at the current position
     if (path.empty()) {
         path.push_back(Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position);
     }
 
-    Core::getStatusPublisherPtr()->status.path = path;
-
+    // Check if the given action is a state at all
     StateIdentifier state_identifier = StateIdentifier::Null;
 
     auto result = std::find_if(StateIdentifierStringMap.begin(), StateIdentifierStringMap.end(),
-                               [goal](const auto& entry) { return entry.second == goal->state; });
+                               [goal](const auto& entry) { return entry.second == goal->action; });
 
     if (result != StateIdentifierStringMap.end()) {
         state_identifier = result->first;
+        Core::getStatusPublisherPtr()->status.path = path;
     } else {
-        ROS_FATAL_STREAM("Could not find the state (" << goal->state << ") passed, did you spell it correctly?");
+        ROS_FATAL_STREAM("Could not find the action (" << goal->action << ") passed, did you spell it correctly?");
+        Core::getStatusPublisherPtr()->status.path.clear();
 
         actionlib_server_.setAborted();
         return nullptr;
