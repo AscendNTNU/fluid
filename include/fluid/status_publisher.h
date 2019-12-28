@@ -2,9 +2,12 @@
 #define STATUS_PUBLISHER_H
 
 #include <ascend_msgs/FluidStatus.h>
-#include <ros/ros.h>
 #include <nav_msgs/Path.h>
+#include <ros/ros.h>
 
+/**
+ * \brief Publishes information about Fluid and visualization of paths the drone is going to fly/have flown to rviz.
+ */
 class StatusPublisher {
 private:
     ros::NodeHandle node_handle;
