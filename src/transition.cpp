@@ -8,7 +8,7 @@
 #include "state_identifier.h"
 
 Transition::Transition(std::shared_ptr<State> source_state_ptr, std::shared_ptr<State> destination_state_ptr)
-    : source_state_ptr(std::move(source_state_ptr)), destination_state_ptr(std::move(destination_state_ptr)) {}
+    : source_state_ptr(source_state_ptr), destination_state_ptr(destination_state_ptr) {}
 
 void Transition::perform() {
     // The source state is the same as the destination state, we're done here!
