@@ -6,7 +6,7 @@
 
 #include "state.h"
 
-/** 
+/**
  *  \brief Represents an edge/connection between two nodes a the graph.
  */
 template <class T>
@@ -35,9 +35,9 @@ public:
     std::vector<std::shared_ptr<State>> getStates() const;
 
     /**
-         * Checks if the start state and the end state are connected using a breadth first search and
-         * returns the shortest path between them.
-         */
+     * Checks if the start state and the end state are connected using a breadth first search and
+     * returns the shortest path between them.
+     */
     std::vector<std::shared_ptr<State>> getPathToEndState(const StateIdentifier& start_state_identifier,
                                                           const StateIdentifier& end_state_identifier,
                                                           const bool& should_include_move) const;
@@ -45,8 +45,8 @@ public:
     bool areConnected(const StateIdentifier& start_state_identifier, const StateIdentifier& end_state_identifier) const;
 
     /**
-         * @return The state with the given identifier in the graph. **Will return a nullptr if not found**.
-         */
+     * @return The state with the given identifier in the graph. **Will return a nullptr if not found**.
+     */
     std::shared_ptr<State> getStateWithIdentifier(const StateIdentifier& identifier) const;
 };
 
