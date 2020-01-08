@@ -2,8 +2,6 @@
     <arg name="launch_rviz" default="true"/>
     <arg name="launch_reconfigure" default="false"/>
 
-    <node name="world_to_world_ned" pkg="tf" type="static_transform_publisher" args="0 0 0 1 0 0 0 world world_ned 10"/>
-
     <include file="$(find fluid)/launch/server_base.launch">
         <arg name="fcu_url"            value="udp://localhost:14540@localhost:14550"/>
         <arg name="auto_arm"           value="true"/>
