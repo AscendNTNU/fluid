@@ -68,41 +68,43 @@ if __name__ == '__main__':
         goal.state = "move"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
-        """
-
+    
         first = Point()
         first.x = 400
 
         second = Point()
         second.x = 0
 
-        goal.path = [first, second]
+        goal.path = [first, second, first, second, first, second, first, second]
         goal.action = "travel"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
- 
-
+        """
+        
+        first = Point()
+        second = Point()
         goal.action = "explore"
         third = Point()
         fourth = Point()
 
-        first.x = 11.0
+        first.x = 8.0
         first.y = 0.0
         first.z = 2.0
 
-        second.x = 10.0
-        second.y = 10.0
+        second.x = 8.0
+        second.y = 15.0
         second.z = 2.0
 
-        third.x = 0.0
-        third.y = 10.0
+        third.x = -8.0
+        third.y = 15.0
         third.z = 2.0
 
-        fourth.x = 0.0
+        fourth.x = -8.0
         fourth.y = 0.0
         fourth.z = 2.0
 
         goal.path = [first, second, third, fourth]
+
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
 
