@@ -31,6 +31,8 @@ protected:
         {StateIdentifier::Hold, StateIdentifier::Hold},
         {StateIdentifier::Rotate, StateIdentifier::Hold},
         {StateIdentifier::Land, StateIdentifier::Idle},
+        {StateIdentifier::ExtractModule, StateIdentifier::Hold},
+        {StateIdentifier::FollowMast, StateIdentifier::Hold}
     };
 
 public:

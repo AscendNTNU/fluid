@@ -12,6 +12,8 @@
 #include "rotate_state.h"
 #include "take_off_state.h"
 #include "travel_state.h"
+#include "extract_module_state.h"
+#include "follow_mast_state.h"
 
 StateGraph::StateGraph() {
     adjacency_list_ptr = std::make_unique<AdjacencyList>();
@@ -25,6 +27,8 @@ StateGraph::StateGraph() {
     std::shared_ptr<State> explore_state = std::make_shared<ExploreState>();
     std::shared_ptr<State> travel_state = std::make_shared<TravelState>();
     std::shared_ptr<State> rotate_state = std::make_shared<RotateState>();
+    std::shared_ptr<State> extract_module_state = std::make_shared<ExtractModuleState>();
+    std::shared_ptr<State> follow_mast_state = std::make_shared<FollowMastState>();
 
     std::vector<Edge<std::shared_ptr<State>>> edges;
 
@@ -39,6 +43,11 @@ StateGraph::StateGraph() {
     edges.emplace_back(Edge<std::shared_ptr<State>>(travel_state, hold_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(hold_state, land_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(land_state, idle_state));
+
+    edges.emplace_back(Edge<std::shared_ptr<State>>(hold_state, follow_mast_state));
+    edges.emplace_back(Edge<std::shared_ptr<State>>(follow_mast_state, hold_state));
+    edges.emplace_back(Edge<std::shared_ptr<State>>(follow_mast_state, extract_module_state));
+    edges.emplace_back(Edge<std::shared_ptr<State>>(extract_module_state, hold_state));
 
     addEdges(edges);
 }
