@@ -36,7 +36,7 @@ if __name__ == '__main__':
         
         # Creates a goal to send to the action server.
         goal = ascend_msgs.msg.FluidGoal()
-        """ 
+        """        
 	    # The type of operation we want to execute. Can for example be:
 	    # - take_off
 	    # - land 
@@ -50,37 +50,23 @@ if __name__ == '__main__':
 
         # Waits for the server to finish performing the action.
         client.wait_for_result()
-
+        """
         # Send a new goal
 
         first = Point()
+        first.y = 10 
+        first.z = 3
+
         second = Point()
-
-        first.x = 20.0
-        first.y = 0.0
-        first.z = 2.0
-
-        second.x = 40.0
-        second.y = 0.0
-        second.z = 2.0
+        second.y = 0
+        second.z = 3
 
         goal.path = [first, second]
-        goal.state = "move"
+        goal.action = "explore"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
-    
-        first = Point()
-        first.x = 400
-
-        second = Point()
-        second.x = 0
-
-        goal.path = [first, second, first, second, first, second, first, second]
-        goal.action = "travel"
-        client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
-        client.wait_for_result()
-        """
         
+        """
         first = Point()
         second = Point()
         goal.action = "explore"
@@ -107,6 +93,6 @@ if __name__ == '__main__':
 
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
-
+        """
     except rospy.ROSInterruptException:
         print("program interrupted before completion")
