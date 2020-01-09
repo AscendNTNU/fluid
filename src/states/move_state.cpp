@@ -10,27 +10,6 @@
 
 bool MoveState::hasFinishedExecution() const { return been_to_all_points; }
 
-void MoveState::tick() {
-    bool at_position_target =
-        Util::distanceBetween(getCurrentPose().pose.position, *current_destination_point_iterator) < position_threshold;
-    bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < velocity_threshold &&
-                               std::abs(getCurrentTwist().twist.linear.y) < velocity_threshold &&
-                               std::abs(getCurrentTwist().twist.linear.z) < velocity_threshold;
-
-    if (at_position_target && low_enough_velocity) {
-        if (current_destination_point_iterator < path.end() - 1) {
-            current_destination_point_iterator++;
-            setpoint.position = *current_destination_point_iterator;
-
-            double dx = current_destination_point_iterator->x - getCurrentPose().pose.position.x;
-            double dy = current_destination_point_iterator->y - getCurrentPose().pose.position.y;
-            setpoint.yaw = std::atan2(dy, dx);
-        } else {
-            been_to_all_points = true;
-        }
-    }
-}
-
 void MoveState::initialize() {
     for (auto iterator = path.begin(); iterator != path.end(); iterator++) {
         if (iterator->z <= 0.1) {
@@ -70,3 +49,25 @@ void MoveState::initialize() {
 
     ROS_INFO_STREAM("Sat speed to: " << speed);
 }
+
+void MoveState::tick() {
+    bool at_position_target =
+        Util::distanceBetween(getCurrentPose().pose.position, *current_destination_point_iterator) < position_threshold;
+    bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < velocity_threshold &&
+                               std::abs(getCurrentTwist().twist.linear.y) < velocity_threshold &&
+                               std::abs(getCurrentTwist().twist.linear.z) < velocity_threshold;
+
+    if (at_position_target && low_enough_velocity) {
+        if (current_destination_point_iterator < path.end() - 1) {
+            current_destination_point_iterator++;
+            setpoint.position = *current_destination_point_iterator;
+
+            double dx = current_destination_point_iterator->x - getCurrentPose().pose.position.x;
+            double dy = current_destination_point_iterator->y - getCurrentPose().pose.position.y;
+            setpoint.yaw = std::atan2(dy, dx);
+        } else {
+            been_to_all_points = true;
+        }
+    }
+}
+
