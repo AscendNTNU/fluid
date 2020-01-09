@@ -29,6 +29,8 @@ The different states are:
   - Move at max speed between a series of points
 - rotate
 - land
+- follow mast
+- extract module
 
 The drone will do certain states relative to the current position. E.g. init, take off, land and rotate. So if you request 
 the drone to move to a certain position from ground, it will take off from the current position rotate so it's facing the
