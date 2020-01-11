@@ -27,7 +27,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: Image
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -190,6 +190,22 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /OA_path
+      Name: MarkerArray
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /fluid/setpoint_visualiztion
+      Name: Marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -218,25 +234,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 23.701133728027344
+      Distance: 7.4806060791015625
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 1.0978164672851562
-        Y: 5.327635288238525
-        Z: 1.896851658821106
+        X: 2.3084616661071777
+        Y: 3.775954246520996
+        Z: 6.053873062133789
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.3016592264175415
+      Pitch: 0.6716598868370056
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.419917583465576
+      Yaw: 1.5949124097824097
     Saved: ~
 Window Geometry:
   Displays:
@@ -256,5 +272,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1920
-  X: 32
-  Y: 147
+  X: 16
+  Y: 85
