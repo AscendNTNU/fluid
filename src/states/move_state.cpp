@@ -57,7 +57,7 @@ void MoveState::tick() {
                                std::abs(getCurrentTwist().twist.linear.y) < velocity_threshold &&
                                std::abs(getCurrentTwist().twist.linear.z) < velocity_threshold;
 
-    if (at_position_target && low_enough_velocity) {
+    if ((at_position_target && low_enough_velocity) || update_setpoint) {
         if (current_destination_point_iterator < path.end() - 1) {
             current_destination_point_iterator++;
             setpoint.position = *current_destination_point_iterator;
@@ -68,6 +68,8 @@ void MoveState::tick() {
         } else {
             been_to_all_points = true;
         }
+
+        update_setpoint = false;
     }
 }
 

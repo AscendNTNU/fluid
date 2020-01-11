@@ -14,6 +14,7 @@ private:
     bool been_to_all_points = false;
 
 protected:
+    bool update_setpoint = false;
     std::vector<geometry_msgs::Point>::iterator current_destination_point_iterator;
     explicit MoveState(StateIdentifier state_identifier,
                        double speed,
