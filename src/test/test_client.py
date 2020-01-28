@@ -61,38 +61,16 @@ if __name__ == '__main__':
         second.y = 0
         second.z = 3
 
-        goal.path = [first, second]
-        goal.action = "explore"
-        client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
-        client.wait_for_result()
+        goal.path = [first,second]
+        goal.action = "travel"
         
-        """
-        first = Point()
-        second = Point()
-        goal.action = "explore"
-        third = Point()
-        fourth = Point()
-
-        first.x = 8.0
-        first.y = 0.0
-        first.z = 2.0
-
-        second.x = 8.0
-        second.y = 15.0
-        second.z = 2.0
-
-        third.x = -8.0
-        third.y = 15.0
-        third.z = 2.0
-
-        fourth.x = -8.0
-        fourth.y = 0.0
-        fourth.z = 2.0
-
-        goal.path = [first, second, third, fourth]
-
+        
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
-        """
+
+        goal.action = "follow_mast"
+        client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
+        client.wait_for_result()
+   
     except rospy.ROSInterruptException:
         print("program interrupted before completion")
