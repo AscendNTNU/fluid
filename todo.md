@@ -1,4 +1,2 @@
-- Incorporate obstacle avoidance 
 - When setting mpc_xy_vel_max it takes some time before the pixhawk reacts, have to investigate
 - decrease tiltmax for low speeds as well?
-- the quad becomes unstable at high speeds: https://discuss.px4.io/t/dangerous-pitch-oscillation-at-high-speed/9321/2
