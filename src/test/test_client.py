@@ -54,19 +54,20 @@ if __name__ == '__main__':
         # Send a new goal
 
         first = Point()
-        first.y = 10 
+        first.y = 10
+        first.x = 10 
         first.z = 3
 
-        second = Point()
-        second.y = 0
-        second.z = 3
+        # second = Point()
+        # second.y = 0
+        # second.z = 3
 
-        goal.path = [first,second]
-        goal.action = "travel"
+        # goal.path = [first]
+        # goal.action = "travel"
         
         
-        client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
-        client.wait_for_result()
+        # client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
+        # client.wait_for_result()
 
         goal.action = "follow_mast"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
