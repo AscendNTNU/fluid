@@ -5,8 +5,9 @@
 #include "state_identifier.h"
 
 class TravelState : public MoveState {
+
 public:
-    TravelState() : MoveState(StateIdentifier::Travel, 30, 10, 22) {}
+    TravelState() : MoveState(StateIdentifier::Travel, 1, .5, .4) {}
 };
 
 #endif
