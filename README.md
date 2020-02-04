@@ -7,7 +7,7 @@
 
 1. [ROS Melodic](http://wiki.ros.org/melodic/Installation) 
 2. [MAVROS](https://dev.px4.io/en/ros/mavros_installation.html)
-3. [Control simulator (or plain Gazebo with PX4 or AirSim)](https://github.com/AscendNTNU/control_simulator)
+3. [AirSim (or plain Gazebo with PX4)](https://microsoft.github.io/AirSim/)
 
 ## Architecture
 
@@ -55,7 +55,7 @@ failed.
 
 ## Use
 
-### Run instructions for gazebo simulator
+### Run instructions for simulator
 
 1. Make sure you have MAVROS installed and PX4 and gazebo built. 
 2. Clone fluid into your catkin workspace in the src-folder.
