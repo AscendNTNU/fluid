@@ -1,5 +1,5 @@
 <launch>
-    <arg name="launch_rviz" default="false"/>
+    <arg name="launch_rviz" default="true"/>
     <arg name="launch_reconfigure" default="false"/>
 
     <include file="$(find fluid)/launch/server_base.launch">
