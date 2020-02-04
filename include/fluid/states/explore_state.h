@@ -12,6 +12,8 @@
  */
 class ExploreState : public MoveState {
 private:
+    std::vector<geometry_msgs::Point> dense_path;
+    const double path_density = 4;
     bool retrieved_point_of_interest = false;
     geometry_msgs::Point point_of_interest;
     ros::Subscriber point_of_interest_subscriber;

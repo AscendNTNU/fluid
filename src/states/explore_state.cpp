@@ -2,8 +2,6 @@
 #include <limits>
 #include "util.h"
 
-const double path_density = 4;
-
 void ExploreState::initialize() {
     MoveState::initialize();
 
@@ -17,6 +15,15 @@ void ExploreState::initialize() {
 
     original_path = path;
     original_path_set = true;
+
+    dense_path.clear();
+
+    if (original_path.size() == 1) {    dense_path.insert(dense_path.begin(), getCurrentPose().pose.position);   }
+
+    for (int i = 1; i < original_path.size(); i++){
+        std::vector<geometry_msgs::Point> filler_points = Util::createPath(original_path[i-1], original_path[i], path_density);
+        dense_path.insert(dense_path.end(), begin(filler_points), end(filler_points));
+    }
 }
 
 void ExploreState::pointOfInterestCallback(const geometry_msgs::PointConstPtr& point) {
@@ -113,14 +120,7 @@ void ExploreState::tick() {
     current_setpoint_visualization_publisher.publish(marker);
 
     ascend_msgs::Path path_msg;
-    std::vector<geometry_msgs::Point> dense_path;
-
-    if (original_path.size() == 1) {    dense_path.insert(dense_path.begin(), getCurrentPose().pose.position);   }
-
-    for (int i = 1; i < original_path.size(); i++){
-        std::vector<geometry_msgs::Point> filler_points = Util::createPath(original_path[i-1], original_path[i], path_density);
-        dense_path.insert(dense_path.end(), begin(filler_points), end(filler_points));
-    }
+    
 
     path_msg.points = dense_path; //test, original
     obstacle_avoidance_path_publisher.publish(path_msg);
