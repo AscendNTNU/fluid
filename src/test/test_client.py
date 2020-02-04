@@ -41,7 +41,7 @@ if __name__ == '__main__':
 	    # - land 
 	    # - travel
 	    # - explore
-        goal.state = "take_off"
+        goal.action = "take_off"
 
         print("Sending goal")
         # Sends the goal to the action server.
