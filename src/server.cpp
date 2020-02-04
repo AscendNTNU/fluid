@@ -1,117 +1,81 @@
-//
-// Created by simengangstad on 08.11.18.
-//
-
+#include <ascend_msgs/FluidGoal.h>
 #include <mavros_msgs/PositionTarget.h>
 #include <std_msgs/String.h>
-#include <ascend_msgs/FluidGoal.h>
 
-#include <cmath>
 #include <assert.h>
 #include <algorithm>
+#include <cmath>
 
-#include "server.h"
 #include "core.h"
-#include "pose_util.h"
+#include "server.h"
+#include "util.h"
 
-fluid::Server::Server() : actionlib_server_(node_handle_, 
-                                            "fluid_operation",
-                                            false) {
-    
-
+Server::Server() : actionlib_server_(node_handle_, "fluid_operation", false) {
     actionlib_server_.registerPreemptCallback(boost::bind(&Server::preemptCallback, this));
     actionlib_server_.start();
 }
 
-std::shared_ptr<fluid::Operation> fluid::Server::retrieveNewOperation() {
-
-    // We accept the new goal and initialize variables for target pose and the type of operation identifier.
-    // This is necessary in order to modify some of them before we initiate the different operations further down.
-    // E.g. the init operation shouldn't be called with a different pose than (0, 0, 0), so we make sure this is the
-    // case.
-
+std::shared_ptr<Operation> Server::retrieveNewOperation() {
     if (!actionlib_server_.isNewGoalAvailable()) {
         return nullptr;
     }
 
+    // Discard current operation if there is one running
     if (actionlib_server_.isActive()) {
         actionlib_server_.setPreempted();
     }
 
     auto goal = actionlib_server_.acceptNewGoal();
-    geometry_msgs::Point setpoint = goal->setpoint;
-    std::string destination_identifier = goal->mode.data;
+    std::vector<geometry_msgs::Point> path = goal->path;
 
-    // Check first if a boundry is defined (!= 0). If there is a boundry the position target is clamped to 
-    // min and max.
-    if (fluid::Core::min.x != 0 || fluid::Core::max.x != 0) {
-        setpoint.x = std::max(fluid::Core::min.x, 
-                                       std::min(static_cast<float>(setpoint.x), fluid::Core::max.x));
+    // If the path doesn't include any points we just remain at the current position
+    if (path.empty()) {
+        path.push_back(Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position);
     }
 
-    if (fluid::Core::min.y != 0 || fluid::Core::max.y != 0) { 
-        setpoint.y = std::max(fluid::Core::min.y, 
-                                       std::min(static_cast<float>(setpoint.y), fluid::Core::max.y));
+    // Check if the given action is a state at all
+    StateIdentifier state_identifier = StateIdentifier::Null;
+
+    auto result = std::find_if(StateIdentifierStringMap.begin(), StateIdentifierStringMap.end(),
+                               [goal](const auto& entry) { return entry.second == goal->action; });
+
+    if (result != StateIdentifierStringMap.end()) {
+        state_identifier = result->first;
+        Core::getStatusPublisherPtr()->status.path = path;
+    } else {
+        ROS_FATAL_STREAM("Could not find the action (" << goal->action << ") passed, did you spell it correctly?");
+        Core::getStatusPublisherPtr()->status.path.clear();
+
+        actionlib_server_.setAborted();
+        return nullptr;
     }
 
-    if (fluid::Core::min.z != 0 || fluid::Core::max.z != 0) {
-        setpoint.z = std::max(fluid::Core::min.z, 
-                                       std::min(static_cast<float>(setpoint.z), fluid::Core::max.z));
-    }
-
-    Core::getStatusPublisherPtr()->status.setpoint = setpoint;
-
-
-    bool shouldIncludeMove = PoseUtil::distanceBetween(fluid::Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position, setpoint) >= fluid::Core::distance_completion_threshold;
-
-    auto states = fluid::Core::getGraphPtr()->getPathToEndState(fluid::Core::getGraphPtr()->current_state_ptr->identifier, destination_identifier, shouldIncludeMove);
-    ROS_INFO_STREAM("New operation requested to state: " << destination_identifier);
-
-    std::stringstream stringstream;
-
-    for (auto state : states) {
-        stringstream << state->identifier << " ";
-    }
-
-    ROS_INFO_STREAM("Will traverse through: " << stringstream.str() << "\n");
-
-    return std::make_shared<fluid::Operation>(destination_identifier, setpoint);
+    return std::make_shared<Operation>(state_identifier, path);
 }
 
-void fluid::Server::preemptCallback() {
-    actionlib_server_.setPreempted();
-}
+void Server::preemptCallback() { actionlib_server_.setPreempted(); }
 
-void fluid::Server::start() {
+void Server::start() {
+    ros::Rate rate(Core::refresh_rate);
 
-    ros::Rate rate(fluid::Core::refresh_rate);
-
-    // Main loop of Fluid FSM. This is where all the magic happens. If a new operaiton is requested, the 
-    // new operation requested flag is set and we set up the requirements for that operation to run. When it
-    // it runs we check every tick if a new operation is requested and abort from the current operation if
-    // that is the case. 
-
-    std::shared_ptr<fluid::Operation> current_operation_ptr;
-    std::shared_ptr<fluid::State> last_state_ptr;
+    std::shared_ptr<Operation> current_operation_ptr;
+    std::shared_ptr<State> last_state_ptr;
 
     while (ros::ok()) {
-
-        // Execute the operation if there is any
         if (current_operation_ptr) {
-
-            fluid::Core::getStatusPublisherPtr()->status.current_operation = current_operation_ptr->getDestinationStateIdentifier();
+            Core::getStatusPublisherPtr()->status.current_operation =
+                StateIdentifierStringMap.at(current_operation_ptr->getDestinationStateIdentifier());
 
             current_operation_ptr->perform(
 
                 [&]() -> bool {
-
                     ascend_msgs::FluidFeedback feedback;
-                    std::shared_ptr<fluid::State> current_state_ptr = Core::getGraphPtr()->current_state_ptr;
+                    std::shared_ptr<State> current_state_ptr = Core::getGraphPtr()->current_state_ptr;
                     feedback.pose_stamped = current_state_ptr->getCurrentPose();
-                    feedback.state.data = current_state_ptr->identifier;
+                    feedback.state = StateIdentifierStringMap.at(current_state_ptr->identifier);
                     actionlib_server_.publishFeedback(feedback);
 
-                    return !actionlib_server_.isPreemptRequested() && ros::ok(); 
+                    return !actionlib_server_.isPreemptRequested() && ros::ok();
                 },
 
                 [&](bool completed) {
@@ -121,31 +85,30 @@ void fluid::Server::start() {
                     // already transitioned to a steady state and we just set the last state to that state.
                     if (completed) {
                         last_state_ptr = current_operation_ptr->getFinalStatePtr();
+                    } else {
+                        last_state_ptr = Core::getGraphPtr()->current_state_ptr;
                     }
-                    else {
-                        last_state_ptr = fluid::Core::getGraphPtr()->current_state_ptr;
-                    }
-
 
                     // Will notify the operation client what the outcome of the operation was. This will end up
                     // calling the callback that the operation client set up for completion.
-                    
+
                     if (!actionlib_server_.isActive()) {
                         return;
                     }
-                    
+
                     ascend_msgs::FluidResult result;
+
+                    Core::getStatusPublisherPtr()->status.path.clear();
 
                     if (completed) {
                         ROS_INFO_STREAM("Operation completed.");
                         result.pose_stamped = Core::getGraphPtr()->current_state_ptr->getCurrentPose();
-                        result.state.data = last_state_ptr->identifier;
+                        result.state = StateIdentifierStringMap.at(last_state_ptr->identifier);
                         actionlib_server_.setSucceeded(result);
-                    }
-                    else {
+                    } else {
                         ROS_INFO_STREAM("Operation cancelled.");
                         result.pose_stamped = Core::getGraphPtr()->current_state_ptr->getCurrentPose();
-                        result.state.data = last_state_ptr->identifier;
+                        result.state = StateIdentifierStringMap.at(last_state_ptr->identifier);
                         actionlib_server_.setPreempted(result);
                     }
                 });
@@ -154,17 +117,23 @@ void fluid::Server::start() {
         }
         // We don't have a current operation, so we just continue executing the last state.
         else {
-            fluid::Core::getStatusPublisherPtr()->status.current_operation = "none";
+            Core::getStatusPublisherPtr()->status.current_operation = "none";
 
             if (last_state_ptr) {
-                last_state_ptr->perform([&]() -> bool {
-                    // We abort the execution of the current state if there is a new operation.
-                    return !actionlib_server_.isNewGoalAvailable();
-                }, true);
+                if (last_state_ptr->identifier == StateIdentifier::Init) {
+                    Core::getStatusPublisherPtr()->status.current_state = "none";
+                } else {
+                    last_state_ptr->perform(
+                        [&]() -> bool {
+                            // We abort the execution of the current state if there is a new operation.
+                            return !actionlib_server_.isNewGoalAvailable();
+                        },
+                        true);
+                }
             }
         }
 
-        fluid::Core::getStatusPublisherPtr()->publish();
+        Core::getStatusPublisherPtr()->publish();
 
         // Setup for the new operation.
         if (actionlib_server_.isNewGoalAvailable() && !actionlib_server_.isActive()) {

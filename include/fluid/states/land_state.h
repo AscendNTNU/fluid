@@ -1,41 +1,19 @@
-//
-// Created by simengangstad on 11.10.18.
-//
-
-#ifndef FLUID_FSM_LAND_STATE_H
-#define FLUID_FSM_LAND_STATE_H
+#ifndef LAND_STATE_H
+#define LAND_STATE_H
 
 #include "state.h"
+#include "util.h"
 
-namespace fluid {
+/** 
+ *  \brief The state is relative to current position, will land at the current position no matter what is passed
+ *         as the setpoint.
+ */
+class LandState : public State {
+public:
+    explicit LandState() : State(StateIdentifier::Land, PX4StateIdentifier::Land, false, false) {}
 
-    /** \class LandState
-     *  \brief Represents the state where the drone is landing. This state happens from the current position.
-     */
-    class LandState: public State {
+    bool hasFinishedExecution() const override;
+    void initialize() override;
+};
 
-    public:
-
-        /**
-         * Initializes the land state.
-         */
-        explicit LandState() : State(fluid::StateIdentifier::Land, fluid::PX4::Land, false, false) {}
-
-        /**
-         * Overridden function. @see State::hasFinishedExecution
-         */
-        bool hasFinishedExecution() override;
-
-        /**
-         * Overridden function. @see State::init
-         */
-        void initialize() override;
-
-        /**
-         * Overridden function. @see State::tick
-         */
-        void tick() override;
-    };
-}
-
-#endif //FLUID_FSM_LAND_STATE_H
+#endif

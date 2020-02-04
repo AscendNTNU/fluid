@@ -1,20 +1,17 @@
-//
-// Created by simengangstad on 11.10.18.
-//
-
 #include "hold_state.h"
+#include "core.h"
 
-bool fluid::HoldState::hasFinishedExecution() {
-    return true;
+bool HoldState::hasFinishedExecution() const {
+    bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < Core::velocity_completion_threshold &&
+                               std::abs(getCurrentTwist().twist.linear.y) < Core::velocity_completion_threshold &&
+                               std::abs(getCurrentTwist().twist.linear.z) < Core::velocity_completion_threshold;
+
+    return low_enough_velocity;
 }
 
-void fluid::HoldState::initialize() {
+void HoldState::initialize() {
     setpoint.position.x = getCurrentPose().pose.position.x;
     setpoint.position.y = getCurrentPose().pose.position.y;
     setpoint.position.z = getCurrentPose().pose.position.z;
-}
-
-
-void fluid::HoldState::tick() {
-    setpoint.type_mask = fluid::TypeMask::Default;
+    setpoint.type_mask = TypeMask::Position | TypeMask::IgnoreYaw;
 }

@@ -14,6 +14,7 @@ RUN apt-get update -qq && apt-get install -yqq \
     python-empy \
     python-nose \
     libgtest-dev \
+    ros-melodic-tf2-geometry-msgs \
     ros-melodic-tf2
 
 

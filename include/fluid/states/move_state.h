@@ -1,40 +1,33 @@
-//
-// Created by simengangstad on 11.10.18.
-//
-
-#ifndef FLUID_FSM_MOVE_STATE_H
-#define FLUID_FSM_MOVE_STATE_H
+#ifndef MOVE_STATE_H
+#define MOVE_STATE_H
 
 #include "state.h"
 
-namespace fluid {
+/**
+ * \brief Serves as the base for explore and travel states.
+ */
+class MoveState : public State {
+private:
+    const double position_threshold;
+    const double velocity_threshold;
+    const double speed;
+    bool been_to_all_points = false;
 
-    /** \class MoveState
-     *  \brief Represents the state where the drone is moving from a to b.
-     */
-    class MoveState: public State {
+protected:
+    bool update_setpoint = false;
+    std::vector<geometry_msgs::Point>::iterator current_destination_point_iterator;
+    explicit MoveState(StateIdentifier state_identifier,
+                       double speed,
+                       double position_threshold,
+                       double velocity_threshold) : State(state_identifier, PX4StateIdentifier::Offboard, false, true),
+                                                    speed(speed),
+                                                    position_threshold(position_threshold),
+                                                    velocity_threshold(velocity_threshold) {}
 
-    public:
+public:
+    bool hasFinishedExecution() const override;
+    virtual void tick() override;
+    virtual void initialize() override;
+};
 
-        /** Initializes the move state.
-         */
-        explicit MoveState() : State(fluid::StateIdentifier::Move, fluid::PX4::Offboard, false, true) {}
-
-        /**
-         * Overridden function. @see State::hasFinishedExecution
-         */
-        bool hasFinishedExecution() override;
-
-        /**
-         * Overridden function. @see State::initialize
-         */
-        void initialize() override;
-
-        /**
-         * Overridden function. @see State::tick
-         */
-        void tick() override;
-    };
-}
-
-#endif //FLUID_FSM_MOVE_STATE_H
+#endif

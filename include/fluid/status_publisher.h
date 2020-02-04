@@ -1,40 +1,30 @@
-// Created by simengangstad 31.02.19
-
-#ifndef FLUID_FSM_STATUS_PUBLISHER_H
-#define FLUID_FSM_STATUS_PUBLISHER_H
-
-#include <ros/ros.h>
+#ifndef STATUS_PUBLISHER_H
+#define STATUS_PUBLISHER_H
 
 #include <ascend_msgs/FluidStatus.h>
+#include <nav_msgs/Path.h>
+#include <ros/ros.h>
 
-namespace fluid {
+/**
+ * \brief Publishes information about Fluid and visualization of paths the drone is going to fly/have flown to rviz.
+ */
+class StatusPublisher {
+private:
+    ros::NodeHandle node_handle;
 
-	class StatusPublisher {
+    ros::Subscriber pose_subscriber;
+    ros::Publisher status_publisher, trace_publisher, path_publisher;
 
-	private:
-		
-		ros::NodeHandle node_handle_;										///< Used to set up the publisher.
+    void poseCallback(const geometry_msgs::PoseStampedConstPtr pose_ptr);
 
-		ros::Publisher publisher_p_;										///< Used to publish messages.
+    nav_msgs::Path trace_path, path;
 
-	public:
+public:
+    ascend_msgs::FluidStatus status;
 
-		ascend_msgs::FluidStatus status;									///< Represents the state of the FSM.
+    StatusPublisher();
 
-
-		/**
-		 * @brief      The status publisher is not set up here as it is used as a static variable and the
-		 * 			   ros node handle will complain if it's initialized before ros::init. 
-		 */
-		StatusPublisher();
-
-		/**
-		 * @brief      Publishes the status on the topic.
-		 */
-		void publish(); 
-
-	};
-}
-
+    void publish();
+};
 
 #endif

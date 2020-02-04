@@ -1,21 +1,8 @@
-//
-// Created by simengangstad on 11.10.18.
-//
-
 #include "idle_state.h"
 
-bool fluid::IdleState::hasFinishedExecution() {
+bool IdleState::hasFinishedExecution() const { return ros::Time::now() - initial_time_ > halt_interval_; }
 
-    return ros::Time::now() - initial_time_ > halt_interval_;
-}
-
-void fluid::IdleState::initialize() {
-    initial_time_ = ros::Time::now();    
-}
-
-void fluid::IdleState::tick() {
-    setpoint.type_mask = fluid::TypeMask::Idle;
-	setpoint.position.x = 0.0;
-	setpoint.position.y = 0.0;
-    setpoint.position.z = 0.0;
+void IdleState::initialize() {
+    setpoint.position.x = setpoint.position.y = setpoint.position.z = 0.0;
+    setpoint.type_mask = TypeMask::Idle;
 }

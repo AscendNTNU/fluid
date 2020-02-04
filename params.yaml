@@ -3,16 +3,9 @@ message_queue_size: 10
 auto_arm: false
 auto_offboard: false
 
-min_z: 0.0
-min_y: 0.0
-min_z: 0.0
-
-max_z: 0.0
-max_y: 0.0
-max_z: 0.0
-
 distance_completion_threshold: 0.3
 velocity_completion_threshold: 0.1
 yaw_completion_threshold: 0.5
 default_height: 2.0
-position_follow_height: 2.0
+
+explore_point_of_interest_topic: ai/explore_point_of_interest
