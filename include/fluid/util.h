@@ -18,7 +18,8 @@ public:
         return sqrt(delta_x * delta_x + delta_y * delta_y + delta_z * delta_z);
     }
 
-    static std::vector<geometry_msgs::Point> createPath(const geometry_msgs::Point& first, const geometry_msgs::Point& last, const double& density) {
+    static std::vector<geometry_msgs::Point> createPath(const geometry_msgs::Point& first,
+                                                        const geometry_msgs::Point& last, const double& density) {
         double distance = distanceBetween(first, last);
 
         std::vector<geometry_msgs::Point> path;
@@ -27,7 +28,7 @@ public:
         float delta_y = last.y - first.y;
         float delta_z = last.z - first.z;
 
-        for (int i = 0; i < int(density * distance)+1; i++) {
+        for (int i = 0; i < int(density * distance) + 1; i++) {
             geometry_msgs::Point temp;
 
             temp.x = first.x + i * delta_x / (density * distance);
@@ -36,8 +37,7 @@ public:
             path.insert(path.end(), temp);
         }
 
-        //std::reverse(path.begin(), path.end());
-        return path; 
+        return path;
     }
 
     static double angleBetween(const geometry_msgs::Quaternion& quaternion, const float& yaw_angle) {

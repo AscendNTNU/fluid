@@ -18,10 +18,13 @@ void ExploreState::initialize() {
 
     dense_path.clear();
 
-    if (original_path.size() == 1) {    dense_path.insert(dense_path.begin(), getCurrentPose().pose.position);   }
+    if (original_path.size() == 1) {
+        dense_path.insert(dense_path.begin(), getCurrentPose().pose.position);
+    }
 
-    for (int i = 1; i < original_path.size(); i++){
-        std::vector<geometry_msgs::Point> filler_points = Util::createPath(original_path[i-1], original_path[i], path_density);
+    for (int i = 1; i < original_path.size(); i++) {
+        std::vector<geometry_msgs::Point> filler_points =
+            Util::createPath(original_path[i - 1], original_path[i], path_density);
         dense_path.insert(dense_path.end(), begin(filler_points), end(filler_points));
     }
 }
@@ -52,7 +55,7 @@ void ExploreState::pathCallback(ascend_msgs::Path corrected_path) {
                 }
             }
         }
-            
+
         if (different_path) {
             double closest_distance = std::numeric_limits<double>::max();
 
@@ -120,9 +123,8 @@ void ExploreState::tick() {
     current_setpoint_visualization_publisher.publish(marker);
 
     ascend_msgs::Path path_msg;
-    
 
-    path_msg.points = dense_path; //test, original
+    path_msg.points = dense_path;
     obstacle_avoidance_path_publisher.publish(path_msg);
 }
 
