@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 import rospy
+import math
 
 # Brings in the SimpleActionClient
 import actionlib
@@ -16,13 +17,11 @@ def active_callback():
     print("Goal active!")
 
 def feedback_callback(feedback):
-    a = 1
-    # print("Feedback - " + "Current state: " + feedback.state + "\n Current pose: " + str(feedback.pose_stamped))
+    print("Feedback - " + "Current state: " + feedback.state + "\n Current pose: " + str(feedback.pose_stamped))
     # Do something with the pose: feedback.pose_stamped
 
 def done_callback(state, result):
-    b = 1
-    # print("Finshed with state: " + str(state) + "\nFinal Fluid state: " + result.state + "\n Final pose: " + str(result.pose_stamped))
+    print("Finshed with state: " + str(state) + "\nFinal Fluid state: " + result.state + "\n Final pose: " + str(result.pose_stamped))
     # Do something with the pose: feedback.pose_stamped
 
 if __name__ == '__main__':
@@ -36,12 +35,12 @@ if __name__ == '__main__':
         
         # Creates a goal to send to the action server.
         goal = ascend_msgs.msg.FluidGoal()
-        """        
+         
 	    # The type of operation we want to execute. Can for example be:
 	    # - take_off
 	    # - land 
-	    # - move
-	    # - position_follow
+	    # - travel
+	    # - explore
         goal.state = "take_off"
 
         print("Sending goal")
@@ -49,28 +48,6 @@ if __name__ == '__main__':
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
 
         # Waits for the server to finish performing the action.
-        client.wait_for_result()
-        """
-        # Send a new goal
-
-        first = Point()
-        first.y = 10
-        first.x = 10 
-        first.z = 3
-
-        # second = Point()
-        # second.y = 0
-        # second.z = 3
-
-        # goal.path = [first]
-        # goal.action = "travel"
-        
-        
-        # client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
-        # client.wait_for_result()
-
-        goal.action = "follow_mast"
-        client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
    
     except rospy.ROSInterruptException:

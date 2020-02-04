@@ -1,6 +1,6 @@
 <launch>
     <arg name="start_full_feedback" default="false"/>
-    <arg name="launch_rviz" default="true"/>
+    <arg name="launch_rviz" default="false"/>
     <arg name="launch_reconfigure" default="false"/>
 
     <group if="$(arg start_full_feedback)">

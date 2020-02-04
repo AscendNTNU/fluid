@@ -15,6 +15,18 @@ void ExploreState::initialize() {
 
     original_path = path;
     original_path_set = true;
+
+    dense_path.clear();
+
+    if (original_path.size() == 1) {
+        dense_path.insert(dense_path.begin(), getCurrentPose().pose.position);
+    }
+
+    for (int i = 1; i < original_path.size(); i++) {
+        std::vector<geometry_msgs::Point> filler_points =
+            Util::createPath(original_path[i - 1], original_path[i], path_density);
+        dense_path.insert(dense_path.end(), begin(filler_points), end(filler_points));
+    }
 }
 
 void ExploreState::pointOfInterestCallback(const geometry_msgs::PointConstPtr& point) {
@@ -43,7 +55,7 @@ void ExploreState::pathCallback(ascend_msgs::Path corrected_path) {
                 }
             }
         }
-            
+
         if (different_path) {
             double closest_distance = std::numeric_limits<double>::max();
 
@@ -60,6 +72,7 @@ void ExploreState::pathCallback(ascend_msgs::Path corrected_path) {
                 path = corrected_path.points;
                 current_destination_point_iterator = path.begin() + closest_point_index;
                 update_setpoint = true;
+
             } else {
                 ROS_FATAL_STREAM(
                     "Could not find a closest point even though the paths were different, did the obstacle avoidance "
@@ -110,7 +123,8 @@ void ExploreState::tick() {
     current_setpoint_visualization_publisher.publish(marker);
 
     ascend_msgs::Path path_msg;
-    path_msg.points = original_path;
+
+    path_msg.points = dense_path;
     obstacle_avoidance_path_publisher.publish(path_msg);
 }
 
