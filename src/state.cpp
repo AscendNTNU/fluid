@@ -58,4 +58,6 @@ void State::perform(std::function<bool(void)> should_tick, bool should_halt_if_s
         ros::spinOnce();
         rate.sleep();
     }
+
+    finalize();
 }

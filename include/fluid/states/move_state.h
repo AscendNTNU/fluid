@@ -12,9 +12,10 @@ private:
     const double velocity_threshold;
     const double speed;
     bool been_to_all_points = false;
-    std::vector<geometry_msgs::Point>::iterator current_destination_point_iterator;
 
 protected:
+    bool update_setpoint = false;
+    std::vector<geometry_msgs::Point>::iterator current_destination_point_iterator;
     explicit MoveState(StateIdentifier state_identifier,
                        double speed,
                        double position_threshold,

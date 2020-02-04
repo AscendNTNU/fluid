@@ -75,6 +75,7 @@ public:
     virtual bool hasFinishedExecution() const = 0;
     virtual void initialize() {}
     virtual void tick() {}
+    virtual void finalize() {}
 
     /**
      * The transition class has to be able to e.g. set the current pose if we transition to a state which requires 

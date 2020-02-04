@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 import rospy
+import math
 
 # Brings in the SimpleActionClient
 import actionlib
@@ -25,6 +26,30 @@ def done_callback(state, result):
     # print("Finshed with state: " + str(state) + "\nFinal Fluid state: " + result.state + "\n Final pose: " + str(result.pose_stamped))
     # Do something with the pose: feedback.pose_stamped
 
+path_density = 1
+
+def createPath(x_0, y_0, z_0, x_1, y_1, z_1):
+    distance = math.sqrt((x_1-x_0)**2 + (y_1-y_0)**2+ (z_1-z_0)**2)
+    new_path = []
+    start = Point()
+    start.x = x_0
+    start.y = y_0
+    start.z = z_0
+    end = Point()
+    end.x = x_1
+    end.y = y_1
+    end.z = z_1 
+    delta_x = end.x - start.x
+    delta_y = end.y - start.y
+    delta_z = end.z - start.z
+    for i in range(0, int(path_density * distance)+1):
+        temp = Point()
+        temp.x = start.x + i * 1.0 * delta_x / (path_density * distance)
+        temp.y = start.y + i * 1.0 * delta_y / (path_density * distance)
+        temp.z = start.z + i * 1.0 * delta_z / (path_density * distance)
+        new_path.append(temp)
+    return new_path
+
 if __name__ == '__main__':
     try:
         rospy.init_node('fluid_client')
@@ -36,7 +61,7 @@ if __name__ == '__main__':
         
         # Creates a goal to send to the action server.
         goal = ascend_msgs.msg.FluidGoal()
-        """ 
+        """        
 	    # The type of operation we want to execute. Can for example be:
 	    # - take_off
 	    # - land 
@@ -50,37 +75,23 @@ if __name__ == '__main__':
 
         # Waits for the server to finish performing the action.
         client.wait_for_result()
-
+        """
         # Send a new goal
 
         first = Point()
+        first.y = 13 
+        first.z = 3
+
         second = Point()
-
-        first.x = 20.0
-        first.y = 0.0
-        first.z = 2.0
-
-        second.x = 40.0
-        second.y = 0.0
-        second.z = 2.0
+        second.y = 0
+        second.z = 3
 
         goal.path = [first, second]
-        goal.state = "move"
+        goal.action = "explore"
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
-    
-        first = Point()
-        first.x = 400
-
-        second = Point()
-        second.x = 0
-
-        goal.path = [first, second, first, second, first, second, first, second]
-        goal.action = "travel"
-        client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
-        client.wait_for_result()
-        """
         
+        """
         first = Point()
         second = Point()
         goal.action = "explore"
@@ -107,6 +118,6 @@ if __name__ == '__main__':
 
         client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
         client.wait_for_result()
-
+        """
     except rospy.ROSInterruptException:
         print("program interrupted before completion")
