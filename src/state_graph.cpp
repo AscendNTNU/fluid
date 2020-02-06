@@ -37,8 +37,8 @@ StateGraph::StateGraph() {
     edges.emplace_back(Edge<std::shared_ptr<State>>(idle_state, take_off_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(take_off_state, hold_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(hold_state, rotate_state));
-    //edges.emplace_back(Edge<std::shared_ptr<State>>(rotate_state, explore_state));
-    //edges.emplace_back(Edge<std::shared_ptr<State>>(explore_state, hold_state));
+    edges.emplace_back(Edge<std::shared_ptr<State>>(rotate_state, explore_state));
+    edges.emplace_back(Edge<std::shared_ptr<State>>(explore_state, hold_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(rotate_state, travel_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(travel_state, hold_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(hold_state, land_state));
