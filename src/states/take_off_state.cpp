@@ -12,6 +12,7 @@ bool TakeOffState::hasFinishedExecution() const {
 void TakeOffState::initialize() {
     setpoint.position.x = getCurrentPose().pose.position.x;
     setpoint.position.y = getCurrentPose().pose.position.y;
-    setpoint.position.z = Core::default_height;
+    if (path.size() == 0) { setpoint.position.z = Core::default_height; }
+    else { setpoint.position.z = path[0].z; }
     setpoint.type_mask = TypeMask::Position | TypeMask::IgnoreYaw;
 }

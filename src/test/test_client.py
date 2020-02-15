@@ -17,7 +17,8 @@ def active_callback():
     print("Goal active!")
 
 def feedback_callback(feedback):
-    #print("Feedback - " + "Current state: " + feedback.state + "\n Current pose: " + str(feedback.pose_stamped))
+    # print("Feedback - " + "Current state: " + feedback.state + "\n Current pose: " + str(feedback.pose_stamped))
+
     # Do something with the pose: feedback.pose_stamped
     return
 
@@ -38,19 +39,21 @@ if __name__ == '__main__':
         # Creates a goal to send to the action server.
         goal = ascend_msgs.msg.FluidGoal()
 
+        first = Point()
+        first.z = 10
+
+        last = Point()
+        last.z = 5
+        last.x = 5
+
+        goal.path = [first, last]
+         
 	    # The type of operation we want to execute. Can for example be:
 	    # - take_off
 	    # - land 
 	    # - travel
 	    # - explore
         goal.action = "explore"
-
-        first = Point()
-        
-        last = Point()
-        last.y = 14
-
-        goal.path = [first, last]
 
         print("Sending goal")
         # Sends the goal to the action server.
