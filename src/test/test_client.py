@@ -36,15 +36,24 @@ if __name__ == '__main__':
         
         # Creates a goal to send to the action server.
         goal = ascend_msgs.msg.FluidGoal()
+	#goal.action = "takeoff"
+	
+	#client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
+	#client.wait_for_result()
 
         first = Point()
         first.z = 10
 
-        last = Point()
-        last.z = 5
-        last.x = 5
+	second  = Point()
+	second.y = 5
+	second.z = 5 
 
-        goal.path = [first, last]
+        last = Point()
+        last.x = 5
+        last.y = 5
+	last.z = 5
+
+        goal.path = [first,second, last]
          
 	    # The type of operation we want to execute. Can for example be:
 	    # - take_off
