@@ -38,11 +38,14 @@ if __name__ == '__main__':
         goal = ascend_msgs.msg.FluidGoal()
 
         first = Point()
-        first.z = 10
+        first.z = 2
+        first.y = 0
+        first.x = 0
 
         last = Point()
-        last.z = 5
-        last.x = 5
+        last.z = 2
+        last.y = 20
+        last.x = 0
 
         goal.path = [first, last]
          
