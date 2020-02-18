@@ -10,6 +10,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <mavros_msgs/PositionTarget.h>
 #include <ros/ros.h>
+#include <ascend_msgs/PositionYawTarget.h>
 
 #include "state_identifier.h"
 #include "type_mask.h"
@@ -51,7 +52,7 @@ public:
                                           ///< would be OFFBOARD while land would
                                           ///< be AUTO_LAND.
 
-    std::vector<geometry_msgs::Point> path;    ///< The position targets of the state.
+    std::vector<ascend_msgs::PositionYawTarget> path;    ///< The position targets of the state.
 
     State(const StateIdentifier& identifier,
           const PX4StateIdentifier& px4_mode,

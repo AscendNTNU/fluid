@@ -33,9 +33,9 @@ void StatusPublisher::publish() {
 
     path.poses.clear();
 
-    for (auto point : status.path) {
+    for (auto position : status.path) {
         geometry_msgs::PoseStamped pose_stamped;
-        pose_stamped.pose.position = point;
+        pose_stamped.pose.position = position.point;
         path.poses.push_back(pose_stamped);
     }
 

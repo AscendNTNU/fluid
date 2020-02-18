@@ -12,7 +12,7 @@
 #include "transition.h"
 #include "util.h"
 
-Operation::Operation(const StateIdentifier& destination_state_identifier, const std::vector<geometry_msgs::Point>& path)
+Operation::Operation(const StateIdentifier& destination_state_identifier, const std::vector<ascend_msgs::PositionYawTarget>& path)
     : destination_state_identifier(std::move(destination_state_identifier)), path(std::move(path)) {}
 
 void Operation::perform(std::function<bool(void)> should_tick, std::function<void(bool)> completionHandler) {
@@ -30,10 +30,10 @@ void Operation::perform(std::function<bool(void)> should_tick, std::function<voi
     // the final setpoint is outside where we're currently at so we include a move state (if the move is on the path).
     geometry_msgs::Point current_position = Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position;
     current_position.z = 0;
-    geometry_msgs::Point last_setpoint = path.back();
-    last_setpoint.z = 0;
+    ascend_msgs::PositionYawTarget last_setpoint = path.back();
+    last_setpoint.point.z = 0;
 
-    float distanceToEndpoint = Util::distanceBetween(current_position, last_setpoint);
+    float distanceToEndpoint = Util::distanceBetween(current_position, last_setpoint.point);
     bool shouldIncludeMove = (distanceToEndpoint >= Core::distance_completion_threshold) || path.size() > 1;
 
     // Get shortest path to the destination state from the current state. This will make it possible for
@@ -79,7 +79,10 @@ void Operation::perform(std::function<bool(void)> should_tick, std::function<voi
             // We have to abort, so we transition to the steady state for the current state.
             std::shared_ptr<State> steady_state_ptr =
                 Core::getGraphPtr()->getStateWithIdentifier(steady_state_map.at(state_p->identifier));
-            steady_state_ptr->path = {state_p->getCurrentPose().pose.position};
+            ascend_msgs::PositionYawTarget current_pose;
+            current_pose.point = state_p->getCurrentPose().pose.position;
+            current_pose.yaw.data = 0; //Should be current yaw data
+            steady_state_ptr->path = {current_pose};
             transitionToState(steady_state_ptr);
             completionHandler(false);
 

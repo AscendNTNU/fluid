@@ -1,6 +1,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <ascend_msgs/FluidAction.h>
 #include <ascend_msgs/FluidGoal.h>
+#include <ascend_msgs/PositionYawTarget.h>
 #include <ros/ros.h>
 
 typedef actionlib::SimpleActionClient<ascend_msgs::FluidAction> Client;
@@ -49,8 +50,8 @@ int main(int argc, char **argv) {
     action_client.waitForResult();
 
     // Send a new goal
-    geometry_msgs::Point setpoint;
-    setpoint.x = 5.0;
+    ascend_msgs::PositionYawTarget setpoint;
+    setpoint.point.x = 5.0;
     goal.path = {setpoint};
     action_client.sendGoal(goal, &doneCb, &activeCb, &feedbackCb);
 

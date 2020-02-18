@@ -36,10 +36,10 @@ protected:
     };
 
 public:
-    std::vector<geometry_msgs::Point> path;
+    std::vector<ascend_msgs::PositionYawTarget> path;
 
     Operation(const StateIdentifier& destination_state_identifier,
-              const std::vector<geometry_msgs::Point>& path);
+              const std::vector<ascend_msgs::PositionYawTarget>& path);
 
     virtual ~Operation() {}
 

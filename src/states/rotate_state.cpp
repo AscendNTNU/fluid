@@ -26,7 +26,7 @@ void RotateState::initialize() {
     setpoint.position.z = getCurrentPose().pose.position.z;
     setpoint.type_mask = TypeMask::Position;
 
-    double dx = path.front().x - getCurrentPose().pose.position.x;
-    double dy = path.front().y - getCurrentPose().pose.position.y;
+    double dx = path.front().point.x - getCurrentPose().pose.position.x;
+    double dy = path.front().point.y - getCurrentPose().pose.position.y;
     setpoint.yaw = std::atan2(dy, dx);
 }

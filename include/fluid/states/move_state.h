@@ -15,7 +15,7 @@ private:
 
 protected:
     bool update_setpoint = false;
-    std::vector<geometry_msgs::Point>::iterator current_destination_point_iterator;
+    std::vector<ascend_msgs::PositionYawTarget>::iterator current_destination_point_iterator;
     explicit MoveState(StateIdentifier state_identifier,
                        double speed,
                        double position_threshold,

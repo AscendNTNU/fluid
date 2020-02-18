@@ -46,9 +46,13 @@ void InitState::perform(std::function<bool(void)> tick, bool ignore_finished_exe
     setpoint.position.z = 0;
     setpoint.type_mask = TypeMask::Idle;
 
+    ascend_msgs::PositionYawTarget setpoint_yaw;
+    setpoint_yaw.point = setpoint.position;
+    setpoint_yaw.yaw.data = 0;
+
     for (int i = Core::refresh_rate * 2; ros::ok() && i > 0; --i) {
         publishSetpoint();
-        Core::getStatusPublisherPtr()->status.path = {setpoint.position};
+        Core::getStatusPublisherPtr()->status.path = {setpoint_yaw};
         Core::getStatusPublisherPtr()->publish();
 
         if (!tick()) {

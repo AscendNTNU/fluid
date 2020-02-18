@@ -20,8 +20,8 @@ private:
     ros::Publisher obstacle_avoidance_path_publisher;
     ros::Subscriber obstacle_avoidance_path_subscriber;
     ros::Publisher current_setpoint_visualization_publisher;
-    std::vector<geometry_msgs::Point> original_path;
-    std::vector<geometry_msgs::Point> corrected_path;
+    std::vector<ascend_msgs::PositionYawTarget> original_path;
+    std::vector<ascend_msgs::PositionYawTarget> corrected_path;
 
     bool original_path_set = false;
 

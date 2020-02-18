@@ -22,11 +22,11 @@ void ExploreState::initialize() {
         dense_path.insert(dense_path.begin(), getCurrentPose().pose.position);
     }
 
-    for (int i = 1; i < original_path.size(); i++) {
-        std::vector<geometry_msgs::Point> filler_points =
-            Util::createPath(original_path[i - 1], original_path[i], path_density);
-        dense_path.insert(dense_path.end(), begin(filler_points), end(filler_points));
-    }
+    // for (int i = 1; i < original_path.size(); i++) {
+    //     std::vector<geometry_msgs::Point> filler_points =
+    //         Util::createPath(original_path[i - 1], original_path[i], path_density);
+    //     dense_path.insert(dense_path.end(), begin(filler_points), end(filler_points));
+    // }
 }
 
 void ExploreState::pointOfInterestCallback(const geometry_msgs::PointConstPtr& point) {
@@ -34,52 +34,52 @@ void ExploreState::pointOfInterestCallback(const geometry_msgs::PointConstPtr& p
     retrieved_point_of_interest = true;
 }
 
-void ExploreState::pathCallback(ascend_msgs::Path corrected_path) {
-    std::reverse(corrected_path.points.begin(), corrected_path.points.end());
+ void ExploreState::pathCallback(ascend_msgs::Path corrected_path) {
+    //std::reverse(corrected_path.points.begin(), corrected_path.points.end());
 
-    if (original_path_set) {
-        // Check if the path is different from the current path
+    // if (original_path_set) {
+    //     // Check if the path is different from the current path
 
-        bool different_path = path.size() != corrected_path.points.size();
-        unsigned int closest_point_index = -1;
+    //     bool different_path = path.size() != corrected_path.points.size();
+    //     unsigned int closest_point_index = -1;
 
-        // Find the point we are closest to in the path given from OA and set that as starting point for the
-        // iterator if the paths are different
-        if (path.size() == corrected_path.points.size()) {
-            for (int i = 0; i < path.size(); i++) {
-                double distance = Util::distanceBetween(path[i], corrected_path.points[i]);
+    //     // Find the point we are closest to in the path given from OA and set that as starting point for the
+    //     // iterator if the paths are different
+    //     if (path.size() == corrected_path.points.size()) {
+    //         for (int i = 0; i < path.size(); i++) {
+    //             double distance = Util::distanceBetween(path[i], corrected_path.points[i]);
 
-                if (distance >= 0.01) {
-                    different_path = true;
-                    break;
-                }
-            }
-        }
+    //             if (distance >= 0.01) {
+    //                 different_path = true;
+    //                 break;
+    //             }
+    //         }
+    //     }
 
-        if (different_path) {
-            double closest_distance = std::numeric_limits<double>::max();
+    //     if (different_path) {
+    //         double closest_distance = std::numeric_limits<double>::max();
 
-            for (int i = 0; i < corrected_path.points.size(); i++) {
-                double distance = Util::distanceBetween(getCurrentPose().pose.position, corrected_path.points[i]);
+    //         for (int i = 0; i < corrected_path.points.size(); i++) {
+    //             double distance = Util::distanceBetween(getCurrentPose().pose.position, corrected_path.points[i]);
 
-                if (distance <= closest_distance) {
-                    closest_distance = distance;
-                    closest_point_index = i;
-                }
-            }
+    //             if (distance <= closest_distance) {
+    //                 closest_distance = distance;
+    //                 closest_point_index = i;
+    //             }
+    //         }
 
-            if (closest_point_index != -1) {
-                path = corrected_path.points;
-                current_destination_point_iterator = path.begin() + closest_point_index;
-                update_setpoint = true;
+    //         if (closest_point_index != -1) {
+    //             path = corrected_path.points;
+    //             current_destination_point_iterator = path.begin() + closest_point_index;
+    //             update_setpoint = true;
 
-            } else {
-                ROS_FATAL_STREAM(
-                    "Could not find a closest point even though the paths were different, did the obstacle avoidance "
-                    "service return a finite path of infinite numbers? Will not change path.");
-            }
-        }
-    }
+    //         } else {
+    //             ROS_FATAL_STREAM(
+    //                 "Could not find a closest point even though the paths were different, did the obstacle avoidance "
+    //                 "service return a finite path of infinite numbers? Will not change path.");
+    //         }
+    //     }
+    // }
 }
 
 void ExploreState::tick() {
@@ -100,9 +100,9 @@ void ExploreState::tick() {
     marker.id = 9999;
     marker.type = visualization_msgs::Marker::SPHERE;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.pose.position.x = current_destination_point_iterator->x;
-    marker.pose.position.y = current_destination_point_iterator->y;
-    marker.pose.position.z = current_destination_point_iterator->z;
+    marker.pose.position.x = current_destination_point_iterator->point.x;
+    marker.pose.position.y = current_destination_point_iterator->point.y;
+    marker.pose.position.z = current_destination_point_iterator->point.z;
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;

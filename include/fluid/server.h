@@ -3,6 +3,7 @@
 
 #include <actionlib/server/simple_action_server.h>
 #include <ascend_msgs/FluidAction.h>
+#include <ascend_msgs/PositionYawTarget.h>
 #include <ros/ros.h>
 
 #include "operation.h"

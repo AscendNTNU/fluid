@@ -26,11 +26,14 @@ std::shared_ptr<Operation> Server::retrieveNewOperation() {
     }
 
     auto goal = actionlib_server_.acceptNewGoal();
-    std::vector<geometry_msgs::Point> path = goal->path;
+    std::vector<ascend_msgs::PositionYawTarget> path = goal->path;
 
     // If the path doesn't include any points we just remain at the current position
     if (path.empty()) {
-        path.push_back(Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position);
+        ascend_msgs::PositionYawTarget current_pose;
+        current_pose.point = Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position;
+        current_pose.yaw.data = 0; //Has to be changed to current yaw using getCurrentTwist()
+        path.push_back(current_pose);
     }
 
     // Check if the given action is a state at all
@@ -41,10 +44,11 @@ std::shared_ptr<Operation> Server::retrieveNewOperation() {
 
     if (result != StateIdentifierStringMap.end()) {
         state_identifier = result->first;
+
         Core::getStatusPublisherPtr()->status.path = path;
     } else {
         ROS_FATAL_STREAM("Could not find the action (" << goal->action << ") passed, did you spell it correctly?");
-        Core::getStatusPublisherPtr()->status.path.clear();
+        Core::getStatusPublisherPtr()->status.path.clear(); 
 
         actionlib_server_.setAborted();
         return nullptr;

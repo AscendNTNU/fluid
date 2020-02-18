@@ -10,6 +10,7 @@ import actionlib
 # goal message and the result message.
 
 import ascend_msgs.msg
+from ascend_msgs.msg import PositionYawTarget
 from geometry_msgs.msg import Point
 
 
@@ -41,19 +42,14 @@ if __name__ == '__main__':
 	#client.send_goal(goal, active_cb=active_callback, feedback_cb=feedback_callback, done_cb=done_callback)
 	#client.wait_for_result()
 
-        first = Point()
-        first.z = 10
+        first = PositionYawTarget()
+        first.point.z = 10
 
-	second  = Point()
-	second.y = 5
-	second.z = 5 
+	second = PositionYawTarget()
+	second.point.y = 5
+	second.point.z = 5
 
-        last = Point()
-        last.x = 5
-        last.y = 5
-	last.z = 5
-
-        goal.path = [first,second, last]
+        goal.path = [first,second]
          
 	    # The type of operation we want to execute. Can for example be:
 	    # - take_off
