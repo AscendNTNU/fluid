@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
         last = Point()
         last.z = 2
-        last.y = 20
+        last.y = 16
         last.x = 0
 
         goal.path = [first, last]
