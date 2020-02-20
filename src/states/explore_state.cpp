@@ -69,8 +69,9 @@ void ExploreState::pathCallback(ascend_msgs::Path corrected_path) {
             }
 
             if (closest_point_index != -1) {
-                path = corrected_path.points;
-                current_destination_point_iterator = path.begin() + closest_point_index;
+                
+                path = std::vector<geometry_msgs::Point>(corrected_path.points.begin() + closest_point_index, corrected_path.points.end());
+                current_destination_point_iterator = path.begin();
                 update_setpoint = true;
 
             } else {

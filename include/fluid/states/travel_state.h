@@ -7,7 +7,7 @@
 class TravelState : public MoveState {
 
 public:
-    TravelState() : MoveState(StateIdentifier::Travel, 1, .5, .4) {}
+    TravelState() : MoveState(StateIdentifier::Travel, 15, 20, 20) {}
 };
 
 #endif
