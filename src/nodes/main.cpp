@@ -8,23 +8,46 @@
 
 void callback(fluid::ServerConfig& config, uint32_t level) {}
 
+void exitAtParameterExtractionFailure(const std::string& param) {
+    ROS_FATAL_STREAM("Could not find parameter: " << param);
+    ros::shutdown();
+}
+
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fluid_server");
 
     ROS_INFO("Starting Fluid FSM.");
 
     ros::NodeHandle node_handle;
+    const std::string prefix = ros::this_node::getName();
 
-    std::string publishing_topic = std::string(argv[1]);
+    if (node_handle.getParam(prefix + "refresh_rate", Core::refresh_rate)) {
+        exitAtParameterExtractionFailure(prefix + "refresh_rate");
+    }
 
-    node_handle.getParam("refresh_rate", Core::refresh_rate);
-    node_handle.getParam("auto_arm", Core::auto_arm);
-    node_handle.getParam("auto_offboard", Core::auto_set_offboard);
+    if (node_handle.getParam(prefix + "auto_arm", Core::auto_arm)) {
+        exitAtParameterExtractionFailure(prefix + "auto_arm");
+    }
 
-    node_handle.getParam("distance_completion_threshold", Core::distance_completion_threshold);
-    node_handle.getParam("velocity_completion_threshold", Core::velocity_completion_threshold);
-    node_handle.getParam("yaw_completion_threshold", Core::yaw_completion_threshold);
-    node_handle.getParam("default_height", Core::default_height);
+    if (node_handle.getParam(prefix + "auto_offboard", Core::auto_set_offboard)) {
+        exitAtParameterExtractionFailure(prefix + "auto_offboard");
+    }
+
+    if (node_handle.getParam(prefix + "distance_completion_threshold", Core::distance_completion_threshold)) {
+        exitAtParameterExtractionFailure(prefix + "distance_completion_threshold");
+    }
+
+    if (node_handle.getParam(prefix + "velocity_completion_threshold", Core::velocity_completion_threshold)) {
+        exitAtParameterExtractionFailure(prefix + "velocity_completion_threshold");
+    }
+
+    if (node_handle.getParam(prefix + "yaw_completion_threshold", Core::yaw_completion_threshold)) {
+        exitAtParameterExtractionFailure(prefix + "yaw_completion_threshold");
+    }
+
+    if (node_handle.getParam(prefix + "default_height", Core::default_height)) {
+        exitAtParameterExtractionFailure(prefix + "default_heigh");
+    }
 
     dynamic_reconfigure::Server<fluid::ServerConfig> dynamic_reconfigure_server;
     dynamic_reconfigure::Server<fluid::ServerConfig>::CallbackType f;
