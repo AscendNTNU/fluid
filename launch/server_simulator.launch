@@ -1,13 +1,10 @@
 <launch>
-    <arg name="launch_rviz" default="true"/>
-    <arg name="launch_reconfigure" default="false"/>
 
     <include file="$(find fluid)/launch/server_base.launch">
-        <arg name="fcu_url"            value="udp://localhost:14540@localhost:14550"/>
-        <arg name="auto_arm"           value="true"/>
-        <arg name="auto_offboard"      value="true"/>
-        <arg name="launch_reconfigure" value="$(arg launch_reconfigure)"/>
-        <arg name="launch_rviz"        value="$(arg launch_rviz)"/>
+        <arg name="fcu_url"                           value="udp://localhost:14540@localhost:14550"/>
+        <arg name="auto_arm"                          value="true"/>
+        <arg name="auto_offboard"                     value="true"/>
+        <arg name="launch_rviz"                       value="true"/>
     </include>
 
 </launch>
