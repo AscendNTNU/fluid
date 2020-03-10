@@ -9,6 +9,6 @@
         <arg name="fcu_url"                           value="/dev/ttyPixhawk:921600"/>
         <arg name="auto_arm"                          value="false"/>
         <arg name="auto_offboard"                     value="false"/>
-        <arg name="launch_rviz"                       value="$(arg launch_rviz)"/>
+        <arg name="launch_rviz"                       value="false"/>
     </include>
 </launch>
