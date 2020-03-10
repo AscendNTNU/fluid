@@ -27,8 +27,6 @@ void MavrosInterface::establishContactToPX4() {
 
     // Run until we achieve a connection with mavros
     while (ros::ok() && !getCurrentState().connected) {
-        Core::getStatusPublisherPtr()->publish();
-
         ros::spinOnce();
         rate.sleep();
     }
@@ -44,7 +42,7 @@ void MavrosInterface::attemptToSetState(std::string mode, std::function<void(boo
         mavros_msgs::SetMode set_mode;
         set_mode.request.custom_mode = mode;
 
-        if (ros::Time::now() - last_request_time > ros::Duration(1.0 / static_cast<float>(UPDATE_REFRESH_RATE)) {
+        if (ros::Time::now() - last_request_time > ros::Duration(1.0 / static_cast<float>(UPDATE_REFRESH_RATE))) {
             if (set_mode_client.call(set_mode)) {
                 completion_handler(set_mode.response.mode_sent);
             }
