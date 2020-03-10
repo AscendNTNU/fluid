@@ -41,12 +41,12 @@ if __name__ == '__main__':
 
         first = Point()
         first.z = 2
-        first.y = 0
+        first.y = 400
         first.x = 0
 
         last = Point()
         last.z = 2
-        last.y = 16
+        last.y = 0 
         last.x = 0
 
         goal.path = [first, last]
@@ -56,7 +56,7 @@ if __name__ == '__main__':
 	    # - land 
 	    # - travel
 	    # - explore
-        goal.action = "explore"
+        goal.action = "travel"
 
         print("Sending goal")
         # Sends the goal to the action server.
