@@ -57,3 +57,8 @@ DerivedData/
 
 # Visual studio code
 .vscode
+
+
+# Doxygen
+html/
+index/
