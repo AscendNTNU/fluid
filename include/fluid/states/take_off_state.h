@@ -1,3 +1,7 @@
+/**
+ * @file take_off_state.h
+ */
+
 #ifndef TAKE_OFF_STATE_H
 #define TAKE_OFF_STATE_H
 
@@ -5,14 +9,23 @@
 #include "util.h"
 
 /** 
- *  \brief Will take off at the current position and not move after, in other words, ignores the setpoint x and y 
- *         values. 
+ *  @brief Will take off at the current position.
  */
 class TakeOffState : public State {
-public:
+   public:
+    /**
+     * @brief Sets up the take off state.
+     */
     explicit TakeOffState() : State(StateIdentifier::TakeOff, PX4StateIdentifier::Offboard, false, true) {}
 
+    /**
+     * @return true When the drone has taken off.
+     */
     bool hasFinishedExecution() const override;
+
+    /**
+     * @brief Sets up the setpoint at the current position with a given altitude.
+     */
     void initialize() override;
 };
 

@@ -1,3 +1,7 @@
+/**
+ * @file explore_state.h
+ */
+
 #ifndef EXPLORE_STATE_H
 #define EXPLORE_STATE_H
 
@@ -5,39 +9,74 @@
 #include <ascend_msgs/Path.h>
 #include "move_state.h"
 #include "state_identifier.h"
-#include <visualization_msgs/Marker.h>
 
 /**
- * \brief Drone is following a path and (optionally) facing towards a certain point
+ * @brief Represents the a move state where the drone is following a path and avoiding obstacles.
  */
 class ExploreState : public MoveState {
-private:
-    std::vector<geometry_msgs::Point> dense_path;
+   private:
+    /**
+     * @brief The density of the path passed to obstacle avoidance.
+     * 
+     */
     const double path_density = 4;
-    bool retrieved_point_of_interest = false;
-    geometry_msgs::Point point_of_interest;
-    ros::Subscriber point_of_interest_subscriber;
+
+    /**
+     * @brief The path filled with points at a #path_density, passed to obstacle avoidance.
+     */
+    std::vector<geometry_msgs::Point> dense_path;
+
+    /**
+     * @brief Publishes the current path to obstacle avoidance.
+     */
     ros::Publisher obstacle_avoidance_path_publisher;
+
+    /**
+     * @brief Grabs the path from obstacle avoidance which is altered to avoid obstacles.
+     */
     ros::Subscriber obstacle_avoidance_path_subscriber;
-    ros::Publisher current_setpoint_visualization_publisher;
+
+    /**
+     * @brief The original path the state was initialized with.
+     */
     std::vector<geometry_msgs::Point> original_path;
+
+    /**
+     * @brief The corrected path from obstacle avoidance.
+     */
     std::vector<geometry_msgs::Point> corrected_path;
 
+    /**
+     * @brief Determines if the original path got set.
+     */
     bool original_path_set = false;
 
-    void pointOfInterestCallback(const geometry_msgs::PointConstPtr& point);
-
-public:
-    ExploreState()
-        : MoveState(StateIdentifier::Explore, 0.3, 0.3, 0.3),
-          obstacle_avoidance_path_publisher(node_handle.advertise<ascend_msgs::Path>("/obstacle_avoidance/path", 10)),
-          obstacle_avoidance_path_subscriber(node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreState::pathCallback, this)),
-          current_setpoint_visualization_publisher(node_handle.advertise<visualization_msgs::Marker>("/fluid/setpoint_visualiztion", 10)) {}
-
+    /**
+     * @brief Callback for the corrected path from obstacle avoidance.
+     * 
+     * @param corrected_path The corrected path. 
+     */
     void pathCallback(ascend_msgs::Path corrected_path);
 
+   public:
+    /**
+     * @brief Sets up the explore state.
+     */
+    explicit ExploreState();
+
+    /**
+     * @brief Sets up the #dense_path.
+     */
     void initialize() override;
+
+    /**
+     * @brief Publishes the #dense_path to obstacle avoidance.
+     */
     void tick() override;
+
+    /**
+     * @brief Resets the flag for #original_path_set.
+     */
     void finalize() override;
 };
 

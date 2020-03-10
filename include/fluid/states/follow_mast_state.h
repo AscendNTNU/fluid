@@ -1,33 +1,50 @@
-#ifndef FOLLOW_MAST_STATE_H 
-#define FOLLOW_MAST_STATE_H 
+/**
+ * @file follow_mast_state.h
+ */
 
-#include "state.h" 
-#include "state_identifier.h"
+#ifndef FOLLOW_MAST_STATE_H
+#define FOLLOW_MAST_STATE_H
+
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include "state.h"
 
+/**
+ * @brief Represents the state where the drone is following the module.
+ */
 class FollowMastState : public State {
-
-private:
+   private:
+    /**
+     * @brief The module position.
+     */
     geometry_msgs::PoseWithCovarianceStamped module_info;
+
+    /**
+     * @brief Grabs the module position.
+     */
     ros::Subscriber module_position_subscriber;
 
+    /**
+     * @brief Updates the module position.
+     * 
+     * @param module_position The new module position. 
+     */
+    void modulePositionCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_position);
 
+   public:
+    /**
+     * @brief Sets up the follow mast state.
+     */
+    explicit FollowMastState();
 
-public:
-    explicit FollowMastState() 
-        :   State(StateIdentifier::FollowMast, PX4StateIdentifier::Offboard, false, false),
-            module_position_subscriber(node_handle.subscribe("/ai/ue4/module_pos", 10, &FollowMastState::modulePositionCallback, this)) 
-    
-    {}
-
-    void modulePositionCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_position); 
+    /**
+     * @return Will return indefinitely until a state change is requested.
+     */
     bool hasFinishedExecution() const override;
-    void initialize() override;
-    void tick() override;
 
+    /**
+     * @brief Updates the setpoint in correspondance with the module position.
+     */
+    void tick() override;
 };
 
-
 #endif
-
-
