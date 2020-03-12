@@ -30,8 +30,6 @@ void ExploreState::initialize() {
 }
 
 void ExploreState::pathCallback(ascend_msgs::Path corrected_path) {
-    //std::reverse(corrected_path.points.begin(), corrected_path.points.end());
-
     if (original_path_set) {
         // Check if the path is different from the current path
 
