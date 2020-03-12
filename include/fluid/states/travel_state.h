@@ -16,7 +16,7 @@ class TravelState : public MoveState {
     /**
      * @brief Sets up the travel state.
      */
-    TravelState() : MoveState(StateIdentifier::Travel, 20, 20, 20) {}
+    TravelState() : MoveState(StateIdentifier::TRAVEL, 20, 20, 20) {}
 };
 
 #endif

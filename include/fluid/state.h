@@ -18,7 +18,7 @@
  *  \brief Interface for states within the finite state machine.
  */
 class State {
-private:
+   private:
     ros::Subscriber pose_subscriber;
     geometry_msgs::PoseStamped current_pose;
     void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
@@ -29,37 +29,32 @@ private:
 
     ros::Publisher setpoint_publisher;
 
-    const bool steady;    ///< Determines whether this state is
-                          ///< a state we can be at for longer
-                          ///< periods of time. E.g. hold or idle.
+    const bool steady;  ///< Determines whether this state is
+                        ///< a state we can be at for longer
+                        ///< periods of time. E.g. hold or idle.
 
-    const bool should_check_obstacle_avoidance_completion;    ///< Whether it makes sense to check
-                                                              ///< that obstacle avoidance is
-                                                              ///< complete for this state. For e.g.
-                                                              ///< an init state it wouldn't make
-                                                              ///< sense.
+    const bool should_check_obstacle_avoidance_completion;  ///< Whether it makes sense to check
+                                                            ///< that obstacle avoidance is
+                                                            ///< complete for this state. For e.g.
+                                                            ///< an init state it wouldn't make
+                                                            ///< sense.
 
-protected:
+   protected:
     ros::NodeHandle node_handle;
     mavros_msgs::PositionTarget setpoint;
 
-public:
+   public:
     const StateIdentifier identifier;
 
-    const PX4StateIdentifier px4_mode;    ///< The mode this state represents
-                                          ///< within PX4. For example move state
-                                          ///< would be OFFBOARD while land would
-                                          ///< be AUTO_LAND.
-
-    std::vector<geometry_msgs::Point> path;    ///< The position targets of the state.
+    std::vector<geometry_msgs::Point> path;  ///< The position targets of the state.
 
     State(const StateIdentifier& identifier,
-          const PX4StateIdentifier& px4_mode,
           const bool& steady,
           const bool& should_check_obstacle_avoidance_completion);
 
     geometry_msgs::PoseStamped getCurrentPose() const;
     geometry_msgs::TwistStamped getCurrentTwist() const;
+    float getCurrentYaw() const;
 
     /**
      * Performs the Ros loop for executing logic within this state given the refresh rate.
@@ -78,10 +73,10 @@ public:
     virtual void finalize() {}
 
     /**
-     * The transition class has to be able to e.g. set the current pose if we transition to a state which requires 
+     * The #OperationHandler class has to be able to e.g. set the current pose if we transition to a state which requires 
      * to initially know where we are, e. g. land or take off. In that case we can execute the state from the 
      * current pose, and we don't have to wait for the pose callback and thus halt the system.
      */
-    friend class Transition;
+    friend class OperationHandler;
 };
 #endif

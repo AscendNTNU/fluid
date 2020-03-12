@@ -3,8 +3,7 @@
  */
 #include "extract_module_state.h"
 
-ExtractModuleState::ExtractModuleState() : State(StateIdentifier::ExtractModule,
-                                                 PX4StateIdentifier::Offboard,
+ExtractModuleState::ExtractModuleState() : State(StateIdentifier::EXTRACT_MODULE,
                                                  false,
                                                  false) {}
 

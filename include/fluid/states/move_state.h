@@ -55,7 +55,7 @@ class MoveState : public State {
     explicit MoveState(StateIdentifier state_identifier,
                        double speed,
                        double position_threshold,
-                       double velocity_threshold) : State(state_identifier, PX4StateIdentifier::Offboard, false, true),
+                       double velocity_threshold) : State(state_identifier, false, true),
                                                     speed(speed),
                                                     position_threshold(position_threshold),
                                                     velocity_threshold(velocity_threshold) {}

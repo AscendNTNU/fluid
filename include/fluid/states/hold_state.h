@@ -16,7 +16,7 @@ class HoldState : public State {
     /**
      * @brief Sets up the hold state. 
      */
-    explicit HoldState() : State(StateIdentifier::Hold, PX4StateIdentifier::Offboard, true, false) {}
+    explicit HoldState() : State(StateIdentifier::HOLD, true, false) {}
 
     /**
      * @return true When the drone is hovering still at a given position.

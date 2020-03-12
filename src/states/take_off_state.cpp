@@ -5,6 +5,10 @@
 #include "take_off_state.h"
 #include "core.h"
 #include "util.h"
+#include "mavros_interface.h"
+
+TakeOffState::TakeOffState(float height_setpoint) : State(StateIdentifier::TAKE_OFF, false, true),
+                                                    height_setpoint(height_setpoint) {}
 
 bool TakeOffState::hasFinishedExecution() const {
     return Util::distanceBetween(getCurrentPose().pose.position, setpoint.position) < 0.1 &&
@@ -34,13 +38,7 @@ void TakeOffState::initialize() {
 
     setpoint.position.x = getCurrentPose().pose.position.x;
     setpoint.position.y = getCurrentPose().pose.position.y;
-
-    if (path.size() == 0) {
-        setpoint.position.z = Core::default_height;
-    } else {
-        setpoint.position.z = path[0].z;
-    }
-
+    setpoint.position.z = height_setpoint;
     setpoint.yaw = getCurrentYaw();
     setpoint.type_mask = TypeMask::POSITION;
 }

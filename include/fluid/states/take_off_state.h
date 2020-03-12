@@ -14,9 +14,16 @@
 class TakeOffState : public State {
    public:
     /**
-     * @brief Sets up the take off state.
+     * @brief Setpoint for take off height. 
      */
-    explicit TakeOffState() : State(StateIdentifier::TakeOff, PX4StateIdentifier::Offboard, false, true) {}
+    float height_setpoint;
+
+    /**
+     * @brief Sets up the take off state.
+     * 
+     * @param height_setpoint The take off height.
+     */
+    explicit TakeOffState(float height_setpoint);
 
     /**
      * @return true When the drone has taken off.
