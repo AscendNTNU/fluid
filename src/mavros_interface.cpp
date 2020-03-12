@@ -5,22 +5,26 @@
  */
 #include "mavros_interface.h"
 #include <mavros_msgs/CommandBool.h>
+#include <mavros_msgs/ParamSet.h>
 #include <mavros_msgs/PositionTarget.h>
 #include "type_mask.h"
 
-MavrosInterface::MavrosInterface() : state_subscriber(node_handle.subscribe<mavros_msgs::State>("mavros/state", 1, &MavrosInterface::stateCallback, this)),
-                                     set_mode_client(node_handle.serviceClient<mavros_msgs::SetMode>("mavros/set_mode")),
-                                     setpoint_publisher(node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10)) {}
+MavrosInterface::MavrosInterface() {
+    ros::NodeHandle node_handle;
+    state_subscriber = node_handle.subscribe<mavros_msgs::State>("mavros/state", 1, &MavrosInterface::stateCallback, this);
+    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
+}
 
 void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) {
     current_state = *msg;
+    ROS_INFO_STREAM(current_state.mode);
 }
 
-mavros_msgs::State MavrosInterface::getCurrentState() {
+mavros_msgs::State MavrosInterface::getCurrentState() const {
     return current_state;
 }
 
-void MavrosInterface::establishContactToPX4() {
+void MavrosInterface::establishContactToPX4() const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
 
     ROS_INFO("Attempting to establish contact with PX4...");
@@ -34,24 +38,22 @@ void MavrosInterface::establishContactToPX4() {
     ROS_INFO("OK!\n");
 }
 
-void MavrosInterface::attemptToSetState(std::string mode, std::function<void(bool)> completion_handler) {
+void MavrosInterface::attemptToSetState(const std::string& mode, std::function<void(bool)> completion_handler) const {
     // The state on the Pixhawk is equal to the state we wan't to set, so we just return
     if (getCurrentState().mode == mode) {
         completion_handler(true);
     } else {
+        ros::NodeHandle node_handle;
+        ros::ServiceClient set_mode_client = node_handle.serviceClient<mavros_msgs::SetMode>("mavros/set_mode");
         mavros_msgs::SetMode set_mode;
         set_mode.request.custom_mode = mode;
 
-        if (ros::Time::now() - last_request_time > ros::Duration(1.0 / static_cast<float>(UPDATE_REFRESH_RATE))) {
-            if (set_mode_client.call(set_mode)) {
-                completion_handler(set_mode.response.mode_sent);
-            }
-
-            last_request_time = ros::Time::now();
+        if (set_mode_client.call(set_mode)) {
+            completion_handler(set_mode.response.mode_sent);
         }
     }
 }
-void MavrosInterface::requestArm(const bool auto_arm) {
+void MavrosInterface::requestArm(const bool& auto_arm) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
 
     // send a few setpoints before starting. This is because the stream has to be set ut before we
@@ -73,6 +75,7 @@ void MavrosInterface::requestArm(const bool auto_arm) {
     }
 
     ros::Time last_request = ros::Time::now();
+    ros::NodeHandle node_handle;
     ros::ServiceClient arming_client = node_handle.serviceClient<mavros_msgs::CommandBool>("mavros/cmd/arming");
     mavros_msgs::CommandBool arm_command;
     arm_command.request.value = true;
@@ -104,7 +107,7 @@ void MavrosInterface::requestArm(const bool auto_arm) {
     ROS_INFO("OK!\n");
 }
 
-void MavrosInterface::requestOffboard(const bool auto_offboard) {
+void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
     mavros_msgs::PositionTarget setpoint;
     setpoint.type_mask = TypeMask::Idle;
@@ -134,4 +137,26 @@ void MavrosInterface::requestOffboard(const bool auto_offboard) {
     }
 
     ROS_INFO("OK!\n");
+}
+
+void MavrosInterface::setParam(const std::string& parameter, const int& value) const {
+    ros::Rate rate(UPDATE_REFRESH_RATE);
+    ros::NodeHandle node_handle;
+    ros::ServiceClient param_set_service_client = node_handle.serviceClient<mavros_msgs::ParamSet>("mavros/param/set");
+    mavros_msgs::ParamSet param_set_service;
+
+    param_set_service.request.param_id = parameter;
+    param_set_service.request.value.real = value;
+
+    bool failed_setting = false;
+
+    while (!param_set_service_client.call(param_set_service) && ros::ok()) {
+        if (!failed_setting) {
+            ROS_FATAL_STREAM("Failed to set param " << parameter << " for PX4. Retrying...");
+            failed_setting = true;
+        }
+
+        rate.sleep();
+        ros::spinOnce();
+    }
 }
