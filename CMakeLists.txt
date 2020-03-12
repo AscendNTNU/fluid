@@ -23,7 +23,7 @@ generate_dynamic_reconfigure_options(
 add_service_files(
         FILES
         Explore.srv
-        Extract.srv
+        ExtractModule.srv
         Land.srv
         TakeOff.srv
         Travel.srv
