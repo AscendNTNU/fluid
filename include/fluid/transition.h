@@ -4,17 +4,17 @@
 #include <ros/ros.h>
 #include <memory>
 
-#include "mavros_state_link.h"
+#include "mavros_interface.h"
 #include "state.h"
 
 /** 
  *  \brief Handles state changes and the communication with the FSM in PX4.
  */
 class Transition {
-private:
-    MavrosStateLink mavros_state_link;    ///< Used to set states within the Pixhawk.
+   private:
+    MavrosInterface mavros_interface;  ///< Used to set states within the Pixhawk.
 
-public:
+   public:
     const std::shared_ptr<State> source_state_ptr, destination_state_ptr;
     Transition(std::shared_ptr<State> source_state_ptr, std::shared_ptr<State> destination_state_ptr);
 

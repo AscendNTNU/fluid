@@ -44,7 +44,7 @@ void Transition::perform() {
         Core::getStatusPublisherPtr()->status.path = source_state_ptr->path;
         Core::getStatusPublisherPtr()->publish();
 
-        mavros_state_link.attemptToSetState(
+        mavros_interface.attemptToSetState(
             PX4StateIdentifierStringMap.at(destination_state_ptr->px4_mode), [&](bool succeeded) {
                 // State set succeeded, break from loop
 
