@@ -6,13 +6,13 @@ add_compile_options(-std=c++14)
 
 find_package(catkin REQUIRED COMPONENTS
         cmake_modules
-        ascend_msgs
         roscpp
-        genmsg
-        actionlib
+        ascend_msgs
+        std_msgs
         visualization_msgs
         tf2_geometry_msgs
         tf2
+        message_generation
         dynamic_reconfigure
 )
 
@@ -20,12 +20,25 @@ generate_dynamic_reconfigure_options(
   cfg/Server.cfg
 )
 
-catkin_package(
-        INCLUDE_DIRS include
-        CATKIN_DEPENDS ascend_msgs roscpp dynamic_reconfigure 
+add_service_files(
+        FILES
+        Explore.srv
+        Extract.srv
+        Land.srv
+        TakeOff.srv
+        Travel.srv
 )
 
+generate_messages(
+        DEPENDENCIES
+        std_msgs
+        geometry_msgs
+)
 
+catkin_package(
+        INCLUDE_DIRS include
+        CATKIN_DEPENDS message_runtime ascend_msgs roscpp dynamic_reconfigure 
+)
 
 #########################################################################################
 
