@@ -5,15 +5,14 @@
 #include <iterator>
 
 #include "explore_state.h"
+#include "extract_module_state.h"
+#include "follow_mast_state.h"
 #include "hold_state.h"
 #include "idle_state.h"
 #include "init_state.h"
 #include "land_state.h"
-#include "rotate_state.h"
 #include "take_off_state.h"
 #include "travel_state.h"
-#include "extract_module_state.h"
-#include "follow_mast_state.h"
 
 StateGraph::StateGraph() {
     adjacency_list_ptr = std::make_unique<AdjacencyList>();
@@ -26,7 +25,6 @@ StateGraph::StateGraph() {
     std::shared_ptr<State> hold_state = std::make_shared<HoldState>();
     std::shared_ptr<State> explore_state = std::make_shared<ExploreState>();
     std::shared_ptr<State> travel_state = std::make_shared<TravelState>();
-    std::shared_ptr<State> rotate_state = std::make_shared<RotateState>();
     std::shared_ptr<State> extract_module_state = std::make_shared<ExtractModuleState>();
     std::shared_ptr<State> follow_mast_state = std::make_shared<FollowMastState>();
 
@@ -36,10 +34,9 @@ StateGraph::StateGraph() {
     edges.emplace_back(Edge<std::shared_ptr<State>>(init_state, idle_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(idle_state, take_off_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(take_off_state, hold_state));
-    edges.emplace_back(Edge<std::shared_ptr<State>>(hold_state, rotate_state));
-    edges.emplace_back(Edge<std::shared_ptr<State>>(rotate_state, explore_state));
+    edges.emplace_back(Edge<std::shared_ptr<State>>(hold_state, explore_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(explore_state, hold_state));
-    edges.emplace_back(Edge<std::shared_ptr<State>>(rotate_state, travel_state));
+    edges.emplace_back(Edge<std::shared_ptr<State>>(hold_state, travel_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(travel_state, hold_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(hold_state, land_state));
     edges.emplace_back(Edge<std::shared_ptr<State>>(land_state, idle_state));
@@ -165,7 +162,6 @@ std::vector<std::shared_ptr<State>> StateGraph::getPathToEndState(const StateIde
             [](const std::shared_ptr<State>& state) { return state->identifier == StateIdentifier::Hold; });
 
         if (iterator != states_in_plan.end()) {
-            iterator = states_in_plan.insert(iterator + 1, getStateWithIdentifier(StateIdentifier::Rotate));
             states_in_plan.insert(iterator + 1, getStateWithIdentifier(StateIdentifier::Explore));
         }
     }

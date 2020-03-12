@@ -14,7 +14,6 @@ enum class StateIdentifier {
     Explore,
     Travel,
     Land,
-    Rotate,
     ExtractModule,
     FollowMast,
     Null
@@ -28,10 +27,9 @@ const std::map<StateIdentifier, std::string> StateIdentifierStringMap = {
     {StateIdentifier::Explore, "explore"},
     {StateIdentifier::Travel, "travel"},
     {StateIdentifier::Land, "land"},
-    {StateIdentifier::Rotate, "rotate"},
     {StateIdentifier::ExtractModule, "extract_module"},
     {StateIdentifier::FollowMast, "follow_mast"},
-    };
+};
 
 enum class PX4StateIdentifier {
     Offboard,

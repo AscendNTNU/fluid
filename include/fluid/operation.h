@@ -14,7 +14,7 @@
  *  \brief Manages the transitions between multiple states and their execution.
  */
 class Operation {
-protected:
+   protected:
     const StateIdentifier destination_state_identifier;
 
     /** The states the operation should transition to after it has carried
@@ -29,13 +29,11 @@ protected:
         {StateIdentifier::Explore, StateIdentifier::Hold},
         {StateIdentifier::Travel, StateIdentifier::Hold},
         {StateIdentifier::Hold, StateIdentifier::Hold},
-        {StateIdentifier::Rotate, StateIdentifier::Hold},
         {StateIdentifier::Land, StateIdentifier::Idle},
         {StateIdentifier::ExtractModule, StateIdentifier::Hold},
-        {StateIdentifier::FollowMast, StateIdentifier::Hold}
-    };
+        {StateIdentifier::FollowMast, StateIdentifier::Hold}};
 
-public:
+   public:
     std::vector<geometry_msgs::Point> path;
 
     Operation(const StateIdentifier& destination_state_identifier,
