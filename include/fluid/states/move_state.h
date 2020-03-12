@@ -45,20 +45,28 @@ class MoveState : public State {
     std::vector<geometry_msgs::Point>::iterator current_setpoint_iterator;
 
     /**
+     * @brief List of the setpoints.
+     */
+    std::vector<geometry_msgs::Point> path;
+
+    /**
      * @brief Sets up the move state.
      * 
      * @param state_identifier The state identifier. 
+     * @param path The path of the state.
      * @param speed The speed at which to move. 
      * @param position_threshold The setpoint distance threshold. 
      * @param velocity_threshold The velocity threshold. 
      */
-    explicit MoveState(StateIdentifier state_identifier,
-                       double speed,
-                       double position_threshold,
-                       double velocity_threshold) : State(state_identifier, false, true),
-                                                    speed(speed),
-                                                    position_threshold(position_threshold),
-                                                    velocity_threshold(velocity_threshold) {}
+    explicit MoveState(const StateIdentifier& state_identifier,
+                       const std::vector<geometry_msgs::Point>& path,
+                       const double& speed,
+                       const double& position_threshold,
+                       const double& velocity_threshold) : State(state_identifier, false, true),
+                                                           path(path),
+                                                           speed(speed),
+                                                           position_threshold(position_threshold),
+                                                           velocity_threshold(velocity_threshold) {}
 
    public:
     /**

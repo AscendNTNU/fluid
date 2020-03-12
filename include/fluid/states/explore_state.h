@@ -61,8 +61,10 @@ class ExploreState : public MoveState {
    public:
     /**
      * @brief Sets up the explore state.
+     * 
+     * @param path List of setpoints.
      */
-    explicit ExploreState();
+    explicit ExploreState(const std::vector<geometry_msgs::Point>& path);
 
     /**
      * @brief Sets up the #dense_path.

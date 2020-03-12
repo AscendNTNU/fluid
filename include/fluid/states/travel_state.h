@@ -15,8 +15,10 @@ class TravelState : public MoveState {
    public:
     /**
      * @brief Sets up the travel state.
+     * 
+     * @param path List of setpoints.
      */
-    TravelState() : MoveState(StateIdentifier::TRAVEL, 20, 20, 20) {}
+    TravelState(const std::vector<geometry_msgs::Point>& path) : MoveState(StateIdentifier::TRAVEL, path, 20, 20, 20) {}
 };
 
 #endif
