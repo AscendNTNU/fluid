@@ -3,6 +3,7 @@
  * 
  * @brief Implementation of the Mavros Interface.
  */
+
 #include "mavros_interface.h"
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/ParamSet.h>
@@ -38,19 +39,17 @@ void MavrosInterface::establishContactToPX4() const {
     ROS_INFO("OK!\n");
 }
 
-void MavrosInterface::attemptToSetState(const std::string& mode, std::function<void(bool)> completion_handler) const {
+bool MavrosInterface::attemptToSetState(const std::string& mode) const {
     // The state on the Pixhawk is equal to the state we wan't to set, so we just return
     if (getCurrentState().mode == mode) {
-        completion_handler(true);
+        return true;
     } else {
         ros::NodeHandle node_handle;
         ros::ServiceClient set_mode_client = node_handle.serviceClient<mavros_msgs::SetMode>("mavros/set_mode");
         mavros_msgs::SetMode set_mode;
         set_mode.request.custom_mode = mode;
 
-        if (set_mode_client.call(set_mode)) {
-            completion_handler(set_mode.response.mode_sent);
-        }
+        return set_mode_client.call(set_mode);
     }
 }
 void MavrosInterface::requestArm(const bool& auto_arm) const {
@@ -125,8 +124,8 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
         set_offboard = getCurrentState().mode == "OFFBOARD";
 
         if (auto_offboard) {
-            attemptToSetState("OFFBOARD", [&](bool completed) {
-                set_offboard = completed;
+            attemptToSetState("OFFBOARD", [&]() {
+                set_offboard = true;
             });
         }
 

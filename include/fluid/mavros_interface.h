@@ -62,10 +62,10 @@ class MavrosInterface {
      * @brief Will attempt to set the @p mode if PX4 is not already in the given mode. 
      *
      * @param mode               The mode to attempt to set.
-     * @param completion_handler Called when the state change call is responded, will return with a flag whether
-     *                           the state change succeeded or not.
+     * 
+     * @return true if the mode got set.
      */
-    void attemptToSetState(const std::string& mode, std::function<void(bool)> completion_handler) const;
+    bool attemptToSetState(const std::string& mode) const;
 
     /**
      * @brief Requests PX4 to arm.
