@@ -16,5 +16,5 @@ void LandState::initialize() {
     setpoint.position.y = getCurrentPose().pose.position.y;
     setpoint.position.z = 0.0;
     setpoint.yaw = getCurrentYaw();
-    setpoint.type_mask = TypeMask::Position;
+    setpoint.type_mask = TypeMask::POSITION;
 }

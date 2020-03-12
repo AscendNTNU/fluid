@@ -22,7 +22,7 @@ void MoveState::initialize() {
         }
     }
 
-    setpoint.type_mask = TypeMask::Position;
+    setpoint.type_mask = TypeMask::POSITION;
     been_to_all_points = false;
     current_setpoint_iterator = path.begin();
     setpoint.position = *current_setpoint_iterator;
@@ -32,7 +32,7 @@ void MoveState::initialize() {
     setpoint.yaw = std::atan2(dy, dx);
 
     MavrosInterface mavros_interface;
-    mavros_interface.setSpeed(speed);
+    mavros_interface.setParam("MPC_XY_VEL_MAX", speed);
     ROS_INFO_STREAM("Sat speed to: " << speed);
 }
 
