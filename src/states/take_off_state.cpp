@@ -14,8 +14,27 @@ bool TakeOffState::hasFinishedExecution() const {
 }
 
 void TakeOffState::initialize() {
+    MavrosInterface mavros_interface;
+    mavros_interface.establishContactToPX4();
+    Core::getStatusPublisherPtr()->status.linked_with_px4 = 1;
+
+    mavros_interface.requestArm(Core::auto_arm);
+    Core::getStatusPublisherPtr()->status.armed = 1;
+
+    mavros_interface.requestOffboard(Core::auto_set_offboard);
+    Core::getStatusPublisherPtr()->status.px4_mode = "offboard";
+
+    setpoint.type_mask = TypeMask::IDLE;
+
+    // Spin until we retrieve the first pose
+    while (ros::ok() && getCurrentPose().header.seq == 0) {
+        publishSetpoint();
+        ros::spinOnce();
+    }
+
     setpoint.position.x = getCurrentPose().pose.position.x;
     setpoint.position.y = getCurrentPose().pose.position.y;
+
     if (path.size() == 0) {
         setpoint.position.z = Core::default_height;
     } else {
@@ -23,5 +42,5 @@ void TakeOffState::initialize() {
     }
 
     setpoint.yaw = getCurrentYaw();
-    setpoint.type_mask = TypeMask::Position;
+    setpoint.type_mask = TypeMask::POSITION;
 }
