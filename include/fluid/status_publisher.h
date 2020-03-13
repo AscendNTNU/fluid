@@ -9,17 +9,17 @@
  * \brief Publishes information about Fluid and visualization of paths the drone is going to fly/have flown to rviz.
  */
 class StatusPublisher {
-private:
+   private:
     ros::NodeHandle node_handle;
 
     ros::Subscriber pose_subscriber;
-    ros::Publisher status_publisher, trace_publisher, path_publisher;
+    ros::Publisher status_publisher, trace_publisher;
 
     void poseCallback(const geometry_msgs::PoseStampedConstPtr pose_ptr);
 
-    nav_msgs::Path trace_path, path;
+    nav_msgs::Path trace_path;
 
-public:
+   public:
     ascend_msgs::FluidStatus status;
 
     StatusPublisher();
