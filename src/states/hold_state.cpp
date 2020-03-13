@@ -5,6 +5,8 @@
 #include "hold_state.h"
 #include "core.h"
 
+HoldState::HoldState() : State(StateIdentifier::HOLD, true) {}
+
 bool HoldState::hasFinishedExecution() const {
     bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < Core::velocity_completion_threshold &&
                                std::abs(getCurrentTwist().twist.linear.y) < Core::velocity_completion_threshold &&

@@ -1,10 +1,9 @@
 #include <ros/ros.h>
-
-#include "core.h"
-#include "server.h"
-
 #include <dynamic_reconfigure/server.h>
 #include <fluid/ServerConfig.h>
+
+#include "core.h"
+#include "operation_handler.h"
 
 void callback(fluid::ServerConfig& config, uint32_t level) {}
 
@@ -56,8 +55,8 @@ int main(int argc, char** argv) {
 
     ros::spinOnce();
 
-    Server server;
-    server.start();
+    OperationHandler operation_handler;
+    operation_handler.run();
 
     return 0;
 }

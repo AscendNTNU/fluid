@@ -7,7 +7,7 @@
 #include "util.h"
 #include "mavros_interface.h"
 
-TakeOffState::TakeOffState(float height_setpoint) : State(StateIdentifier::TAKE_OFF, false, true),
+TakeOffState::TakeOffState(float height_setpoint) : State(StateIdentifier::TAKE_OFF, false),
                                                     height_setpoint(height_setpoint) {}
 
 bool TakeOffState::hasFinishedExecution() const {

@@ -7,17 +7,6 @@
 
 #include <map>
 #include <string>
-#include <memory>
-
-#include "init_state.h"
-#include "idle_state.h"
-#include "take_off_state.h"
-#include "hold_state.h"
-#include "explore_state.h"
-#include "travel_state.h"
-#include "land_state.h"
-#include "extract_module_state.h"
-#include "follow_mast_state.h"
 
 const std::string PX4_MODE_OFFBOARD = "OFFBOARD";
 const std::string PX4_MODE_LAND = "MODE";
@@ -27,8 +16,6 @@ const std::string PX4_MODE_LAND = "MODE";
  */
 enum class StateIdentifier {
     // Null is here to make the bredth first search possible in state graph
-    INIT,
-    IDLE,
     TAKE_OFF,
     HOLD,
     EXPLORE,
@@ -46,14 +33,7 @@ enum class StateIdentifier {
  * 
  * @return The PX4 mode.
  */
-std::string getPX4ModeForStateIdentifier(const StateIdentifier& state_identifier) {
-    switch (state_identifier) {
-        case StateIdentifier::LAND:
-            return PX4_MODE_LAND;
-        default:
-            return PX4_MODE_OFFBOARD;
-    }
-}
+std::string getPX4ModeForStateIdentifier(const StateIdentifier& state_identifier);
 
 /**
  * @brief Get a string from the @p state_identifier. 
@@ -62,30 +42,7 @@ std::string getPX4ModeForStateIdentifier(const StateIdentifier& state_identifier
  * 
  * @return The state identifier represented in a string.
  */
-std::string getStringFromStateIdentifier(const StateIdentifier& state_identifier) {
-    switch (state_identifier) {
-        case StateIdentifier::INIT:
-            return "INIT";
-        case StateIdentifier::IDLE:
-            return "IDLE";
-        case StateIdentifier::TAKE_OFF:
-            return "TAKE_OFF";
-        case StateIdentifier::HOLD:
-            return "HOLD";
-        case StateIdentifier::EXPLORE:
-            return "EXPLORE";
-        case StateIdentifier::TRAVEL:
-            return "TRAVEL";
-        case StateIdentifier::LAND:
-            return "LAND";
-        case StateIdentifier::EXTRACT_MODULE:
-            return "EXTRACT_MODULE";
-        case StateIdentifier::FOLLOW_MAST:
-            return "FOLLOW_MAST";
-        case StateIdentifier::UNDEFINED:
-            return "UNDEFINED";
-    }
-}
+std::string getStringFromStateIdentifier(const StateIdentifier& state_identifier);
 
 /**
  * @brief Constructs a state pointer from the @p state_identifier. 
@@ -94,12 +51,8 @@ std::string getStringFromStateIdentifier(const StateIdentifier& state_identifier
  * 
  * @return The state pointer. 
  */
-std::shared_ptr<State> constructStateFromStateIdentifier(const StateIdentifier& state_identifier) {
+/*std::shared_ptr<State> constructStateFromStateIdentifier(const StateIdentifier& state_identifier) {
     switch (state_identifier) {
-        case StateIdentifier::INIT:
-            return std::make_shared<InitState>();
-        case StateIdentifier::IDLE:
-            return std::make_shared<IdleState>();
         case StateIdentifier::TAKE_OFF:
             return std::make_shared<TakeOffState>();
         case StateIdentifier::HOLD:
@@ -117,6 +70,6 @@ std::shared_ptr<State> constructStateFromStateIdentifier(const StateIdentifier& 
         case StateIdentifier::UNDEFINED:
             return nullptr;
     }
-}
+}*/
 
 #endif

@@ -13,6 +13,16 @@
 #include "move_state.h"
 #include "util.h"
 
+MoveState::MoveState(const StateIdentifier& state_identifier,
+                     const std::vector<geometry_msgs::Point>& path,
+                     const double& speed,
+                     const double& position_threshold,
+                     const double& velocity_threshold) : State(state_identifier, false),
+                                                         path(path),
+                                                         speed(speed),
+                                                         position_threshold(position_threshold),
+                                                         velocity_threshold(velocity_threshold) {}
+
 bool MoveState::hasFinishedExecution() const { return been_to_all_points; }
 
 void MoveState::initialize() {

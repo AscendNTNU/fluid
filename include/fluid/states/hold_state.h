@@ -16,7 +16,7 @@ class HoldState : public State {
     /**
      * @brief Sets up the hold state. 
      */
-    explicit HoldState() : State(StateIdentifier::HOLD, true, false) {}
+    explicit HoldState();
 
     /**
      * @return true When the drone is hovering still at a given position.

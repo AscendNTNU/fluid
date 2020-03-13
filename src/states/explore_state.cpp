@@ -6,9 +6,9 @@
 #include <limits>
 #include "util.h"
 
-ExploreState::ExploreState() : MoveState(StateIdentifier::EXPLORE, 0.3, 0.3, 0.3),
-                               obstacle_avoidance_path_publisher(node_handle.advertise<ascend_msgs::Path>("/obstacle_avoidance/path", 10)),
-                               obstacle_avoidance_path_subscriber(node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreState::pathCallback, this)) {}
+ExploreState::ExploreState(const std::vector<geometry_msgs::Point>& path) : MoveState(StateIdentifier::EXPLORE, path, 0.3, 0.3, 0.3),
+                                                                            obstacle_avoidance_path_publisher(node_handle.advertise<ascend_msgs::Path>("/obstacle_avoidance/path", 10)),
+                                                                            obstacle_avoidance_path_subscriber(node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreState::pathCallback, this)) {}
 
 void ExploreState::initialize() {
     MoveState::initialize();

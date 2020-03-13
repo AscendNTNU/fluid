@@ -6,6 +6,8 @@
 
 #include "core.h"
 
+LandState::LandState() : State(StateIdentifier::LAND, true) {}
+
 bool LandState::hasFinishedExecution() const {
     return getCurrentPose().pose.position.z - 0.0 < 0.05 &&
            std::abs(getCurrentTwist().twist.linear.z) < Core::velocity_completion_threshold;

@@ -16,7 +16,7 @@ class LandState : public State {
     /**
      * @brief Sets up the land state.
      */
-    explicit LandState() : State(StateIdentifier::LAND, false, false) {}
+    explicit LandState();
 
     /**
      * @return true When the drone has landed.

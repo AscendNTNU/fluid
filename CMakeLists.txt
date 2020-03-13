@@ -22,6 +22,7 @@ generate_dynamic_reconfigure_options(
 
 add_service_files(
         FILES
+        OperationCompletion.srv
         Explore.srv
         ExtractModule.srv
         Land.srv

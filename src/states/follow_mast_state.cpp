@@ -5,7 +5,7 @@
 #include "follow_mast_state.h"
 #include "state_identifier.h"
 
-FollowMastState::FollowMastState() : State(StateIdentifier::FOLLOW_MAST, false, false),
+FollowMastState::FollowMastState() : State(StateIdentifier::FOLLOW_MAST, false),
                                      module_position_subscriber(node_handle.subscribe("/ai/ue4/module_pos",
                                                                                       10,
                                                                                       &FollowMastState::modulePositionCallback,

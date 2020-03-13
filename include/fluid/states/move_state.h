@@ -62,11 +62,7 @@ class MoveState : public State {
                        const std::vector<geometry_msgs::Point>& path,
                        const double& speed,
                        const double& position_threshold,
-                       const double& velocity_threshold) : State(state_identifier, false, true),
-                                                           path(path),
-                                                           speed(speed),
-                                                           position_threshold(position_threshold),
-                                                           velocity_threshold(velocity_threshold) {}
+                       const double& velocity_threshold);
 
    public:
     /**

@@ -3,9 +3,7 @@
  */
 #include "extract_module_state.h"
 
-ExtractModuleState::ExtractModuleState() : State(StateIdentifier::EXTRACT_MODULE,
-                                                 false,
-                                                 false) {}
+ExtractModuleState::ExtractModuleState() : State(StateIdentifier::EXTRACT_MODULE, false) {}
 
 bool ExtractModuleState::hasFinishedExecution() const { return true; }
 
