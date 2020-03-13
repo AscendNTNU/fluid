@@ -8,6 +8,7 @@
 #include <mavros_msgs/PositionTarget.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
+#include <visualization_msgs/Marker.h>
 #include <string>
 
 #include "core.h"
@@ -69,8 +70,33 @@ int main(int argc, char** argv) {
 
     ros::Subscriber subscriber = node_handle.subscribe(subscription_topic, 1, subscriptionCallback);
     ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>(publishing_topic, 1);
-
     ros::Subscriber pose_subscriber = node_handle.subscribe("/mavros/local_position/pose", 1, &poseCallback);
+    ros::Publisher setpoint_visualizer_publisher = node_handle.advertise<visualization_msgs::Marker>("/fluid/setpoint_visualiztion", 10);
+
+    visualization_msgs::Marker marker;
+
+    marker.header.frame_id = "/map";
+    marker.header.stamp = ros::Time::now();
+
+    marker.id = 9999;
+    marker.type = visualization_msgs::Marker::SPHERE;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+
+    marker.scale.x = 0.2;
+    marker.scale.y = 0.2;
+    marker.scale.z = 0.2;
+
+    // Set the color -- be sure to set alpha to something non-zero!
+    marker.color.r = 1.0f;
+    marker.color.g = 0.0f;
+    marker.color.b = 1.0f;
+    marker.color.a = 1.0;
+
+    marker.lifetime = ros::Duration();
 
     ros::Rate rate(refresh_rate);
 
@@ -78,6 +104,11 @@ int main(int argc, char** argv) {
         setpoint.header.stamp = ros::Time::now();
 
         if (position_is_set) {
+            marker.pose.position.x = setpoint.position.x;
+            marker.pose.position.y = setpoint.position.y;
+            marker.pose.position.z = setpoint.position.z;
+
+            setpoint_visualizer_publisher.publish(marker);
             publisher.publish(setpoint);
         }
 
