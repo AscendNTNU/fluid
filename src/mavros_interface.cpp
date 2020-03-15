@@ -18,7 +18,6 @@ MavrosInterface::MavrosInterface() {
 
 void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) {
     current_state = *msg;
-    ROS_INFO_STREAM(current_state.mode);
 }
 
 mavros_msgs::State MavrosInterface::getCurrentState() const {
@@ -58,7 +57,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
     // send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within px4
     mavros_msgs::PositionTarget setpoint;
-    setpoint.type_mask = TypeMask::Idle;
+    setpoint.type_mask = TypeMask::IDLE;
 
     for (int i = UPDATE_REFRESH_RATE * 2; ros::ok() && i > 0; --i) {
         setpoint_publisher.publish(setpoint);
@@ -109,7 +108,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
 void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
     mavros_msgs::PositionTarget setpoint;
-    setpoint.type_mask = TypeMask::Idle;
+    setpoint.type_mask = TypeMask::IDLE;
 
     // Offboard
     ROS_INFO("Trying to set offboard...");
@@ -124,9 +123,7 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
         set_offboard = getCurrentState().mode == "OFFBOARD";
 
         if (auto_offboard) {
-            attemptToSetState("OFFBOARD", [&]() {
-                set_offboard = true;
-            });
+            set_offboard = attemptToSetState("OFFBOARD");
         }
 
         setpoint_publisher.publish(setpoint);
