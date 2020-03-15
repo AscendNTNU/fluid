@@ -1,5 +1,6 @@
 .DS_STORE
 cmake-build-debug/
+.VSCodeCounter
 
 # Prerequisites
 *.d
