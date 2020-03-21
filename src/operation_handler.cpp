@@ -8,6 +8,7 @@
 #include <fluid/OperationCompletion.h>
 #include <mavros_msgs/PositionTarget.h>
 #include <std_msgs/String.h>
+
 #include <algorithm>
 #include <cmath>
 
@@ -86,7 +87,7 @@ OperationHandler::Response OperationHandler::attemptToCreateOperation(const Stat
     Response response;
     StateIdentifier current_state_identifier = getStateIdentifierForState(current_state_ptr);
 
-    response.success = isValidOperation(current_state_identifier, StateIdentifier::TAKE_OFF);
+    response.success = isValidOperation(current_state_identifier, target_state_identifier);
 
     if (!response.success) {
         response.message = "Cannot transition to " +
@@ -131,7 +132,6 @@ bool OperationHandler::isValidOperation(const StateIdentifier& current_state_ide
             return current_state_identifier != StateIdentifier::TAKE_OFF &&
                    current_state_identifier != StateIdentifier::LAND &&
                    current_state_identifier != StateIdentifier::UNDEFINED;
-
         default:
             return false;
     }

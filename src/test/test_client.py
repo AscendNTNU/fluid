@@ -11,7 +11,8 @@ finished_state = ""
 
 
 def fluidOperationCompletionCallback(request):
-    print "Finished operation " + request.operation
+    global finished_state
+    print("Finished operation " + request.operation)
     finished_state = request.operation
 
     return OperationCompletionResponse()
@@ -33,22 +34,19 @@ if __name__ == '__main__':
         response = take_off(3)
 
         if (not response.success):
-            print response.message
+            print(response.message)
 
         while not rospy.is_shutdown():
 
             if finished_state == "TAKE_OFF":
-                rospy.logerr(finished_state)
                 point = Point()
                 point.x = 10
 
                 # Doesnt get fired somehow
-
-                rospy.logerr("hello")
                 response = explore([point])
 
                 if (not response.success):
-                    print response.message
+                    print(response.message)
 
                 break
 
