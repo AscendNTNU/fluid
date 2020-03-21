@@ -89,7 +89,7 @@ class MavrosInterface {
      * @param parameter The parameter to set.
      * @param value The new value. 
      */
-    void setParam(const std::string& parameter, const int& value) const;
+    void setParam(const std::string& parameter, const float& value) const;
 };
 
 #endif

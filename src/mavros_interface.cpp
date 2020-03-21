@@ -5,9 +5,11 @@
  */
 
 #include "mavros_interface.h"
+
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/ParamSet.h>
 #include <mavros_msgs/PositionTarget.h>
+
 #include "type_mask.h"
 
 MavrosInterface::MavrosInterface() {
@@ -135,7 +137,7 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     ROS_INFO("OK!\n");
 }
 
-void MavrosInterface::setParam(const std::string& parameter, const int& value) const {
+void MavrosInterface::setParam(const std::string& parameter, const float& value) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
     ros::NodeHandle node_handle;
     ros::ServiceClient param_set_service_client = node_handle.serviceClient<mavros_msgs::ParamSet>("mavros/param/set");
