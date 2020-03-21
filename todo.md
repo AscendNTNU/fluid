@@ -1,4 +1,3 @@
-- When setting mpc_xy_vel_max it takes some time before the pixhawk reacts, have to investigate
 - decrease tiltmax for low speeds as well?
-- Investigate explore bug
 - Figure out what to do with Core
+- Initialize is called every tick for some reason
