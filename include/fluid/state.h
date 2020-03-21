@@ -5,14 +5,14 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include <memory>
-#include <string>
-#include <vector>
-
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <mavros_msgs/PositionTarget.h>
 #include <ros/ros.h>
+
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "state_identifier.h"
 #include "type_mask.h"
@@ -133,7 +133,7 @@ class State {
     State(const StateIdentifier& identifier, const bool& steady);
 
     /**
-     * Performs the Ros loop for executing logic within this state given the refresh rate.
+     * @brief Performs the Ros loop for executing logic within this state given the refresh rate.
      *
      * @param should_tick               Called each tick, makes it possible to abort states in the midst of an execution.
      * @param should_halt_if_steady     Will halt at this state if it's steady, is useful
