@@ -13,11 +13,6 @@ find_package(catkin REQUIRED COMPONENTS
         tf2_geometry_msgs
         tf2
         message_generation
-        dynamic_reconfigure
-)
-
-generate_dynamic_reconfigure_options(
-  cfg/Server.cfg
 )
 
 add_service_files(
@@ -38,7 +33,7 @@ generate_messages(
 
 catkin_package(
         INCLUDE_DIRS include
-        CATKIN_DEPENDS message_runtime ascend_msgs roscpp dynamic_reconfigure 
+        CATKIN_DEPENDS message_runtime ascend_msgs roscpp 
 )
 
 #########################################################################################
@@ -58,7 +53,7 @@ add_executable(fluid              src/nodes/main.cpp                            
 add_executable(publisher          src/nodes/publisher_node.cpp                  ${fluid_SRC} ${fluid_states_SRC})
 add_executable(test_client        src/test/test_client.cpp                      ${fluid_SRC} ${fluid_states_SRC})
 
-add_dependencies(fluid                   ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
+add_dependencies(fluid                   ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(publisher               ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(test_client             ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
