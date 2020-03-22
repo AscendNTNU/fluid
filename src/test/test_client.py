@@ -15,6 +15,7 @@ land = rospy.ServiceProxy('fluid/land', Land)
 extract_module = rospy.ServiceProxy('fluid/extract_module', ExtractModule)
 
 finished_operation = ""
+is_executing_operation = False
 
 
 def fluidOperationCompletionCallback(request):
@@ -31,9 +32,10 @@ def fluidOperationCompletionCallback(request):
         OperationCompletionResponse -- Just an empty struct for the service.
     """
 
-    global finished_operation
+    global finished_operation, is_executing_operation
     print("Finished operation " + request.operation)
     finished_operation = request.operation
+    is_executing_operation = False
     return OperationCompletionResponse()
 
 
@@ -59,6 +61,7 @@ def gotConnectionWithServices(timeout):
 
 
 def main():
+    global is_executing_operation
     rospy.init_node('fluid_client')
 
     # Don't need the service server, we only need to set up the callback, so leave it blank
@@ -70,6 +73,7 @@ def main():
 
     # Perform a take off to 3 meters above ground
     take_off_response = take_off(3)
+    is_executing_operation = True
 
     # Checks if the operation request was successful
     # E.g. a travel operation is not allowed before the drone has taken off
@@ -82,22 +86,37 @@ def main():
     while not rospy.is_shutdown():
 
         # Do some more operations when take off has finished
-        if finished_operation == "TAKE_OFF":
+        # This structure is just an example, the logic for when an operation
+        # is executing should probably be implemented differently
+        if not is_executing_operation:
+            if finished_operation == "TAKE_OFF":
 
-            # Perform a explore with a list of points
-            point = Point()
-            point.x = 10
-            response = explore([point])
-            if (not response.success):
-                rospy.logerr(response.message)
-        elif finished_operation == "EXPLORE":
+                # Perform a explore with a list of points
+                point = Point()
+                point.x = 5
+                response = explore([point])
+                if (not response.success):
+                    rospy.logerr(response.message)
+                else:
+                    is_executing_operation = True
+            elif finished_operation == "EXPLORE":
 
-            # Perform a travel with a list of points
-            point = Point()
-            point.x = 100
-            response = travel([point])
-            if (not response.success):
-                rospy.logerr(response.message)
+                # Perform a travel with a list of points
+                point = Point()
+                point.x = 100
+                response = travel([point])
+                if (not response.success):
+                    rospy.logerr(response.message)
+                else:
+                    is_executing_operation = True
+            elif finished_operation == "TRAVEL":
+
+                # Perform a land
+                response = land()
+                if (not response.success):
+                    rospy.logerr(response.message)
+                else:
+                    is_executing_operation = True
 
 
 if __name__ == '__main__':
