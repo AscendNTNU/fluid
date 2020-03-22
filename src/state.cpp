@@ -62,7 +62,9 @@ void State::perform(std::function<bool(void)> should_tick, bool should_halt_if_s
     do {
         tick();
         publishSetpoint();
-
+        Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.x = setpoint.position.x;
+        Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.y = setpoint.position.y;
+        Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.z = setpoint.position.z;
         Fluid::getInstance().getStatusPublisherPtr()->publish();
         ros::spinOnce();
         rate.sleep();
