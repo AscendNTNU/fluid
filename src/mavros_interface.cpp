@@ -1,6 +1,6 @@
 /**
  * @file mavros_state_link.cpp
- * 
+ *
  * @brief Implementation of the Mavros Interface.
  */
 
@@ -14,22 +14,19 @@
 
 MavrosInterface::MavrosInterface() {
     ros::NodeHandle node_handle;
-    state_subscriber = node_handle.subscribe<mavros_msgs::State>("mavros/state", 1, &MavrosInterface::stateCallback, this);
+    state_subscriber =
+        node_handle.subscribe<mavros_msgs::State>("mavros/state", 1, &MavrosInterface::stateCallback, this);
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
 }
 
-void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) {
-    current_state = *msg;
-}
+void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) { current_state = *msg; }
 
-mavros_msgs::State MavrosInterface::getCurrentState() const {
-    return current_state;
-}
+mavros_msgs::State MavrosInterface::getCurrentState() const { return current_state; }
 
 void MavrosInterface::establishContactToPX4() const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
 
-    ROS_INFO("Attempting to establish contact with PX4...");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to establish contact with PX4");
 
     // Run until we achieve a connection with mavros
     while (ros::ok() && !getCurrentState().connected) {
@@ -37,7 +34,7 @@ void MavrosInterface::establishContactToPX4() const {
         rate.sleep();
     }
 
-    ROS_INFO("OK!\n");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": OK!\n");
 }
 
 bool MavrosInterface::attemptToSetState(const std::string& mode) const {
@@ -68,10 +65,10 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
     }
 
     // Arming
-    ROS_INFO_STREAM("Attemping to arm...");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to arm!");
 
     if (!auto_arm) {
-        ROS_INFO("Waiting for arm signal...");
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Waiting for arm signal!");
     }
 
     ros::Time last_request = ros::Time::now();
@@ -104,7 +101,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
         rate.sleep();
     }
 
-    ROS_INFO("OK!\n");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": OK!");
 }
 
 void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
@@ -113,10 +110,10 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     setpoint.type_mask = TypeMask::IDLE;
 
     // Offboard
-    ROS_INFO("Trying to set offboard...");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Trying to set offboard..!");
 
     if (!auto_offboard) {
-        ROS_INFO("Waiting for offboard signal...");
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Waiting for offboard signal..!");
     }
 
     bool set_offboard = false;
@@ -134,7 +131,7 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
         rate.sleep();
     }
 
-    ROS_INFO("OK!\n");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": OK!\n");
 }
 
 void MavrosInterface::setParam(const std::string& parameter, const float& value) const {
@@ -150,7 +147,8 @@ void MavrosInterface::setParam(const std::string& parameter, const float& value)
 
     while (!param_set_service_client.call(param_set_service) && ros::ok()) {
         if (!failed_setting) {
-            ROS_FATAL_STREAM("Failed to set param " << parameter << " for PX4. Retrying...");
+            ROS_FATAL_STREAM(ros::this_node::getName().c_str()
+                             << "Failed to set param " << parameter.c_str() << " for PX4. Retrying...");
             failed_setting = true;
         }
 

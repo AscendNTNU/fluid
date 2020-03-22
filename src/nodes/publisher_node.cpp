@@ -9,6 +9,7 @@
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 #include <visualization_msgs/Marker.h>
+
 #include <string>
 
 #include "core.h"
@@ -58,7 +59,7 @@ void poseCallback(const geometry_msgs::PoseStampedConstPtr& msg) {
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fluid_setpoint_publisher");
 
-    ROS_INFO("Initiailzing set point publisher.");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Initiailzing set point publisher.");
 
     int refresh_rate = Core::refresh_rate;
     ros::NodeHandle node_handle;
@@ -71,7 +72,8 @@ int main(int argc, char** argv) {
     ros::Subscriber subscriber = node_handle.subscribe(subscription_topic, 1, subscriptionCallback);
     ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>(publishing_topic, 1);
     ros::Subscriber pose_subscriber = node_handle.subscribe("/mavros/local_position/pose", 1, &poseCallback);
-    ros::Publisher setpoint_visualizer_publisher = node_handle.advertise<visualization_msgs::Marker>("/fluid/setpoint_visualiztion", 10);
+    ros::Publisher setpoint_visualizer_publisher =
+        node_handle.advertise<visualization_msgs::Marker>("/fluid/setpoint_visualiztion", 10);
 
     visualization_msgs::Marker marker;
 

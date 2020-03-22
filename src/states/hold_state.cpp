@@ -3,6 +3,7 @@
  */
 
 #include "hold_state.h"
+
 #include "core.h"
 
 HoldState::HoldState() : State(StateIdentifier::HOLD, true) {}
@@ -18,7 +19,7 @@ bool HoldState::hasFinishedExecution() const {
 void HoldState::initialize() {
     setpoint.position.x = getCurrentPose().pose.position.x;
     setpoint.position.y = getCurrentPose().pose.position.y;
-    setpoint.position.z = getCurrentPose().pose.position.z;
+    setpoint.position.z = getCurrentPose().pose.position.z + 0.1;
     setpoint.yaw = getCurrentYaw();
     setpoint.type_mask = TypeMask::POSITION;
 }

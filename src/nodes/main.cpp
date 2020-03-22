@@ -1,6 +1,6 @@
-#include <ros/ros.h>
 #include <dynamic_reconfigure/server.h>
 #include <fluid/ServerConfig.h>
+#include <ros/ros.h>
 
 #include "core.h"
 #include "operation_handler.h"
@@ -8,14 +8,14 @@
 void callback(fluid::ServerConfig& config, uint32_t level) {}
 
 void exitAtParameterExtractionFailure(const std::string& param) {
-    ROS_FATAL_STREAM("Could not find parameter: " << param);
+    ROS_FATAL_STREAM(ros::this_node::getName() << ": Could not find parameter: " << param.c_str());
     ros::shutdown();
 }
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fluid_server");
 
-    ROS_INFO("Starting Fluid FSM.");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Starting up.");
 
     ros::NodeHandle node_handle;
     const std::string prefix = ros::this_node::getName() + "/";

@@ -3,12 +3,16 @@
  */
 
 #include "explore_state.h"
+
 #include <limits>
+
 #include "util.h"
 
-ExploreState::ExploreState(const std::vector<geometry_msgs::Point>& path) : MoveState(StateIdentifier::EXPLORE, path, 0.3, 0.3, 0.3),
-                                                                            obstacle_avoidance_path_publisher(node_handle.advertise<ascend_msgs::Path>("/obstacle_avoidance/path", 10)),
-                                                                            obstacle_avoidance_path_subscriber(node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreState::pathCallback, this)) {}
+ExploreState::ExploreState(const std::vector<geometry_msgs::Point>& path)
+    : MoveState(StateIdentifier::EXPLORE, path, 0.3, 0.3, 0.3),
+      obstacle_avoidance_path_publisher(node_handle.advertise<ascend_msgs::Path>("/obstacle_avoidance/path", 10)),
+      obstacle_avoidance_path_subscriber(
+          node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreState::pathCallback, this)) {}
 
 void ExploreState::initialize() {
     MoveState::initialize();
@@ -62,14 +66,16 @@ void ExploreState::pathCallback(ascend_msgs::Path corrected_path) {
             }
 
             if (closest_point_index != -1) {
-                path = std::vector<geometry_msgs::Point>(corrected_path.points.begin() + closest_point_index, corrected_path.points.end());
+                path = std::vector<geometry_msgs::Point>(corrected_path.points.begin() + closest_point_index,
+                                                         corrected_path.points.end());
                 current_setpoint_iterator = path.begin();
                 update_setpoint = true;
 
             } else {
-                ROS_FATAL_STREAM(
-                    "Could not find a closest point even though the paths were different, did the obstacle avoidance "
-                    "service return a finite path of infinite numbers? Will not change path.");
+                ROS_FATAL_STREAM(ros::this_node::getName().c_str()
+                                 << ": Could not find a closest point even though the paths were different, "
+                                 << "did the obstacle avoidance service return a finite path of infinite "
+                                 << "numbers? Will not change path.");
             }
         }
     }

@@ -2,6 +2,8 @@
  * @file move_state.cpp
  */
 
+#include "move_state.h"
+
 #include <geometry_msgs/Quaternion.h>
 #include <mavros_msgs/ParamSet.h>
 #include <tf2/LinearMath/Matrix3x3.h>
@@ -10,18 +12,15 @@
 
 #include "core.h"
 #include "mavros_interface.h"
-#include "move_state.h"
 #include "util.h"
 
-MoveState::MoveState(const StateIdentifier& state_identifier,
-                     const std::vector<geometry_msgs::Point>& path,
-                     const double& speed,
-                     const double& position_threshold,
-                     const double& velocity_threshold) : State(state_identifier, false),
-                                                         path(path),
-                                                         speed(speed),
-                                                         position_threshold(position_threshold),
-                                                         velocity_threshold(velocity_threshold) {}
+MoveState::MoveState(const StateIdentifier& state_identifier, const std::vector<geometry_msgs::Point>& path,
+                     const double& speed, const double& position_threshold, const double& velocity_threshold)
+    : State(state_identifier, false),
+      path(path),
+      speed(speed),
+      position_threshold(position_threshold),
+      velocity_threshold(velocity_threshold) {}
 
 bool MoveState::hasFinishedExecution() const { return been_to_all_points; }
 
@@ -43,11 +42,12 @@ void MoveState::initialize() {
 
     MavrosInterface mavros_interface;
     mavros_interface.setParam("MPC_XY_VEL_MAX", speed);
-    ROS_INFO_STREAM("Sat speed to: " << speed);
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
 }
 
 void MoveState::tick() {
-    bool at_position_target = Util::distanceBetween(getCurrentPose().pose.position, *current_setpoint_iterator) < position_threshold;
+    bool at_position_target =
+        Util::distanceBetween(getCurrentPose().pose.position, *current_setpoint_iterator) < position_threshold;
     bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < velocity_threshold &&
                                std::abs(getCurrentTwist().twist.linear.y) < velocity_threshold &&
                                std::abs(getCurrentTwist().twist.linear.z) < velocity_threshold;
