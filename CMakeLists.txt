@@ -40,18 +40,18 @@ catkin_package(
 
 include_directories(include
         include/fluid
-        include/fluid/states
+        include/fluid/operations
         ${catkin_INCLUDE_DIRS}
 )
 
 file(GLOB fluid_SRC "src/*.cpp")
-file(GLOB fluid_states_SRC "src/states/*.cpp")
+file(GLOB fluid_operations_SRC "src/operations/*.cpp")
 
 #########################################################################################
 
-add_executable(fluid              src/nodes/main.cpp                            ${fluid_SRC} ${fluid_states_SRC})
-add_executable(publisher          src/nodes/publisher_node.cpp                  ${fluid_SRC} ${fluid_states_SRC})
-add_executable(test_client        src/test/test_client.cpp                      ${fluid_SRC} ${fluid_states_SRC})
+add_executable(fluid              src/nodes/main.cpp                            ${fluid_SRC} ${fluid_operations_SRC})
+add_executable(publisher          src/nodes/publisher_node.cpp                  ${fluid_SRC} ${fluid_operations_SRC})
+add_executable(test_client        src/test/test_client.cpp                      ${fluid_SRC} ${fluid_operations_SRC})
 
 add_dependencies(fluid                   ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(publisher               ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

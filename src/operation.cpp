@@ -1,8 +1,8 @@
 /**
- * @file state.cpp
+ * @file operation.cpp
  */
 
-#include "state.h"
+#include "operation.h"
 
 #include <mavros_msgs/PositionTarget.h>
 #include <sensor_msgs/Imu.h>
@@ -18,28 +18,30 @@
 #include "fluid.h"
 #include "util.h"
 
-State::State(const StateIdentifier& identifier, const bool& steady) : identifier(identifier), steady(steady) {
-    pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &State::poseCallback, this);
-    twist_subscriber = node_handle.subscribe("mavros/local_position/velocity_local", 1, &State::twistCallback, this);
+Operation::Operation(const OperationIdentifier& identifier, const bool& steady)
+    : identifier(identifier), steady(steady) {
+    pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &Operation::poseCallback, this);
+    twist_subscriber =
+        node_handle.subscribe("mavros/local_position/velocity_local", 1, &Operation::twistCallback, this);
 
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
 }
 
-geometry_msgs::PoseStamped State::getCurrentPose() const { return current_pose; }
+geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_pose; }
 
-void State::poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
+void Operation::poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
     current_pose.pose = pose->pose;
     current_pose.header = pose->header;
 }
 
-geometry_msgs::TwistStamped State::getCurrentTwist() const { return current_twist; }
+geometry_msgs::TwistStamped Operation::getCurrentTwist() const { return current_twist; }
 
-void State::twistCallback(const geometry_msgs::TwistStampedConstPtr twist) {
+void Operation::twistCallback(const geometry_msgs::TwistStampedConstPtr twist) {
     current_twist.twist = twist->twist;
     current_twist.header = twist->header;
 }
 
-float State::getCurrentYaw() const {
+float Operation::getCurrentYaw() const {
     geometry_msgs::Quaternion quaternion = current_pose.pose.orientation;
     tf2::Quaternion quat(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 
@@ -52,9 +54,9 @@ float State::getCurrentYaw() const {
     return yaw;
 }
 
-void State::publishSetpoint() { setpoint_publisher.publish(setpoint); }
+void Operation::publishSetpoint() { setpoint_publisher.publish(setpoint); }
 
-void State::perform(std::function<bool(void)> should_tick, bool should_halt_if_steady) {
+void Operation::perform(std::function<bool(void)> should_tick, bool should_halt_if_steady) {
     ros::Rate rate(Fluid::getInstance().configuration.refresh_rate);
 
     initialize();

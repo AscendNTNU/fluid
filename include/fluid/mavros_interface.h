@@ -16,8 +16,8 @@
 class MavrosInterface {
    private:
     /**
-    * @brief How fast the mavros interface will check for state changes when setting new modes in PX4.
-    */
+     * @brief How fast the mavros interface will check for state changes when setting new modes in PX4.
+     */
     const unsigned int UPDATE_REFRESH_RATE = 5;
 
     /**
@@ -36,16 +36,16 @@ class MavrosInterface {
     ros::Publisher setpoint_publisher;
 
     /**
-     * @brief Callback for the state within PX4. 
-     * 
-     * @param msg The state message. 
+     * @brief Callback for the state within PX4.
+     *
+     * @param msg The state message.
      */
     void stateCallback(const mavros_msgs::State::ConstPtr& msg);
 
    public:
     /**
-    * @brief Sets up the required subscribers and service clients.
-    */
+     * @brief Sets up the required subscribers and service clients.
+     */
     MavrosInterface();
 
     /**
@@ -59,35 +59,35 @@ class MavrosInterface {
     void establishContactToPX4() const;
 
     /**
-     * @brief Will attempt to set the @p mode if PX4 is not already in the given mode. 
+     * @brief Will attempt to set the @p mode if PX4 is not already in the given mode.
      *
-     * @param mode               The mode to attempt to set.
-     * 
+     * @param mode The mode to attempt to set.
+     *
      * @return true if the mode got set.
      */
-    bool attemptToSetState(const std::string& mode) const;
+    bool attemptToSetMode(const std::string& mode) const;
 
     /**
      * @brief Requests PX4 to arm.
-     * 
-     * @param auto_arm Will arm automatically if set to true, if not it'll wait until an arm signal is 
+     *
+     * @param auto_arm Will arm automatically if set to true, if not it'll wait until an arm signal is
      *                 retrieved from the RC.
      */
     void requestArm(const bool& auto_arm) const;
 
     /**
      * @brief Requests PX4 to go into offboard mode.
-     * 
+     *
      * @param auto_offboard Will go into offboard mode automatically if set to true, if not it'll wait until
-     *                      offboard flight mode is set from RC. 
+     *                      offboard flight mode is set from RC.
      */
     void requestOffboard(const bool& auto_offboard) const;
 
     /**
      * @brief Sets a parameter within PX4.
-     * 
+     *
      * @param parameter The parameter to set.
-     * @param value The new value. 
+     * @param value The new value.
      */
     void setParam(const std::string& parameter, const float& value) const;
 };

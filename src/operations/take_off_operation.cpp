@@ -1,17 +1,17 @@
 /**
- * @file take_off_state.cpp
+ * @file take_off_operation.cpp
  */
 
-#include "take_off_state.h"
+#include "take_off_operation.h"
 
 #include "fluid.h"
 #include "mavros_interface.h"
 #include "util.h"
 
-TakeOffState::TakeOffState(float height_setpoint)
-    : State(StateIdentifier::TAKE_OFF, false), height_setpoint(height_setpoint) {}
+TakeOffOperation::TakeOffOperation(float height_setpoint)
+    : Operation(OperationIdentifier::TAKE_OFF, false), height_setpoint(height_setpoint) {}
 
-bool TakeOffState::hasFinishedExecution() const {
+bool TakeOffOperation::hasFinishedExecution() const {
     const float distance_threshold = Fluid::getInstance().configuration.distance_completion_threshold;
     const float velocity_threshold = Fluid::getInstance().configuration.velocity_completion_threshold;
     return Util::distanceBetween(getCurrentPose().pose.position, setpoint.position) < 0.1 &&
@@ -20,7 +20,7 @@ bool TakeOffState::hasFinishedExecution() const {
            std::abs(getCurrentTwist().twist.linear.z) < velocity_threshold;
 }
 
-void TakeOffState::initialize() {
+void TakeOffOperation::initialize() {
     MavrosInterface mavros_interface;
     mavros_interface.establishContactToPX4();
     Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_px4 = 1;

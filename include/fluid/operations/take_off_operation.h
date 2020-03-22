@@ -1,29 +1,29 @@
 /**
- * @file take_off_state.h
+ * @file take_off_operation.h
  */
 
-#ifndef TAKE_OFF_STATE_H
-#define TAKE_OFF_STATE_H
+#ifndef TAKE_OFF_OPERATION_H
+#define TAKE_OFF_OPERATION_H
 
-#include "state.h"
+#include "operation.h"
 #include "util.h"
 
-/** 
+/**
  *  @brief Will take off at the current position.
  */
-class TakeOffState : public State {
+class TakeOffOperation : public Operation {
    public:
     /**
-     * @brief Setpoint for take off height. 
+     * @brief Setpoint for take off height.
      */
     float height_setpoint;
 
     /**
-     * @brief Sets up the take off state.
-     * 
+     * @brief Sets up the take off operation.
+     *
      * @param height_setpoint The take off height.
      */
-    explicit TakeOffState(float height_setpoint);
+    explicit TakeOffOperation(float height_setpoint);
 
     /**
      * @return true When the drone has taken off.

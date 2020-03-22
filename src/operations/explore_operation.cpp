@@ -1,21 +1,21 @@
 /**
- * @file explore_state.cpp
+ * @file explore_operation.cpp
  */
 
-#include "explore_state.h"
+#include "explore_operation.h"
 
 #include <limits>
 
 #include "util.h"
 
-ExploreState::ExploreState(const std::vector<geometry_msgs::Point>& path)
-    : MoveState(StateIdentifier::EXPLORE, path, 0.3, 0.3, 0.3),
+ExploreOperation::ExploreOperation(const std::vector<geometry_msgs::Point>& path)
+    : MoveOperation(OperationIdentifier::EXPLORE, path, 0.3, 0.3, 0.3),
       obstacle_avoidance_path_publisher(node_handle.advertise<ascend_msgs::Path>("/obstacle_avoidance/path", 10)),
       obstacle_avoidance_path_subscriber(
-          node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreState::pathCallback, this)) {}
+          node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreOperation::pathCallback, this)) {}
 
-void ExploreState::initialize() {
-    MoveState::initialize();
+void ExploreOperation::initialize() {
+    MoveOperation::initialize();
 
     original_path = path;
     original_path_set = true;
@@ -33,7 +33,7 @@ void ExploreState::initialize() {
     }
 }
 
-void ExploreState::pathCallback(ascend_msgs::Path corrected_path) {
+void ExploreOperation::pathCallback(ascend_msgs::Path corrected_path) {
     if (original_path_set) {
         // Check if the path is different from the current path
 
@@ -81,12 +81,12 @@ void ExploreState::pathCallback(ascend_msgs::Path corrected_path) {
     }
 }
 
-void ExploreState::tick() {
-    MoveState::tick();
+void ExploreOperation::tick() {
+    MoveOperation::tick();
 
     ascend_msgs::Path path_msg;
     path_msg.points = dense_path;
     obstacle_avoidance_path_publisher.publish(path_msg);
 }
 
-void ExploreState::finalize() { original_path_set = false; }
+void ExploreOperation::finalize() { original_path_set = false; }

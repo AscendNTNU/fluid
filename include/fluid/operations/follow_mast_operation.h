@@ -1,17 +1,18 @@
 /**
- * @file follow_mast_state.h
+ * @file follow_mast_operation.h
  */
 
-#ifndef FOLLOW_MAST_STATE_H
-#define FOLLOW_MAST_STATE_H
+#ifndef FOLLOW_MAST_OPERATION_H
+#define FOLLOW_MAST_OPERATION_H
 
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include "state.h"
+
+#include "operation.h"
 
 /**
- * @brief Represents the state where the drone is following the module.
+ * @brief Represents the operation where the drone is following the module.
  */
-class FollowMastState : public State {
+class FollowMastOperation : public Operation {
    private:
     /**
      * @brief The module position.
@@ -25,19 +26,19 @@ class FollowMastState : public State {
 
     /**
      * @brief Updates the module position.
-     * 
-     * @param module_position The new module position. 
+     *
+     * @param module_position The new module position.
      */
     void modulePositionCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_position);
 
    public:
     /**
-     * @brief Sets up the follow mast state.
+     * @brief Sets up the follow mast operation.
      */
-    explicit FollowMastState();
+    explicit FollowMastOperation();
 
     /**
-     * @return Will return indefinitely until a state change is requested.
+     * @return Will return indefinitely until a operation change is requested.
      */
     bool hasFinishedExecution() const override;
 

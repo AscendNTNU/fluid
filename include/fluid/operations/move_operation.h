@@ -1,16 +1,16 @@
 /**
- * @file move_state.h
+ * @file move_operation.h
  */
 
-#ifndef MOVE_STATE_H
-#define MOVE_STATE_H
+#ifndef MOVE_OPERATION_H
+#define MOVE_OPERATION_H
 
-#include "state.h"
+#include "operation.h"
 
 /**
- * @brief Serves as the base for move states such as #ExploreState and #TravelState.
+ * @brief Serves as the base for move operations such as #ExploreOperation and #TravelOperation.
  */
-class MoveState : public State {
+class MoveOperation : public Operation {
    private:
     /**
      * @brief The threshold for when the drone is within a given setpoint.
@@ -35,7 +35,7 @@ class MoveState : public State {
 
    protected:
     /**
-     * @brief Flag for forcing the state to update the setpoint even the drone hasn't reached the setpoint.
+     * @brief Flag for forcing the operation to update the setpoint even the drone hasn't reached the setpoint.
      */
     bool update_setpoint = false;
 
@@ -50,16 +50,17 @@ class MoveState : public State {
     std::vector<geometry_msgs::Point> path;
 
     /**
-     * @brief Sets up the move state.
+     * @brief Sets up the move operation.
      *
-     * @param state_identifier The state identifier.
-     * @param path The path of the state.
+     * @param operation_identifier The operation identifier.
+     * @param path The path of the operation.
      * @param speed The speed at which to move.
      * @param position_threshold The setpoint distance threshold.
      * @param velocity_threshold The velocity threshold.
      */
-    explicit MoveState(const StateIdentifier& state_identifier, const std::vector<geometry_msgs::Point>& path,
-                       const double& speed, const double& position_threshold, const double& velocity_threshold);
+    explicit MoveOperation(const OperationIdentifier& operation_identifier,
+                           const std::vector<geometry_msgs::Point>& path, const double& speed,
+                           const double& position_threshold, const double& velocity_threshold);
 
    public:
     /**

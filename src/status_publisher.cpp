@@ -5,7 +5,6 @@ StatusPublisher::StatusPublisher() {
     status.linked_with_px4 = 0;
     status.px4_mode = "none";
     status.current_operation = "none";
-    status.current_state = "none";
 
     pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &StatusPublisher::poseCallback, this);
     status_publisher = node_handle.advertise<ascend_msgs::FluidStatus>("fluid/status", 1);

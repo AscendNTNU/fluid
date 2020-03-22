@@ -17,7 +17,7 @@
 #include <map>
 #include <memory>
 
-#include "state.h"
+#include "operation.h"
 #include "status_publisher.h"
 
 /**
@@ -25,7 +25,7 @@
  */
 struct FluidConfiguration {
     /**
-     * @brief The unified refresh rate across the state machine.
+     * @brief The unified refresh rate across the operation machine.
      */
     const int refresh_rate;
 
@@ -108,23 +108,24 @@ class Fluid {
     };
 
     /**
-     * @brief The current state being executed
+     * @brief The current operation being executed
      */
-    std::shared_ptr<State> current_state_ptr;
+    std::shared_ptr<Operation> current_operation_ptr;
 
     /**
-     * @brief The current operation being executed, essentially the list of states in #state_execution_queue.
+     * @brief The current operation being executed, essentially the current item in the list of operations
+     *        in #operation_execution_queue.
      */
     std::string current_operation;
 
     /**
-     * @brief The list of states which shall be executed.
+     * @brief The list of operations which shall be executed.
      */
-    std::list<std::shared_ptr<State>> state_execution_queue;
+    std::list<std::shared_ptr<Operation>> operation_execution_queue;
 
     /**
      * @brief Flag for checking if one of the service handlers were called and that the FSM should transition to
-     *        another state.
+     *        another operation.
      */
     bool got_new_operation = false;
 
@@ -194,46 +195,47 @@ class Fluid {
     bool land(fluid::Land::Request& request, fluid::Land::Response& response);
 
     /**
-     * @brief Will check if the operation to @p target_state_identifier is valid and update the #state_execution_queue
-     *        and #current_operation if it is.
+     * @brief Will check if the operation to @p target_operation_identifier is valid and update the
+     * #operation_execution_queue and #current_operation if it is.
      *
-     * @param target_state_identifier The target state.
-     * @param execution_queue The state execution queue for the operation.
+     * @param target_operation_identifier The target operation.
+     * @param execution_queue The operation execution queue for the operation.
      *
      * @return Response based on the result of the attempt.
      */
-    Response attemptToCreateOperation(const StateIdentifier& target_state_identifier,
-                                      const std::list<std::shared_ptr<State>>& execution_queue);
+    Response attemptToCreateOperation(const OperationIdentifier& target_operation_identifier,
+                                      const std::list<std::shared_ptr<Operation>>& execution_queue);
     /**
-     * @brief Retrieves the state identifier from @p state_ptr
+     * @brief Retrieves the operation identifier from @p operation_ptr
      *
-     * @param state_ptr The state.
+     * @param operation_ptr The operation.
      *
-     * @return state identifier if state_ptr is not nullptr, #StateIdentifier::UNDEFINED if else.
+     * @return operation identifier if operation_ptr is not nullptr, #OperationIdentifier::UNDEFINED if else.
      */
-    StateIdentifier getStateIdentifierForState(std::shared_ptr<State> state_ptr);
+    OperationIdentifier getOperationIdentifierForOperation(std::shared_ptr<Operation> operation_ptr);
 
     /**
-     * @brief Validates if a given operation to @p target_state_identifier is valid from @p current_state_identifier.
+     * @brief Validates if a given operation to @p target_operation_identifier is valid from @p
+     * current_operation_identifier.
      *
-     * @param current_state_identifier The current state identifier.
-     * @param target_state_identifier The target state identifier of the operation.
+     * @param current_operation_identifier The current operation identifier.
+     * @param target_operation_identifier The target operation identifier of the operation.
      *
      * @return true if the operation is valid.
      */
-    bool isValidOperation(const StateIdentifier& current_state_identifier,
-                          const StateIdentifier& target_state_identifier) const;
+    bool isValidOperation(const OperationIdentifier& current_operation_identifier,
+                          const OperationIdentifier& target_operation_identifier) const;
 
     /**
-     * @brief Performs state transition between @p current_state_ptr and @p target_state_ptr.
+     * @brief Performs operation transition between @p current_operation_ptr and @p target_operation_ptr.
      *
-     * @param current_state_ptr The current state.
-     * @param target_state_ptr The target state.
+     * @param current_operation_ptr The current operation.
+     * @param target_operation_ptr The target operation.
      *
-     * @return The new state (@p target_state_ptr).
+     * @return The new operation (@p target_operation_ptr).
      */
-    std::shared_ptr<State> performStateTransition(std::shared_ptr<State> current_state_ptr,
-                                                  std::shared_ptr<State> target_state_ptr);
+    std::shared_ptr<Operation> performOperationTransition(std::shared_ptr<Operation> current_operation_ptr,
+                                                          std::shared_ptr<Operation> target_operation_ptr);
 
    public:
     /**
@@ -261,7 +263,7 @@ class Fluid {
     std::shared_ptr<StatusPublisher> getStatusPublisherPtr();
 
     /**
-     * @brief Runs the state macine.
+     * @brief Runs the operation macine.
      */
     void run();
 };

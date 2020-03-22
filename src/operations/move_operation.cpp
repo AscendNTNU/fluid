@@ -1,8 +1,8 @@
 /**
- * @file move_state.cpp
+ * @file move_operation.cpp
  */
 
-#include "move_state.h"
+#include "move_operation.h"
 
 #include <geometry_msgs/Quaternion.h>
 #include <mavros_msgs/ParamSet.h>
@@ -14,17 +14,18 @@
 #include "mavros_interface.h"
 #include "util.h"
 
-MoveState::MoveState(const StateIdentifier& state_identifier, const std::vector<geometry_msgs::Point>& path,
-                     const double& speed, const double& position_threshold, const double& velocity_threshold)
-    : State(state_identifier, false),
+MoveOperation::MoveOperation(const OperationIdentifier& operation_identifier,
+                             const std::vector<geometry_msgs::Point>& path, const double& speed,
+                             const double& position_threshold, const double& velocity_threshold)
+    : Operation(operation_identifier, false),
       path(path),
       speed(speed),
       position_threshold(position_threshold),
       velocity_threshold(velocity_threshold) {}
 
-bool MoveState::hasFinishedExecution() const { return been_to_all_points; }
+bool MoveOperation::hasFinishedExecution() const { return been_to_all_points; }
 
-void MoveState::initialize() {
+void MoveOperation::initialize() {
     for (auto iterator = path.begin(); iterator != path.end(); iterator++) {
         if (iterator->z <= 0.1) {
             iterator->z = Fluid::getInstance().configuration.default_height;
@@ -45,7 +46,7 @@ void MoveState::initialize() {
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
 }
 
-void MoveState::tick() {
+void MoveOperation::tick() {
     bool at_position_target =
         Util::distanceBetween(getCurrentPose().pose.position, *current_setpoint_iterator) < position_threshold;
     bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < velocity_threshold &&

@@ -1,22 +1,22 @@
 /**
- * @file land_state.cpp
+ * @file land_operation.cpp
  */
 
-#include "land_state.h"
+#include "land_operation.h"
 
 #include "fluid.h"
 
-LandState::LandState() : State(StateIdentifier::LAND, true) {}
+LandOperation::LandOperation() : Operation(OperationIdentifier::LAND, true) {}
 
-bool LandState::isBelowThreshold() const {
+bool LandOperation::isBelowThreshold() const {
     return getCurrentPose().pose.position.z < 0.05 &&
            std::abs(getCurrentTwist().twist.linear.z) <
                Fluid::getInstance().configuration.velocity_completion_threshold;
 }
 
-bool LandState::hasFinishedExecution() const { return isBelowThreshold() && setpoint.type_mask == TypeMask::IDLE; }
+bool LandOperation::hasFinishedExecution() const { return isBelowThreshold() && setpoint.type_mask == TypeMask::IDLE; }
 
-void LandState::initialize() {
+void LandOperation::initialize() {
     // If land is issued and the drone is currently at ground, just keep sending setpoints with idle type mask
     if (isBelowThreshold()) {
         setpoint.position.x = setpoint.position.y = setpoint.position.z = 0;
@@ -30,7 +30,7 @@ void LandState::initialize() {
     }
 }
 
-void LandState::tick() {
+void LandOperation::tick() {
     if (isBelowThreshold()) {
         setpoint.position.x = setpoint.position.y = setpoint.position.z = 0;
         setpoint.type_mask = TypeMask::IDLE;

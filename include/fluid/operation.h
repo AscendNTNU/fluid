@@ -1,9 +1,9 @@
 /**
- * @file state.h
+ * @file operation.h
  */
 
-#ifndef STATE_H
-#define STATE_H
+#ifndef OPERATION_H
+#define OPERATION_H
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -14,13 +14,13 @@
 #include <string>
 #include <vector>
 
-#include "state_identifier.h"
+#include "operation_identifier.h"
 #include "type_mask.h"
 
 /**
- * @brief Interface for states within the finite state machine.
+ * @brief Interface for operations within the finite operation machine.
  */
-class State {
+class Operation {
    private:
     /**
      * @brief Gets the current pose.
@@ -63,7 +63,8 @@ class State {
     ros::Publisher setpoint_publisher;
 
     /**
-     * @brief Determines whether this state is a state we can be at for longer periods of time. E.g. hold or land.
+     * @brief Determines whether this operation is a operation we can be at for longer periods of time. E.g. hold or
+     * land.
      */
     const bool steady;
 
@@ -84,22 +85,22 @@ class State {
     void publishSetpoint();
 
     /**
-     * @return true if the state has finished its necessary tasks.
+     * @return true if the operation has finished its necessary tasks.
      */
     virtual bool hasFinishedExecution() const = 0;
 
     /**
-     * @brief Initializes the state.
+     * @brief Initializes the operation.
      */
     virtual void initialize() {}
 
     /**
-     * @brief Updates the state logic.
+     * @brief Updates the operation logic.
      */
     virtual void tick() {}
 
     /**
-     * @brief Called when the state #hasFinishedExecution.
+     * @brief Called when the operation #hasFinishedExecution.
      */
     virtual void finalize() {}
 
@@ -120,33 +121,34 @@ class State {
 
    public:
     /**
-     * @brief The identifier for this state.
+     * @brief The identifier for this operation.
      */
-    const StateIdentifier identifier;
+    const OperationIdentifier identifier;
 
     /**
-     * @brief Constructs a new state.
+     * @brief Constructs a new operation.
      *
-     * @param identifier The identifier of the state.
-     * @param steady Whether the state is steady, it can be executed for longer periods of time without consequences.
+     * @param identifier The identifier of the operation.
+     * @param steady Whether the operation is steady, it can be executed for longer periods of time without
+     * consequences.
      */
-    State(const StateIdentifier& identifier, const bool& steady);
+    Operation(const OperationIdentifier& identifier, const bool& steady);
 
     /**
-     * @brief Performs the loop for executing logic within this state.
+     * @brief Performs the loop for executing logic within this operation.
      *
-     * @param should_tick               Called each tick, makes it possible to abort states in the midst of an
+     * @param should_tick               Called each tick, makes it possible to abort operations in the midst of an
      *                                  execution.
-     * @param should_halt_if_steady     Will halt at this state if it's steady, is useful
-     *                                  if we want to keep at a certain state for some time, e.g. #LandState
-     *                                  or #HoldState.
+     * @param should_halt_if_steady     Will halt at this operation if it's steady, is useful
+     *                                  if we want to keep at a certain operation for some time, e.g. #LandOperation
+     *                                  or #HoldOperation.
      */
     virtual void perform(std::function<bool(void)> should_tick, bool should_halt_if_steady);
 
     /**
-     * The #Fluid class has to be able to e.g. set the current pose if we transition to a state which
-     * requires to initially know where we are, e. g. land or take off. In that case we can execute the state from the
-     * current pose, and we don't have to wait for the pose callback and thus halt the system.
+     * The #Fluid class has to be able to e.g. set the current pose if we transition to a operation which
+     * requires to initially know where we are, e. g. land or take off. In that case we can execute the operation from
+     * the current pose, and we don't have to wait for the pose callback and thus halt the system.
      */
     friend class Fluid;
 };

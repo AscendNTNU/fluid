@@ -1,18 +1,18 @@
 /**
- * @file land_state.h
+ * @file land_operation.h
  */
 
-#ifndef LAND_STATE_H
-#define LAND_STATE_H
+#ifndef LAND_OPERATION_H
+#define LAND_OPERATION_H
 
 #include "mavros_interface.h"
-#include "state.h"
+#include "operation.h"
 #include "util.h"
 
 /**
- * @brief Represents the state of landing at the current position.
+ * @brief Represents the operation of landing at the current position.
  */
-class LandState : public State {
+class LandOperation : public Operation {
    private:
     /**
      * @return true When the drone is under a certain height and has a certain low velocity.
@@ -21,9 +21,9 @@ class LandState : public State {
 
    public:
     /**
-     * @brief Sets up the land state.
+     * @brief Sets up the land operation.
      */
-    explicit LandState();
+    explicit LandOperation();
 
     /**
      * @return true When the drone has landed.

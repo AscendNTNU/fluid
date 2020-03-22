@@ -37,7 +37,7 @@ void MavrosInterface::establishContactToPX4() const {
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": OK!\n");
 }
 
-bool MavrosInterface::attemptToSetState(const std::string& mode) const {
+bool MavrosInterface::attemptToSetMode(const std::string& mode) const {
     // The state on the Pixhawk is equal to the state we wan't to set, so we just return
     if (getCurrentState().mode == mode) {
         return true;
@@ -122,7 +122,7 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
         set_offboard = getCurrentState().mode == "OFFBOARD";
 
         if (auto_offboard) {
-            set_offboard = attemptToSetState("OFFBOARD");
+            set_offboard = attemptToSetMode("OFFBOARD");
         }
 
         setpoint_publisher.publish(setpoint);

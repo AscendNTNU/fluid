@@ -1,22 +1,22 @@
 /**
- * @file hold_state.h
+ * @file hold_operation.h
  */
 
-#ifndef HOLD_STATE_H
-#define HOLD_STATE_H
+#ifndef HOLD_OPERATION_H
+#define HOLD_OPERATION_H
 
-#include "state.h"
+#include "operation.h"
 #include "util.h"
 
-/** 
- * @brief State representing the drone hovering. 
+/**
+ * @brief Operation representing the drone hovering.
  */
-class HoldState : public State {
+class HoldOperation : public Operation {
    public:
     /**
-     * @brief Sets up the hold state. 
+     * @brief Sets up the hold operation.
      */
-    explicit HoldState();
+    explicit HoldOperation();
 
     /**
      * @return true When the drone is hovering still at a given position.

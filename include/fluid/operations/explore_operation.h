@@ -1,23 +1,24 @@
 /**
- * @file explore_state.h
+ * @file explore_operation.h
  */
 
-#ifndef EXPLORE_STATE_H
-#define EXPLORE_STATE_H
+#ifndef EXPLORE_OPERATION_H
+#define EXPLORE_OPERATION_H
 
 #include <ascend_msgs/ObstacleAvoidanceService.h>
 #include <ascend_msgs/Path.h>
-#include "move_state.h"
-#include "state_identifier.h"
+
+#include "move_operation.h"
+#include "operation_identifier.h"
 
 /**
- * @brief Represents the a move state where the drone is following a path and avoiding obstacles.
+ * @brief Represents the a move operation where the drone is following a path and avoiding obstacles.
  */
-class ExploreState : public MoveState {
+class ExploreOperation : public MoveOperation {
    private:
     /**
      * @brief The density of the path passed to obstacle avoidance.
-     * 
+     *
      */
     const double path_density = 4;
 
@@ -37,7 +38,7 @@ class ExploreState : public MoveState {
     ros::Subscriber obstacle_avoidance_path_subscriber;
 
     /**
-     * @brief The original path the state was initialized with.
+     * @brief The original path the operation was initialized with.
      */
     std::vector<geometry_msgs::Point> original_path;
 
@@ -53,18 +54,18 @@ class ExploreState : public MoveState {
 
     /**
      * @brief Callback for the corrected path from obstacle avoidance.
-     * 
-     * @param corrected_path The corrected path. 
+     *
+     * @param corrected_path The corrected path.
      */
     void pathCallback(ascend_msgs::Path corrected_path);
 
    public:
     /**
-     * @brief Sets up the explore state.
-     * 
+     * @brief Sets up the explore operation.
+     *
      * @param path List of setpoints.
      */
-    explicit ExploreState(const std::vector<geometry_msgs::Point>& path);
+    explicit ExploreOperation(const std::vector<geometry_msgs::Point>& path);
 
     /**
      * @brief Sets up the #dense_path.
