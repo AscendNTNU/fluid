@@ -19,7 +19,7 @@ bool HoldState::hasFinishedExecution() const {
 void HoldState::initialize() {
     setpoint.position.x = getCurrentPose().pose.position.x;
     setpoint.position.y = getCurrentPose().pose.position.y;
-    setpoint.position.z = getCurrentPose().pose.position.z + 0.1;
+    setpoint.position.z = getCurrentPose().pose.position.z + 0.1;  // Add a delta so the drone doesn't drop slightly
     setpoint.yaw = getCurrentYaw();
     setpoint.type_mask = TypeMask::POSITION;
 }
