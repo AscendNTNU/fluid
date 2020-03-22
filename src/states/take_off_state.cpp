@@ -3,12 +3,13 @@
  */
 
 #include "take_off_state.h"
-#include "core.h"
-#include "util.h"
-#include "mavros_interface.h"
 
-TakeOffState::TakeOffState(float height_setpoint) : State(StateIdentifier::TAKE_OFF, false),
-                                                    height_setpoint(height_setpoint) {}
+#include "core.h"
+#include "mavros_interface.h"
+#include "util.h"
+
+TakeOffState::TakeOffState(float height_setpoint)
+    : State(StateIdentifier::TAKE_OFF, false), height_setpoint(height_setpoint) {}
 
 bool TakeOffState::hasFinishedExecution() const {
     return Util::distanceBetween(getCurrentPose().pose.position, setpoint.position) < 0.1 &&
@@ -26,7 +27,7 @@ void TakeOffState::initialize() {
     Core::getStatusPublisherPtr()->status.armed = 1;
 
     mavros_interface.requestOffboard(Core::auto_set_offboard);
-    Core::getStatusPublisherPtr()->status.px4_mode = "offboard";
+    Core::getStatusPublisherPtr()->status.px4_mode = PX4_MODE_OFFBOARD;
 
     setpoint.type_mask = TypeMask::IDLE;
 

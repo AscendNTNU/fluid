@@ -44,12 +44,4 @@ std::string getPX4ModeForStateIdentifier(const StateIdentifier& state_identifier
  */
 std::string getStringFromStateIdentifier(const StateIdentifier& state_identifier);
 
-/**
- * @brief Constructs a state pointer from the @p state_identifier.
- *
- * @param state_identifier The state identifier to construct the state from.
- *
- * @return The state pointer.
- */
-
 #endif

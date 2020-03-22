@@ -18,8 +18,7 @@
 #include "core.h"
 #include "util.h"
 
-State::State(const StateIdentifier& identifier, const bool& steady) : identifier(identifier),
-                                                                      steady(steady) {
+State::State(const StateIdentifier& identifier, const bool& steady) : identifier(identifier), steady(steady) {
     pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &State::poseCallback, this);
     twist_subscriber = node_handle.subscribe("mavros/local_position/velocity_local", 1, &State::twistCallback, this);
 
@@ -60,14 +59,14 @@ void State::perform(std::function<bool(void)> should_tick, bool should_halt_if_s
 
     initialize();
 
-    while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && should_tick()) {
+    do {
         tick();
         publishSetpoint();
 
         Core::getStatusPublisherPtr()->publish();
         ros::spinOnce();
         rate.sleep();
-    }
+    } while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && should_tick());
 
     finalize();
 }

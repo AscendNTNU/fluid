@@ -18,7 +18,7 @@ class MoveState : public State {
     const double position_threshold;
 
     /**
-     * @brief The highest velocity the drone can have in order to signal that it can move to the next setpoint in the 
+     * @brief The highest velocity the drone can have in order to signal that it can move to the next setpoint in the
      *        #path.
      */
     const double velocity_threshold;
@@ -51,18 +51,15 @@ class MoveState : public State {
 
     /**
      * @brief Sets up the move state.
-     * 
-     * @param state_identifier The state identifier. 
+     *
+     * @param state_identifier The state identifier.
      * @param path The path of the state.
-     * @param speed The speed at which to move. 
-     * @param position_threshold The setpoint distance threshold. 
-     * @param velocity_threshold The velocity threshold. 
+     * @param speed The speed at which to move.
+     * @param position_threshold The setpoint distance threshold.
+     * @param velocity_threshold The velocity threshold.
      */
-    explicit MoveState(const StateIdentifier& state_identifier,
-                       const std::vector<geometry_msgs::Point>& path,
-                       const double& speed,
-                       const double& position_threshold,
-                       const double& velocity_threshold);
+    explicit MoveState(const StateIdentifier& state_identifier, const std::vector<geometry_msgs::Point>& path,
+                       const double& speed, const double& position_threshold, const double& velocity_threshold);
 
    public:
     /**
