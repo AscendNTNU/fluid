@@ -65,11 +65,8 @@ int main(int argc, char** argv) {
     // TODO: check if here
     node_handle.getParam("refresh_rate", refresh_rate);
 
-    std::string subscription_topic = std::string(argv[1]);
-    std::string publishing_topic = std::string(argv[2]);
-
-    ros::Subscriber subscriber = node_handle.subscribe(subscription_topic, 1, subscriptionCallback);
-    ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>(publishing_topic, 1);
+    ros::Subscriber subscriber = node_handle.subscribe("fluid/setpoint", 1, subscriptionCallback);
+    ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 1);
     ros::Subscriber pose_subscriber = node_handle.subscribe("/mavros/local_position/pose", 1, &poseCallback);
     ros::Publisher setpoint_visualizer_publisher =
         node_handle.advertise<visualization_msgs::Marker>("/fluid/setpoint_visualiztion", 10);
