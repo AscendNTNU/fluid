@@ -5,7 +5,7 @@
         <include file="$(find control_test_nodes)/launch/fullFeedback.launch"/>
     </group>
 
-    <include file="$(find fluid)/launch/server_base.launch">
+    <include file="$(find fluid)/launch/base.launch">
         <arg name="fcu_url"                           value="/dev/ttyPixhawk:921600"/>
         <arg name="auto_arm"                          value="false"/>
         <arg name="auto_offboard"                     value="false"/>

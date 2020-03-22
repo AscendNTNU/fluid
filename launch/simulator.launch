@@ -2,7 +2,7 @@
 
 	<arg name="launch_rviz" default="false"/>
 
-    <include file="$(find fluid)/launch/server_base.launch">
+    <include file="$(find fluid)/launch/base.launch">
         <arg name="fcu_url"                           value="udp://:14540@localhost:14557"/>
         <arg name="auto_arm"                          value="true"/>
         <arg name="auto_offboard"                     value="true"/>
