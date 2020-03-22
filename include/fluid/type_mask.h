@@ -1,9 +1,15 @@
+/**
+ * @file type_mask.h
+ */
 
 #ifndef TYPE_MASK_H
 #define TYPE_MASK_H
 
 #include <cstdint>
 
+/**
+ * @brief Represents bitmasks for different kind of control within PX4 when setting a setpoint.
+ */
 class TypeMask {
    public:
     static constexpr uint16_t IGNORE_PX = (1 << 0);
