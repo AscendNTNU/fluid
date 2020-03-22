@@ -1,20 +1,14 @@
 /**
- * @file operation_handler.cpp
+ * @file fluid.cpp
  */
 
-#include "operation_handler.h"
+#include "fluid.h"
 
-#include <assert.h>
 #include <fluid/OperationCompletion.h>
-#include <mavros_msgs/PositionTarget.h>
-#include <std_msgs/String.h>
 
-#include <algorithm>
-#include <cmath>
-
-#include "core.h"
 #include "explore_state.h"
 #include "extract_module_state.h"
+#include "fluid.h"
 #include "follow_mast_state.h"
 #include "hold_state.h"
 #include "land_state.h"
@@ -23,17 +17,28 @@
 #include "travel_state.h"
 #include "util.h"
 
-OperationHandler::OperationHandler() {
-    take_off_server = node_handle.advertiseService("fluid/take_off", &OperationHandler::take_off, this);
-    travel_server = node_handle.advertiseService("fluid/travel", &OperationHandler::travel, this);
-    explore_server = node_handle.advertiseService("fluid/explore", &OperationHandler::explore, this);
-    extract_module_server =
-        node_handle.advertiseService("fluid/extract_module", &OperationHandler::extractModule, this);
-    land_server = node_handle.advertiseService("fluid/land", &OperationHandler::land, this);
-    operation_completion_client = node_handle.serviceClient<fluid::OperationCompletion>("fluid/operation_completion");
+/******************************************************************************************************
+ *                                          Singleton                                                 *
+ ******************************************************************************************************/
+
+std::shared_ptr<Fluid> Fluid::instance_ptr;
+
+void Fluid::initialize(const FluidConfiguration configuration) {
+    if (!instance_ptr) {
+        // Can't use std::make_shared here as the constructor is private.
+        instance_ptr = std::shared_ptr<Fluid>(new Fluid(configuration));
+    }
 }
 
-bool OperationHandler::take_off(fluid::TakeOff::Request& request, fluid::TakeOff::Response& response) {
+Fluid& Fluid::getInstance() { return *instance_ptr; }
+
+std::shared_ptr<StatusPublisher> Fluid::getStatusPublisherPtr() { return status_publisher_ptr; }
+
+/******************************************************************************************************
+ *                                          Operations                                                *
+ ******************************************************************************************************/
+
+bool Fluid::take_off(fluid::TakeOff::Request& request, fluid::TakeOff::Response& response) {
     Response attempt_response = attemptToCreateOperation(
         StateIdentifier::TAKE_OFF, {std::make_shared<TakeOffState>(request.height), std::make_shared<HoldState>()});
 
@@ -42,7 +47,7 @@ bool OperationHandler::take_off(fluid::TakeOff::Request& request, fluid::TakeOff
     return true;
 }
 
-bool OperationHandler::travel(fluid::Travel::Request& request, fluid::Travel::Response& response) {
+bool Fluid::travel(fluid::Travel::Request& request, fluid::Travel::Response& response) {
     Response attempt_response = attemptToCreateOperation(
         StateIdentifier::TRAVEL, {std::make_shared<TravelState>(request.path), std::make_shared<HoldState>()});
 
@@ -51,7 +56,7 @@ bool OperationHandler::travel(fluid::Travel::Request& request, fluid::Travel::Re
     return true;
 }
 
-bool OperationHandler::explore(fluid::Explore::Request& request, fluid::Explore::Response& response) {
+bool Fluid::explore(fluid::Explore::Request& request, fluid::Explore::Response& response) {
     Response attempt_response = attemptToCreateOperation(
         StateIdentifier::EXPLORE, {std::make_shared<ExploreState>(request.path), std::make_shared<HoldState>()});
 
@@ -60,7 +65,7 @@ bool OperationHandler::explore(fluid::Explore::Request& request, fluid::Explore:
     return true;
 }
 
-bool OperationHandler::extractModule(fluid::ExtractModule::Request& request, fluid::ExtractModule::Response& response) {
+bool Fluid::extractModule(fluid::ExtractModule::Request& request, fluid::ExtractModule::Response& response) {
     Response attempt_response = attemptToCreateOperation(
         StateIdentifier::EXTRACT_MODULE, {std::make_shared<ExtractModuleState>(), std::make_shared<HoldState>()});
 
@@ -69,7 +74,7 @@ bool OperationHandler::extractModule(fluid::ExtractModule::Request& request, flu
     return true;
 }
 
-bool OperationHandler::land(fluid::Land::Request& request, fluid::Land::Response& response) {
+bool Fluid::land(fluid::Land::Request& request, fluid::Land::Response& response) {
     Response attempt_response =
         attemptToCreateOperation(StateIdentifier::LAND, {std::make_shared<LandState>(), std::make_shared<LandState>()});
 
@@ -78,8 +83,8 @@ bool OperationHandler::land(fluid::Land::Request& request, fluid::Land::Response
     return true;
 }
 
-OperationHandler::Response OperationHandler::attemptToCreateOperation(
-    const StateIdentifier& target_state_identifier, const std::list<std::shared_ptr<State>>& state_execution_queue) {
+Fluid::Response Fluid::attemptToCreateOperation(const StateIdentifier& target_state_identifier,
+                                                const std::list<std::shared_ptr<State>>& execution_queue) {
     Response response;
     StateIdentifier current_state_identifier = getStateIdentifierForState(current_state_ptr);
 
@@ -96,13 +101,37 @@ OperationHandler::Response OperationHandler::attemptToCreateOperation(
     }
 
     got_new_operation = true;
-    this->state_execution_queue = state_execution_queue;
-    current_operation = getStringFromStateIdentifier(this->state_execution_queue.front()->identifier);
+    state_execution_queue = execution_queue;
+    current_operation = getStringFromStateIdentifier(state_execution_queue.front()->identifier);
 
     return response;
 }
 
-StateIdentifier OperationHandler::getStateIdentifierForState(std::shared_ptr<State> state_ptr) {
+std::shared_ptr<State> Fluid::performStateTransition(std::shared_ptr<State> current_state_ptr,
+                                                     std::shared_ptr<State> target_state_ptr) {
+    ros::Rate rate(Fluid::getInstance().configuration.refresh_rate);
+    MavrosInterface mavros_interface;
+
+    // Loop until the PX4 mode is set.
+    const std::string target_state_px4_mode = getPX4ModeForStateIdentifier(target_state_ptr->identifier);
+    while (ros::ok() && !mavros_interface.attemptToSetState(target_state_px4_mode)) {
+        ros::spinOnce();
+        rate.sleep();
+    }
+
+    if (current_state_ptr) {
+        target_state_ptr->current_pose = current_state_ptr->getCurrentPose();
+        target_state_ptr->current_twist = current_state_ptr->getCurrentTwist();
+    }
+
+    return target_state_ptr;
+}
+
+/******************************************************************************************************
+ *                                          Helpers                                                   *
+ ******************************************************************************************************/
+
+StateIdentifier Fluid::getStateIdentifierForState(std::shared_ptr<State> state_ptr) {
     if (!state_ptr) {
         return StateIdentifier::UNDEFINED;
     }
@@ -110,8 +139,8 @@ StateIdentifier OperationHandler::getStateIdentifierForState(std::shared_ptr<Sta
     return state_ptr->identifier;
 }
 
-bool OperationHandler::isValidOperation(const StateIdentifier& current_state_identifier,
-                                        const StateIdentifier& target_state_identifier) const {
+bool Fluid::isValidOperation(const StateIdentifier& current_state_identifier,
+                             const StateIdentifier& target_state_identifier) const {
     switch (target_state_identifier) {
         case StateIdentifier::TAKE_OFF:
             return current_state_identifier == StateIdentifier::UNDEFINED ||
@@ -136,33 +165,17 @@ bool OperationHandler::isValidOperation(const StateIdentifier& current_state_ide
     }
 }
 
-std::shared_ptr<State> OperationHandler::performStateTransition(std::shared_ptr<State> current_state_ptr,
-                                                                std::shared_ptr<State> target_state_ptr) {
-    ros::Rate rate(REFRESH_RATE);
-    MavrosInterface mavros_interface;
+/******************************************************************************************************
+ *                                          Main Logic                                                *
+ ******************************************************************************************************/
 
-    // Loop until the PX4 mode is set.
-    const std::string target_state_px4_mode = getPX4ModeForStateIdentifier(target_state_ptr->identifier);
-    while (ros::ok() && !mavros_interface.attemptToSetState(target_state_px4_mode)) {
-        ros::spinOnce();
-        rate.sleep();
-    }
-
-    if (current_state_ptr) {
-        target_state_ptr->current_pose = current_state_ptr->getCurrentPose();
-        target_state_ptr->current_twist = current_state_ptr->getCurrentTwist();
-    }
-
-    return target_state_ptr;
-}
-
-void OperationHandler::run() {
-    ros::Rate rate(REFRESH_RATE);
+void Fluid::run() {
+    ros::Rate rate(configuration.refresh_rate);
     bool has_called_completion = false;
 
     while (ros::ok()) {
         got_new_operation = false;
-
+        ROS_FATAL_STREAM(current_operation);
         if (!state_execution_queue.empty()) {
             current_state_ptr = performStateTransition(current_state_ptr, state_execution_queue.front());
             state_execution_queue.pop_front();
@@ -178,11 +191,9 @@ void OperationHandler::run() {
         }
 
         if (current_state_ptr) {
-            Core::getStatusPublisherPtr()->status.current_operation = current_operation;
-            Core::getStatusPublisherPtr()->status.current_state =
-                getStringFromStateIdentifier(current_state_ptr->identifier);
-            Core::getStatusPublisherPtr()->status.px4_mode =
-                getPX4ModeForStateIdentifier(current_state_ptr->identifier);
+            getStatusPublisherPtr()->status.current_operation = current_operation;
+            getStatusPublisherPtr()->status.current_state = getStringFromStateIdentifier(current_state_ptr->identifier);
+            getStatusPublisherPtr()->status.px4_mode = getPX4ModeForStateIdentifier(current_state_ptr->identifier);
 
             current_state_ptr->perform([&]() -> bool { return !got_new_operation; }, state_execution_queue.empty());
         }

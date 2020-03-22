@@ -15,7 +15,7 @@
 
 #include <utility>
 
-#include "core.h"
+#include "fluid.h"
 #include "util.h"
 
 State::State(const StateIdentifier& identifier, const bool& steady) : identifier(identifier), steady(steady) {
@@ -55,7 +55,7 @@ float State::getCurrentYaw() const {
 void State::publishSetpoint() { setpoint_publisher.publish(setpoint); }
 
 void State::perform(std::function<bool(void)> should_tick, bool should_halt_if_steady) {
-    ros::Rate rate(Core::refresh_rate);
+    ros::Rate rate(Fluid::getInstance().configuration.refresh_rate);
 
     initialize();
 
@@ -63,7 +63,7 @@ void State::perform(std::function<bool(void)> should_tick, bool should_halt_if_s
         tick();
         publishSetpoint();
 
-        Core::getStatusPublisherPtr()->publish();
+        Fluid::getInstance().getStatusPublisherPtr()->publish();
         ros::spinOnce();
         rate.sleep();
     } while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && should_tick());

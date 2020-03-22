@@ -4,14 +4,15 @@
 
 #include "hold_state.h"
 
-#include "core.h"
+#include "fluid.h"
 
 HoldState::HoldState() : State(StateIdentifier::HOLD, true) {}
 
 bool HoldState::hasFinishedExecution() const {
-    bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < Core::velocity_completion_threshold &&
-                               std::abs(getCurrentTwist().twist.linear.y) < Core::velocity_completion_threshold &&
-                               std::abs(getCurrentTwist().twist.linear.z) < Core::velocity_completion_threshold;
+    const float threshold = Fluid::getInstance().configuration.velocity_completion_threshold;
+    bool low_enough_velocity = std::abs(getCurrentTwist().twist.linear.x) < threshold &&
+                               std::abs(getCurrentTwist().twist.linear.y) < threshold &&
+                               std::abs(getCurrentTwist().twist.linear.z) < threshold;
 
     return low_enough_velocity;
 }

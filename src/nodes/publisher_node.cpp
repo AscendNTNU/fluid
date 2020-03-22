@@ -12,8 +12,6 @@
 
 #include <string>
 
-#include "core.h"
-
 mavros_msgs::PositionTarget setpoint;
 bool position_is_set = false;
 
@@ -61,9 +59,10 @@ int main(int argc, char** argv) {
 
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Initiailzing set point publisher.");
 
-    int refresh_rate = Core::refresh_rate;
+    int refresh_rate = 20;
     ros::NodeHandle node_handle;
 
+    // TODO: check if here
     node_handle.getParam("refresh_rate", refresh_rate);
 
     std::string subscription_topic = std::string(argv[1]);

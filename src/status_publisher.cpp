@@ -1,7 +1,8 @@
 #include "status_publisher.h"
-#include "core.h"
 
 #include <nav_msgs/Path.h>
+
+#include "fluid.h"
 
 StatusPublisher::StatusPublisher() {
     status.armed = 0;

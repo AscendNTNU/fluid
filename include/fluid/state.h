@@ -144,10 +144,10 @@ class State {
     virtual void perform(std::function<bool(void)> should_tick, bool should_halt_if_steady);
 
     /**
-     * The #OperationHandler class has to be able to e.g. set the current pose if we transition to a state which
+     * The #Fluid class has to be able to e.g. set the current pose if we transition to a state which
      * requires to initially know where we are, e. g. land or take off. In that case we can execute the state from the
      * current pose, and we don't have to wait for the pose callback and thus halt the system.
      */
-    friend class OperationHandler;
+    friend class Fluid;
 };
 #endif

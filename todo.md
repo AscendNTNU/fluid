@@ -1,3 +1,4 @@
 - decrease tiltmax for low speeds as well?
-- Figure out what to do with Core
-- Initialize is called every tick for some reason
+- Go over doxygen links
+- document core, status publisher, util and type mask
+ 

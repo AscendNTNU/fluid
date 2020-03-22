@@ -4,13 +4,14 @@
 
 #include "land_state.h"
 
-#include "core.h"
+#include "fluid.h"
 
 LandState::LandState() : State(StateIdentifier::LAND, true) {}
 
 bool LandState::isBelowThreshold() const {
     return getCurrentPose().pose.position.z < 0.05 &&
-           std::abs(getCurrentTwist().twist.linear.z) < Core::velocity_completion_threshold;
+           std::abs(getCurrentTwist().twist.linear.z) <
+               Fluid::getInstance().configuration.velocity_completion_threshold;
 }
 
 bool LandState::hasFinishedExecution() const { return isBelowThreshold() && setpoint.type_mask == TypeMask::IDLE; }

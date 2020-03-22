@@ -4,7 +4,7 @@
 
 #include "take_off_state.h"
 
-#include "core.h"
+#include "fluid.h"
 #include "mavros_interface.h"
 #include "util.h"
 
@@ -12,22 +12,24 @@ TakeOffState::TakeOffState(float height_setpoint)
     : State(StateIdentifier::TAKE_OFF, false), height_setpoint(height_setpoint) {}
 
 bool TakeOffState::hasFinishedExecution() const {
+    const float distance_threshold = Fluid::getInstance().configuration.distance_completion_threshold;
+    const float velocity_threshold = Fluid::getInstance().configuration.velocity_completion_threshold;
     return Util::distanceBetween(getCurrentPose().pose.position, setpoint.position) < 0.1 &&
-           std::abs(getCurrentTwist().twist.linear.x) < Core::velocity_completion_threshold &&
-           std::abs(getCurrentTwist().twist.linear.y) < Core::velocity_completion_threshold &&
-           std::abs(getCurrentTwist().twist.linear.z) < Core::velocity_completion_threshold;
+           std::abs(getCurrentTwist().twist.linear.x) < velocity_threshold &&
+           std::abs(getCurrentTwist().twist.linear.y) < velocity_threshold &&
+           std::abs(getCurrentTwist().twist.linear.z) < velocity_threshold;
 }
 
 void TakeOffState::initialize() {
     MavrosInterface mavros_interface;
     mavros_interface.establishContactToPX4();
-    Core::getStatusPublisherPtr()->status.linked_with_px4 = 1;
+    Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_px4 = 1;
 
-    mavros_interface.requestArm(Core::auto_arm);
-    Core::getStatusPublisherPtr()->status.armed = 1;
+    mavros_interface.requestArm(Fluid::getInstance().configuration.should_auto_arm);
+    Fluid::getInstance().getStatusPublisherPtr()->status.armed = 1;
 
-    mavros_interface.requestOffboard(Core::auto_set_offboard);
-    Core::getStatusPublisherPtr()->status.px4_mode = PX4_MODE_OFFBOARD;
+    mavros_interface.requestOffboard(Fluid::getInstance().configuration.should_auto_offboard);
+    Fluid::getInstance().getStatusPublisherPtr()->status.px4_mode = PX4_MODE_OFFBOARD;
 
     setpoint.type_mask = TypeMask::IDLE;
 

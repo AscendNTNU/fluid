@@ -72,7 +72,7 @@ def main():
         rospy.logerr("Did not get connection with Fluid's services, is Fluid running?")
 
     # Perform a take off to 3 meters above ground
-    take_off_response = take_off(3)
+    take_off_response = take_off(2)
     is_executing_operation = True
 
     # Checks if the operation request was successful
@@ -123,4 +123,4 @@ if __name__ == '__main__':
     try:
         main()
     except rospy.ROSInterruptException as exception:
-        print("Program interrupted: " + exception)
+        print("Program interrupted: " + str(exception))

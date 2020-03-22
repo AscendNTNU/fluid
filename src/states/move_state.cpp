@@ -10,7 +10,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/transform_datatypes.h>
 
-#include "core.h"
+#include "fluid.h"
 #include "mavros_interface.h"
 #include "util.h"
 
@@ -27,7 +27,7 @@ bool MoveState::hasFinishedExecution() const { return been_to_all_points; }
 void MoveState::initialize() {
     for (auto iterator = path.begin(); iterator != path.end(); iterator++) {
         if (iterator->z <= 0.1) {
-            iterator->z = Core::default_height;
+            iterator->z = Fluid::getInstance().configuration.default_height;
         }
     }
 
