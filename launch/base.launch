@@ -1,31 +1,23 @@
 <launch>
   <arg name="fcu_url"/>
   <arg name="refresh_rate"                            default="20"/>
-  <arg name="auto_arm"/>
-  <arg name="auto_offboard"/>
+  <arg name="should_auto_arm"/>
+  <arg name="should_auto_offboard"/>
   <arg name="distance_completion_threshold"           default="0.3"/>
   <arg name="velocity_completion_threshold"           default="0.1"/>
-  <arg name="yaw_completion_threshold"                default="0.5"/>
   <arg name="default_height"                          default="2.0"/>
-  <arg name="setpoint_subscription_topic"             default="fluid/setpoint"/>
-  <arg name="setpoint_publish_topic"                  default="mavros/setpoint_raw/local"/>
-  <arg name="ai_exploration_yaw_topic"                default="/ai/eploration/yaw"/>
   <arg name="launch_rviz"/>
 
-  <node name="fluid_server" pkg="fluid" type="server" output="screen" args="$(arg setpoint_subscription_topic)">
+  <node name="fluid" pkg="fluid" type="fluid" launch-prefix="gdb --args" output="screen"> 
     <param name="refresh_rate"                        value="$(arg refresh_rate)"/>
-    <param name="auto_arm"                            value="$(arg auto_arm)"/>
-    <param name="auto_offboard"                       value="$(arg auto_offboard)"/>
+    <param name="should_auto_arm"                     value="$(arg should_auto_arm)"/>
+    <param name="should_auto_offboard"                value="$(arg should_auto_offboard)"/>
     <param name="distance_completion_threshold"       value="$(arg distance_completion_threshold)"/>
     <param name="velocity_completion_threshold"       value="$(arg distance_completion_threshold)"/>
-    <param name="yaw_completion_threshold"            value="$(arg yaw_completion_threshold)"/>
     <param name="default_height"                      value="$(arg default_height)"/>
-    <param name="setpoint_subscription_topic"         value="$(arg setpoint_subscription_topic)"/>
-    <param name="setpoint_publish_topic"              value="$(arg setpoint_publish_topic)"/>
-    <param name="ai_exploration_yaw_topic"            value="$(arg ai_exploration_yaw_topic)"/>
   </node>
 
-  <node name="fluid_publisher" pkg="fluid" type="publisher" output="screen" args="$(arg setpoint_subscription_topic) $(arg setpoint_publish_topic)"/>
+  <node name="fluid_publisher" pkg="fluid" type="publisher" output="screen"/>
 
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url"                               value="$(arg fcu_url)"/>
