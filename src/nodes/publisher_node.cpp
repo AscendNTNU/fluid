@@ -63,7 +63,7 @@ int main(int argc, char** argv) {
     int refresh_rate = 20;
     ros::NodeHandle node_handle;
 
-    if (!node_handle.getParam("refresh_rate", refresh_rate)) {
+    if (!node_handle.getParam(ros::this_node::getName() + "/refresh_rate", refresh_rate)) {
         ROS_FATAL_STREAM("Refresh rate parameter not specified, shutting down...");
         ros::shutdown();
         return 1;

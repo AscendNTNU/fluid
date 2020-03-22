@@ -8,7 +8,7 @@
   <arg name="default_height"                          default="2.0"/>
   <arg name="launch_rviz"/>
 
-  <node name="fluid" pkg="fluid" type="fluid" launch-prefix="gdb --args" output="screen"> 
+  <node name="fluid" pkg="fluid" type="fluid" output="screen"> 
     <param name="refresh_rate"                        value="$(arg refresh_rate)"/>
     <param name="should_auto_arm"                     value="$(arg should_auto_arm)"/>
     <param name="should_auto_offboard"                value="$(arg should_auto_offboard)"/>
@@ -17,7 +17,9 @@
     <param name="default_height"                      value="$(arg default_height)"/>
   </node>
 
-  <node name="fluid_publisher" pkg="fluid" type="publisher" output="screen"/>
+  <node name="fluid_publisher" pkg="fluid" type="publisher" output="screen">
+    <param name="refresh_rate"                        value="$(arg refresh_rate)"/>
+  </node>
 
   <include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url"                               value="$(arg fcu_url)"/>
