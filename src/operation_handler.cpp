@@ -71,7 +71,7 @@ bool OperationHandler::extractModule(fluid::ExtractModule::Request& request, flu
 
 bool OperationHandler::land(fluid::Land::Request& request, fluid::Land::Response& response) {
     Response attempt_response =
-        attemptToCreateOperation(StateIdentifier::LAND, {std::make_shared<LandState>(), std::make_shared<HoldState>()});
+        attemptToCreateOperation(StateIdentifier::LAND, {std::make_shared<LandState>(), std::make_shared<LandState>()});
 
     response.message = attempt_response.message;
     response.success = attempt_response.success;
@@ -114,7 +114,8 @@ bool OperationHandler::isValidOperation(const StateIdentifier& current_state_ide
                                         const StateIdentifier& target_state_identifier) const {
     switch (target_state_identifier) {
         case StateIdentifier::TAKE_OFF:
-            return current_state_identifier == StateIdentifier::UNDEFINED;
+            return current_state_identifier == StateIdentifier::UNDEFINED ||
+                   current_state_identifier == StateIdentifier::LAND;
 
         case StateIdentifier::EXPLORE:
         case StateIdentifier::TRAVEL:
@@ -141,14 +142,15 @@ std::shared_ptr<State> OperationHandler::performStateTransition(std::shared_ptr<
     MavrosInterface mavros_interface;
 
     // Loop until the PX4 mode is set.
-    while (ros::ok() &&
-           !mavros_interface.attemptToSetState(getPX4ModeForStateIdentifier(target_state_ptr->identifier))) {
+    const std::string target_state_px4_mode = getPX4ModeForStateIdentifier(target_state_ptr->identifier);
+    while (ros::ok() && !mavros_interface.attemptToSetState(target_state_px4_mode)) {
         ros::spinOnce();
         rate.sleep();
     }
 
     if (current_state_ptr) {
         target_state_ptr->current_pose = current_state_ptr->getCurrentPose();
+        target_state_ptr->current_twist = current_state_ptr->getCurrentTwist();
     }
 
     return target_state_ptr;
