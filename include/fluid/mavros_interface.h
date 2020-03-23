@@ -1,9 +1,9 @@
 /**
- * @file mavros_state_link.h
+ * @file mavros_inerface.h
  */
 
-#ifndef MAVROS_STATE_LINK_H
-#define MAVROS_STATE_LINK_H
+#ifndef MAVROS_INTERFACE_H
+#define MAVROS_INTERFACE_H
 
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
