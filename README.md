@@ -12,7 +12,7 @@
 
 Fluid FSM is built around a client-server architecture with ROS services, where a client requests the server to do something through ROS services. In other words, we (the client) ask the drone (the server) to do **operations**. 
 
-Have a look at [Flow](Flow.md) and [Operations](Operations.md) for more details.
+Have a look at [Flow](documentation/Flow.md) and [Operations](documentation/Operations.md) for more details.
 
 ## Use
 
@@ -37,5 +37,5 @@ There are some examples in the `src/examples` folder.
 
 ## Writing clients
 
-You have to use ROS services in order to communicate with the state machine. Have a look at the python and C++ examples in the [src/examples](https://github.com/AscendNTNU/fluid/tree/master/src/examples) folder.
+You have to use ROS services in order to communicate with the state machine. Have a look at the python and C++ examples in the [src/examples](src/examples) folder.
 
