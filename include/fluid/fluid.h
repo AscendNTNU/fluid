@@ -1,4 +1,11 @@
 /**
+ * @mainpage
+ *
+ * Finite state machine built around the MAVROS protocol. It's built around clients requesting the FSM (the server)
+ * to do operations through ROS services.
+ */
+
+/**
  * @file fluid.h
  */
 
