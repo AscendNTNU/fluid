@@ -1,4 +1,4 @@
-# Readme 
+# README 
 
 ## Installation 
 
@@ -12,7 +12,7 @@
 
 Fluid FSM is built around a client-server architecture with ROS services, where a client requests the server to do something through ROS services. In other words, we (the client) ask the drone (the server) to do **operations**. 
 
-Have a look at [Flow](https://github.com/AscendNTNU/fluid/tree/master/docs/Flow.md) and [Operations](https://github.com/AscendNTNU/fluid/tree/master/docs/Operations.md) for more details.
+Have a look at [Flow](Flow.md) and [Operations](Operations.md) for more details.
 
 ## Use
 
