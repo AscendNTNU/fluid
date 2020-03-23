@@ -180,7 +180,6 @@ void Fluid::run() {
 
     while (ros::ok()) {
         got_new_operation = false;
-        ROS_FATAL_STREAM(current_operation);
         if (!operation_execution_queue.empty()) {
             current_operation_ptr =
                 performOperationTransition(current_operation_ptr, operation_execution_queue.front());
