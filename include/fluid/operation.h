@@ -1,64 +1,150 @@
+/**
+ * @file operation.h
+ */
+
 #ifndef OPERATION_H
 #define OPERATION_H
 
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
+#include <mavros_msgs/PositionTarget.h>
+#include <ros/ros.h>
+
 #include <memory>
 #include <string>
+#include <vector>
 
-#include <geometry_msgs/Point.h>
+#include "operation_identifier.h"
+#include "type_mask.h"
 
-#include "core.h"
-#include "state.h"
-#include "state_identifier.h"
-
-/** 
- *  \brief Manages the transitions between multiple states and their execution.
+/**
+ * @brief Interface for operations within the finite state machine.
  */
 class Operation {
-protected:
-    const StateIdentifier destination_state_identifier;
-
-    /** The states the operation should transition to after it has carried
-     *  out the logic in the destination state. E.g. if destination state
-     *  is set to a move state for a move operation, we want the operation
-     *  to finish at a position hold state. These states are all steady.
+   private:
+    /**
+     * @brief Gets the current pose.
      */
-    const std::map<StateIdentifier, StateIdentifier> steady_state_map = {
-        {StateIdentifier::Init, StateIdentifier::Idle},
-        {StateIdentifier::Idle, StateIdentifier::Idle},
-        {StateIdentifier::TakeOff, StateIdentifier::Hold},
-        {StateIdentifier::Explore, StateIdentifier::Hold},
-        {StateIdentifier::Travel, StateIdentifier::Hold},
-        {StateIdentifier::Hold, StateIdentifier::Hold},
-        {StateIdentifier::Rotate, StateIdentifier::Hold},
-        {StateIdentifier::Land, StateIdentifier::Idle},
-        {StateIdentifier::ExtractModule, StateIdentifier::Hold},
-        {StateIdentifier::FollowMast, StateIdentifier::Hold}
-    };
+    ros::Subscriber pose_subscriber;
 
-public:
-    std::vector<geometry_msgs::Point> path;
+    /**
+     * @brief Current pose.
+     */
+    geometry_msgs::PoseStamped current_pose;
 
-    Operation(const StateIdentifier& destination_state_identifier,
-              const std::vector<geometry_msgs::Point>& path);
-
-    virtual ~Operation() {}
-
-    virtual bool validateOperationFromCurrentState(std::shared_ptr<State> current_state_ptr) const;
-
-    /** 
-     * Runs through the different states and performs the necessary transitions.
+    /**
+     * @brief Callback for current pose.
      *
-     * @param should_tick Called each tick, makes it possible to check status further up in the pipeline
-     *                    and abort operations in the midst of an execution.
-     * @param completionHandler Callback function for whether the operation completed or not.
+     * @param pose Pose retrieved from the callback.
      */
-    virtual void perform(std::function<bool(void)> should_tick, std::function<void(bool)> completionHandler);
+    void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
 
-    void transitionToState(std::shared_ptr<State> state_p) const;
+    /**
+     * @brief Gets the current twist.
+     */
+    ros::Subscriber twist_subscriber;
 
-    StateIdentifier getDestinationStateIdentifier() const;
-    std::shared_ptr<State> getFinalStatePtr() const;
-    std::shared_ptr<State> getCurrentStatePtr() const;
+    /**
+     * @brief Current twist.
+     */
+    geometry_msgs::TwistStamped current_twist;
+
+    /**
+     * @brief Callback for current twist.
+     *
+     * @param twist Twist retrieved from the callback.
+     */
+    void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
+
+    /**
+     * @brief Publishes setpoints.
+     *
+     */
+    ros::Publisher setpoint_publisher;
+
+    /**
+     * @brief Determines whether this operation is a operation we can be at for longer periods of time. E.g. hold or
+     * land.
+     */
+    const bool steady;
+
+   protected:
+    /**
+     * @brief Used to construct the subscribers.
+     */
+    ros::NodeHandle node_handle;
+
+    /**
+     * @brief The setpoint.
+     */
+    mavros_msgs::PositionTarget setpoint;
+
+    /**
+     * @brief Publishes the setpoint.
+     */
+    void publishSetpoint();
+
+    /**
+     * @return true if the operation has finished its necessary tasks.
+     */
+    virtual bool hasFinishedExecution() const = 0;
+
+    /**
+     * @brief Initializes the operation.
+     */
+    virtual void initialize() {}
+
+    /**
+     * @brief Updates the operation logic.
+     */
+    virtual void tick() {}
+
+    /**
+     * @return The current pose.
+     */
+    geometry_msgs::PoseStamped getCurrentPose() const;
+
+    /**
+     * @return The current twist.
+     */
+    geometry_msgs::TwistStamped getCurrentTwist() const;
+
+    /**
+     * @return The current yaw.
+     */
+    float getCurrentYaw() const;
+
+   public:
+    /**
+     * @brief The identifier for this operation.
+     */
+    const OperationIdentifier identifier;
+
+    /**
+     * @brief Constructs a new operation.
+     *
+     * @param identifier The identifier of the operation.
+     * @param steady Whether the operation is steady, it can be executed for longer periods of time without
+     * consequences.
+     */
+    Operation(const OperationIdentifier& identifier, const bool& steady);
+
+    /**
+     * @brief Performs the loop for executing logic within this operation.
+     *
+     * @param should_tick               Called each tick, makes it possible to abort operations in the midst of an
+     *                                  execution.
+     * @param should_halt_if_steady     Will halt at this operation if it's steady, is useful
+     *                                  if we want to keep at a certain operation for some time, e.g. #LandOperation
+     *                                  or #HoldOperation.
+     */
+    virtual void perform(std::function<bool(void)> should_tick, bool should_halt_if_steady);
+
+    /**
+     * The #Fluid class has to be able to e.g. set the current pose if we transition to a operation which
+     * requires to initially know where we are, e. g. land or take off. In that case we can execute the operation from
+     * the current pose, and we don't have to wait for the pose callback and thus halt the system.
+     */
+    friend class Fluid;
 };
-
 #endif

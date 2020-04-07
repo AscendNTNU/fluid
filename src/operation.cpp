@@ -1,116 +1,74 @@
+/**
+ * @file operation.cpp
+ */
+
 #include "operation.h"
 
-#include <geometry_msgs/Quaternion.h>
+#include <mavros_msgs/PositionTarget.h>
+#include <sensor_msgs/Imu.h>
+#include <tf/tf.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/transform_datatypes.h>
-#include <algorithm>
-#include <cmath>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <visualization_msgs/Marker.h>
+
 #include <utility>
 
-#include "core.h"
-#include "transition.h"
+#include "fluid.h"
 #include "util.h"
 
-Operation::Operation(const StateIdentifier& destination_state_identifier, const std::vector<geometry_msgs::Point>& path)
-    : destination_state_identifier(std::move(destination_state_identifier)), path(std::move(path)) {}
+Operation::Operation(const OperationIdentifier& identifier, const bool& steady)
+    : identifier(identifier), steady(steady) {
+    pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &Operation::poseCallback, this);
+    twist_subscriber =
+        node_handle.subscribe("mavros/local_position/velocity_local", 1, &Operation::twistCallback, this);
 
-void Operation::perform(std::function<bool(void)> should_tick, std::function<void(bool)> completionHandler) {
-    if (!validateOperationFromCurrentState(Core::getGraphPtr()->current_state_ptr)) {
-        ROS_FATAL_STREAM("Operation to: "
-                         << StateIdentifierStringMap.at(destination_state_identifier)
-                         << " is not a valid operation from current state: "
-                         << StateIdentifierStringMap.at(Core::getGraphPtr()->current_state_ptr->identifier));
-
-        completionHandler(false);
-        return;
-    }
-
-    // As the graph will return the shortest path in terms of states, we have to check if
-    // the final setpoint is outside where we're currently at so we include a move state (if the move is on the path).
-    geometry_msgs::Point current_position = Core::getGraphPtr()->current_state_ptr->getCurrentPose().pose.position;
-    current_position.z = 0;
-    geometry_msgs::Point last_setpoint = path.back();
-    last_setpoint.z = 0;
-
-    float distanceToEndpoint = Util::distanceBetween(current_position, last_setpoint);
-    bool shouldIncludeMove = (distanceToEndpoint >= Core::distance_completion_threshold) || path.size() > 1;
-
-    // Get shortest path to the destination state from the current state. This will make it possible for
-    // the FSM to transition to every state in order to get to the state we want to.
-    std::vector<std::shared_ptr<State>> states = Core::getGraphPtr()->getPathToEndState(
-        Core::getGraphPtr()->current_state_ptr->identifier, destination_state_identifier, shouldIncludeMove);
-
-    if (states.empty()) {
-        return;
-    }
-
-    for (auto state : states) {
-        state->path = path;
-    }
-
-    ROS_INFO_STREAM("New operation requested to state: " << StateIdentifierStringMap.at(destination_state_identifier));
-
-    std::stringstream stringstream;
-
-    for (auto state : states) {
-        stringstream << StateIdentifierStringMap.at(state->identifier) << " ";
-    }
-
-    ROS_INFO_STREAM("Will traverse through: " << stringstream.str() << "\n");
-
-    // This will also only fire for operations that consist of more than one state (every operation other than init).
-    // And in that case we transition to the next state in the path after the start state.
-    if (Core::getGraphPtr()->current_state_ptr->identifier != destination_state_identifier) {
-        transitionToState(states[1]);
-    }
-
-    for (int index = 0; index < states.size(); index++) {
-        std::shared_ptr<State> state_p = states[index];
-
-        ROS_INFO_STREAM("Executing state: " << StateIdentifierStringMap.at(state_p->identifier));
-        Core::getStatusPublisherPtr()->status.current_state = StateIdentifierStringMap.at(state_p->identifier);
-        Core::getStatusPublisherPtr()->publish();
-
-        Core::getGraphPtr()->current_state_ptr = state_p;
-        state_p->perform(should_tick, false);
-
-        if (!should_tick()) {
-            // We have to abort, so we transition to the steady state for the current state.
-            std::shared_ptr<State> steady_state_ptr =
-                Core::getGraphPtr()->getStateWithIdentifier(steady_state_map.at(state_p->identifier));
-            steady_state_ptr->path = {state_p->getCurrentPose().pose.position};
-            transitionToState(steady_state_ptr);
-            completionHandler(false);
-
-            return;
-        }
-
-        if (index < states.size() - 1) {
-            transitionToState(states[index + 1]);
-        }
-    }
-
-    std::shared_ptr<State> final_state_p = getFinalStatePtr();
-    final_state_p->path = {path.back()};
-
-    transitionToState(final_state_p);
-    completionHandler(true);
+    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
 }
 
-void Operation::transitionToState(std::shared_ptr<State> state_ptr) const {
-    Transition transition(Core::getGraphPtr()->current_state_ptr, state_ptr);
-    transition.perform();
+geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_pose; }
+
+void Operation::poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
+    current_pose.pose = pose->pose;
+    current_pose.header = pose->header;
 }
 
-bool Operation::validateOperationFromCurrentState(std::shared_ptr<State> current_state_ptr) const {
-    return Core::getGraphPtr()->areConnected(current_state_ptr->identifier, destination_state_identifier);
+geometry_msgs::TwistStamped Operation::getCurrentTwist() const { return current_twist; }
+
+void Operation::twistCallback(const geometry_msgs::TwistStampedConstPtr twist) {
+    current_twist.twist = twist->twist;
+    current_twist.header = twist->header;
 }
 
-StateIdentifier Operation::getDestinationStateIdentifier() const { return destination_state_identifier; }
+float Operation::getCurrentYaw() const {
+    geometry_msgs::Quaternion quaternion = current_pose.pose.orientation;
+    tf2::Quaternion quat(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
 
-std::shared_ptr<State> Operation::getFinalStatePtr() const {
-    return Core::getGraphPtr()->getStateWithIdentifier(steady_state_map.at(destination_state_identifier));
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+    // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set
+    // it to zero.
+    yaw = std::isnan(yaw) ? 0.0 : yaw;
+
+    return yaw;
 }
 
-std::shared_ptr<State> Operation::getCurrentStatePtr() const { return Core::getGraphPtr()->current_state_ptr; }
+void Operation::publishSetpoint() { setpoint_publisher.publish(setpoint); }
+
+void Operation::perform(std::function<bool(void)> should_tick, bool should_halt_if_steady) {
+    ros::Rate rate(Fluid::getInstance().configuration.refresh_rate);
+
+    initialize();
+
+    do {
+        tick();
+        publishSetpoint();
+        Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.x = setpoint.position.x;
+        Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.y = setpoint.position.y;
+        Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.z = setpoint.position.z;
+        Fluid::getInstance().getStatusPublisherPtr()->publish();
+        ros::spinOnce();
+        rate.sleep();
+    } while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && should_tick());
+}

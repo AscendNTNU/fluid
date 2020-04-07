@@ -1,5 +1,6 @@
 .DS_STORE
 cmake-build-debug/
+.VSCodeCounter
 
 # Prerequisites
 *.d
@@ -57,3 +58,8 @@ DerivedData/
 
 # Visual studio code
 .vscode
+
+
+# Doxygen
+html/
+index/
