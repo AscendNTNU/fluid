@@ -100,11 +100,6 @@ class Operation {
     virtual void tick() {}
 
     /**
-     * @brief Called when the operation #hasFinishedExecution.
-     */
-    virtual void finalize() {}
-
-    /**
      * @return The current pose.
      */
     geometry_msgs::PoseStamped getCurrentPose() const;

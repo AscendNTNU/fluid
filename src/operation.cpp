@@ -71,6 +71,4 @@ void Operation::perform(std::function<bool(void)> should_tick, bool should_halt_
         ros::spinOnce();
         rate.sleep();
     } while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && should_tick());
-
-    finalize();
 }

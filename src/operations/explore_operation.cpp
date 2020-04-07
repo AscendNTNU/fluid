@@ -88,5 +88,3 @@ void ExploreOperation::tick() {
     path_msg.points = dense_path;
     obstacle_avoidance_path_publisher.publish(path_msg);
 }
-
-void ExploreOperation::finalize() { original_path_set = false; }

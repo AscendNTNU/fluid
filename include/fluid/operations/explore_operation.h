@@ -76,11 +76,6 @@ class ExploreOperation : public MoveOperation {
      * @brief Publishes the #dense_path to obstacle avoidance.
      */
     void tick() override;
-
-    /**
-     * @brief Resets the flag for #original_path_set.
-     */
-    void finalize() override;
 };
 
 #endif
