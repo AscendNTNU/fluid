@@ -91,7 +91,7 @@ def main():
         if not is_executing_operation:
             if finished_operation == "TAKE_OFF":
 
-                # Perform a explore with a list of points
+                # Perform a explore with a (list of) point(s)
                 point = Point()
                 point.x = 5
                 response = explore([point])
