@@ -1,3 +1,7 @@
+/**
+ * @file util.h
+ */
+
 #ifndef UTIL_H
 #define UTIL_H
 
@@ -6,10 +10,20 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/transform_datatypes.h>
+
 #include <vector>
 
+/**
+ * @brief Holds a bunch of convenience functions.
+ */
 class Util {
-public:
+   public:
+    /**
+     * @param current First point.
+     * @param target Second point.
+     *
+     * @return Eucledian distance betweeen @p current and @p target.
+     */
     static double distanceBetween(const geometry_msgs::Point& current, const geometry_msgs::Point& target) {
         double delta_x = target.x - current.x;
         double delta_y = target.y - current.y;
@@ -18,6 +32,16 @@ public:
         return sqrt(delta_x * delta_x + delta_y * delta_y + delta_z * delta_z);
     }
 
+    /**
+     * @brief Creates a path between @p first and @p last which consist of a series of points between them specified
+     *        by @p density.
+     *
+     * @param first The first point.
+     * @param last The last point.
+     * @param density The density of points between @p first and @p last.
+     *
+     * @return The new path with inserted points.
+     */
     static std::vector<geometry_msgs::Point> createPath(const geometry_msgs::Point& first,
                                                         const geometry_msgs::Point& last, const double& density) {
         double distance = distanceBetween(first, last);
@@ -39,21 +63,6 @@ public:
 
         return path;
     }
-
-    static double angleBetween(const geometry_msgs::Quaternion& quaternion, const float& yaw_angle) {
-        tf2::Quaternion quat(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-
-        double roll, pitch, yaw;
-        tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-        // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set
-        // it to zero.
-        yaw = std::isnan(yaw) ? 0.0 : yaw;
-        const auto yaw_error = yaw_angle - yaw;
-
-        return std::atan2(std::sin(yaw_error), std::cos(yaw_error));
-    }
-
-    static double clampAngle(double angle) { return std::fmod(angle + M_PI, 2.0 * M_PI) - M_PI; }
 };
 
 #endif

@@ -1,16 +1,17 @@
-//
-// This node is a safety measure in case the main thread in the FSM is blocked and
-// we therefore don't will publish setpoints to PX4 regularly. It grabs the last
-// published setpoint from the FSM and publishes that.
-//
-// It also publishes the base link transform
+/**
+ * @file publisher_node.cpp
+ *
+ * @brief This node is a safety measure in case the main thread in the FSM hangs some and
+ *        we therefore don't will publish setpoints to PX4 regularly. It grabs the last
+ *        published setpoint from the FSM and publishes that.
+ *        It also publishes the base link transform
+ */
 
 #include <mavros_msgs/PositionTarget.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
-#include <string>
 
-#include "core.h"
+#include <string>
 
 mavros_msgs::PositionTarget setpoint;
 bool position_is_set = false;
@@ -57,21 +58,20 @@ void poseCallback(const geometry_msgs::PoseStampedConstPtr& msg) {
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fluid_setpoint_publisher");
 
-    ROS_INFO("Initiailzing set point publisher.");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Initiailzing set point publisher.");
 
-    int refresh_rate = Core::refresh_rate;
+    int refresh_rate = 20;
     ros::NodeHandle node_handle;
 
-    node_handle.getParam("refresh_rate", refresh_rate);
+    if (!node_handle.getParam(ros::this_node::getName() + "/refresh_rate", refresh_rate)) {
+        ROS_FATAL_STREAM("Refresh rate parameter not specified, shutting down...");
+        ros::shutdown();
+        return 1;
+    }
 
-    std::string subscription_topic = std::string(argv[1]);
-    std::string publishing_topic = std::string(argv[2]);
-
-    ros::Subscriber subscriber = node_handle.subscribe(subscription_topic, 1, subscriptionCallback);
-    ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>(publishing_topic, 1);
-
+    ros::Subscriber subscriber = node_handle.subscribe("fluid/setpoint", 1, subscriptionCallback);
+    ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 1);
     ros::Subscriber pose_subscriber = node_handle.subscribe("/mavros/local_position/pose", 1, &poseCallback);
-
     ros::Rate rate(refresh_rate);
 
     while (ros::ok()) {

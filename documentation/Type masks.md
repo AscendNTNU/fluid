@@ -11,13 +11,8 @@ This sounds all good right? Well no, because the Pixhawk is quite picky about th
 mask frequently, the drone will respond with flying all over the place *as* it's receiving different position 
 setpoints.
 
-Another point is if you want the drone to be idle at the ground you have to set the flags: IGNORE_PX, IGNORE_PY, 
-IGNORE_PZ, but **nothing more**. Not having the type mask set up in this exact way caused the drone to take off and fly
-to a random position and crash in one of our tests.
-
 TL;DR:
 
 When working with type masks:
 
 * Don't change type mask frequenctly (a couple of times per second).
-* For an idle state, set the type mask to only the following flags: IGNORE_PX, IGNORE_PY, IGNORE_PZ. 

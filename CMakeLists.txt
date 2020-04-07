@@ -6,48 +6,57 @@ add_compile_options(-std=c++14)
 
 find_package(catkin REQUIRED COMPONENTS
         cmake_modules
-        ascend_msgs
         roscpp
-        genmsg
-        actionlib
+        ascend_msgs
+        std_msgs
         visualization_msgs
         tf2_geometry_msgs
         tf2
-        dynamic_reconfigure
+        message_generation
 )
 
-generate_dynamic_reconfigure_options(
-  cfg/Server.cfg
+add_service_files(
+        FILES
+        OperationCompletion.srv
+        Explore.srv
+        ExtractModule.srv
+        Land.srv
+        TakeOff.srv
+        Travel.srv
+)
+
+generate_messages(
+        DEPENDENCIES
+        std_msgs
+        geometry_msgs
 )
 
 catkin_package(
         INCLUDE_DIRS include
-        CATKIN_DEPENDS ascend_msgs roscpp dynamic_reconfigure 
+        CATKIN_DEPENDS message_runtime ascend_msgs roscpp 
 )
-
-
 
 #########################################################################################
 
 include_directories(include
         include/fluid
-        include/fluid/states
+        include/fluid/operations
         ${catkin_INCLUDE_DIRS}
 )
 
 file(GLOB fluid_SRC "src/*.cpp")
-file(GLOB fluid_states_SRC "src/states/*.cpp")
+file(GLOB fluid_operations_SRC "src/operations/*.cpp")
 
 #########################################################################################
 
-add_executable(server             src/nodes/main.cpp                            ${fluid_SRC} ${fluid_states_SRC})
-add_executable(publisher          src/nodes/publisher_node.cpp                  ${fluid_SRC} ${fluid_states_SRC})
-add_executable(test_client        src/test/test_client.cpp                      ${fluid_SRC} ${fluid_states_SRC})
+add_executable(fluid              src/nodes/main.cpp                            ${fluid_SRC} ${fluid_operations_SRC})
+add_executable(publisher          src/nodes/publisher_node.cpp                  ${fluid_SRC} ${fluid_operations_SRC})
+add_executable(example_client     src/examples/example_client.cpp               ${fluid_SRC} ${fluid_operations_SRC})
 
-add_dependencies(server                  ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
+add_dependencies(fluid                   ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(publisher               ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(test_client             ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(example_client          ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(server             ${catkin_LIBRARIES})
+target_link_libraries(fluid              ${catkin_LIBRARIES})
 target_link_libraries(publisher          ${catkin_LIBRARIES})
-target_link_libraries(test_client        ${catkin_LIBRARIES})
+target_link_libraries(example_client     ${catkin_LIBRARIES})

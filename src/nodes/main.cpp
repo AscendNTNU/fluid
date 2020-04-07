@@ -1,40 +1,57 @@
 #include <ros/ros.h>
 
-#include "core.h"
-#include "server.h"
+#include "fluid.h"
 
-#include <dynamic_reconfigure/server.h>
-#include <fluid/ServerConfig.h>
-
-void callback(fluid::ServerConfig& config, uint32_t level) {}
+void exitAtParameterExtractionFailure(const std::string& param) {
+    ROS_FATAL_STREAM(ros::this_node::getName() << ": Could not find parameter: " << param.c_str());
+    ros::shutdown();
+}
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fluid_server");
 
-    ROS_INFO("Starting Fluid FSM.");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Starting up.");
 
     ros::NodeHandle node_handle;
+    const std::string prefix = ros::this_node::getName() + "/";
+    int refresh_rate;
+    bool should_auto_arm, should_auto_offboard;
+    float distance_completion_threshold, velocity_completion_threshold, default_height;
 
-    std::string publishing_topic = std::string(argv[1]);
+    if (!node_handle.getParam(prefix + "refresh_rate", refresh_rate)) {
+        exitAtParameterExtractionFailure(prefix + "refresh_rate");
+    }
 
-    node_handle.getParam("refresh_rate", Core::refresh_rate);
-    node_handle.getParam("auto_arm", Core::auto_arm);
-    node_handle.getParam("auto_offboard", Core::auto_set_offboard);
+    if (!node_handle.getParam(prefix + "should_auto_arm", should_auto_arm)) {
+        exitAtParameterExtractionFailure(prefix + "should_auto_arm");
+    }
 
-    node_handle.getParam("distance_completion_threshold", Core::distance_completion_threshold);
-    node_handle.getParam("velocity_completion_threshold", Core::velocity_completion_threshold);
-    node_handle.getParam("yaw_completion_threshold", Core::yaw_completion_threshold);
-    node_handle.getParam("default_height", Core::default_height);
+    if (!node_handle.getParam(prefix + "should_auto_offboard", should_auto_offboard)) {
+        exitAtParameterExtractionFailure(prefix + "should_auto_offboard");
+    }
 
-    dynamic_reconfigure::Server<fluid::ServerConfig> dynamic_reconfigure_server;
-    dynamic_reconfigure::Server<fluid::ServerConfig>::CallbackType f;
-    f = boost::bind(&callback, _1, _2);
-    dynamic_reconfigure_server.setCallback(f);
+    if (!node_handle.getParam(prefix + "distance_completion_threshold", distance_completion_threshold)) {
+        exitAtParameterExtractionFailure(prefix + "distance_completion_threshold");
+    }
 
-    ros::spinOnce();
+    if (!node_handle.getParam(prefix + "velocity_completion_threshold", velocity_completion_threshold)) {
+        exitAtParameterExtractionFailure(prefix + "velocity_completion_threshold");
+    }
 
-    Server server;
-    server.start();
+    if (!node_handle.getParam(prefix + "default_height", default_height)) {
+        exitAtParameterExtractionFailure(prefix + "default_height");
+    }
+
+    FluidConfiguration configuration{refresh_rate,
+                                     should_auto_arm,
+                                     should_auto_offboard,
+                                     distance_completion_threshold,
+                                     velocity_completion_threshold,
+                                     default_height};
+
+    Fluid::initialize(configuration);
+
+    Fluid::getInstance().run();
 
     return 0;
 }
