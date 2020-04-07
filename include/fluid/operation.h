@@ -18,7 +18,7 @@
 #include "type_mask.h"
 
 /**
- * @brief Interface for operations within the finite operation machine.
+ * @brief Interface for operations within the finite state machine.
  */
 class Operation {
    private:
