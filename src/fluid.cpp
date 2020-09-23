@@ -9,7 +9,6 @@
 #include "explore_operation.h"
 #include "extract_module_operation.h"
 #include "fluid.h"
-#include "follow_mast_operation.h"
 #include "hold_operation.h"
 #include "land_operation.h"
 #include "mavros_interface.h"
