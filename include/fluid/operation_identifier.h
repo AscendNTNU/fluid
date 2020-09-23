@@ -22,7 +22,6 @@ enum class OperationIdentifier {
     TRAVEL,
     LAND,
     EXTRACT_MODULE,
-    FOLLOW_MAST,
     UNDEFINED
 };
 
