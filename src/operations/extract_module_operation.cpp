@@ -10,7 +10,7 @@
 
 ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier::EXTRACT_MODULE, false) {
     module_pose_subscriber =
-        node_handle.subscribe("/airsim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
+        node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
 }
 
@@ -61,9 +61,15 @@ void ExtractModuleOperation::tick() {
             // not just from the x direction
             setpoint.position.y = module_pose.pose.pose.position.x + 1.5;
             setpoint.position.z = module_pose.pose.pose.position.z;
+            ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                            << ": "
+                            << "Approaching");
 
             if (distance_to_module < 1.8) {
                 module_state = ModuleState::OVER;
+                ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                                << ": "
+                                << "Approaching -> Over");
             }
 
             break;
