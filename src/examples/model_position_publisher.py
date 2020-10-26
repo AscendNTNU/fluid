@@ -31,14 +31,14 @@ def main():
     rospy.init_node("module_position_publisher")
     module_position_publisher = rospy.Publisher("/sim/module_position", PoseWithCovarianceStamped, queue_size=1)
     
-    rate = rospy.Rate(20) #used to be a semi colon here :o s
+    rate = rospy.Rate(20)
 
     start_time = time.time()
     i = 0
     center = [0.0, 0.0]
-    r = 1.4
-    #We estimate that the periode of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
-    omega = 2.0 * math.pi / 10.0
+    r = 1.4 *10
+    #We estimate that the period of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
+    omega = 2.0 * math.pi / 100.0
 
     while not rospy.is_shutdown():
         
@@ -46,7 +46,7 @@ def main():
         y = center[1] - r * math.sin(time.time()*omega)
         position = [x, y, 3.0, 0.0]
         module_position_publisher.publish(coordinatesToPoseWithCovariance(position))
-        print("Publishing to /sim/module_position: ", position)
+        print("Publishing to /sim/module_position: ", "%.3f " % position[1], "%.3f " % position[0], position[2], position[3])
         
         i += 1
         rate.sleep()
