@@ -1,4 +1,4 @@
-FROM ghcr.io/ascendntnu/ascend-ros-base
+FROM ghcr.io/ascendntnu/ascend-ros-base:c8551b483e6e03327aa5cd6e695241adf43360ce
 
 ENV ROS_PACKAGE_NAME=fluid
 
