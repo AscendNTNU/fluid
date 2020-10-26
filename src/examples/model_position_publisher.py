@@ -36,9 +36,9 @@ def main():
     start_time = time.time()
     i = 0
     center = [0.0, 0.0]
-    r = 1.4 *10
+    r = 1.4
     #We estimate that the period of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
-    omega = 2.0 * math.pi / 100.0
+    omega = 2.0 * math.pi / 10.0
 
     while not rospy.is_shutdown():
         
