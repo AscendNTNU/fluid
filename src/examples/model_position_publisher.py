@@ -37,12 +37,10 @@ def main():
     i = 0
     center = [0.0, 0.0]
     r = 1.4
-    #angle_constant = 0.01 #not used
     #We estimate that the periode of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
     omega = 2.0 * math.pi / 10.0
 
     while not rospy.is_shutdown():
-        
         
         x = center[0] - r * math.cos(time.time()*omega)
         y = center[1] - r * math.sin(time.time()*omega)
