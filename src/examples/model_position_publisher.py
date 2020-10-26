@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 ##################################
 # This file is quite a dirty hack
@@ -31,18 +31,21 @@ def main():
     rospy.init_node("module_position_publisher")
     module_position_publisher = rospy.Publisher("/sim/module_position", PoseWithCovarianceStamped, queue_size=1)
     
-    rate = rospy.Rate(20);
+    rate = rospy.Rate(20) #used to be a semi colon here :o s
 
     start_time = time.time()
     i = 0
+    center = [0.0, 0.0]
+    r = 1.4
+    #angle_constant = 0.01 #not used
+    #We estimate that the periode of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
+    omega = 2.0 * math.pi / 10.0
+
     while not rospy.is_shutdown():
         
-        center = [0.0, 0.0]
-        r = 20.0
-        angle_constant = 0.01
         
-        x = center[0] - r * math.cos(i*angle_constant)
-        y = center[1] - r * math.sin(i*angle_constant)
+        x = center[0] - r * math.cos(time.time()*omega)
+        y = center[1] - r * math.sin(time.time()*omega)
         position = [x, y, 3.0, 0.0]
         module_position_publisher.publish(coordinatesToPoseWithCovariance(position))
         print("Publishing to /sim/module_position: ", position)
