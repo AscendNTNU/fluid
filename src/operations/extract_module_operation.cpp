@@ -8,6 +8,47 @@
 
 #include <std_srvs/SetBool.h>
 
+//includes to write in a file
+#include <iostream>
+#include <fstream>
+std::ofstream log_drone_position; 
+const char logFileName[] = "/home/theo/catkin_ws/src/control_pipeline/fluid/log_drone_pos_and_velocity.txt";
+uint32_t start_time = time(nullptr);
+
+void ExtractModuleOperation::initLog()
+{ //create a header for the logfile.
+    log_drone_position.open (logFileName);
+    if(log_drone_position.is_open())
+    {
+        log_drone_position << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\n";
+        log_drone_position.close();
+    }
+    else
+    {
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << logFileName);
+    }
+    getCurrentPose();
+}
+
+void ExtractModuleOperation::saveLog()
+{
+    getCurrentPose();
+    log_drone_position.open (logFileName, std::ios::app); //stored in fluid directory
+    if(log_drone_position.is_open())
+    {
+        log_drone_position << std::fixed << std::setprecision(3) //only 3 decimals
+                           << time(nullptr) - start_time << "\t"
+                           << getCurrentPose().pose.position.x << "\t"
+                           << getCurrentPose().pose.position.y << "\t"
+                           << getCurrentPose().pose.position.z << "\t"
+                           << getCurrentTwist().twist.linear.x << "\t"
+                           << getCurrentTwist().twist.linear.y << "\t"
+                           << getCurrentTwist().twist.linear.z 
+                           << "\n";
+        log_drone_position.close();
+    }
+}
+
 ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier::EXTRACT_MODULE, false) {
     module_pose_subscriber =
         node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
@@ -24,6 +65,8 @@ void ExtractModuleOperation::initialize() {
 
     // Use the current position as setpoint until we get a message with the module position
     setpoint.position = getCurrentPose().pose.position;
+    
+    initLog(); //create a header for the logfile.
 }
 
 bool ExtractModuleOperation::hasFinishedExecution() const { return module_state == ModuleState::EXTRACTED; }
@@ -63,15 +106,23 @@ void ExtractModuleOperation::tick() {
             setpoint.position.z = module_pose.pose.pose.position.z;
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
-                            << "Approaching");
-
+                            << "Approaching, "
+                            << "Curent pose : "
+                            << std::fixed << std::setprecision(3) //only 3 decimals
+                            << getCurrentPose().pose.position.x
+                            << " ; "
+                            << std::fixed << std::setprecision(3)
+                            << getCurrentPose().pose.position.y);
+            saveLog();
+            //for testing purposes, I remove the possibility to go to the next step
+            /*
             if (distance_to_module < 1.8) {
                 module_state = ModuleState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": "
                                 << "Approaching -> Over");
             }
-
+            */
             break;
         }
         case ModuleState::OVER: {
@@ -85,7 +136,7 @@ void ExtractModuleOperation::tick() {
             if (distance_to_setpoint < 0.1 && std::abs(getCurrentYaw() - setpoint.yaw) < M_PI / 50.0) {
                 module_state = ModuleState::BEHIND_WITH_HOOKS;
             }
-
+            
             break;
         }
         case ModuleState::BEHIND_WITH_HOOKS: {
