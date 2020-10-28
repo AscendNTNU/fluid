@@ -11,17 +11,16 @@
 //includes to write in a file
 #include <iostream>
 #include <fstream>
-std::ofstream log_drone_position; 
+std::ofstream log_drone_position_f; 
 const char logFileName[] = "/home/theo/catkin_ws/src/control_pipeline/fluid/log_drone_pos_and_velocity.txt";
-uint32_t start_time = time(nullptr);
 
 void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
-    log_drone_position.open (logFileName);
-    if(log_drone_position.is_open())
+    log_drone_position_f.open (logFileName);
+    if(log_drone_position_f.is_open())
     {
-        log_drone_position << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\n";
-        log_drone_position.close();
+        log_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\n";
+        log_drone_position_f.close();
     }
     else
     {
@@ -33,11 +32,11 @@ void ExtractModuleOperation::initLog()
 void ExtractModuleOperation::saveLog()
 {
     getCurrentPose();
-    log_drone_position.open (logFileName, std::ios::app); //stored in fluid directory
-    if(log_drone_position.is_open())
+    log_drone_position_f.open (logFileName, std::ios::app); //stored in fluid directory
+    if(log_drone_position_f.is_open())
     {
-        log_drone_position << std::fixed << std::setprecision(3) //only 3 decimals
-                           << time(nullptr) - start_time << "\t"
+        log_drone_position_f << std::fixed << std::setprecision(3) //only 3 decimals
+                           << time(nullptr) << "\t"
                            << getCurrentPose().pose.position.x << "\t"
                            << getCurrentPose().pose.position.y << "\t"
                            << getCurrentPose().pose.position.z << "\t"
@@ -45,7 +44,7 @@ void ExtractModuleOperation::saveLog()
                            << getCurrentTwist().twist.linear.y << "\t"
                            << getCurrentTwist().twist.linear.z 
                            << "\n";
-        log_drone_position.close();
+        log_drone_position_f.close();
     }
 }
 
@@ -111,7 +110,6 @@ void ExtractModuleOperation::tick() {
                             << std::fixed << std::setprecision(3) //only 3 decimals
                             << getCurrentPose().pose.position.x
                             << " ; "
-                            << std::fixed << std::setprecision(3)
                             << getCurrentPose().pose.position.y);
             saveLog();
             //for testing purposes, I remove the possibility to go to the next step
