@@ -48,23 +48,22 @@ def main():
     rate = rospy.Rate(20)
 
     start_time = time.time()
-    i = 0
     center = [0.0, 0.0]
-    r = 1.4
+    pitch_radius = 0.13 #0.13 for 30m long boat, 1.25m high waves and 3m high module
+    roll_radius = 0.37 #0.37 for 10m wide boat, 1.25m high waves and 3m high module
     #We estimate that the period of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
     omega = 2.0 * math.pi / 10.0
     z = 3.0
 
     while not rospy.is_shutdown():
         
-        x = center[0] - r * math.cos(time.time()*omega)
-        y = center[1] - r * math.sin(time.time()*omega)
+        x = center[0] - pitch_radius * math.cos(time.time()*omega)
+        y = center[1] - roll_radius * math.sin(time.time()*omega)
         position = [x, y, z, 0.0]
         module_position_publisher.publish(coordinatesToPoseWithCovariance(position))
         print("Publishing to /sim/module_position: ", "%.3f " % position[1], "%.3f " % position[0], position[2], position[3])
-        saveLog(log_file_path,x,y,z)
+        saveLog(log_file_path,position[0],position[1],position[2])
 
-        i += 1
         rate.sleep()
 
 if __name__ == '__main__':
