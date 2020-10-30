@@ -36,7 +36,7 @@ void ExtractModuleOperation::saveLog()
     if(log_drone_position_f.is_open())
     {
         log_drone_position_f << std::fixed << std::setprecision(3) //only 3 decimals
-                           << time(nullptr) << "\t"
+                           << ros::Time::now() << "\t"
                            << getCurrentPose().pose.position.x << "\t"
                            << getCurrentPose().pose.position.y << "\t"
                            << getCurrentPose().pose.position.z << "\t"
