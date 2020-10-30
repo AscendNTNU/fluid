@@ -31,7 +31,7 @@ def coordinatesToPoseWithCovariance(coordinates):
 
 def initLog(path):
     log = open(path,'w')
-    log.write("Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\n")
+    log.write("Time\tPos.x\tPos.y\tPos.z\n")
     log.close()
 
 def saveLog(path,x,y,z):
@@ -61,7 +61,7 @@ def main():
         y = center[1] - roll_radius * math.sin(time.time()*omega)
         position = [x, y, z, 0.0]
         module_position_publisher.publish(coordinatesToPoseWithCovariance(position))
-        print("Publishing to /sim/module_position: ", "%.3f " % position[1], "%.3f " % position[0], position[2], position[3])
+        print("Publishing to /sim/module_position: ", "%.3f " % position[0], "%.3f " % position[1], position[2], position[3])
         saveLog(log_file_path,position[0],position[1],position[2])
 
         rate.sleep()

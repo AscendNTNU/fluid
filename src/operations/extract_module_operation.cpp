@@ -98,10 +98,10 @@ void ExtractModuleOperation::tick() {
 
     switch (module_state) {
         case ModuleState::APPROACHING: {
-            setpoint.position.x = module_pose.pose.pose.position.y;
+            setpoint.position.x = module_pose.pose.pose.position.x;
             // TODO: This has to be fixed, should be facing towards the module from any given position,
             // not just from the x direction
-            setpoint.position.y = module_pose.pose.pose.position.x + 1.5;
+            setpoint.position.y = module_pose.pose.pose.position.y; //+ 1.5; //+1.5 removed for testing purposes
             setpoint.position.z = module_pose.pose.pose.position.z;
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "

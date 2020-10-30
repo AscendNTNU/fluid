@@ -15,8 +15,8 @@ fid = fopen('log_drone_pos_and_velocity.txt'); %open the datafile
 % log_drone_pos_and_velocity.txt
 firstLine = fgets(fid);     %to later find the title of each column
 firstLine = textscan(firstLine,'%s');
-L = size(firstLine{1});     % to find the number of columns
-L = L(1);
+L = size(firstLine{1});     % the number of columns
+L = L(1);                   % good type
 dataFormat = "";
 for i = 1:L
     dataFormat=dataFormat+"%s";
@@ -37,13 +37,6 @@ for i = 1:titleInColumn:L
     titles(i) = firstLine{1}{i};
 end
 
-%% for readability: 
-titles = strrep(titles,"_","\_");
-titles = strrep(titles,"°","ation");
-if size(char(titles(1)))==[1 1] titles(1) = "time"; end
-if size(char(titles(2)))==[1 1] titles(2) = "position X"; end
-if size(char(titles(3)))==[1 1] titles(3) = "position Y"; end
-
 %% We finally get the data we are looking for
 C = textscan(fid, dataFormat,'Headerlines',2-titleInColumn);   %return a table with all our data
 fclose(fid);
@@ -57,6 +50,14 @@ for i = titleInColumn:titleInColumn:L
         results(i,j) = a(1);
     end
 end
+
+%% for readability: 
+titles = strrep(titles,"_","\_");
+titles = strrep(titles,"°","ation");
+if size(char(titles(1)))==[1 1] titles(1) = "time"; end
+if size(char(titles(2)))==[1 1] titles(2) = "position X"; end
+if size(char(titles(3)))==[1 1] titles(3) = "position Y"; end
+
 
 %% Here we try to lay all the graps out so that they nicely fit on our screen
 % So we wonder how many lines and columns should we use to display all the
