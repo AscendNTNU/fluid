@@ -29,6 +29,9 @@ class ExtractModuleOperation : public Operation {
     const float speed = 100;
 
     geometry_msgs::PoseWithCovarianceStamped module_pose;
+    geometry_msgs::PoseWithCovarianceStamped previous_module_pose;
+    geometry_msgs::Vector3_<double> module_calculated_velocity;
+    ros::Time previous_time;
 
     ros::Subscriber module_pose_subscriber;
 
@@ -68,6 +71,11 @@ class ExtractModuleOperation : public Operation {
      * @brief Makes sure the drone is following the module and reacting to the extraction signal.
      */
     void tick() override;
+
+    /**
+     * @brief Estimate the speed of the module from the last two setPoints. Could be in the future from the kalman filter.
+     */
+//    void calculateModuleVelocity();
 };
 
 #endif

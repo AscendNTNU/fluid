@@ -66,23 +66,37 @@ void ExtractModuleOperation::initialize() {
     setpoint.position = getCurrentPose().pose.position;
     
     initLog(); //create a header for the logfile.
+    previous_time = ros::Time::now();
 }
 
 bool ExtractModuleOperation::hasFinishedExecution() const { return module_state == ModuleState::EXTRACTED; }
 
 void ExtractModuleOperation::modulePoseCallback(
     const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
+    previous_module_pose = module_pose;
     module_pose = *module_pose_ptr;
+    ros::Time new_time = ros::Time::now();
+    double dt = (new_time - previous_time).nsec;
+    module_calculated_velocity.x = (previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt;
+    module_calculated_velocity.y = (previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt;
+    module_calculated_velocity.z = (previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt;
+    previous_time = new_time;
 }
+/*
+void ExtractModuleOperation::calculateModuleVelocity() {
+    _velocity_type v = module_pose.pose.pose.position - previous_module_pose.pose.pose.position/
+    
+}*/
+
 
 void ExtractModuleOperation::tick() {
-    setpoint.type_mask = TypeMask::POSITION;
+    setpoint.type_mask = TypeMask::POSITION_AND_VELOCITY;
 
     // Wait until we get the first module position readings before we do anything else.
     if (module_pose.header.seq == 0) {
         return;
     }
-
+    
     const double dx = module_pose.pose.pose.position.y - getCurrentPose().pose.position.x;
     const double dy = module_pose.pose.pose.position.x - getCurrentPose().pose.position.y;
 
@@ -103,6 +117,9 @@ void ExtractModuleOperation::tick() {
             // not just from the x direction
             setpoint.position.y = module_pose.pose.pose.position.y; //+ 1.5; //+1.5 removed for testing purposes
             setpoint.position.z = module_pose.pose.pose.position.z;
+            setpoint.velocity.x = module_calculated_velocity.x*2;
+            setpoint.velocity.y = module_calculated_velocity.y*2;
+            setpoint.velocity.z = module_calculated_velocity.z*2;
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
                             << "Approaching, "
