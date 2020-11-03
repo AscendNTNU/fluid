@@ -19,7 +19,7 @@ void ExtractModuleOperation::initLog()
     log_drone_position_f.open (logFileName);
     if(log_drone_position_f.is_open())
     {
-        log_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\n";
+        log_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
         log_drone_position_f.close();
     }
     else
@@ -42,7 +42,10 @@ void ExtractModuleOperation::saveLog()
                            << getCurrentPose().pose.position.z << "\t"
                            << getCurrentTwist().twist.linear.x << "\t"
                            << getCurrentTwist().twist.linear.y << "\t"
-                           << getCurrentTwist().twist.linear.z 
+                           << getCurrentTwist().twist.linear.z << "\t"
+                           << module_calculated_velocity.x << "\t"
+                           << module_calculated_velocity.y << "\t"
+                           << module_calculated_velocity.z << "\t"
                            << "\n";
         log_drone_position_f.close();
     }
@@ -52,6 +55,7 @@ ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier
     module_pose_subscriber =
         node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
+    setpoint.type_mask = TypeMask::VELOCITY;
 }
 
 void ExtractModuleOperation::initialize() {
@@ -77,9 +81,9 @@ void ExtractModuleOperation::modulePoseCallback(
     module_pose = *module_pose_ptr;
     ros::Time new_time = ros::Time::now();
     double dt = (new_time - previous_time).nsec;
-    module_calculated_velocity.x = (previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt;
-    module_calculated_velocity.y = (previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt;
-    module_calculated_velocity.z = (previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt;
+    module_calculated_velocity.x = 2; //(previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt*1000000000; //from nano sec to sec
+    module_calculated_velocity.y = 2; //(previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt*1000000000; //from nano sec to sec
+    module_calculated_velocity.z = 2; //(previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt*1000000000; //from nano sec to sec
     previous_time = new_time;
 }
 /*
@@ -90,8 +94,7 @@ void ExtractModuleOperation::calculateModuleVelocity() {
 
 
 void ExtractModuleOperation::tick() {
-    setpoint.type_mask = TypeMask::POSITION_AND_VELOCITY;
-
+    //set of type_mask used to be here, but it may cause issues at it is set too often.
     // Wait until we get the first module position readings before we do anything else.
     if (module_pose.header.seq == 0) {
         return;
@@ -117,9 +120,13 @@ void ExtractModuleOperation::tick() {
             // not just from the x direction
             setpoint.position.y = module_pose.pose.pose.position.y; //+ 1.5; //+1.5 removed for testing purposes
             setpoint.position.z = module_pose.pose.pose.position.z;
-            setpoint.velocity.x = module_calculated_velocity.x*2;
-            setpoint.velocity.y = module_calculated_velocity.y*2;
-            setpoint.velocity.z = module_calculated_velocity.z*2;
+            setpoint.velocity.x = module_calculated_velocity.x;
+            setpoint.velocity.y = module_calculated_velocity.y;
+            setpoint.velocity.z = module_calculated_velocity.z;
+            setpoint.acceleration_or_force.x = 0.1;
+            setpoint.acceleration_or_force.y = 0.1;
+            setpoint.acceleration_or_force.z = 1.1;
+
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
                             << "Approaching, "
@@ -127,7 +134,11 @@ void ExtractModuleOperation::tick() {
                             << std::fixed << std::setprecision(3) //only 3 decimals
                             << getCurrentPose().pose.position.x
                             << " ; "
-                            << getCurrentPose().pose.position.y);
+                            << getCurrentPose().pose.position.y
+                            << "\tcaluculated velocity"
+                            << module_calculated_velocity.x << " ; "
+                            << module_calculated_velocity.y << " ; "
+                            << module_calculated_velocity.z);
             saveLog();
             //for testing purposes, I remove the possibility to go to the next step
             /*
