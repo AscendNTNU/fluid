@@ -12,15 +12,16 @@
 #include <iostream>
 #include <fstream>
 std::ofstream log_drone_position_f; 
-const char logFileName[] = "/home/theo/catkin_ws/src/control_pipeline/fluid/log_drone_pos_and_velocity.txt";
+const char logFileName[] = "/home/theo/catkin_ws/src/log_drone_pos_and_velocity.txt"; //put your own path
 
 void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
-    log_drone_position_f.open (logFileName);
+    log_drone_position_f.open (logFileName, std::fstream::out | std::fstream::app);
     if(log_drone_position_f.is_open())
     {
         log_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
         log_drone_position_f.close();
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " logFileName << " open successfully");
     }
     else
     {
@@ -81,9 +82,9 @@ void ExtractModuleOperation::modulePoseCallback(
     module_pose = *module_pose_ptr;
     ros::Time new_time = ros::Time::now();
     double dt = (new_time - previous_time).nsec;
-    module_calculated_velocity.x = 2; //(previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt*1000000000; //from nano sec to sec
-    module_calculated_velocity.y = 2; //(previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt*1000000000; //from nano sec to sec
-    module_calculated_velocity.z = 2; //(previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt*1000000000; //from nano sec to sec
+    module_calculated_velocity.x = (previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt*1000000000; //from nano sec to sec
+    module_calculated_velocity.y = (previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt*1000000000; //from nano sec to sec
+    module_calculated_velocity.z = (previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt*1000000000; //from nano sec to sec
     previous_time = new_time;
 }
 /*
@@ -115,26 +116,25 @@ void ExtractModuleOperation::tick() {
 
     switch (module_state) {
         case ModuleState::APPROACHING: {
-            setpoint.position.x = module_pose.pose.pose.position.x;
-            // TODO: This has to be fixed, should be facing towards the module from any given position,
-            // not just from the x direction
-            setpoint.position.y = module_pose.pose.pose.position.y; //+ 1.5; //+1.5 removed for testing purposes
-            setpoint.position.z = module_pose.pose.pose.position.z;
-            setpoint.velocity.x = module_calculated_velocity.x;
-            setpoint.velocity.y = module_calculated_velocity.y;
-            setpoint.velocity.z = module_calculated_velocity.z;
-            setpoint.acceleration_or_force.x = 0.1;
-            setpoint.acceleration_or_force.y = 0.1;
-            setpoint.acceleration_or_force.z = 1.1;
+            
+            setpoint.position.x = 20;//module_pose.pose.pose.position.x;
+            setpoint.position.y = 20;//module_pose.pose.pose.position.y; //+ 1.5; //+1.5 removed for testing purposes
+            setpoint.position.z = 3 ;//module_pose.pose.pose.position.z;
+            setpoint.velocity.x = 1; //module_calculated_velocity.x;
+            setpoint.velocity.y = 1; //module_calculated_velocity.y;
+            setpoint.velocity.z = 1; //module_calculated_velocity.z;
+            //setpoint.acceleration_or_force.x = 0.1;
+            //setpoint.acceleration_or_force.y = 0.1;
+            //setpoint.acceleration_or_force.z = 1.1;
 
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
                             << "Approaching, "
                             << "Curent pose : "
                             << std::fixed << std::setprecision(3) //only 3 decimals
-                            << getCurrentPose().pose.position.x
-                            << " ; "
-                            << getCurrentPose().pose.position.y
+                            << getCurrentPose().pose.position.x << " ; "
+                            << getCurrentPose().pose.position.y << " ; "
+                            << getCurrentPose().pose.position.z
                             << "\tcaluculated velocity"
                             << module_calculated_velocity.x << " ; "
                             << module_calculated_velocity.y << " ; "

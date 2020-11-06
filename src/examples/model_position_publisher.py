@@ -13,7 +13,7 @@ import math
 from std_msgs.msg import String, Header
 from geometry_msgs.msg import PoseWithCovariance,PoseWithCovarianceStamped, Pose, Point
 
-log_file_path = "/home/theo/catkin_ws/src/control_pipeline/fluid/log_module_position.txt"
+log_file_path = "log_module_position.txt" #Set on the root of control_pipeline
 
 def coordinatesToPoseWithCovariance(coordinates):
     x = float(coordinates[0])
@@ -30,7 +30,7 @@ def coordinatesToPoseWithCovariance(coordinates):
     return msg
 
 def initLog(path):
-    log = open(path,'w')
+    log = open(path,"w")
     log.write("Time\tPos.x\tPos.y\tPos.z\n")
     log.close()
 
