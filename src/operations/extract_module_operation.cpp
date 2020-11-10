@@ -12,7 +12,7 @@
 #include <iostream>
 #include <fstream>
 std::ofstream log_drone_position_f; 
-const char logFileName[] = "/home/theo/catkin_ws/src/log_drone_pos_and_velocity.txt"; //put your own path
+const char logFileName[] = "/home/theo/catkin_ws/src/control_pipeline/log_drone_pos_and_velocity.txt"; //put your own path
 
 void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
@@ -21,7 +21,7 @@ void ExtractModuleOperation::initLog()
     {
         log_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
         log_drone_position_f.close();
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " logFileName << " open successfully");
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << logFileName << " open successfully");
     }
     else
     {
@@ -56,7 +56,7 @@ ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier
     module_pose_subscriber =
         node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
-    setpoint.type_mask = TypeMask::VELOCITY;
+    setpoint.type_mask = TypeMask::POSITION;
 }
 
 void ExtractModuleOperation::initialize() {
@@ -117,12 +117,12 @@ void ExtractModuleOperation::tick() {
     switch (module_state) {
         case ModuleState::APPROACHING: {
             
-            setpoint.position.x = 20;//module_pose.pose.pose.position.x;
-            setpoint.position.y = 20;//module_pose.pose.pose.position.y; //+ 1.5; //+1.5 removed for testing purposes
-            setpoint.position.z = 3 ;//module_pose.pose.pose.position.z;
-            setpoint.velocity.x = 1; //module_calculated_velocity.x;
-            setpoint.velocity.y = 1; //module_calculated_velocity.y;
-            setpoint.velocity.z = 1; //module_calculated_velocity.z;
+            setpoint.position.x = module_pose.pose.pose.position.x;
+            setpoint.position.y = module_pose.pose.pose.position.y; //+ 1.5; //+1.5 removed for testing purposes
+            setpoint.position.z = module_pose.pose.pose.position.z;
+            setpoint.velocity.x = 1; //in module_calculated_velocity.x;
+            setpoint.velocity.y = 1; //in module_calculated_velocity.y;
+            setpoint.velocity.z = 1; //in module_calculated_velocity.z;
             //setpoint.acceleration_or_force.x = 0.1;
             //setpoint.acceleration_or_force.y = 0.1;
             //setpoint.acceleration_or_force.z = 1.1;
