@@ -23,10 +23,10 @@ void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) { c
 
 mavros_msgs::State MavrosInterface::getCurrentState() const { return current_state; }
 
-void MavrosInterface::establishContactToPX4() const {
+void MavrosInterface::establishContactToArdupilot() const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
 
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to establish contact with PX4");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to establish contact with Ardupilot");
 
     // Run until we achieve a connection with mavros
     while (ros::ok() && !getCurrentState().connected) {
@@ -39,6 +39,7 @@ void MavrosInterface::establishContactToPX4() const {
 
 bool MavrosInterface::attemptToSetMode(const std::string& mode) const {
     // The state on the Pixhawk is equal to the state we wan't to set, so we just return
+    // What about Ardupilot? -Erlend
     if (getCurrentState().mode == mode) {
         return true;
     } else {
@@ -55,6 +56,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
 
     // send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within px4
+    // Is this necessary with Ardupilot? -Erlend
     mavros_msgs::PositionTarget setpoint;
     setpoint.type_mask = TypeMask::IDLE;
 
