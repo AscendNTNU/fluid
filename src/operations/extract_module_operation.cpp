@@ -11,8 +11,10 @@
 //includes to write in a file
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
+
 std::ofstream log_drone_position_f; 
-const char logFileName[] = "/home/theo/catkin_ws/src/control_pipeline/log_drone_pos_and_velocity.txt"; //put your own path
+const std::string logFileName = std::string(get_current_dir_name()) + "/../catkin_ws/log_drone_pos_and_velocity.txt"; //file saved in home/catkin_ws
 
 void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
