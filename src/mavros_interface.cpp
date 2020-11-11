@@ -17,9 +17,6 @@ MavrosInterface::MavrosInterface() {
     state_subscriber =
         node_handle.subscribe<mavros_msgs::State>("mavros/state", 1, &MavrosInterface::stateCallback, this);
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
-    
-    //setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
-    //setpoint_velocity/cmd_vel
 }
 
 void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) { current_state = *msg; }

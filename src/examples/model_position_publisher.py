@@ -29,13 +29,13 @@ def coordinatesToPoseWithCovariance(coordinates):
     msg.pose.pose.position = Point(x,y,z)
     return msg
 
-def initLog(path):
-    log = open(path,"w")
+def initLog(file_name):
+    log = open(file_name,"w")
     log.write("Time\tPos.x\tPos.y\tPos.z\n")
     log.close()
 
-def saveLog(path,x,y,z):
-    log = open(path,'a')
+def saveLog(file_name,x,y,z):
+    log = open(file_name,'a')
     log.write(f"{time.time():.3f}\t{x:.3f}\t{y:.3f}\t{z:.3f}\n")
     log.close()
 

@@ -18,7 +18,7 @@ const std::string logFileName = std::string(get_current_dir_name()) + "/../catki
 
 void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
-    log_drone_position_f.open (logFileName, std::fstream::out | std::fstream::app);
+    log_drone_position_f.open(logFileName);
     if(log_drone_position_f.is_open())
     {
         log_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
@@ -54,7 +54,7 @@ void ExtractModuleOperation::saveLog()
     }
 }
 
-ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier::EXTRACT_MODULE, false) {
+ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
     module_pose_subscriber =
         node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
@@ -83,21 +83,15 @@ void ExtractModuleOperation::modulePoseCallback(
     previous_module_pose = module_pose;
     module_pose = *module_pose_ptr;
     ros::Time new_time = ros::Time::now();
-    double dt = (new_time - previous_time).nsec;
-    module_calculated_velocity.x = (previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt*1000000000; //from nano sec to sec
-    module_calculated_velocity.y = (previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt*1000000000; //from nano sec to sec
-    module_calculated_velocity.z = (previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt*1000000000; //from nano sec to sec
+    double dt = (new_time - previous_time).nsec/1000000000;
+    module_calculated_velocity.x = (previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt; //from nano sec to sec
+    module_calculated_velocity.y = (previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt; //from nano sec to sec
+    module_calculated_velocity.z = (previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt; //from nano sec to sec
     previous_time = new_time;
 }
-/*
-void ExtractModuleOperation::calculateModuleVelocity() {
-    _velocity_type v = module_pose.pose.pose.position - previous_module_pose.pose.pose.position/
-    
-}*/
 
 
 void ExtractModuleOperation::tick() {
-    //set of type_mask used to be here, but it may cause issues at it is set too often.
     // Wait until we get the first module position readings before we do anything else.
     if (module_pose.header.seq == 0) {
         return;
@@ -122,13 +116,10 @@ void ExtractModuleOperation::tick() {
             setpoint.position.x = module_pose.pose.pose.position.x;
             setpoint.position.y = module_pose.pose.pose.position.y; //+ 1.5; //+1.5 removed for testing purposes
             setpoint.position.z = module_pose.pose.pose.position.z;
-            setpoint.velocity.x = 1; //in module_calculated_velocity.x;
-            setpoint.velocity.y = 1; //in module_calculated_velocity.y;
-            setpoint.velocity.z = 1; //in module_calculated_velocity.z;
-            //setpoint.acceleration_or_force.x = 0.1;
-            //setpoint.acceleration_or_force.y = 0.1;
-            //setpoint.acceleration_or_force.z = 1.1;
-
+            setpoint.velocity.x = module_calculated_velocity.x;
+            setpoint.velocity.y = module_calculated_velocity.y;
+            setpoint.velocity.z = module_calculated_velocity.z;
+                                    
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
                             << "Approaching, "
