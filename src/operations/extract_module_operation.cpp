@@ -50,7 +50,7 @@ void ExtractModuleOperation::saveLog()
                             << getCurrentTwist().twist.linear.z << "\t"
                             << module_calculated_velocity.x << "\t"
                             << module_calculated_velocity.y << "\t"
-                            << module_calculated_velocity.z <<
+                            << module_calculated_velocity.z
                             << "\n";
             save_drone_position_f.close();
         }
