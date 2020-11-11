@@ -13,44 +13,47 @@
 #include <fstream>
 #include <unistd.h> //to get the current directory
 
-std::ofstream log_drone_position_f; 
+bool store_data = true;
+std::ofstream save_drone_position_f; 
 const std::string logFileName = std::string(get_current_dir_name()) + "/../catkin_ws/drone_pos_and_velocity.txt"; //file saved in home/catkin_ws
 
 void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
-    log_drone_position_f.open(logFileName);
-    if(log_drone_position_f.is_open())
+    save_drone_position_f.open(logFileName);
+    if(save_drone_position_f.is_open())
     {
-        log_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
-        log_drone_position_f.close();
         ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << logFileName << " open successfully");
+        save_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
+        save_drone_position_f.close();
     }
     else
     {
         ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << logFileName);
+        store_data = false; //if we can't save data, we don't want to do it
     }
-    getCurrentPose();
 }
 
 void ExtractModuleOperation::saveLog()
 {
-    getCurrentPose();
-    log_drone_position_f.open (logFileName, std::ios::app); //stored in fluid directory
-    if(log_drone_position_f.is_open())
+    if(store_data)
     {
-        log_drone_position_f << std::fixed << std::setprecision(3) //only 3 decimals
-                           << ros::Time::now() << "\t"
-                           << getCurrentPose().pose.position.x << "\t"
-                           << getCurrentPose().pose.position.y << "\t"
-                           << getCurrentPose().pose.position.z << "\t"
-                           << getCurrentTwist().twist.linear.x << "\t"
-                           << getCurrentTwist().twist.linear.y << "\t"
-                           << getCurrentTwist().twist.linear.z << "\t"
-                           << module_calculated_velocity.x << "\t"
-                           << module_calculated_velocity.y << "\t"
-                           << module_calculated_velocity.z << "\t"
-                           << "\n";
-        log_drone_position_f.close();
+        save_drone_position_f.open (logFileName, std::ios::app); //stored in fluid directory
+        if(save_drone_position_f.is_open())
+        {
+            save_drone_position_f << std::fixed << std::setprecision(3) //only 3 decimals
+                            << ros::Time::now() << "\t"
+                            << getCurrentPose().pose.position.x << "\t"
+                            << getCurrentPose().pose.position.y << "\t"
+                            << getCurrentPose().pose.position.z << "\t"
+                            << getCurrentTwist().twist.linear.x << "\t"
+                            << getCurrentTwist().twist.linear.y << "\t"
+                            << getCurrentTwist().twist.linear.z << "\t"
+                            << module_calculated_velocity.x << "\t"
+                            << module_calculated_velocity.y << "\t"
+                            << module_calculated_velocity.z <<
+                            << "\n";
+            save_drone_position_f.close();
+        }
     }
 }
 
@@ -83,7 +86,7 @@ void ExtractModuleOperation::modulePoseCallback(
     previous_module_pose = module_pose;
     module_pose = *module_pose_ptr;
     ros::Time new_time = ros::Time::now();
-    double dt = (new_time - previous_time).nsec/1000000000;
+    double dt = ((new_time - previous_time).nsec/1000000000)%1000000000;
     module_calculated_velocity.x = (previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt; //from nano sec to sec
     module_calculated_velocity.y = (previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt; //from nano sec to sec
     module_calculated_velocity.z = (previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt; //from nano sec to sec
@@ -108,13 +111,15 @@ void ExtractModuleOperation::tick() {
     const double dvy = getCurrentTwist().twist.linear.y;
     const double dvz = getCurrentTwist().twist.linear.z;
 
-    const double speed = sqrt(dvx * dvx + dvy * dvy + dvz * dvz);
+    const double drone_speed = sqrt(dvx * dvx + dvy * dvy + dvz * dvz); //not used 
 
     switch (module_state) {
         case ModuleState::APPROACHING: {
-            
-            setpoint.position.x = module_pose.pose.pose.position.x;
-            setpoint.position.y = module_pose.pose.pose.position.y; //+ 1.5; //+1.5 removed for testing purposes
+            // TODO: This has to be fixed, should be facing towards the module from any given position,
+            // not just from the x direction
+
+            setpoint.position.x = module_pose.pose.pose.position.y;
+            setpoint.position.y = module_pose.pose.pose.position.x +1.5;
             setpoint.position.z = module_pose.pose.pose.position.z;
             setpoint.velocity.x = module_calculated_velocity.x;
             setpoint.velocity.y = module_calculated_velocity.y;
@@ -133,15 +138,15 @@ void ExtractModuleOperation::tick() {
                             << module_calculated_velocity.y << " ; "
                             << module_calculated_velocity.z);
             saveLog();
-            //for testing purposes, I remove the possibility to go to the next step
-            /*
+            //for testing purposes, I toggle the possibility to go to the next step
+            //*
             if (distance_to_module < 1.8) {
                 module_state = ModuleState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": "
                                 << "Approaching -> Over");
             }
-            */
+            //*/
             break;
         }
         case ModuleState::OVER: {

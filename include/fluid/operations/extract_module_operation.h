@@ -26,7 +26,7 @@ class ExtractModuleOperation : public Operation {
 
 	ModuleState module_state = ModuleState::APPROACHING;
 
-    const float speed = 100;
+    const float speed = 10;
 
     geometry_msgs::PoseWithCovarianceStamped module_pose;
     geometry_msgs::PoseWithCovarianceStamped previous_module_pose;
@@ -71,11 +71,6 @@ class ExtractModuleOperation : public Operation {
      * @brief Makes sure the drone is following the module and reacting to the extraction signal.
      */
     void tick() override;
-
-    /**
-     * @brief Estimate the speed of the module from the last two setPoints. Could be in the future from the kalman filter.
-     */
-//    void calculateModuleVelocity();
 };
 
 #endif
