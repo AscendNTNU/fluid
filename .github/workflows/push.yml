@@ -6,7 +6,6 @@ jobs:
   build-and-push-image:
     runs-on: self-hosted
     steps:
-      - name: Build and push
-        uses: ascendntnu/docker-build-and-push-branch@v0.2
-        with:
-          dockerfile-path: "./Dockerfile"
+    - uses: ascendntnu/docker-build-and-push-branch@v0.2
+      with:
+        dockerfile-path: "./Dockerfile"
