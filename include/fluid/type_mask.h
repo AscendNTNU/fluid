@@ -31,6 +31,17 @@ class TypeMask {
 
     static constexpr uint16_t VELOCITY =
         IGNORE_PX | IGNORE_PY | IGNORE_PZ | IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ | IGNORE_YAW_RATE;
+
+    static constexpr uint16_t POSITION_AND_VELOCITY =
+        IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ | IGNORE_YAW_RATE;
+    
+    static constexpr uint16_t ACCELERATION =
+        IGNORE_PX | IGNORE_PY | IGNORE_PZ | IGNORE_VX | IGNORE_VY | IGNORE_VZ | IGNORE_YAW_RATE;
+
+    static constexpr uint16_t POSITION_AND_ACCELERATION =
+        IGNORE_VX | IGNORE_VY | IGNORE_VZ | IGNORE_YAW_RATE;
+        
+
 };
 
 #endif

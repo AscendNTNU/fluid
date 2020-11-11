@@ -11,16 +11,19 @@
 //includes to write in a file
 #include <iostream>
 #include <fstream>
+#include <unistd.h> //to get the current directory
+
 std::ofstream log_drone_position_f; 
-const char logFileName[] = "/home/theo/catkin_ws/src/control_pipeline/fluid/log_drone_pos_and_velocity.txt";
+const std::string logFileName = std::string(get_current_dir_name()) + "/../catkin_ws/drone_pos_and_velocity.txt"; //file saved in home/catkin_ws
 
 void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
-    log_drone_position_f.open (logFileName);
+    log_drone_position_f.open(logFileName);
     if(log_drone_position_f.is_open())
     {
-        log_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\n";
+        log_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
         log_drone_position_f.close();
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << logFileName << " open successfully");
     }
     else
     {
@@ -42,16 +45,20 @@ void ExtractModuleOperation::saveLog()
                            << getCurrentPose().pose.position.z << "\t"
                            << getCurrentTwist().twist.linear.x << "\t"
                            << getCurrentTwist().twist.linear.y << "\t"
-                           << getCurrentTwist().twist.linear.z 
+                           << getCurrentTwist().twist.linear.z << "\t"
+                           << module_calculated_velocity.x << "\t"
+                           << module_calculated_velocity.y << "\t"
+                           << module_calculated_velocity.z << "\t"
                            << "\n";
         log_drone_position_f.close();
     }
 }
 
-ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier::EXTRACT_MODULE, false) {
+ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
     module_pose_subscriber =
         node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
+    setpoint.type_mask = TypeMask::POSITION;
 }
 
 void ExtractModuleOperation::initialize() {
@@ -66,23 +73,30 @@ void ExtractModuleOperation::initialize() {
     setpoint.position = getCurrentPose().pose.position;
     
     initLog(); //create a header for the logfile.
+    previous_time = ros::Time::now();
 }
 
 bool ExtractModuleOperation::hasFinishedExecution() const { return module_state == ModuleState::EXTRACTED; }
 
 void ExtractModuleOperation::modulePoseCallback(
     const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
+    previous_module_pose = module_pose;
     module_pose = *module_pose_ptr;
+    ros::Time new_time = ros::Time::now();
+    double dt = (new_time - previous_time).nsec/1000000000;
+    module_calculated_velocity.x = (previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt; //from nano sec to sec
+    module_calculated_velocity.y = (previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt; //from nano sec to sec
+    module_calculated_velocity.z = (previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt; //from nano sec to sec
+    previous_time = new_time;
 }
 
-void ExtractModuleOperation::tick() {
-    setpoint.type_mask = TypeMask::POSITION;
 
+void ExtractModuleOperation::tick() {
     // Wait until we get the first module position readings before we do anything else.
     if (module_pose.header.seq == 0) {
         return;
     }
-
+    
     const double dx = module_pose.pose.pose.position.y - getCurrentPose().pose.position.x;
     const double dy = module_pose.pose.pose.position.x - getCurrentPose().pose.position.y;
 
@@ -98,19 +112,26 @@ void ExtractModuleOperation::tick() {
 
     switch (module_state) {
         case ModuleState::APPROACHING: {
-            setpoint.position.x = module_pose.pose.pose.position.y;
-            // TODO: This has to be fixed, should be facing towards the module from any given position,
-            // not just from the x direction
-            setpoint.position.y = module_pose.pose.pose.position.x + 1.5;
+            
+            setpoint.position.x = module_pose.pose.pose.position.x;
+            setpoint.position.y = module_pose.pose.pose.position.y; //+ 1.5; //+1.5 removed for testing purposes
             setpoint.position.z = module_pose.pose.pose.position.z;
+            setpoint.velocity.x = module_calculated_velocity.x;
+            setpoint.velocity.y = module_calculated_velocity.y;
+            setpoint.velocity.z = module_calculated_velocity.z;
+                                    
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
                             << "Approaching, "
                             << "Curent pose : "
                             << std::fixed << std::setprecision(3) //only 3 decimals
-                            << getCurrentPose().pose.position.x
-                            << " ; "
-                            << getCurrentPose().pose.position.y);
+                            << getCurrentPose().pose.position.x << " ; "
+                            << getCurrentPose().pose.position.y << " ; "
+                            << getCurrentPose().pose.position.z
+                            << "\tcaluculated velocity"
+                            << module_calculated_velocity.x << " ; "
+                            << module_calculated_velocity.y << " ; "
+                            << module_calculated_velocity.z);
             saveLog();
             //for testing purposes, I remove the possibility to go to the next step
             /*

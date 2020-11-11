@@ -13,7 +13,7 @@ import math
 from std_msgs.msg import String, Header
 from geometry_msgs.msg import PoseWithCovariance,PoseWithCovarianceStamped, Pose, Point
 
-log_file_path = "/home/theo/catkin_ws/src/control_pipeline/fluid/log_module_position.txt"
+log_file_path = "../../module_position.txt" #file saved in home/catkin_ws
 
 def coordinatesToPoseWithCovariance(coordinates):
     x = float(coordinates[0])
@@ -29,13 +29,13 @@ def coordinatesToPoseWithCovariance(coordinates):
     msg.pose.pose.position = Point(x,y,z)
     return msg
 
-def initLog(path):
-    log = open(path,'w')
-    log.write("Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\n")
+def initLog(file_name):
+    log = open(file_name,"w")
+    log.write("Time\tPos.x\tPos.y\tPos.z\n")
     log.close()
 
-def saveLog(path,x,y,z):
-    log = open(path,'a')
+def saveLog(file_name,x,y,z):
+    log = open(file_name,'a')
     log.write(f"{time.time():.3f}\t{x:.3f}\t{y:.3f}\t{z:.3f}\n")
     log.close()
 
@@ -61,7 +61,7 @@ def main():
         y = center[1] - roll_radius * math.sin(time.time()*omega)
         position = [x, y, z, 0.0]
         module_position_publisher.publish(coordinatesToPoseWithCovariance(position))
-        print("Publishing to /sim/module_position: ", "%.3f " % position[1], "%.3f " % position[0], position[2], position[3])
+        print("Publishing to /sim/module_position: ", "%.3f " % position[0], "%.3f " % position[1], position[2], position[3])
         saveLog(log_file_path,position[0],position[1],position[2])
 
         rate.sleep()
