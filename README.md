@@ -20,7 +20,7 @@ Have a look at [Flow](documentation/Flow.md) and [Operations](documentation/Oper
 
 1. Make sure you have MAVROS installed and PX4 and gazebo built.
 
-    MAVROS for Noetic: `sudo apt install ros-noetic-mavros ros-noetic-mavros-msgs`
+    MAVROS for Noetic: `sudo apt install ros-noetic-mavros ros-noetic-mavros-msgs`\
     then:  `/opt/ros/noetic/lib/mavros/install_geographiclib_datasets.sh`
     
     PX4: `git clone https://github.com/PX4/PX4-Autopilot PX4`
