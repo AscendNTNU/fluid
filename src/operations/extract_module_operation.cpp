@@ -11,7 +11,7 @@
 //includes to write in a file
 #include <iostream>
 #include <fstream>
-#include <unistd.h>
+#include <unistd.h> //to get the current directory
 
 std::ofstream log_drone_position_f; 
 const std::string logFileName = std::string(get_current_dir_name()) + "/../catkin_ws/drone_pos_and_velocity.txt"; //file saved in home/catkin_ws
