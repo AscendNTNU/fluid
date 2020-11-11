@@ -13,7 +13,7 @@ import math
 from std_msgs.msg import String, Header
 from geometry_msgs.msg import PoseWithCovariance,PoseWithCovarianceStamped, Pose, Point
 
-log_file_path = "../../log_module_position.txt" #file saved in home/catkin_ws
+log_file_path = "../../module_position.txt" #file saved in home/catkin_ws
 
 def coordinatesToPoseWithCovariance(coordinates):
     x = float(coordinates[0])

@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 std::ofstream log_drone_position_f; 
-const std::string logFileName = std::string(get_current_dir_name()) + "/../catkin_ws/log_drone_pos_and_velocity.txt"; //file saved in home/catkin_ws
+const std::string logFileName = std::string(get_current_dir_name()) + "/../catkin_ws/drone_pos_and_velocity.txt"; //file saved in home/catkin_ws
 
 void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
