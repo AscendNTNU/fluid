@@ -1,4 +1,4 @@
-name: build-and-push
+name: build-and-push-by-sha
 
 on: push
 
@@ -10,28 +10,23 @@ jobs:
         id: tags
         shell: bash
         run: |
-          TAG_PREFIX="ghcr.io/ascendntnu/ascend-ros-base"
+          ORIG_TAG_PREFIX="ghcr.io/${{ github.repository }}"
+          TAG_PREFIX="${ORIG_TAG_PREFIX,,}"
           TAGS=""
           function add_tag {
             TAGS="${TAGS:+$TAGS,}$TAG_PREFIX:$1"
           }
-
           RAW_BRANCH=${GITHUB_REF#refs/heads/}
           BRANCH=$(echo "$RAW_BRANCH" | tr "/" -)
+          if [ $BRANCH == "master" ];  then
+            add_tag "latest"
+          fi
           add_tag $BRANCH
-
           SHORT_SHA=${GITHUB_SHA::7}
           add_tag $SHORT_SHA
-
-          if [ "$BRANCH" = "master" ]; then
-            add_tag latest
-          fi
-
           echo "::set-output name=tags::$TAGS"
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to GHCR
@@ -45,7 +40,5 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: ${{ steps.tags.outputs.tags }}
-
