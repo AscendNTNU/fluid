@@ -86,7 +86,7 @@ void ExtractModuleOperation::modulePoseCallback(
     previous_module_pose = module_pose;
     module_pose = *module_pose_ptr;
     ros::Time new_time = ros::Time::now();
-    double dt = ((new_time - previous_time).nsec/1000000000)%1000000000;
+    double dt = (new_time - previous_time).nsec/1000000000.0;
     module_calculated_velocity.x = (previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt; //from nano sec to sec
     module_calculated_velocity.y = (previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt; //from nano sec to sec
     module_calculated_velocity.z = (previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt; //from nano sec to sec
