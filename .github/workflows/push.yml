@@ -1,0 +1,12 @@
+name: build-and-push
+
+on: push
+
+jobs:
+  build-and-push-image:
+    runs-on: self-hosted
+    steps:
+      - name: Build and push
+        uses: ascendntnu/docker-build-and-push-branch@v0.1
+        with:
+          dockerfile-path: "./Dockerfile"
