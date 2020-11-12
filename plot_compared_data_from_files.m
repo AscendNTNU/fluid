@@ -3,10 +3,13 @@
 % variables on the same graphs
 % This code is written from plot_data_from_file.m
 
+% If the function time_and_distance_error_f can't be found even though it
+% is in your folder, just start it once for nothing. It should fix it.
+
 clear();
 files_to_compare = [ % put the files you want to compare h
-    "drone_pos_and_velocity.txt"
     "module_position.txt"
+    "drone_pos_and_velocity.txt"
     ]';
 
 nb_file = length(files_to_compare);
@@ -42,13 +45,13 @@ titles = strings(nb_file,max(nb_column));    %The name of each variable
 results=[];
 for i=1:nb_file
     for j = 1:titleInColumn(i):nb_column(i)
-        titles(i,j) = first_lines{i}{j};%todo: check it works with the other format of file
+        titles(i,j) = first_lines{i}{j}; %todo: check it works with the other format of file
     end
 end
 
 %% Let us compare the title and make a single list of them all
 merge_titles = titles(1,1:nb_column(1));
-data_fusion_matrix = zeros(size(titles)); %todo, fix the evalutation of this matrix when the first files is smaller than the second one
+data_fusion_matrix = zeros(size(titles));
 data_fusion_matrix(1,1:nb_column(1)) = 1:nb_column(1);
 for i=2:nb_file
     for j=1:nb_column(i)
@@ -76,10 +79,7 @@ for i=1:nb_file
         results(i,data_fusion_matrix(i,j)*titleInColumn(i),1:nb_lines(i)) = column; %we have to do it column by column because C is a made of cells, and I don't know  how to elsewise
     end
 end
-% TODO: check that if a latter file has more columns, all the titles are
-% savede, and there is no error btw ^^
 
-%TODO: test that elements are set in the good columns
 %% shift the time if it does not begin near 0
 start_time = min(results(:,1,1));
 if start_time >1000
@@ -90,13 +90,11 @@ if start_time >1000
 end
 
 %% for readability: 
-for i=1:nb_file
-    titles(i) = strrep(titles(i),"_","\_");
-    titles(i) = strrep(titles(i),"°","ation");
-    if size(char(titles(i,1)))==[1 1] titles(i,1) = "time"; end
-    if size(char(titles(i,2)))==[1 1] titles(i,2) = "position X"; end
-    if size(char(titles(i,3)))==[1 1] titles(i,3) = "position Y"; end    
-end
+merge_titles = strrep(merge_titles,"_","\_");
+merge_titles = strrep(merge_titles,"°","ation");
+if size(char(merge_titles(1)))==[1 1] merge_titles(1) = "time"; end
+if size(char(merge_titles(2)))==[1 1] merge_titles(2) = "position X"; end
+if size(char(merge_titles(3)))==[1 1] merge_titles(3) = "position Y"; end    
 files_to_compare = strrep(files_to_compare,"_"," ");
 files_to_compare = strrep(files_to_compare,".txt","");
 files_to_compare = strrep(files_to_compare,"log","");
@@ -140,7 +138,6 @@ for i = 2*titleInColumn(1):titleInColumn(1):L %i is the variable we are gonna di
     hold off
 end
 
-%legend(files_to_compare(1),files_to_compare(2);
 % we also want to print y against x to see the position of the robot
 subplot(plotSize(1),plotSize(2),1)
 for file_ind=1:nb_file
@@ -151,14 +148,8 @@ for file_ind=1:nb_file
 end
 xlabel(merge_titles(2));
 ylabel(merge_titles(3));
-%{
-hL = subplot(plotSize(1),plotSize(2),L+1); % set room for legend
-posLegend = get(hL,'position');
-axis(hL,'off');                 % Turning its axis off
-lgd = legend(hL,files_to_compare);
-set(lgd,'position',posLegend);
-%}
 hold off
+
 %% Other fewer display to get them bigger
 figure
 subplot(1,3,1)
@@ -196,9 +187,10 @@ try
     fprintf("\nError projected along the Y axis:\n");
     time_and_distance_error_f(referencey,measurementy);
 catch
+    % if it does not work on matlab online even though you see the function
+    % on your current folder, try to just start the function once.
     fprintf("No function time_and_distance_error_f ... further analysis can't be done automaticaly\n");
 end
 
-
-%TODO: check what's the hell with titleInColumn, it should not matter
-%anymore in the result matrix, this matrix should only have values.
+% TODO: I could remove the hell with titleInColumn, it is an old feature
+% that is not useful anymore.
