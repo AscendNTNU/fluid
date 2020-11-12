@@ -36,7 +36,7 @@ def initLog(file_name):
 
 def saveLog(file_name,x,y,z):
     log = open(file_name,'a')
-    log.write(f"{time.time():.3f}\t{x:.3f}\t{y:.3f}\t{z:.3f}\n")
+    log.write(f"{rospy.get_rostime().secs + rospy.get_rostime().nsecs/1000000000.0:.3f}\t{x:.3f}\t{y:.3f}\t{z:.3f}\n")
     log.close()
 
 
