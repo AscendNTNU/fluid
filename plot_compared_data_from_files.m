@@ -5,8 +5,8 @@
 
 clear();
 files_to_compare = [ % put the files you want to compare h
-    "log_module_position.txt"
-    "log_drone_pos_and_velocity.txt"
+    "drone_pos_and_velocity.txt"
+    "module_position.txt"
     ]';
 
 nb_file = length(files_to_compare);
