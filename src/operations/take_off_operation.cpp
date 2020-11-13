@@ -21,23 +21,7 @@ bool TakeOffOperation::hasFinishedExecution() const {
 }
 
 void TakeOffOperation::initialize() {
-    //trying to copy the python script made by simen: https://github.com/AscendNTNU/ascend_simulator/blob/main/src/takeoff.py
-/*    ros::Rate rate(30);
-    setpoint.type_mask = TypeMask::POSITION;
-    setpoint.position.x = 0;
-    setpoint.position.y = 0;
-    setpoint.position.z = 0;
-    setpoint.yaw = getCurrentYaw();
-    setpoint.coordinate_frame = 1;
-    setpoint.header.frame_id = "map";
 
-    for (int i=0; i<100;i++)
-    {
-        setpoint.header.stamp = ros::Time::now();
-        publishSetpoint();
-        rate.sleep();
-    }
-    */
     MavrosInterface mavros_interface;
     mavros_interface.establishContactToArduPilot();
     Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_px4 = 1;
@@ -48,20 +32,14 @@ void TakeOffOperation::initialize() {
     mavros_interface.requestOffboard(Fluid::getInstance().configuration.should_auto_offboard);
     Fluid::getInstance().getStatusPublisherPtr()->status.px4_mode = PX4_MODE_OFFBOARD;
 
-//    setpoint.header.stamp = ros::Time::now();
-//    publishSetpoint();
-//    rate.sleep();
-
     //send take off command
-    //setpoint.position.z = 2;
-    //mavros_interface.requestTakeOff(setpoint);
+    setpoint.position.z = 2;
+    mavros_interface.requestTakeOff(setpoint);
 
-/*    
     // Spin until we retrieve the first pose
     while(ros::ok() && getCurrentPose().header.seq == 0) {
         ROS_INFO_STREAM(ros::this_node::getName().c_str() << "publish setPoint for takeoff\n");
         publishSetpoint();
         ros::spinOnce();
     }
-*/
 }
