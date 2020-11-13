@@ -21,12 +21,12 @@
     <param name="refresh_rate"                        value="$(arg refresh_rate)"/>
   </node>
 
-  <include file="$(find mavros)/launch/px4.launch">
+  <!--<include file="$(find mavros)/launch/px4.launch">
     <arg name="fcu_url"                               value="$(arg fcu_url)"/>
     <arg name="log_output"                            value="log"/>
     <arg name="tgt_system"                            value="1"/>
     <arg name="tgt_component"                         value="1"/>
-  </include>
+  </include>-->
 
   <node if="$(arg launch_rviz)" type="rviz" name="rviz" pkg="rviz" args="-d $(find fluid)/rviz_configs/fluid.rviz" />
 
