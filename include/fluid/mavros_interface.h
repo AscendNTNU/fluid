@@ -8,6 +8,7 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 #include <ros/ros.h>
+#include <mavros_msgs/PositionTarget.h>
 
 /**
  * @brief Handles communication regarding setting state, retriving state from the pixhawk, as well as
@@ -89,7 +90,7 @@ class MavrosInterface {
      *
      * @param height Will set the height we want to take off
      */
-    void requestTakeOff(const double height) const;
+    void requestTakeOff(mavros_msgs::PositionTarget height) const;
 
     /**
      * @brief Sets a parameter within PX4.

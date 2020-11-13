@@ -31,8 +31,14 @@ void TakeOffOperation::initialize() {
     mavros_interface.requestOffboard(Fluid::getInstance().configuration.should_auto_offboard);
     Fluid::getInstance().getStatusPublisherPtr()->status.px4_mode = PX4_MODE_OFFBOARD;
 
-    mavros_interface.requestTakeOff(2.0);
-    setpoint.type_mask = TypeMask::IDLE;
+
+    setpoint.type_mask = TypeMask::POSITION;
+    setpoint.position.x = 0;
+    setpoint.position.y = 0;
+    setpoint.position.z = 2;
+    setpoint.yaw = getCurrentYaw();
+    setpoint.coordinate_frame = 1;
+    mavros_interface.requestTakeOff(setpoint);
 
     // Spin until we retrieve the first pose
     do {
@@ -47,5 +53,5 @@ void TakeOffOperation::initialize() {
     setpoint.yaw = getCurrentYaw();
     setpoint.type_mask = TypeMask::POSITION;
     //setpoint.header.frame_id = "1";
-    setpoint.coordinate_frame = 1;
+    
 }

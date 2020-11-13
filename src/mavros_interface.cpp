@@ -137,13 +137,12 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": OK!\n");
 }
 
-void MavrosInterface::requestTakeOff(const double height) const {
+void MavrosInterface::requestTakeOff( mavros_msgs::PositionTarget setpoint) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
 
     // send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within px4
     // Is this necessary with Ardupilot? -Erlend
-    mavros_msgs::PositionTarget setpoint;
     setpoint.type_mask = TypeMask::IDLE;
 
     for (int i = UPDATE_REFRESH_RATE * 2; ros::ok() && i > 0; --i) {
@@ -152,6 +151,7 @@ void MavrosInterface::requestTakeOff(const double height) const {
         rate.sleep();
     }
     setpoint.type_mask = TypeMask::POSITION;
+    setpoint_publisher.publish(setpoint);
 
     // Taking off
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to take off!");
@@ -161,11 +161,11 @@ void MavrosInterface::requestTakeOff(const double height) const {
 
     ros::ServiceClient takeoff_cl = node_handle.serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/takeoff");
     mavros_msgs::CommandTOL srv_takeoff;
-    srv_takeoff.request.altitude = height;
-    srv_takeoff.request.latitude = 0;
-    srv_takeoff.request.longitude = 0;
+    srv_takeoff.request.altitude = setpoint.position.z;
+    srv_takeoff.request.latitude = setpoint.position.x;
+    srv_takeoff.request.longitude = setpoint.position.y;
     srv_takeoff.request.min_pitch = 0;
-    srv_takeoff.request.yaw = 0;
+    srv_takeoff.request.yaw = setpoint.yaw;
     if(takeoff_cl.call(srv_takeoff)){
         ROS_INFO("srv_takeoff send ok %d", srv_takeoff.response.success);
     }else{
