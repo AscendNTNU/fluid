@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import rospy
 import math
@@ -103,7 +103,7 @@ def main():
 
                 # Perform a travel with a list of points
                 point = Point()
-                point.x = 100
+                point.x = 20
                 response = travel([point])
                 if (not response.success):
                     rospy.logerr(response.message)

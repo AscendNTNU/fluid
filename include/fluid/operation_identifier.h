@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-const std::string PX4_MODE_OFFBOARD = "OFFBOARD";
+const std::string PX4_MODE_OFFBOARD = "GUIDED";
 const std::string PX4_MODE_LAND = "AUTO.LAND";
 
 /**

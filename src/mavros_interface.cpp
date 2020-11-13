@@ -23,10 +23,10 @@ void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) { c
 
 mavros_msgs::State MavrosInterface::getCurrentState() const { return current_state; }
 
-void MavrosInterface::establishContactToArdupilot() const {
+void MavrosInterface::establishContactToArduPilot() const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
 
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to establish contact with Ardupilot");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to establish contact with ArduPilot");
 
     // Run until we achieve a connection with mavros
     while (ros::ok() && !getCurrentState().connected) {
@@ -121,10 +121,10 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     bool set_offboard = false;
 
     while (ros::ok() && !set_offboard) {
-        set_offboard = getCurrentState().mode == "OFFBOARD";
+        set_offboard = getCurrentState().mode == "GUIDED";
 
         if (auto_offboard) {
-            set_offboard = attemptToSetMode("OFFBOARD");
+            set_offboard = attemptToSetMode("GUIDED");
         }
 
         setpoint_publisher.publish(setpoint);

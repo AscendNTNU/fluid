@@ -54,9 +54,9 @@ class MavrosInterface {
     mavros_msgs::State getCurrentState() const;
 
     /**
-     * @brief Sets up the connection with PX4 through MAVROS.
+     * @brief Sets up the connection with ArduPilot through MAVROS.
      */
-    void establishContactToPX4() const;
+    void establishContactToArduPilot() const;
 
     /**
      * @brief Will attempt to set the @p mode if PX4 is not already in the given mode.

@@ -22,7 +22,7 @@ bool TakeOffOperation::hasFinishedExecution() const {
 
 void TakeOffOperation::initialize() {
     MavrosInterface mavros_interface;
-    mavros_interface.establishContactToPX4();
+    mavros_interface.establishContactToArduPilot();
     Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_px4 = 1;
 
     mavros_interface.requestArm(Fluid::getInstance().configuration.should_auto_arm);
