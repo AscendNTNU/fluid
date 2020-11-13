@@ -72,10 +72,7 @@ def main():
         rospy.logerr("Did not get connection with Fluid's services, is Fluid running?")
 
     # Perform a take off to 3 meters above ground
-    print("try to take off\n")
     take_off_response = take_off(2)
-    return
-    print("Drone took off\n")
     is_executing_operation = True
 
     # Checks if the operation request was successful
