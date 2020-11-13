@@ -1,4 +1,4 @@
-FROM ghcr.io/ascendntnu/ascend-ros-base:8ee8edb
+FROM ghcr.io/ascendntnu/ascend-ros-base:fe7b38b
 ENV ROS_PACKAGE_NAME=fluid
 
 ## Install geographiclib and fetch models
