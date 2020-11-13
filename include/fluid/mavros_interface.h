@@ -75,6 +75,7 @@ class MavrosInterface {
      */
     void requestArm(const bool& auto_arm) const;
 
+
     /**
      * @brief Requests PX4 to go into offboard mode.
      *
@@ -82,6 +83,13 @@ class MavrosInterface {
      *                      offboard flight mode is set from RC.
      */
     void requestOffboard(const bool& auto_offboard) const;
+
+    /**
+     * @brief Requests ardupilot to take off.
+     *
+     * @param height Will set the height we want to take off
+     */
+    void requestTakeOff(const double height) const;
 
     /**
      * @brief Sets a parameter within PX4.

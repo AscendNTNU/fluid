@@ -31,17 +31,21 @@ void TakeOffOperation::initialize() {
     mavros_interface.requestOffboard(Fluid::getInstance().configuration.should_auto_offboard);
     Fluid::getInstance().getStatusPublisherPtr()->status.px4_mode = PX4_MODE_OFFBOARD;
 
+    mavros_interface.requestTakeOff(2.0);
     setpoint.type_mask = TypeMask::IDLE;
 
     // Spin until we retrieve the first pose
-    while (ros::ok() && getCurrentPose().header.seq == 0) {
+    do {
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "publish setPoint for takeoff\n");
         publishSetpoint();
         ros::spinOnce();
-    }
+    }while(ros::ok() && getCurrentPose().header.seq == 0);
 
     setpoint.position.x = getCurrentPose().pose.position.x;
     setpoint.position.y = getCurrentPose().pose.position.y;
     setpoint.position.z = height_setpoint;
     setpoint.yaw = getCurrentYaw();
     setpoint.type_mask = TypeMask::POSITION;
+    //setpoint.header.frame_id = "1";
+    setpoint.coordinate_frame = 1;
 }

@@ -7,6 +7,7 @@
 #include "mavros_interface.h"
 
 #include <mavros_msgs/CommandBool.h>
+#include <mavros_msgs/CommandTOL.h>
 #include <mavros_msgs/ParamSet.h>
 #include <mavros_msgs/PositionTarget.h>
 
@@ -135,6 +136,71 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
 
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": OK!\n");
 }
+
+void MavrosInterface::requestTakeOff(const double height) const {
+    ros::Rate rate(UPDATE_REFRESH_RATE);
+
+    // send a few setpoints before starting. This is because the stream has to be set ut before we
+    // change modes within px4
+    // Is this necessary with Ardupilot? -Erlend
+    mavros_msgs::PositionTarget setpoint;
+    setpoint.type_mask = TypeMask::IDLE;
+
+    for (int i = UPDATE_REFRESH_RATE * 2; ros::ok() && i > 0; --i) {
+        setpoint_publisher.publish(setpoint);
+        ros::spinOnce();
+        rate.sleep();
+    }
+    setpoint.type_mask = TypeMask::POSITION;
+
+    // Taking off
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to take off!");
+
+    ros::Time last_request = ros::Time::now();
+    ros::NodeHandle node_handle;
+
+    ros::ServiceClient takeoff_cl = node_handle.serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/takeoff");
+    mavros_msgs::CommandTOL srv_takeoff;
+    srv_takeoff.request.altitude = height;
+    srv_takeoff.request.latitude = 0;
+    srv_takeoff.request.longitude = 0;
+    srv_takeoff.request.min_pitch = 0;
+    srv_takeoff.request.yaw = 0;
+    if(takeoff_cl.call(srv_takeoff)){
+        ROS_INFO("srv_takeoff send ok %d", srv_takeoff.response.success);
+    }else{
+        ROS_ERROR("Failed Takeoff");
+    }
+    
+    bool takeoff = false;
+    double arm_request_interval = 0.5;
+
+/*
+    while (ros::ok() && !takeoff) {
+        // Send request to arm every interval specified
+        if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
+            if (!takeoff) {
+                if (!srv_takeoff.success) { // getCurrentPose().pose.position.z >height-0.1
+                    takeoff = true;
+                }
+                else {                    
+                    takeoff = true;
+                    takeoff_cl.call(srv_takeoff);
+                }
+            }
+
+            last_request = ros::Time::now();
+        }
+
+        //takeoff_cl.call(srv_takeoff)
+
+        ros::spinOnce();
+        rate.sleep();
+    }
+*/
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": take_off OK!");
+}
+
 
 void MavrosInterface::setParam(const std::string& parameter, const float& value) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
