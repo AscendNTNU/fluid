@@ -17,7 +17,8 @@ MavrosInterface::MavrosInterface() {
     ros::NodeHandle node_handle;
     state_subscriber =
         node_handle.subscribe<mavros_msgs::State>("mavros/state", 1, &MavrosInterface::stateCallback, this);
-    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
+    //setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
+    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
 }
 
 void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) { current_state = *msg; }
@@ -137,7 +138,7 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": OK!\n");
 }
 
-void MavrosInterface::requestTakeOff( mavros_msgs::PositionTarget setpoint) const {
+void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
 
     // send a few setpoints before starting. This is because the stream has to be set ut before we

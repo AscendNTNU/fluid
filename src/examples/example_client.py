@@ -92,7 +92,7 @@ def main():
             if finished_operation == "TAKE_OFF":
                 # Perform a explore with a (list of) point(s)
                 point = Point()
-                point.x = 5
+                point.y = 10
                 response = explore([point])
                 if (not response.success):
                     rospy.logerr(response.message)
