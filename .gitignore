@@ -63,3 +63,9 @@ DerivedData/
 # Doxygen
 html/
 index/
+
+#savefile
+log_drone_pos_and_velocity.txt
+log_module_position.txt
+drone_pos_and_velocity.txt
+module_position.txt

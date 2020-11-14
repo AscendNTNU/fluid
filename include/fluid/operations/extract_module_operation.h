@@ -26,9 +26,12 @@ class ExtractModuleOperation : public Operation {
 
 	ModuleState module_state = ModuleState::APPROACHING;
 
-    const float speed = 0.3;
+    const float speed = 5;
 
     geometry_msgs::PoseWithCovarianceStamped module_pose;
+    geometry_msgs::PoseWithCovarianceStamped previous_module_pose;
+    geometry_msgs::Vector3_<double> module_calculated_velocity;
+    ros::Time previous_time;
 
     ros::Subscriber module_pose_subscriber;
 
@@ -48,6 +51,16 @@ class ExtractModuleOperation : public Operation {
      * @brief Sets up #speed at which to move.
      */
     void initialize() override;
+
+    /**
+     * @brief //create a header for the logfile.
+     */
+    void initLog();
+
+    /**
+     * @brief //Add a new line to the logfile with the actual position and velocity
+     */
+    void saveLog();
 
     /**
      * @return true When the module has been extracted.
