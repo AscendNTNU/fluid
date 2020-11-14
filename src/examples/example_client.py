@@ -90,7 +90,6 @@ def main():
         # is executing should probably be implemented differently
         if not is_executing_operation:
             if finished_operation == "TAKE_OFF":
-                print("going for next state\n")
                 # Perform a explore with a (list of) point(s)
                 point = Point()
                 point.x = 5

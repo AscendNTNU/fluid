@@ -166,11 +166,6 @@ void MavrosInterface::requestTakeOff( mavros_msgs::PositionTarget setpoint) cons
     srv_takeoff.request.longitude = setpoint.position.y;
     srv_takeoff.request.min_pitch = 0;
     srv_takeoff.request.yaw = setpoint.yaw;
-    if(takeoff_cl.call(srv_takeoff)){
-        ROS_INFO("srv_takeoff send ok %d", srv_takeoff.response.success);
-    }else{
-        ROS_ERROR("Failed Takeoff");
-    }
     
     bool takeoff = false;
     double arm_request_interval = 0.5;
