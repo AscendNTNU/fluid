@@ -17,7 +17,7 @@ bool store_data = true;
 std::ofstream save_drone_position_f; 
 const std::string logFileName = std::string(get_current_dir_name()) + "/../catkin_ws/drone_pos_and_velocity.txt"; //file saved in home/catkin_ws
 
-void ExtractModuleOperation::initLog()
+/*void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
     save_drone_position_f.open(logFileName);
     if(save_drone_position_f.is_open())
@@ -56,7 +56,7 @@ void ExtractModuleOperation::saveLog()
         }
     }
 }
-
+*/
 ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
     module_pose_subscriber =
         node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
@@ -75,7 +75,7 @@ void ExtractModuleOperation::initialize() {
     // Use the current position as setpoint until we get a message with the module position
     setpoint.position = getCurrentPose().pose.position;
     
-    initLog(); //create a header for the logfile.
+    //initLog(); //create a header for the logfile.
     previous_time = ros::Time::now();
 }
 
@@ -137,7 +137,7 @@ void ExtractModuleOperation::tick() {
                             << module_calculated_velocity.x << " ; "
                             << module_calculated_velocity.y << " ; "
                             << module_calculated_velocity.z);
-            saveLog();
+            //saveLog();
             //for testing purposes, I toggle the possibility to go to the next step
             //*
             if (distance_to_module < 1.8) {

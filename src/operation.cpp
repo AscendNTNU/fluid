@@ -25,6 +25,7 @@ Operation::Operation(const OperationIdentifier& identifier, const bool& steady)
         node_handle.subscribe("mavros/local_position/velocity_local", 1, &Operation::twistCallback, this);
 
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
+    setpoint.coordinate_frame = 1;
 }
 
 geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_pose; }
