@@ -145,6 +145,7 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
     // change modes within px4
     // Is this necessary with Ardupilot? -Erlend
     setpoint.type_mask = TypeMask::IDLE;
+    setpoint.coordinate_frame = 0;
 
     for (int i = UPDATE_REFRESH_RATE * 2; ros::ok() && i > 0; --i) {
         setpoint_publisher.publish(setpoint);
