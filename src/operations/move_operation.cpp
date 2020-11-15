@@ -16,7 +16,8 @@
 
 MoveOperation::MoveOperation(const OperationIdentifier& operation_identifier,
                              const std::vector<geometry_msgs::Point>& path, const double& speed,
-                             const double& position_threshold, const double& velocity_threshold)
+                             const double& position_threshold = Fluid::getInstance().configuration.distance_completion_threshold,
+                             const double& velocity_threshold = Fluid::getInstance().configuration.velocity_completion_threshold)
     : Operation(operation_identifier, false),
       path(path),
       speed(speed),
