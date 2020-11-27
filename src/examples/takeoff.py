@@ -4,6 +4,7 @@ from std_msgs.msg import String
 from geometry_msgs.msg import PoseStamped, Point
 from mavros_msgs.msg import State
 from mavros_msgs.srv import SetMode, CommandBool, CommandTOL
+import sys
 
 current_state = State()
 
@@ -107,6 +108,7 @@ def move(x,y,z):
 
     
 def main():
+    
     rospy.init_node('test_node', anonymous=True)
     rate = rospy.Rate(30)
 
@@ -117,6 +119,13 @@ def main():
     for _ in range (5*30):
         rate.sleep()
 
+    if len(sys.argv)>1:
+        print("there is an argument, which is")
+        print(sys.argv[1])
+        if sys.argv[1]=="takeoff":
+            rospy.loginfo("asked to only take off. Operations finished\n")
+            return
+    
     #while drone_position.z < height-0.2:
     #    rospy.loginfo
     #    rospy.loginfo("waiting for drone to be in altitude : %d/%d",drone_position.z,height)
