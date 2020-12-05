@@ -116,6 +116,8 @@ def main():
                     rospy.logerr(response.message)
                 else:
                     is_executing_operation = True
+            elif finished_operation == "LAND":
+                return
 
 
 if __name__ == '__main__':
