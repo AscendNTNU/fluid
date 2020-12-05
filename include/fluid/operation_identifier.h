@@ -9,7 +9,7 @@
 #include <string>
 
 const std::string PX4_MODE_OFFBOARD = "GUIDED";
-const std::string PX4_MODE_LAND = "AUTO.LAND";
+const std::string PX4_MODE_LAND = "LAND"; //cahnged from AUTO.LAND to LAND for ardupilot  
 
 /**
  * @brief Represents the different operations.
