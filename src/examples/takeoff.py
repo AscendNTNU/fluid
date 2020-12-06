@@ -114,7 +114,7 @@ def main():
     takeoff(height)
     
     #waiting for takeoff to be finished
-    for _ in range (5*30):
+    while drone_position.z < height /2 :
         rate.sleep()
 
     if len(sys.argv)>1:
@@ -124,17 +124,12 @@ def main():
             rospy.loginfo("asked to only take off. Operations finished\n")
             return
     
-    #while drone_position.z < height-0.2:
-    #    rospy.loginfo
-    #    rospy.loginfo("waiting for drone to be in altitude : %d/%d",drone_position.z,height)
-    #    rate.sleep()
     x = 0
     y = 5
     rospy.loginfo("start to move to %d,%d",x,y)
     #while 1:
     move(x,y,height)
     rate.sleep()
-    rospy.loginfo("asked to pose %d,%d",x,y)
     
 
 

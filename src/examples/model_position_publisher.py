@@ -47,7 +47,6 @@ def main():
 
     rate = rospy.Rate(20)
 
-    start_time = time.time()
     center = [0.0, 0.0]
     pitch_radius = 13 #*100 because ardupilot #0.13 for 30m long boat, 1.25m high waves and 3m high module
     roll_radius = 37  #*100 because ardupilot # 0.37 for 10m wide boat, 1.25m high waves and 3m high module
