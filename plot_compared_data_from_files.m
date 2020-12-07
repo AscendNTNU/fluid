@@ -8,8 +8,10 @@
 
 clear();
 files_to_compare = [ % put the files you want to compare h
-    "module_position.txt"
-    "drone_pos_and_velocity.txt"
+%     "module_position.txt"
+%     "drone_position.txt"
+    "log_drone_pos_and_velocity_long.txt"
+    "log_module_position_long.txt"
     ]';
 
 nb_file = length(files_to_compare);
@@ -84,8 +86,8 @@ end
 start_time = min(results(:,1,1));
 if start_time >1000
     for i=1:nb_file
-        i
         results(i,1,1:nb_lines(i))=results(i,1,1:nb_lines(i))-start_time;
+        %results(i,1,nb_lines(i):end)=results(i,1,nb_lines(i)-1);
     end
 end
 
@@ -141,9 +143,7 @@ end
 % we also want to print y against x to see the position of the robot
 subplot(plotSize(1),plotSize(2),1)
 for file_ind=1:nb_file
-    if sum(merge_titles.contains(titles(file_ind,i))) %here i is the variable we show 
-        plot(shiftdim(results(file_ind,2*titleInColumn(1),1:nb_lines(file_ind)),1),shiftdim(results(file_ind,3*titleInColumn(1),1:nb_lines(file_ind)),1),'color',colors(file_ind,:));
-    end
+    plot(shiftdim(results(file_ind,2*titleInColumn(1),1:nb_lines(file_ind)),1),shiftdim(results(file_ind,3*titleInColumn(1),1:nb_lines(file_ind)),1),'color',colors(file_ind,:));
     hold on
 end
 xlabel(merge_titles(2));
@@ -154,9 +154,7 @@ hold off
 figure
 subplot(1,3,1)
 for file_ind=1:nb_file
-    if sum(merge_titles.contains(titles(file_ind,i))) %here i is the variable we show 
-        plot(shiftdim(results(file_ind,2*titleInColumn(1),1:nb_lines(file_ind)),1),shiftdim(results(file_ind,3*titleInColumn(1),1:nb_lines(file_ind)),1),'color',colors(file_ind,:));
-    end
+    plot(shiftdim(results(file_ind,2*titleInColumn(1),1:nb_lines(file_ind)),1),shiftdim(results(file_ind,3*titleInColumn(1),1:nb_lines(file_ind)),1),'color',colors(file_ind,:));
     hold on
 end
 hold off
@@ -176,11 +174,13 @@ for i = 2*titleInColumn(1):titleInColumn(1):3*titleInColumn(1)
 end
 legend(files_to_compare);
 
+
 measurementx = reshape(results(2,1:2,:),2,[]);
 measurementy = reshape(results(2,[1 3],:),2,[]);
 referencex = reshape(results(1,1:2,:),2,[]);
 referencey = reshape(results(1,[1 3],:),2,[]);
 
+fprintf("An analysis has been made over a time of %dsec\n",results(1,1,min(nb_lines)));
 try 
     fprintf("Error projected along the X axis:\n");
     time_and_distance_error_f(referencex,measurementx);
