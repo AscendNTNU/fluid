@@ -38,12 +38,24 @@ sample_length = min(sum(reference(1,:)>0),sum(measurement(1,:)>0));
 reference = reference(:,1:sample_length);
 measurement = measurement(:,1:sample_length);
 
+%% Find main frequency of the reference
+% This is needed to estimate when does the steady state is reached.
+% The transition periode will be concidered to last half a period
+xdft = fft(reference(2,:));
+[~,index] = max(abs(xdft(1:length(reference)/2+1)));
+Fs=length(reference(1,:))/(reference(1,end)-reference(1,1));
+freq = 0:(Fs/length(reference)):Fs/2;
+period = 1/freq(index);
+start = round(period/2*Fs);
+fprintf("%2.3fsec will be omited for calulculation, which correspond to the %i/%i element\n",period/2,start,length(reference));
+
+
 %% Error calculation
 % for each measurement point, I look for the closest point of reference at
 % the same time.
-error = zeros(2,sample_length);
-error(1,:) = reference(1,:);
-error(2,:) = measurement(2,:) - reference(2,:);
+error = zeros(2,sample_length-start+1);
+error(1,:) = reference(1,start:end);
+error(2,:) = measurement(2,start:end) - reference(2,start:end);
 
 %% Timeshift calculation
 % for each measurement point, I look for the first point in the past
@@ -55,7 +67,7 @@ delay = finddelay(reference(2,:),measurement(2,:)) * time_step;
 
 %fprintf("average time step: \t\t%.3f s\n",time_step);
 fprintf("average delay: \t\t\t %.3f s\n",delay);
-fprintf("average absolut error: \t %.3f m\n",sum(abs(error(2,:)))/sample_length);
+fprintf("average absolut error: \t %.3f m\n",sum(abs(error(2,:)))/length(error));
 fprintf("max absolute error: \t %.3f m\n",max(abs(error(2,:))));
 
 end
