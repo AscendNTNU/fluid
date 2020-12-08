@@ -60,12 +60,11 @@ def modulePosition():
     module_pos.z = z
     return module_pos
 
-def calculateModuleVelocity():
+def calculateModuleVelocity(actual,last):
     vel =  Point()
-    vel.x = (actual_module_pose.x - last_module_pose.x)*SAMPLE_FREQUENCY
-    vel.y = (actual_module_pose.y - last_module_pose.y)*SAMPLE_FREQUENCY
-    vel.z = (actual_module_pose.z - last_module_pose.z)*SAMPLE_FREQUENCY
-    rospy.loginfo("diff %f",actual_module_pose.x - last_module_pose.x)
+    vel.x = (actual.x - last.x)*SAMPLE_FREQUENCY
+    vel.y = (actual.y - last.y)*SAMPLE_FREQUENCY
+    vel.z = (actual.z - last.z)*SAMPLE_FREQUENCY
 
     #printPoint(vel,"module velocity: ")
     return vel
@@ -199,8 +198,6 @@ def main():
     rospy.loginfo("Take off finished")
 
     if len(sys.argv)>1:
-        print("there is an argument, which is")
-        print(sys.argv[1])
         if sys.argv[1]=="takeoff":
             rospy.loginfo("asked to only take off. Operations finished\n")
             return
@@ -216,7 +213,7 @@ def main():
         #if drone_position.z > 2.5:
         last_module_pose = actual_module_pose
         actual_module_pose = modulePosition()
-        module_velocity = calculateModuleVelocity()
+        module_velocity = calculateModuleVelocity(actual_module_pose,last_module_pose)
         move(actual_module_pose,module_velocity,position_and_velocity_mask)
         
         saveLog(drone_pose_path,drone_position,drone_velocity)
