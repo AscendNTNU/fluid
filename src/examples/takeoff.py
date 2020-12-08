@@ -13,9 +13,7 @@ current_state = State()
 local_pose_publisher = rospy.Publisher('/mavros/setpoint_position/local', PoseStamped, queue_size=10)    
 
 def poseCallback(message):
-    print("update position\n")
     global drone_position 
-    got_drone_position = True
     drone_position = message.pose.position
 
 
