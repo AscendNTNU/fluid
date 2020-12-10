@@ -186,10 +186,11 @@ try
     time_and_distance_error_f(referencex,measurementx);
     fprintf("\nError projected along the Y axis:\n");
     time_and_distance_error_f(referencey,measurementy);
-catch
+catch MExc
     % if it does not work on matlab online even though you see the function
     % on your current folder, try to just start the function once.
-    fprintf("No function time_and_distance_error_f ... further analysis can't be done automaticaly\n");
+    fprintf("Error with time_and_distance_error_f ... further analysis can't be done automaticaly\n");
+    fprintf(MExc.getReport());
 end
 
 % TODO: I could remove the hell with titleInColumn, it is an old feature
