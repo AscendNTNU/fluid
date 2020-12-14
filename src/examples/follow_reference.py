@@ -2,14 +2,20 @@
 import rospy
 from math import pi, cos, sin
 from std_msgs.msg import String
-from geometry_msgs.msg import PoseStamped, Point
+from geometry_msgs.msg import PoseStamped, Point, TwistStamped
 from mavros_msgs.msg import State, PositionTarget
 from mavros_msgs.srv import SetMode, CommandBool, CommandTOL
 import sys
 from pathlib import Path
 
+
+#General parameters
+SAMPLE_FREQUENCY = 30.0
+takeoff_height = 3
+
 # Callback for subscriber of drone position
 drone_position = Point()
+drone_velocity = Point()
 current_state = State()
 local_pose_publisher = rospy.Publisher('/mavros/setpoint_raw/local', PositionTarget, queue_size=10)    
 
@@ -19,39 +25,59 @@ pitch_radius = 0.13 #*100 because ardupilot #0.13 for 30m long boat, 1.25m high 
 roll_radius  = 0.37  #*100 because ardupilot # 0.37 for 10m wide boat, 1.25m high waves and 3m high module
 #We estimate that the period of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
 omega = 2.0 * pi / 10.0
-z = 3.0
+z = takeoff_height
 
 #parameters for data files
 module_pose_path = str(Path.home())+"/module_position.txt"    #file saved in home
 drone_pose_path  = str(Path.home())+"/drone_position.txt"     #file saved in home
 
+
 velocity_mask = 2503
 position_mask = 2552
+position_and_velocity_mask = 2496
 target = PositionTarget()
+last_module_pose   = Point()
+actual_module_pose = Point()
 
 def poseCallback(message):
     global drone_position 
     drone_position = message.pose.position
 
+def velCallback(message):
+    global drone_velocity
+    drone_velocity = message.twist.linear
+    #printPoint(drone_velocity,"drone velocity: ")
 
-def state_callback(data):
+def stateCallback(data):
     global current_state
     current_state = data
 
-def module_position():
+def modulePosition():
     module_pos = Point()
     t = rospy.Time.now()
     module_pos.x = center[0] - pitch_radius * cos(rospy.Time.now().to_time()*omega)
     module_pos.y = center[1] - roll_radius  * sin(rospy.Time.now().to_time()*omega)
     module_pos.z = z
-
     return module_pos
+
+def calculateModuleVelocity(actual,last):
+    vel =  Point()
+    vel.x = (actual.x - last.x)*SAMPLE_FREQUENCY
+    vel.y = (actual.y - last.y)*SAMPLE_FREQUENCY
+    vel.z = (actual.z - last.z)*SAMPLE_FREQUENCY
+
+    #printPoint(vel,"module velocity: ")
+    return vel
+
+def printPoint(vec,message=None):
+    rospy.loginfo(message+"x: %f,\ty:%f,\tz=%f",vec.x,vec.y,vec.z)
+
 
 def initLog(file_name):
     log = open(file_name,"w")
     log.write("Time\tPos.x\tPos.y\tPos.z")
-    if file_name[0]==str("d"): #we want to add more info the drone logfile #bad code quality, but that's quick coding
-        log.write("\tvelocity.x\tvelocity.y\tvelocity.z")
+    #if file_name[0]==str("d"): #we want to add more info the drone logfile #bad code quality, but that's quick coding
+    log.write("\tvelocity.x\tvelocity.y\tvelocity.z")
     log.write("\n")
     log.close()
 
@@ -60,14 +86,14 @@ def saveLog(file_name,position,velocity=None):
     log.write(f"{rospy.get_rostime().secs + rospy.get_rostime().nsecs/1000000000.0:.3f}\t")
     log.write(f"{position.x:.3f}\t{position.y:.3f}\t{position.z:.3f}")
     if velocity:
-        log.write(f"\t{velocity[0]:.3f}\t{velocity[1]:.3f}\t{velocity[2]:.3f}")
+        log.write(f"\t{velocity.x:.3f}\t{velocity.y:.3f}\t{velocity.z:.3f}")
     log.write("\n")
     log.close()
 
     
 
 def takeoff(height):
-    rospy.Subscriber("/mavros/state", State, state_callback)
+    rospy.Subscriber("/mavros/state", State, stateCallback)
     global rate
 
     # Wait for MAVROS connection with AP
@@ -129,71 +155,73 @@ def takeoff(height):
 
             rate.sleep()
 
-def move(position):
+def move(position,velocity=None,type_mask=None):
     if(not rospy.is_shutdown() and current_state.connected):
         target.position.x = position.x
         target.position.y = position.y
         target.position.z = position.z
-        target.velocity.x = 1
-        target.velocity.y = 1
-        target.velocity.z = 1
+        if velocity:
+            target.velocity.x = velocity.x
+            target.velocity.y = velocity.y
+            target.velocity.z = velocity.z
+        if type_mask:
+            target.type_mask = type_mask
         target.header.stamp = rospy.Time.now()
         local_pose_publisher.publish(target)
     
     
 def main():
     global drone_position 
+    global drone_velocity
     rospy.init_node('test_node', anonymous=True)
     rospy.Subscriber("/mavros/local_position/pose", PoseStamped, poseCallback)
+    rospy.Subscriber("/mavros/local_position/velocity_local", TwistStamped, velCallback)
     global rate
-    rate = rospy.Rate(1)
+    rate = rospy.Rate(SAMPLE_FREQUENCY)
 
     initLog(drone_pose_path)
     initLog(module_pose_path)
-
-    saveLog(drone_pose_path,drone_position)
-    saveLog(module_pose_path,module_position())
 
     target.header.frame_id = "map"
     target.header.stamp = rospy.Time.now()
     target.coordinate_frame = 1
     target.type_mask = position_mask
 
-
-    height = 1.0
-    takeoff(height)
+    takeoff(takeoff_height)
     
     #waiting for takeoff to be finished
     #ugly, need to be done properly perhaps?
     
-    while drone_position.z < height /2 :
+    while drone_position.z < takeoff_height /2 :
         #print("drone altitude: ",drone_position.z)
         rate.sleep()
     rospy.loginfo("Take off finished")
 
     if len(sys.argv)>1:
-        print("there is an argument, which is")
-        print(sys.argv[1])
         if sys.argv[1]=="takeoff":
             rospy.loginfo("asked to only take off. Operations finished\n")
             return
     
-    #while drone_position.z < height-0.2:
+    #while drone_position.z < takeoff_height-0.2:
     #    rospy.loginfo
-    #    rospy.loginfo("waiting for drone to be in altitude : %d/%d",drone_position.z,height)
+    #    rospy.loginfo("waiting for drone to be in altitude : %f/%f",drone_position.z,takeoff_height)
     #    rate.sleep()
     rospy.loginfo("start to follow the module")
-    move(module_position())
+    actual_module_pose = modulePosition()
+    module_velocity = Point()
     while not rospy.is_shutdown():
         #if drone_position.z > 2.5:
-        move(module_position())
+        last_module_pose = actual_module_pose
+        actual_module_pose = modulePosition()
+        module_velocity = calculateModuleVelocity(actual_module_pose,last_module_pose)
+        move(actual_module_pose,module_velocity,position_and_velocity_mask)
         
-        saveLog(drone_pose_path,drone_position)
-        saveLog(module_pose_path,module_position())
+        saveLog(drone_pose_path,drone_position,drone_velocity)
+        saveLog(module_pose_path,actual_module_pose,module_velocity)
         rate.sleep()
 
         
-#        rospy.loginfo("asked to pose %d,%d",x,y)
+#        rospy.loginfo("asked to pose %f,%f",x,y)
     
 
 
