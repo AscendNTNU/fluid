@@ -13,11 +13,9 @@ current_state = State()
 local_pose_publisher = rospy.Publisher('/mavros/setpoint_position/local', PoseStamped, queue_size=10)    
 
 def poseCallback(message):
-    print("update position\n")
     global drone_position 
-    got_drone_position = True
     drone_position = message.pose.position
-
+    
 
 def state_callback(data):
     global current_state
@@ -25,6 +23,7 @@ def state_callback(data):
 
 def takeoff(height):
     rospy.Subscriber("/mavros/state", State, state_callback)
+    rospy.Subscriber("/mavros/local_position/pose", PoseStamped, poseCallback)
     rate = rospy.Rate(30)
 
     # Wait for MAVROS connection with AP
@@ -113,7 +112,7 @@ def main():
     takeoff(height)
     
     #waiting for takeoff to be finished
-    while drone_position.z < height /2 :
+    while drone_position.z < height /2 and not rospy.is_shutdown():
         rate.sleep()
     rospy.loginfo("Take off finished")
 
@@ -129,8 +128,6 @@ def main():
     rospy.loginfo("start to move to %d,%d",x,y)
     #while 1:
     move(x,y,height)
-    while not rospy.is_shutdown():
-        rate.sleep()
     return
     
 
