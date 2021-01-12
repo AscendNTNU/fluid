@@ -8,6 +8,7 @@
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 #include <ros/ros.h>
+#include <mavros_msgs/PositionTarget.h>
 
 /**
  * @brief Handles communication regarding setting state, retriving state from the pixhawk, as well as
@@ -54,9 +55,9 @@ class MavrosInterface {
     mavros_msgs::State getCurrentState() const;
 
     /**
-     * @brief Sets up the connection with PX4 through MAVROS.
+     * @brief Sets up the connection with ArduPilot through MAVROS.
      */
-    void establishContactToPX4() const;
+    void establishContactToArduPilot() const;
 
     /**
      * @brief Will attempt to set the @p mode if PX4 is not already in the given mode.
@@ -75,6 +76,7 @@ class MavrosInterface {
      */
     void requestArm(const bool& auto_arm) const;
 
+
     /**
      * @brief Requests PX4 to go into offboard mode.
      *
@@ -82,6 +84,13 @@ class MavrosInterface {
      *                      offboard flight mode is set from RC.
      */
     void requestOffboard(const bool& auto_offboard) const;
+
+    /**
+     * @brief Requests ardupilot to take off.
+     *
+     * @param height Will set the height we want to take off
+     */
+    void requestTakeOff(mavros_msgs::PositionTarget height) const;
 
     /**
      * @brief Sets a parameter within PX4.

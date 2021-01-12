@@ -26,7 +26,7 @@ class ExtractModuleOperation : public Operation {
 
 	ModuleState module_state = ModuleState::APPROACHING;
 
-    const float speed = 5;
+    const float speed = 500;
 
     geometry_msgs::PoseWithCovarianceStamped module_pose;
     geometry_msgs::PoseWithCovarianceStamped previous_module_pose;

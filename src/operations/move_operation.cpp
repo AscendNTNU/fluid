@@ -16,7 +16,8 @@
 
 MoveOperation::MoveOperation(const OperationIdentifier& operation_identifier,
                              const std::vector<geometry_msgs::Point>& path, const double& speed,
-                             const double& position_threshold, const double& velocity_threshold)
+                             const double& position_threshold = Fluid::getInstance().configuration.distance_completion_threshold,
+                             const double& velocity_threshold = Fluid::getInstance().configuration.velocity_completion_threshold)
     : Operation(operation_identifier, false),
       path(path),
       speed(speed),
@@ -42,7 +43,7 @@ void MoveOperation::initialize() {
     setpoint.yaw = std::atan2(dy, dx);
 
     MavrosInterface mavros_interface;
-    mavros_interface.setParam("MPC_XY_VEL_MAX", speed);
+    mavros_interface.setParam("WPNAV_SPEED", speed);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
 }
 

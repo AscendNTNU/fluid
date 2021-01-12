@@ -17,7 +17,7 @@ bool store_data = true;
 std::ofstream save_drone_position_f; 
 const std::string logFileName = std::string(get_current_dir_name()) + "/../catkin_ws/drone_pos_and_velocity.txt"; //file saved in home/catkin_ws
 
-void ExtractModuleOperation::initLog()
+/*void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
     save_drone_position_f.open(logFileName);
     if(save_drone_position_f.is_open())
@@ -56,7 +56,7 @@ void ExtractModuleOperation::saveLog()
         }
     }
 }
-
+*/
 ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
     module_pose_subscriber =
         node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
@@ -66,16 +66,16 @@ ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier
 
 void ExtractModuleOperation::initialize() {
     MavrosInterface mavros_interface;
-    mavros_interface.setParam("MPC_XY_VEL_MAX", speed);
+    mavros_interface.setParam("WPNAV_SPEED", speed);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
 
-    mavros_interface.setParam("MPC_TILTMAX_AIR", 20);
-    mavros_interface.setParam("MPC_Z_VEL_MAX_DN", 0.5);
+    //mavros_interface.setParam("ANGLE_MAX", 20);
+    //mavros_interface.setParam("WPNAV_SPEED_DN", 0.5);
 
     // Use the current position as setpoint until we get a message with the module position
     setpoint.position = getCurrentPose().pose.position;
     
-    initLog(); //create a header for the logfile.
+    //initLog(); //create a header for the logfile.
     previous_time = ros::Time::now();
 }
 
@@ -137,7 +137,7 @@ void ExtractModuleOperation::tick() {
                             << module_calculated_velocity.x << " ; "
                             << module_calculated_velocity.y << " ; "
                             << module_calculated_velocity.z);
-            saveLog();
+            //saveLog();
             //for testing purposes, I toggle the possibility to go to the next step
             //*
             if (distance_to_module < 1.8) {

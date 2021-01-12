@@ -3,7 +3,7 @@
 	<arg name="launch_rviz" default="false"/>
 
     <include file="$(find fluid)/launch/base.launch">
-        <arg name="fcu_url"                           value="udp://:14540@localhost:14557"/>
+        <arg name="fcu_url"                           value="udp://:14550@:14551"/>
         <arg name="should_auto_arm"                   value="true"/>
         <arg name="should_auto_offboard"              value="true"/>
         <arg name="launch_rviz"                       value="$(arg launch_rviz)"/>
