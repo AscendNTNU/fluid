@@ -8,7 +8,6 @@ from mavros_msgs.srv import SetMode, CommandBool, CommandTOL
 import sys
 from pathlib import Path
 
-
 #General parameters
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 3

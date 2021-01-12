@@ -3,8 +3,8 @@
   <arg name="refresh_rate"                            default="20"/>
   <arg name="should_auto_arm"/>
   <arg name="should_auto_offboard"/>
-  <arg name="distance_completion_threshold"           default="1"/>
-  <arg name="velocity_completion_threshold"           default="1"/>
+  <arg name="distance_completion_threshold"           default="30"/>
+  <arg name="velocity_completion_threshold"           default="10"/>
   <arg name="default_height"                          default="2.0"/>
   <arg name="launch_rviz"/>
 
@@ -20,13 +20,6 @@
   <node name="fluid_publisher" pkg="fluid" type="publisher" output="screen">
     <param name="refresh_rate"                        value="$(arg refresh_rate)"/>
   </node>
-
-  <!--<include file="$(find mavros)/launch/px4.launch">
-    <arg name="fcu_url"                               value="$(arg fcu_url)"/>
-    <arg name="log_output"                            value="log"/>
-    <arg name="tgt_system"                            value="1"/>
-    <arg name="tgt_component"                         value="1"/>
-  </include>-->
 
   <node if="$(arg launch_rviz)" type="rviz" name="rviz" pkg="rviz" args="-d $(find fluid)/rviz_configs/fluid.rviz" />
 
