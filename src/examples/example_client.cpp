@@ -111,6 +111,7 @@ int main(int argc, char** argv) {
             // This structure is just an example, the logic for when an operation
             // is executing should be implemented in a more secure and bulletproof way
             if (finished_operation == "TAKE_OFF") {
+                ROS_INFO_STREAM("[example_client]: Take_off finished, go exploring");
                 // Perform an explore with a (list of) point(s)
                 geometry_msgs::Point point;
                 point.x = 5;
@@ -129,6 +130,7 @@ int main(int argc, char** argv) {
                 }
 
             } else if (finished_operation == "EXPLORE") {
+                ROS_INFO_STREAM("[example_client]: Exploring finished, go Traveling");
                 geometry_msgs::Point point;
                 point.x = 100;
                 fluid::Travel travel_service_handle;
@@ -145,6 +147,7 @@ int main(int argc, char** argv) {
                     return 1;
                 }
             } else if (finished_operation == "TRAVEL") {
+                ROS_INFO_STREAM("[example_client]: Traveling finished, Let's land");
                 fluid::Land land_service_handle;
                 if (land.call(land_service_handle)) {
                     if (!land_service_handle.response.success) {
@@ -157,6 +160,9 @@ int main(int argc, char** argv) {
                     ROS_FATAL("Failed to call land service.");
                     return 1;
                 }
+            } else if (finished_operation == "LAND") {
+                ROS_INFO_STREAM("[example_client]: execution finished. ending process...");
+                return 1;
             }
         }
 

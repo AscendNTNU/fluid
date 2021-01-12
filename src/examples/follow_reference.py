@@ -8,7 +8,10 @@ from mavros_msgs.srv import SetMode, CommandBool, CommandTOL
 import sys
 from pathlib import Path
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 38cc223a6907ef08a96d7c89f4988e38116e437e
 #General parameters
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 3
@@ -220,16 +223,15 @@ def main():
         #if drone_position.z > 2.5:
         last_module_pose = actual_module_pose
         actual_module_pose = module_pose
+        
         module_velocity = calculateModuleVelocity(actual_module_pose.position,last_module_pose.position)
         
-        move(actual_module_pose,module_velocity,position_and_velocity_mask)
 
         saveLog(drone_pose_path,drone_position,drone_velocity)
         saveLog(module_pose_path,actual_module_pose.position,module_velocity)
-        rate.sleep()
-
-        
-#        rospy.loginfo("asked to pose %f,%f",x,y)
+        actual_module_pose = modulePosition()
+        module_velocity = calculateModuleVelocity(actual_module_pose,last_module_pose)
+        move(actual_module_pose,module_velocity,position_and_velocity_mask)
     
 
 

@@ -42,13 +42,8 @@ void MoveOperation::initialize() {
     setpoint.yaw = std::atan2(dy, dx);
 
     MavrosInterface mavros_interface;
-<<<<<<< Updated upstream
-    mavros_interface.setParam("MPC_XY_VEL_MAX", speed);
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
-=======
     //mavros_interface.setParam("WPNAV_SPEED", speed);
     //ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
->>>>>>> Stashed changes
 }
 
 void MoveOperation::tick() {

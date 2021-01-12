@@ -90,10 +90,9 @@ def main():
         # is executing should probably be implemented differently
         if not is_executing_operation:
             if finished_operation == "TAKE_OFF":
-
                 # Perform a explore with a (list of) point(s)
                 point = Point()
-                point.x = 5
+                point.y = 10
                 response = explore([point])
                 if (not response.success):
                     rospy.logerr(response.message)
@@ -103,7 +102,7 @@ def main():
 
                 # Perform a travel with a list of points
                 point = Point()
-                point.x = 100
+                point.x = 20
                 response = travel([point])
                 if (not response.success):
                     rospy.logerr(response.message)
@@ -117,6 +116,8 @@ def main():
                     rospy.logerr(response.message)
                 else:
                     is_executing_operation = True
+            elif finished_operation == "LAND":
+                return
 
 
 if __name__ == '__main__':

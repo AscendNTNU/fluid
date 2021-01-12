@@ -40,8 +40,6 @@ class TypeMask {
 
     static constexpr uint16_t POSITION_AND_ACCELERATION =
         IGNORE_VX | IGNORE_VY | IGNORE_VZ | IGNORE_YAW_RATE;
-        
-
 };
 
 #endif
