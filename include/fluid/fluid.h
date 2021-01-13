@@ -97,7 +97,7 @@ class Fluid {
     /**
      * @brief Kept hidden since this class is a singleton.
      */
-    Fluid& operator=(Fluid const&){};
+    //Fluid& operator=(Fluid const&){}; //commented because it builds without and it created warnings
 
     /**
      * @brief Mapping for responses in service calls.

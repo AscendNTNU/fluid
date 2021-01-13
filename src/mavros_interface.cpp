@@ -7,6 +7,7 @@
 #include "mavros_interface.h"
 
 #include <mavros_msgs/CommandBool.h>
+#include <mavros_msgs/CommandTOL.h>
 #include <mavros_msgs/ParamSet.h>
 #include <mavros_msgs/PositionTarget.h>
 
@@ -16,17 +17,18 @@ MavrosInterface::MavrosInterface() {
     ros::NodeHandle node_handle;
     state_subscriber =
         node_handle.subscribe<mavros_msgs::State>("mavros/state", 1, &MavrosInterface::stateCallback, this);
-    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
+    //setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
+    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
 }
 
 void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) { current_state = *msg; }
 
 mavros_msgs::State MavrosInterface::getCurrentState() const { return current_state; }
 
-void MavrosInterface::establishContactToPX4() const {
+void MavrosInterface::establishContactToArduPilot() const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
 
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to establish contact with PX4");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to establish contact with ArduPilot");
 
     // Run until we achieve a connection with mavros
     while (ros::ok() && !getCurrentState().connected) {
@@ -39,6 +41,7 @@ void MavrosInterface::establishContactToPX4() const {
 
 bool MavrosInterface::attemptToSetMode(const std::string& mode) const {
     // The state on the Pixhawk is equal to the state we wan't to set, so we just return
+    // What about Ardupilot? -Erlend
     if (getCurrentState().mode == mode) {
         return true;
     } else {
@@ -55,6 +58,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
 
     // send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within px4
+    // Is this necessary with Ardupilot? -Erlend
     mavros_msgs::PositionTarget setpoint;
     setpoint.type_mask = TypeMask::IDLE;
 
@@ -119,10 +123,10 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     bool set_offboard = false;
 
     while (ros::ok() && !set_offboard) {
-        set_offboard = getCurrentState().mode == "OFFBOARD";
+        set_offboard = getCurrentState().mode == "GUIDED";
 
         if (auto_offboard) {
-            set_offboard = attemptToSetMode("OFFBOARD");
+            set_offboard = attemptToSetMode("GUIDED");
         }
 
         setpoint_publisher.publish(setpoint);
@@ -133,6 +137,59 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
 
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": OK!\n");
 }
+
+void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const {
+    ros::Rate rate(UPDATE_REFRESH_RATE);
+
+    // send a few setpoints before starting. This is because the stream has to be set ut before we
+    // change modes within px4
+    // Is this necessary with Ardupilot? -Erlend
+    setpoint.type_mask = TypeMask::IDLE;
+    setpoint.coordinate_frame = 0;
+
+    for (int i = UPDATE_REFRESH_RATE * 2; ros::ok() && i > 0; --i) {
+        setpoint_publisher.publish(setpoint);
+        ros::spinOnce();
+        rate.sleep();
+    }
+    setpoint.type_mask = TypeMask::POSITION;
+    setpoint_publisher.publish(setpoint);
+
+    // Taking off
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to take off!");
+
+    ros::Time last_request = ros::Time::now();
+    ros::NodeHandle node_handle;
+
+    ros::ServiceClient takeoff_cl = node_handle.serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/takeoff");
+    mavros_msgs::CommandTOL srv_takeoff;
+    srv_takeoff.request.altitude = setpoint.position.z;
+    srv_takeoff.request.latitude = setpoint.position.x;
+    srv_takeoff.request.longitude = setpoint.position.y;
+    srv_takeoff.request.min_pitch = 0;
+    srv_takeoff.request.yaw = setpoint.yaw;
+    
+    bool takeoff = false;
+    double arm_request_interval = 0.5;
+
+
+    while (ros::ok() && !takeoff) {
+        if (!takeoff) {
+            // Send request to arm every interval specified
+            if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
+                if(takeoff_cl.call(srv_takeoff)){
+                    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": take_off OK!" << srv_takeoff.response.success);
+                    takeoff = true;
+                }
+                last_request = ros::Time::now();
+            }
+
+        }
+        ros::spinOnce();
+        rate.sleep();
+    }
+}
+
 
 void MavrosInterface::setParam(const std::string& parameter, const float& value) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);

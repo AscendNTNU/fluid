@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import rospy
 import math
@@ -90,7 +90,6 @@ def main():
         # is executing should probably be implemented differently
         if not is_executing_operation:
             if finished_operation == "TAKE_OFF":
-
                 response = extract_module()
                 if (not response.success):
                     rospy.logerr(response.message)
