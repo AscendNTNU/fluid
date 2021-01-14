@@ -40,7 +40,8 @@ void MoveOperation::initialize() {
     double dx = current_setpoint_iterator->x - getCurrentPose().pose.position.x;
     double dy = current_setpoint_iterator->y - getCurrentPose().pose.position.y;
     setpoint.yaw = std::atan2(dy, dx);
-
+    
+    
     MavrosInterface mavros_interface;
     //mavros_interface.setParam("WPNAV_SPEED", speed);
     //ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
@@ -56,11 +57,19 @@ void MoveOperation::tick() {
     if ((at_position_target && low_enough_velocity) || update_setpoint) {
         if (current_setpoint_iterator < path.end() - 1) {
             current_setpoint_iterator++;
-            setpoint.position = *current_setpoint_iterator;
 
-            double dx = current_setpoint_iterator->x - getCurrentPose().pose.position.x;
-            double dy = current_setpoint_iterator->y - getCurrentPose().pose.position.y;
-            setpoint.yaw = std::atan2(dy, dx);
+            if (current_setpoint_iterator == path.end() - 1 && identifier == OperationIdentifier::EXPLORE) {
+                been_to_all_points = true;
+            }
+
+            else {
+                setpoint.position = *current_setpoint_iterator;
+
+                double dx = current_setpoint_iterator->x - getCurrentPose().pose.position.x;
+                double dy = current_setpoint_iterator->y - getCurrentPose().pose.position.y;
+                setpoint.yaw = std::atan2(dy, dx);
+            }
+        
         } else {
             been_to_all_points = true;
         }

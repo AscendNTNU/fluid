@@ -61,6 +61,15 @@ def gotConnectionWithServices(timeout):
 
 
 def main():
+
+    ###explore points
+    explore_points = []
+
+    for i in range(11):
+        explore_points.append(Point(10 + 5*math.sin(2*math.pi*i/10), -5*math.cos(2*math.pi*i/10), 2))
+    explore_points.append(Point(10,0,2))
+    ###
+
     global is_executing_operation
     rospy.init_node('fluid_client')
 
@@ -91,9 +100,8 @@ def main():
         if not is_executing_operation:
             if finished_operation == "TAKE_OFF":
                 # Perform a explore with a (list of) point(s)
-                point = Point()
-                point.y = 10
-                response = explore([point])
+                #response = explore([Point(0, 0, 10), Point(0, 5, 2), Point(5, 5, 2)])
+                response = explore(explore_points)
                 if (not response.success):
                     rospy.logerr(response.message)
                 else:
@@ -101,9 +109,7 @@ def main():
             elif finished_operation == "EXPLORE":
 
                 # Perform a travel with a list of points
-                point = Point()
-                point.x = 20
-                response = travel([point])
+                response = travel([Point(10, -20, 1.5), Point(9, 5, 1.5)])
                 if (not response.success):
                     rospy.logerr(response.message)
                 else:

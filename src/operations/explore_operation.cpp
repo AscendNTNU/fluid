@@ -9,7 +9,7 @@
 #include "util.h"
 
 ExploreOperation::ExploreOperation(const std::vector<geometry_msgs::Point>& path)
-    : MoveOperation(OperationIdentifier::EXPLORE, path, 500, 3, 3),
+    : MoveOperation(OperationIdentifier::EXPLORE, path, 500, 0.5, 1),
       obstacle_avoidance_path_publisher(node_handle.advertise<ascend_msgs::Path>("/obstacle_avoidance/path", 10)),
       obstacle_avoidance_path_subscriber(
           node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreOperation::pathCallback, this)) {}
@@ -83,6 +83,11 @@ void ExploreOperation::pathCallback(ascend_msgs::Path corrected_path) {
 
 void ExploreOperation::tick() {
     MoveOperation::tick();
+
+    double dx = dense_path.back().x - getCurrentPose().pose.position.x;
+    double dy = dense_path.back().y - getCurrentPose().pose.position.y;
+    setpoint.yaw = std::atan2(dy, dx);
+   
 
     ascend_msgs::Path path_msg;
     path_msg.points = dense_path;

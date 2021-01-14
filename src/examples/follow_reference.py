@@ -8,10 +8,7 @@ from mavros_msgs.srv import SetMode, CommandBool, CommandTOL
 import sys
 from pathlib import Path
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 38cc223a6907ef08a96d7c89f4988e38116e437e
 #General parameters
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 3
@@ -162,11 +159,11 @@ def takeoff(height):
 
             rate.sleep()
 
-def move(pose,velocity=None,type_mask=None):
+def move_follow(pose,velocity=None,type_mask=None):
     if(not rospy.is_shutdown() and current_state.connected):
         target.position.x = pose.position.x
-        target.position.y = pose.position.y + 0.7   #Creates an offset for testing purposes
-        target.position.z = pose.position.z - 0.1
+        target.position.y = pose.position.y + 0.7
+        target.position.z = pose.position.z - 0.19
         target.yaw = -3.1415/2
         if velocity:
             target.velocity.x = velocity.x
@@ -177,6 +174,50 @@ def move(pose,velocity=None,type_mask=None):
         target.header.stamp = rospy.Time.now()
         local_pose_publisher.publish(target)
     
+def move_over(pose,velocity=None,type_mask=None):
+    if(not rospy.is_shutdown() and current_state.connected):
+        target.position.x = pose.position.x
+        target.position.y = pose.position.y + 0.32
+        target.position.z = pose.position.z - 0.19
+        target.yaw = -3.1415/2
+        if velocity:
+            target.velocity.x = velocity.x
+            target.velocity.y = velocity.y
+            target.velocity.z = velocity.z
+        if type_mask:
+            target.type_mask = type_mask
+        target.header.stamp = rospy.Time.now()
+        local_pose_publisher.publish(target)
+    
+def move_dock(pose,velocity=None,type_mask=None):
+    if(not rospy.is_shutdown() and current_state.connected):
+        target.position.x = pose.position.x
+        target.position.y = pose.position.y + 0.32
+        target.position.z = pose.position.z - 0.5
+        target.yaw = -3.1415/2
+        if velocity:
+            target.velocity.x = velocity.x
+            target.velocity.y = velocity.y
+            target.velocity.z = velocity.z
+        if type_mask:
+            target.type_mask = type_mask
+        target.header.stamp = rospy.Time.now()
+        local_pose_publisher.publish(target)
+
+def move_extract(pose,velocity=None,type_mask=None):
+    if(not rospy.is_shutdown() and current_state.connected):
+        target.position.x = pose.position.x
+        target.position.y = pose.position.y + 0.5
+        target.position.z = pose.position.z - 0.30
+        target.yaw = -3.1415/2
+        if velocity:
+            target.velocity.x = velocity.x
+            target.velocity.y = velocity.y
+            target.velocity.z = velocity.z
+        if type_mask:
+            target.type_mask = type_mask
+        target.header.stamp = rospy.Time.now()
+        local_pose_publisher.publish(target)
     
 def main():
     global drone_position 
@@ -219,19 +260,36 @@ def main():
     rospy.loginfo("start to follow the module")
     actual_module_pose = module_pose
     module_velocity = Point()
+
+    start_time = rospy.get_time()
     while not rospy.is_shutdown():
-        #if drone_position.z > 2.5:
         last_module_pose = actual_module_pose
         actual_module_pose = module_pose
-        
         module_velocity = calculateModuleVelocity(actual_module_pose.position,last_module_pose.position)
         
+        if (rospy.get_time() - start_time <= 10.0):
+            print("Following")
+            move_follow(actual_module_pose,module_velocity,position_and_velocity_mask)
+
+        elif (rospy.get_time() - start_time <= 100.0):
+            print("Going over")
+            move_over(actual_module_pose,module_velocity,position_and_velocity_mask)
+        
+        #elif (rospy.get_time() - start_time <= 15.0):
+        #    print("Docking")
+        #    move_over(actual_module_pose,module_velocity,position_and_velocity_mask)
+        #elif (rospy.get_time() - start_time <= 15.0):
+        #    print("Extracting")
+        #    move_over(actual_module_pose,module_velocity,position_and_velocity_mask)
+        else:
+            print("Following")
+            move_follow(actual_module_pose,module_velocity,position_and_velocity_mask)
 
         saveLog(drone_pose_path,drone_position,drone_velocity)
         saveLog(module_pose_path,actual_module_pose.position,module_velocity)
-        actual_module_pose = modulePosition()
-        module_velocity = calculateModuleVelocity(actual_module_pose,last_module_pose)
-        move(actual_module_pose,module_velocity,position_and_velocity_mask)
+        rate.sleep()
+
+#        rospy.loginfo("asked to pose %f,%f",x,y)
     
 
 
