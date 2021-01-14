@@ -1,6 +1,7 @@
-FROM ghcr.io/ascendntnu/ascend-ros-base:fe7b38b
+FROM ghcr.io/ascendntnu/ascend-ros-base:noetic-latest
 ENV ROS_PACKAGE_NAME=fluid
 
+RUN apt-get update --fix-missing
 ## Install geographiclib and fetch models
 RUN apt-get install -y --no-install-recommends geographiclib-tools && \
         geographiclib-get-geoids minimal
