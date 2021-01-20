@@ -64,10 +64,11 @@ def main():
 
     ###explore points
     explore_points = []
+    num_points = 30
 
-    for i in range(11):
-        explore_points.append(Point(10 + 5*math.sin(2*math.pi*i/10), -5*math.cos(2*math.pi*i/10), 2))
-    explore_points.append(Point(10,0,2))
+    for i in range(num_points + 1):
+        explore_points.append(Point(-5*math.sin(2*math.pi*i/num_points), -10 + 5*math.cos(2*math.pi*i/num_points), 2))
+    explore_points.append(Point(0,-10,2))
     ###
 
     global is_executing_operation

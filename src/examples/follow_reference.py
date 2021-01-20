@@ -161,10 +161,10 @@ def takeoff(height):
 
 def move_follow(pose,velocity=None,type_mask=None):
     if(not rospy.is_shutdown() and current_state.connected):
-        target.position.x = pose.position.x
-        target.position.y = pose.position.y + 0.7
+        target.position.y = pose.position.y
+        target.position.x = pose.position.x + 0.7
         target.position.z = pose.position.z - 0.19
-        target.yaw = -3.1415/2
+        target.yaw = -3.1415
         if velocity:
             target.velocity.x = velocity.x
             target.velocity.y = velocity.y
@@ -176,10 +176,10 @@ def move_follow(pose,velocity=None,type_mask=None):
     
 def move_over(pose,velocity=None,type_mask=None):
     if(not rospy.is_shutdown() and current_state.connected):
-        target.position.x = pose.position.x
-        target.position.y = pose.position.y + 0.32
+        target.position.y = pose.position.y
+        target.position.x = pose.position.x + 0.32
         target.position.z = pose.position.z - 0.19
-        target.yaw = -3.1415/2
+        target.yaw = -3.1415
         if velocity:
             target.velocity.x = velocity.x
             target.velocity.y = velocity.y
@@ -191,10 +191,10 @@ def move_over(pose,velocity=None,type_mask=None):
     
 def move_dock(pose,velocity=None,type_mask=None):
     if(not rospy.is_shutdown() and current_state.connected):
-        target.position.x = pose.position.x
-        target.position.y = pose.position.y + 0.32
+        target.position.y = pose.position.y
+        target.position.x = pose.position.x + 0.32
         target.position.z = pose.position.z - 0.5
-        target.yaw = -3.1415/2
+        target.yaw = -3.1415
         if velocity:
             target.velocity.x = velocity.x
             target.velocity.y = velocity.y
@@ -206,10 +206,10 @@ def move_dock(pose,velocity=None,type_mask=None):
 
 def move_extract(pose,velocity=None,type_mask=None):
     if(not rospy.is_shutdown() and current_state.connected):
-        target.position.x = pose.position.x
-        target.position.y = pose.position.y + 0.5
+        target.position.y = pose.position.y
+        target.position.x = pose.position.x + 0.5
         target.position.z = pose.position.z - 0.30
-        target.yaw = -3.1415/2
+        target.yaw = -3.1415
         if velocity:
             target.velocity.x = velocity.x
             target.velocity.y = velocity.y
@@ -226,7 +226,7 @@ def main():
     rospy.init_node('test_node', anonymous=True)
     rospy.Subscriber("/mavros/local_position/pose", PoseStamped, poseCallback)
     rospy.Subscriber("/mavros/local_position/velocity_local", TwistStamped, velCallback)
-    rospy.Subscriber("/simulator/module_pose", PoseStamped, moduleCallback)
+    rospy.Subscriber("/simulator/module/pose", PoseStamped, moduleCallback)
     global rate
     rate = rospy.Rate(SAMPLE_FREQUENCY)
 
@@ -271,9 +271,9 @@ def main():
             print("Following")
             move_follow(actual_module_pose,module_velocity,position_and_velocity_mask)
 
-        elif (rospy.get_time() - start_time <= 100.0):
-            print("Going over")
-            move_over(actual_module_pose,module_velocity,position_and_velocity_mask)
+        elif (rospy.get_time() - start_time <= 12.0):
+           print("Going over")
+           move_over(actual_module_pose,module_velocity,position_and_velocity_mask)
         
         #elif (rospy.get_time() - start_time <= 15.0):
         #    print("Docking")
