@@ -2,21 +2,25 @@
 import rospy
 from math import pi, cos, sin
 from std_msgs.msg import String
-from geometry_msgs.msg import PoseStamped, Point, TwistStamped
+from geometry_msgs.msg import PoseStamped, Point, TwistStamped, AccelWithCovarianceStamped, Polygon
 from mavros_msgs.msg import State, PositionTarget
 from mavros_msgs.srv import SetMode, CommandBool, CommandTOL
 import sys
 from pathlib import Path
 
+
+#type of control
+CONTROL_POSITION = 2552
+CONTROL_VELOCITY = 2503
+CONTROL_POSITION_AND_VELOCITY = 2496
+CONTROL_LQR = 2367 #this is acceleration_xy_mask. We assume that we wont use it for anything else than LQR
+
+
 #General parameters
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 3
-
-# Callback for subscriber of drone position
-drone_position = Point()
-drone_velocity = Point()
-current_state = State()
-local_pose_publisher = rospy.Publisher('/mavros/setpoint_raw/local', PositionTarget, queue_size=10)    
+control_type = CONTROL_LQR
+K_lqr = [0.8377, 3.0525, 2.6655]
 
 # parameters for modul position reference
 center = [0.0, 0.0]
@@ -31,12 +35,14 @@ module_pose_path = str(Path.home())+"/module_position.txt"    #file saved in hom
 drone_pose_path  = str(Path.home())+"/drone_position.txt"     #file saved in home
 
 
-velocity_mask = 2503
-position_mask = 2552
-position_and_velocity_mask = 2496
+# Callback for subscriber of drone position
+drone_position = Point()
+drone_velocity = Point()
+drone_acceleration = Point()
+current_state = State()
+local_pose_publisher = rospy.Publisher('/mavros/setpoint_raw/local', PositionTarget, queue_size=10)    
+
 target = PositionTarget()
-last_module_pose   = Point()
-actual_module_pose = Point()
 
 def poseCallback(message):
     global drone_position 
@@ -46,6 +52,10 @@ def velCallback(message):
     global drone_velocity
     drone_velocity = message.twist.linear
     #printPoint(drone_velocity,"drone velocity: ")
+
+def AccelCallback(message):
+    global drone_acceleration
+    drone_acceleration = message.accel.accel
 
 def stateCallback(data):
     global current_state
@@ -59,7 +69,7 @@ def modulePosition():
     module_pos.z = z
     return module_pos
 
-def calculateModuleVelocity(actual,last):
+def derivate(actual,last):
     vel =  Point()
     vel.x = (actual.x - last.x)*SAMPLE_FREQUENCY
     vel.y = (actual.y - last.y)*SAMPLE_FREQUENCY
@@ -67,6 +77,15 @@ def calculateModuleVelocity(actual,last):
 
     #printPoint(vel,"module velocity: ")
     return vel
+
+def calculate_lqr_acc(module_state):
+    accel_target = Point()
+    accel_target.z = 0
+    accel_target.x = K_lqr[0]*(module_state[0].x-drone_position.x)  + K_lqr[0]*(module_state[1].x-drone_velocity.x) + K_lqr[0]*(module_state[2].x-drone_acceleration.x)
+    accel_target.y = K_lqr[1]*(module_state[0].y-drone_position.y)  + K_lqr[1]*(module_state[1].y-drone_velocity.y) + K_lqr[1]*(module_state[2].y-drone_acceleration.y)
+
+    return accel_target
+
 
 def printPoint(vec,message=None):
     rospy.loginfo(message+"x: %f,\ty:%f,\tz=%f",vec.x,vec.y,vec.z)
@@ -154,7 +173,7 @@ def takeoff(height):
 
             rate.sleep()
 
-def move(position,velocity=None,type_mask=None):
+def move(position, velocity=None, acceleration=None, type_mask=None):
     if(not rospy.is_shutdown() and current_state.connected):
         target.position.x = position.x
         target.position.y = position.y
@@ -163,6 +182,10 @@ def move(position,velocity=None,type_mask=None):
             target.velocity.x = velocity.x
             target.velocity.y = velocity.y
             target.velocity.z = velocity.z
+        if acceleration:
+            target.acceleration_or_force.x = acceleration.x
+            target.acceleration_or_force.y = acceleration.y
+            target.acceleration_or_force.z = acceleration.z
         if type_mask:
             target.type_mask = type_mask
         target.header.stamp = rospy.Time.now()
@@ -175,6 +198,8 @@ def main():
     rospy.init_node('test_node', anonymous=True)
     rospy.Subscriber("/mavros/local_position/pose", PoseStamped, poseCallback)
     rospy.Subscriber("/mavros/local_position/velocity_local", TwistStamped, velCallback)
+    rospy.Subscriber("/mavros/local_position/accel", AccelWithCovarianceStamped, AccelCallback)
+    
     global rate
     rate = rospy.Rate(SAMPLE_FREQUENCY)
 
@@ -184,8 +209,17 @@ def main():
     target.header.frame_id = "map"
     target.header.stamp = rospy.Time.now()
     target.coordinate_frame = 1
-    target.type_mask = position_mask
+    target.type_mask = CONTROL_POSITION
 
+    if (control_type == CONTROL_POSITION):
+        rospy.loginfo("Drone will be controled in POSITION")
+    if (control_type == CONTROL_VELOCITY):
+        rospy.loginfo("Drone will be controled in VELOCITY")
+    if (control_type == CONTROL_POSITION_AND_VELOCITY):
+        rospy.loginfo("Drone will be controled in POSITION and VELOCITY")
+    if (control_type == CONTROL_LQR):
+        rospy.loginfo("Drone will be controled with LQR")
+    
     takeoff(takeoff_height)
     
     #waiting for takeoff to be finished
@@ -206,17 +240,34 @@ def main():
     #    rospy.loginfo("waiting for drone to be in altitude : %f/%f",drone_position.z,takeoff_height)
     #    rate.sleep()
     rospy.loginfo("start to follow the module")
+    last_module_pose   = Point()
+    actual_module_pose = Point()
+    actual_module_vel = Point()
+    last_module_vel = Point()
     actual_module_pose = modulePosition()
-    module_velocity = Point()
+    module_state_P = Polygon()
+    module_state = module_state_P.points
+
     while not rospy.is_shutdown():
-        #if drone_position.z > 2.5:
-        last_module_pose = actual_module_pose
-        actual_module_pose = modulePosition()
-        module_velocity = calculateModuleVelocity(actual_module_pose,last_module_pose)
-        move(actual_module_pose,module_velocity,position_and_velocity_mask)
         
+        #estimate module state
+        last_module_pose = actual_module_pose
+        last_module_vel = actual_module_vel
+        actual_module_pose = modulePosition()
+        actual_module_vel = derivate(actual_module_pose,last_module_pose)
+        actual_module_accel = derivate(actual_module_vel,last_module_vel)
+        
+        module_state = [actual_module_pose, actual_module_vel, actual_module_accel]
+        acceleration_setpoint = calculate_lqr_acc(module_state)
+
+        #todo: don't forget to add FEEDFORWARD TO LQR!
+        move(actual_module_pose,actual_module_vel, acceleration_setpoint,control_type)
+
+
+
+
         saveLog(drone_pose_path,drone_position,drone_velocity)
-        saveLog(module_pose_path,actual_module_pose,module_velocity)
+        saveLog(module_pose_path,actual_module_pose,actual_module_vel)
         rate.sleep()
 
         
