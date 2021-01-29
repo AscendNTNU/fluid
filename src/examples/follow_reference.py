@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import rospy
-from math import pi, cos, sin
+from math import pi, cos, sin, atan
 from std_msgs.msg import String
-from geometry_msgs.msg import PoseStamped, Point, TwistStamped, AccelWithCovarianceStamped, Polygon
-from mavros_msgs.msg import State, PositionTarget
+from geometry_msgs.msg import PoseStamped, Point, TwistStamped, AccelWithCovarianceStamped, Polygon, Quaternion
+from mavros_msgs.msg import State, PositionTarget, AttitudeTarget
 from mavros_msgs.srv import SetMode, CommandBool, CommandTOL
 import sys
 from pathlib import Path
@@ -13,14 +13,15 @@ from pathlib import Path
 CONTROL_POSITION = 2552
 CONTROL_VELOCITY = 2503
 CONTROL_POSITION_AND_VELOCITY = 2496
-CONTROL_LQR = 2367 #this is acceleration_xy_mask. We assume that we wont use it for anything else than LQR
-
+CONTROL_LQR = 2111 #this is acceleration_xy_mask. We assume that we wont use it for anything else than LQR
+CONTROL_LQR_ATTITUDE = 0 # 71
 
 #General parameters
 SAMPLE_FREQUENCY = 30.0
-takeoff_height = 3
-control_type = CONTROL_LQR
-K_lqr = [0.8377, 3.0525, 2.6655]
+takeoff_height = 1.5
+control_type = CONTROL_LQR_ATTITUDE
+#K_lqr = [0.8377, 3.0525, 2.6655]
+K_lqr = [1.0, 1.0, 1.0]
 
 # parameters for modul position reference
 center = [0.0, 0.0]
@@ -41,6 +42,7 @@ drone_velocity = Point()
 drone_acceleration = Point()
 current_state = State()
 local_pose_publisher = rospy.Publisher('/mavros/setpoint_raw/local', PositionTarget, queue_size=10)    
+local_attitude_publisher = rospy.Publisher('/mavros/setpoint_raw/attitude', AttitudeTarget, queue_size=10)    
 
 target = PositionTarget()
 
@@ -174,23 +176,54 @@ def takeoff(height):
             rate.sleep()
 
 def move(position, velocity=None, acceleration=None, type_mask=None):
-    if(not rospy.is_shutdown() and current_state.connected):
-        target.position.x = position.x
-        target.position.y = position.y
-        target.position.z = position.z
-        if velocity:
-            target.velocity.x = velocity.x
-            target.velocity.y = velocity.y
-            target.velocity.z = velocity.z
-        if acceleration:
-            target.acceleration_or_force.x = acceleration.x
-            target.acceleration_or_force.y = acceleration.y
-            target.acceleration_or_force.z = acceleration.z
-        if type_mask:
-            target.type_mask = type_mask
-        target.header.stamp = rospy.Time.now()
-        local_pose_publisher.publish(target)
-    
+    target.position.x = position.x
+    target.position.y = position.y
+    target.position.z = position.z
+    if velocity:
+        target.velocity.x = velocity.x
+        target.velocity.y = velocity.y
+        target.velocity.z = velocity.z
+    if acceleration:
+        target.acceleration_or_force.x = acceleration.x
+        target.acceleration_or_force.y = acceleration.y
+        target.acceleration_or_force.z = acceleration.z
+    if type_mask:
+        target.type_mask = type_mask
+    target.header.stamp = rospy.Time.now()
+    local_pose_publisher.publish(target)
+
+def move_attitude(orientation, control_type):
+    att_targ = AttitudeTarget()
+    att_targ.header.frame_id = "map"
+    att_targ.header.stamp = rospy.Time.now()
+    att_targ.type_mask = control_type
+    att_targ.thrust = 0.5
+
+    att_targ.orientation = orientation
+    local_attitude_publisher.publish(att_targ)
+
+def accel_to_orientation(accel,yaw=0): #yaw, double pitch, double roll) # yaw (Z), pitch (Y), roll (X)
+# We consider that the drone will always be facing the mast 
+# --> accel.x = roll & accel.y = pitch
+    # Abbreviations for the various angular functions
+    yaw = 0
+    roll = atan(accel.x/9.81)
+    pitch = atan(accel.y/9.81)
+
+    cy = cos(yaw * 0.5)
+    sy = sin(yaw * 0.5)
+    cp = cos(pitch * 0.5)
+    sp = sin(pitch * 0.5)
+    cr = cos(roll * 0.5)
+    sr = sin(roll * 0.5)
+
+    q = Quaternion()
+    q.w = cr * cp * cy + sr * sp * sy
+    q.x = sr * cp * cy - cr * sp * sy
+    q.y = cr * sp * cy + sr * cp * sy
+    q.z = cr * cp * sy - sr * sp * cy
+    #rospy.loginfo("q = " + str(q.x) + ", " + str(q.y) + ", " + str(q.z) + ", " + str(q.w))
+    return q
     
 def main():
     global drone_position 
@@ -219,6 +252,9 @@ def main():
         rospy.loginfo("Drone will be controled in POSITION and VELOCITY")
     if (control_type == CONTROL_LQR):
         rospy.loginfo("Drone will be controled with LQR")
+    if (control_type == CONTROL_LQR_ATTITUDE):
+        rospy.loginfo("Drone will be controled with LQR by ATTITUDE")
+
     
     takeoff(takeoff_height)
     
@@ -261,9 +297,14 @@ def main():
         acceleration_setpoint = calculate_lqr_acc(module_state)
 
         #todo: don't forget to add FEEDFORWARD TO LQR!
-        move(actual_module_pose,actual_module_vel, acceleration_setpoint,control_type)
-
-
+        if(not rospy.is_shutdown() and current_state.connected):
+            if control_type !=CONTROL_LQR_ATTITUDE:
+                move(actual_module_pose,actual_module_vel, acceleration_setpoint,control_type)
+            else:
+                orientation = accel_to_orientation(acceleration_setpoint)
+                move_attitude(orientation,control_type)
+        else:
+            return
 
 
         saveLog(drone_pose_path,drone_position,drone_velocity)
