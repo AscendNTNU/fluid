@@ -20,8 +20,8 @@ CONTROL_LQR_ATTITUDE = 0 # 71
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
 control_type = CONTROL_LQR_ATTITUDE
-#K_lqr = [0.8377, 3.0525, 2.6655]
-K_lqr = [1.0, 1.0, 1.0]
+K_lqr = [0.8377, 3.0525, 2.6655]
+#K_lqr = [1.0, 1.0, 1.0]
 
 # parameters for modul position reference
 center = [0.0, 0.0]
@@ -210,6 +210,7 @@ def accel_to_orientation(accel,yaw=0): #yaw, double pitch, double roll) # yaw (Z
     roll = atan(accel.x/9.81)
     pitch = atan(accel.y/9.81)
 
+    #from euler angle to quaternions:
     cy = cos(yaw * 0.5)
     sy = sin(yaw * 0.5)
     cp = cos(pitch * 0.5)
@@ -222,7 +223,6 @@ def accel_to_orientation(accel,yaw=0): #yaw, double pitch, double roll) # yaw (Z
     q.x = sr * cp * cy - cr * sp * sy
     q.y = cr * sp * cy + sr * cp * sy
     q.z = cr * cp * sy - sr * sp * cy
-    #rospy.loginfo("q = " + str(q.x) + ", " + str(q.y) + ", " + str(q.z) + ", " + str(q.w))
     return q
     
 def main():
