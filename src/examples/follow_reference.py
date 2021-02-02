@@ -267,13 +267,13 @@ def main():
         actual_module_pose = module_pose
         module_velocity = calculateModuleVelocity(actual_module_pose.position,last_module_pose.position)
         
-        if (rospy.get_time() - start_time <= 10.0):
+        if (rospy.get_time() - start_time <= 100.0):
             print("Following")
             move_follow(actual_module_pose,module_velocity,position_and_velocity_mask)
 
-        elif (rospy.get_time() - start_time <= 12.0):
-           print("Going over")
-           move_over(actual_module_pose,module_velocity,position_and_velocity_mask)
+        # elif (rospy.get_time() - start_time <= 12.0):
+        #    print("Going over")
+        #    move_over(actual_module_pose,module_velocity,position_and_velocity_mask)
         
         #elif (rospy.get_time() - start_time <= 15.0):
         #    print("Docking")
