@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from math import pi, cos, sin, atan
+from math import pi, cos, sin, tan, atan2, asin
 from std_msgs.msg import String
 from geometry_msgs.msg import PoseStamped, Point, TwistStamped, AccelWithCovarianceStamped, Polygon, Quaternion
 from mavros_msgs.msg import State, PositionTarget, AttitudeTarget
@@ -49,6 +49,7 @@ drone_setpoints_path=str(Path.home())+"/drone_setpoints.txt"     #file saved in 
 drone_position = Point()
 drone_velocity = Point()
 drone_acceleration = Point()
+drone_quaternion = Quaternion()
 current_state = State()
 local_pose_publisher = rospy.Publisher('/mavros/setpoint_raw/local', PositionTarget, queue_size=10)    
 local_attitude_publisher = rospy.Publisher('/mavros/setpoint_raw/attitude', AttitudeTarget, queue_size=10)    
@@ -57,8 +58,11 @@ target = PositionTarget()
 
 def poseCallback(message):
     global drone_position
+    global drone_acceleration
     drone_position = message.pose.position
-
+    drone_quaternion = message.pose.orientation
+    drone_acceleration = orientation_to_acceleration(drone_quaternion)
+    
 def velCallback(message):
     global drone_velocity
     drone_velocity = message.twist.linear
@@ -251,9 +255,21 @@ def accel_to_orientation(accel,yaw=0): #yaw, double pitch, double roll) # yaw (Z
 # --> accel.x = roll & accel.y = pitch
     # Abbreviations for the various angular functions
     yaw = 0
-    roll = atan(accel.x/9.81)
-    pitch = atan(accel.y/9.81)
+    roll = atan2(accel.x,9.81)
+    pitch = atan2(accel.y,9.81)
+    return euler_to_quaternion(yaw, pitch, roll)
 
+def orientation_to_acceleration(orientation):
+    accel = Point()
+    angle = quaternion_to_euler_angle(orientation)
+    accel.x = tan(angle.x) *9.81
+    accel.y = tan(angle.y) *9.81
+    accel.z = 0 #we actually don't know ...
+    printPoint(accel,"drone acceleration from callback")
+    return accel
+
+
+def euler_to_quaternion(yaw, pitch, roll):
     #from euler angle to quaternions:
     cy = cos(yaw * 0.5)
     sy = sin(yaw * 0.5)
@@ -268,6 +284,27 @@ def accel_to_orientation(accel,yaw=0): #yaw, double pitch, double roll) # yaw (Z
     q.y = cr * sp * cy + sr * cp * sy
     q.z = cr * cp * sy - sr * sp * cy
     return q
+
+def quaternion_to_euler_angle(orientation):
+    ret = Point()
+    w = orientation.w
+    x = orientation.x
+    y = orientation.y
+    z = orientation.z
+
+    t0 = +2.0 * (w * x + y * z)
+    t1 = +1.0 - 2.0 * (x * x + y * y)
+    ret.x = atan2(t0, t1)
+
+    t2 = +2.0 * (w * y - z * x)
+    t2 = +1.0 if t2 > +1.0 else t2
+    t2 = -1.0 if t2 < -1.0 else t2
+    ret.y = asin(t2)
+
+    t3 = +2.0 * (w * z + x * y)
+    t4 = +1.0 - 2.0 * (y * y + z * z)
+    ret.z = atan2(t3, t4)
+    return ret
 
 def constrain_acc(acc):
     if acc.x > MAX_ACCEL_X:
@@ -354,7 +391,6 @@ def main():
     count =0
     start_time = rospy.Time.now().to_time()
     while not rospy.is_shutdown():
-        
         #estimate module state
         last_module_pose = actual_module_pose
         last_module_vel = actual_module_vel
@@ -378,7 +414,7 @@ def main():
         else:
             return
 
-
+        printPoint(drone_acceleration,"drone acc before savelog")
         saveLog(drone_pose_path,drone_position,drone_velocity,drone_acceleration)
         saveLog(module_pose_path,actual_module_pose,actual_module_vel,actual_module_accel)
 
