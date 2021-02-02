@@ -21,9 +21,11 @@ CONTROL_LQR_ATTITUDE = 0 # 71
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
 control_type = CONTROL_LQR_ATTITUDE
-#K_lqr = [0.8377, 3.0525, 2.6655]
-K_lqr_x = 160* [1.0, 0.9, 0.05]
-K_lqr_y = 1280* [1.0, 0.9, 0.05]
+K_lqr = [0.8377, 3.0525, 2.6655]
+K_lqr_x = K_lqr
+K_lqr_y = K_lqr
+#K_lqr_x = [0.10, 0.10, 0.100] 
+#K_lqr_y = [0.10, 0.10, 0.100]
 
 MAX_ACCEL_X = 0.3
 MAX_ACCEL_Y = 0.6
@@ -54,7 +56,7 @@ local_attitude_publisher = rospy.Publisher('/mavros/setpoint_raw/attitude', Atti
 target = PositionTarget()
 
 def poseCallback(message):
-    global drone_position 
+    global drone_position
     drone_position = message.pose.position
 
 def velCallback(message):
@@ -62,7 +64,7 @@ def velCallback(message):
     drone_velocity = message.twist.linear
     #printPoint(drone_velocity,"drone velocity: ")
 
-def AccelCallback(message):
+def AccelCallback(message): #does not work with Ardupilot
     global drone_acceleration
     drone_acceleration = message.accel.accel
     printPoint(drone_acceleration,"drone_acc ")
@@ -107,11 +109,13 @@ def derivate(actual,last):
     return vel
 
 def calculate_lqr_acc(module_state):
+    pos = module_state[0]
+    vel = module_state[1]
+    acc = module_state[2]
     accel_target = Point()
     accel_target.z = 0
-    accel_target.x = K_lqr_x[0]*(module_state[0].x-drone_position.x)  + K_lqr_x[0]*(module_state[1].x-drone_velocity.x) + K_lqr_x[0]*(module_state[2].x-drone_acceleration.x)
-    accel_target.y = K_lqr_y[1]*(module_state[0].y-drone_position.y)  + K_lqr_y[1]*(module_state[1].y-drone_velocity.y) + K_lqr_y[1]*(module_state[2].y-drone_acceleration.y)
-
+    accel_target.x = K_lqr_x[0]*(pos.x-drone_position.x)  + K_lqr_x[1]*(vel.x-drone_velocity.x) + K_lqr_x[2]*(acc.x-drone_acceleration.x)
+    accel_target.y = K_lqr_y[0]*(pos.y-drone_position.y)  + K_lqr_y[1]*(vel.y-drone_velocity.y) + K_lqr_y[2]*(acc.y-drone_acceleration.y)
     return accel_target
 
 
@@ -165,9 +169,8 @@ def takeoff(height):
     # Send a few set points initially
     target.position.z = 0.0
     
-    for _ in range(100):
+    for _ in range(20): #not sure how many are really useful. Has worked with only 10
         target.header.stamp = rospy.Time.now()
-
         local_pose_publisher.publish(target)
         rate.sleep()
 
@@ -283,7 +286,6 @@ def main():
     rospy.init_node('test_node', anonymous=True)
     rospy.Subscriber("/mavros/local_position/pose", PoseStamped, poseCallback)
     rospy.Subscriber("/mavros/local_position/velocity_local", TwistStamped, velCallback)
-    rospy.Subscriber("/mavros/local_position/accel", AccelWithCovarianceStamped, AccelCallback)
     
     global rate
     rate = rospy.Rate(SAMPLE_FREQUENCY)
@@ -293,7 +295,7 @@ def main():
     
     #init log for acceleration setpoints. Not the same way as the rest because much shorter
     log = open(drone_setpoints_path,"w")
-    log.write("Time\tAccel.x\tAccel.y\n")
+    log.write("Time\taccel.x\taccel.y\n")
     log.close()
 
 
@@ -312,6 +314,8 @@ def main():
         rospy.loginfo("Drone will be controled with LQR")
     if (control_type == CONTROL_LQR_ATTITUDE):
         rospy.loginfo("Drone will be controled with LQR by ATTITUDE")
+        rospy.loginfo("K_lqr_x = %.2f, %.2f, %.2f", K_lqr_x[0], K_lqr_x[1], K_lqr_x[2]) 
+        rospy.loginfo("K_lqr_y = %.2f, %.2f, %.2f", K_lqr_y[0], K_lqr_y[1], K_lqr_y[2]) 
 
     simulation_time = None
     if len(sys.argv)>1:
@@ -388,7 +392,7 @@ def main():
 
         count = count +1
         elapsed_time = rospy.Time.now().to_time() - start_time
-        if count == 15: #30 --> 1Hz
+        if count == 30: #30 --> 1Hz
             print("elapsed time: %.1f" % elapsed_time)
             count = 0
             if simulation_time !=None:
