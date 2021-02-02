@@ -8,6 +8,7 @@ from mavros_msgs.srv import SetMode, CommandBool, CommandTOL
 import sys
 from pathlib import Path
 
+SAVE_Z = False
 
 #type of control
 CONTROL_POSITION = 2552
@@ -21,8 +22,11 @@ SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
 control_type = CONTROL_LQR_ATTITUDE
 #K_lqr = [0.8377, 3.0525, 2.6655]
-K_lqr_x = 16* [1.0, 0.9, 0.0]
-K_lqr_y = 128* [1.0, 0.9, 0.0]
+K_lqr_x = 160* [1.0, 0.9, 0.05]
+K_lqr_y = 1280* [1.0, 0.9, 0.05]
+
+MAX_ACCEL_X = 0.3
+MAX_ACCEL_Y = 0.6
 
 
 # parameters for modul position reference
@@ -36,6 +40,7 @@ z = takeoff_height
 #parameters for data files
 module_pose_path = str(Path.home())+"/module_position.txt"    #file saved in home
 drone_pose_path  = str(Path.home())+"/drone_position.txt"     #file saved in home
+drone_setpoints_path=str(Path.home())+"/drone_setpoints.txt"     #file saved in home
 
 
 # Callback for subscriber of drone position
@@ -75,6 +80,23 @@ def modulePosition():
     module_pos.z = z
     return module_pos
 
+def moduleVelocity(latency=None):
+    module_vel = Point()
+    t = rospy.Time.now()
+    module_vel.x = center[0] + pitch_radius * omega * sin((rospy.Time.now().to_time()-latency)*omega)
+    module_vel.y = center[1] - roll_radius  * omega * cos((rospy.Time.now().to_time()-latency)*omega)
+    module_vel.z = z
+    return module_vel
+
+def moduleAcceleration(latency=None):
+    module_accel = Point()
+    t = rospy.Time.now()
+    module_accel.x = center[0] + pitch_radius * omega * omega * cos((rospy.Time.now().to_time()-latency)*omega)
+    module_accel.y = center[1] + roll_radius  * omega * omega * sin((rospy.Time.now().to_time()-latency)*omega)
+    module_accel.z = z
+    return module_accel
+
+
 def derivate(actual,last):
     vel =  Point()
     vel.x = (actual.x - last.x)*SAMPLE_FREQUENCY
@@ -94,25 +116,38 @@ def calculate_lqr_acc(module_state):
 
 
 def printPoint(vec,message=None):
-    rospy.loginfo(message+"x: %f,\ty:%f,\tz=%f",vec.x,vec.y,vec.z)
+    rospy.loginfo(str(message)+"x: %f,\ty:%f,\tz=%f",vec.x,vec.y,vec.z)
 
 
 def initLog(file_name):
     log = open(file_name,"w")
-    log.write("Time\tPos.x\tPos.y\tPos.z")
-    log.write("\tvelocity.x\tvelocity.y\tvelocity.z")
-    log.write("\taccel.x\taccel.y\taccel.z")
+    log.write("Time\tPos.x\tPos.y")
+    if SAVE_Z:
+        log.write("\tPos.z")
+    log.write("\tvelocity.x\tvelocity.y")
+    if SAVE_Z:
+        log.write("\tvelocity.z")
+    log.write("\taccel.x\taccel.y")
+    if SAVE_Z:
+        log.write("\taccel.z")
     log.write("\n")
     log.close()
 
 def saveLog(file_name,position,velocity=None,accel=None):
     log = open(file_name,'a')
     log.write(f"{rospy.get_rostime().secs + rospy.get_rostime().nsecs/1000000000.0:.3f}")
-    log.write(f"\t{position.x:.3f}\t{position.y:.3f}\t{position.z:.3f}")
+    log.write(f"\t{position.x:.3f}\t{position.y:.3f}")
+    if SAVE_Z:
+        log.write(f"\t{position.z:.3f}")
     if velocity:
-        log.write(f"\t{velocity.x:.3f}\t{velocity.y:.3f}\t{velocity.z:.3f}")
+        log.write(f"\t{velocity.x:.3f}\t{velocity.y:.3f}")
+        if SAVE_Z:
+            log.write(f"\t{velocity.z:.3f}")
     if accel:
-        log.write(f"\t{accel.x:.3f}\t{accel.y:.3f}\t{accel.z:.3f}")
+        log.write(f"\t{accel.x:.3f}\t{accel.y:.3f}")
+        if SAVE_Z:
+            log.write(f"\t{accel.z:.3f}")
+
     log.write("\n")
     log.close()
 
@@ -153,13 +188,13 @@ def takeoff(height):
             last_request = rospy.Time.now()
         else:
             if not current_state.armed and current_state.mode == "GUIDED" and (rospy.Time.now() - last_request) > rospy.Duration(2.0):
+                last_request = rospy.Time.now()
                 response = arming_client.call(True)
                 if (response.success):
                     rospy.loginfo("Vehicle armed")
 
         target.header.stamp = rospy.Time.now()
         local_pose_publisher.publish(target)
-
         rate.sleep()
 
     # Send take off command
@@ -179,7 +214,7 @@ def takeoff(height):
                 rospy.loginfo("Failed to send take off")
             last_request = rospy.Time.now()
 
-            rate.sleep()
+        rate.sleep()
 
 def move(position, velocity=None, acceleration=None, type_mask=None):
     target.position.x = position.x
@@ -232,14 +267,14 @@ def accel_to_orientation(accel,yaw=0): #yaw, double pitch, double roll) # yaw (Z
     return q
 
 def constrain_acc(acc):
-    if acc.x > 0.3:
-        acc.x = 0.3
-    elif acc.x < -0.3:
-        acc.x = -0.3
-    elif acc.y > 0.6:
-        acc.y = 0.6
-    elif acc.y < -0.6:
-        acc.y = -0.6
+    if acc.x > MAX_ACCEL_X:
+        acc.x = MAX_ACCEL_X
+    elif acc.x < -MAX_ACCEL_X:
+        acc.x = -MAX_ACCEL_X
+    elif acc.y > MAX_ACCEL_Y:
+        acc.y = MAX_ACCEL_Y
+    elif acc.y < -MAX_ACCEL_Y:
+        acc.y = -MAX_ACCEL_Y
     return acc
     
 def main():
@@ -255,6 +290,12 @@ def main():
 
     initLog(drone_pose_path)
     initLog(module_pose_path)
+    
+    #init log for acceleration setpoints. Not the same way as the rest because much shorter
+    log = open(drone_setpoints_path,"w")
+    log.write("Time\tAccel.x\tAccel.y\n")
+    log.close()
+
 
     target.header.frame_id = "map"
     target.header.stamp = rospy.Time.now()
@@ -314,9 +355,11 @@ def main():
         last_module_pose = actual_module_pose
         last_module_vel = actual_module_vel
         actual_module_pose = modulePosition()
-        actual_module_vel = derivate(actual_module_pose,last_module_pose)
-        actual_module_accel = derivate(actual_module_vel,last_module_vel)
-        
+        #actual_module_vel = derivate(actual_module_pose,last_module_pose)
+        #actual_module_accel = derivate(actual_module_vel,last_module_vel)
+        actual_module_vel = moduleVelocity(1/float(SAMPLE_FREQUENCY))
+        actual_module_accel = moduleAcceleration(2/float(SAMPLE_FREQUENCY))
+
         module_state = [actual_module_pose, actual_module_vel, actual_module_accel]
         acceleration_setpoint = calculate_lqr_acc(module_state)
 
@@ -334,6 +377,13 @@ def main():
 
         saveLog(drone_pose_path,drone_position,drone_velocity,drone_acceleration)
         saveLog(module_pose_path,actual_module_pose,actual_module_vel,actual_module_accel)
+
+        #save log for acceleration setpoints. Not the same way as the rest because much shorter
+        log = open(drone_setpoints_path,'a')
+        log.write(f"{rospy.get_rostime().secs + rospy.get_rostime().nsecs/1000000000.0:.3f}")
+        log.write(f"\t{acceleration_setpoint.x:.3f}\t{acceleration_setpoint.y:.3f}\n")
+        log.close()
+
         rate.sleep()
 
         count = count +1
