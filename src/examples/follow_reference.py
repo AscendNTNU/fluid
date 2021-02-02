@@ -15,13 +15,15 @@ CONTROL_POSITION = 2552
 CONTROL_VELOCITY = 2503
 CONTROL_POSITION_AND_VELOCITY = 2496
 CONTROL_LQR = 2111 #this is acceleration_xy_mask. We assume that we wont use it for anything else than LQR
-CONTROL_LQR_ATTITUDE = 0 # 71
+#Attitude typemask is not the same as the one for raw setpoints. 
+CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't work
 
 #General parameters
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
 control_type = CONTROL_LQR_ATTITUDE
-K_lqr = [0.8377, 3.0525, 2.6655]
+#K_lqr = [0.8377, 3.0525, 2.6655] #matrix from bryon's rule
+K_lqr = [0.8377, 1.0525, 0.6655]
 K_lqr_x = K_lqr
 K_lqr_y = K_lqr
 #K_lqr_x = [0.10, 0.10, 0.100] 
@@ -265,7 +267,6 @@ def orientation_to_acceleration(orientation):
     accel.x = tan(angle.x) *9.81
     accel.y = tan(angle.y) *9.81
     accel.z = 0 #we actually don't know ...
-    printPoint(accel,"drone acceleration from callback")
     return accel
 
 
@@ -414,7 +415,6 @@ def main():
         else:
             return
 
-        printPoint(drone_acceleration,"drone acc before savelog")
         saveLog(drone_pose_path,drone_position,drone_velocity,drone_acceleration)
         saveLog(module_pose_path,actual_module_pose,actual_module_vel,actual_module_accel)
 
