@@ -52,7 +52,7 @@ crossing_reference_indexes = zci(reference(2,:));
 if length(crossing_reference_indexes)<=4
     fprintf('/!\\ The sample is not long enough to estimate errors! /!\\ \n'); %todo, try to write it in red
     return
-if crossing_reference_indexes(2) - crossing_reference_indexes(1) == 1 %here we have zeros in the ref and so zci returns each crossing zero twice
+elseif crossing_reference_indexes(2) - crossing_reference_indexes(1) == 1 %here we have zeros in the ref and so zci returns each crossing zero twice
     crossing_reference_indexes = crossing_reference_indexes(1:2:end);
 end
 sample_per_sin = 2*(circshift(crossing_reference_indexes,[-1 0]) - crossing_reference_indexes);
