@@ -36,9 +36,8 @@ def takeoff(height):
     pose_stamped.pose.position.z = 0.0
     pose_stamped.header.frame_id = "map"
 
-    for _ in range(100):
+    for _ in range(20):
         pose_stamped.header.stamp = rospy.Time.now()
-
         local_pose_publisher.publish(pose_stamped)
         rate.sleep()
 
@@ -59,6 +58,7 @@ def takeoff(height):
             last_request = rospy.Time.now()
         else:
             if not current_state.armed and current_state.mode == "GUIDED" and (rospy.Time.now() - last_request) > rospy.Duration(2.0):
+                last_request = rospy.Time.now()
                 response = arming_client.call(True)
                 if (response.success):
                     rospy.loginfo("Vehicle armed")
