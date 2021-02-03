@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from math import pi, cos, sin, tan, atan2, asin
+from math import pi, cos, sin, tan, atan2, asin, sqrt
 from std_msgs.msg import String
 from geometry_msgs.msg import PoseStamped, Point, TwistStamped, AccelWithCovarianceStamped, Polygon, Quaternion
 from mavros_msgs.msg import State, PositionTarget, AttitudeTarget
@@ -22,14 +22,12 @@ CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't 
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
 control_type = CONTROL_LQR_ATTITUDE
+USE_SQRT = True
 #K_lqr = [3.3508, 3.0525, 2.6655] #matrix from bryon's rule with diameter as max distance
-a = 1.0
-K_lqr = [a*3.3508, a*3.0525, a*2.6655] #matrix from bryon's rule
-#K_lqr = [a*1.0, a*1.0, a*0.5]
-K_lqr_x = K_lqr
-K_lqr_y = K_lqr
-#K_lqr_x = [0.10, 0.10, 0.100] 
-#K_lqr_y = [0.10, 0.10, 0.100]
+a = 0.20
+b = 0.40
+K_lqr_x = [a*3.3508, a*3.0525, a*2.6655]
+K_lqr_y = [b*3.3508, b*3.0525, b*2.6655]
 
 MAX_ACCEL_X = 0.15 #0.3
 MAX_ACCEL_Y = 0.30 #0.6
@@ -116,16 +114,26 @@ def derivate(actual,last):
     #printPoint(vel,"module velocity: ")
     return vel
 
-def calculate_lqr_acc(module_state):
+def calculate_lqr_acc(module_state,use_sqrt=False):
     pos = module_state[0]
     vel = module_state[1]
     acc = module_state[2]
     accel_target = Point()
     accel_target.z = 0
-    accel_target.x = K_lqr_x[0]*(pos.x-drone_position.x)  + K_lqr_x[1]*(vel.x-drone_velocity.x) + K_lqr_x[2]*(acc.x-drone_acceleration.x)
-    accel_target.y = K_lqr_y[0]*(pos.y-drone_position.y)  + K_lqr_y[1]*(vel.y-drone_velocity.y) + K_lqr_y[2]*(acc.y-drone_acceleration.y)
+    if use_sqrt:
+        accel_target.x = K_lqr_x[0]*signed_sqrt(pos.x-drone_position.x)  + K_lqr_x[1]*signed_sqrt(vel.x-drone_velocity.x) + K_lqr_x[2]*signed_sqrt(acc.x-drone_acceleration.x)
+        accel_target.y = K_lqr_y[0]*signed_sqrt(pos.y-drone_position.y)  + K_lqr_y[1]*signed_sqrt(vel.y-drone_velocity.y) + K_lqr_y[2]*signed_sqrt(acc.y-drone_acceleration.y)
+    else:
+        accel_target.x = K_lqr_x[0]*(pos.x-drone_position.x)  + K_lqr_x[1]*(vel.x-drone_velocity.x) + K_lqr_x[2]*(acc.x-drone_acceleration.x)
+        accel_target.y = K_lqr_y[0]*(pos.y-drone_position.y)  + K_lqr_y[1]*(vel.y-drone_velocity.y) + K_lqr_y[2]*(acc.y-drone_acceleration.y)
+
     return accel_target
 
+def signed_sqrt(nb):
+    if nb<0:
+        return - sqrt(-nb)
+    else:
+        return sqrt(nb)
 
 def printPoint(vec,message=None):
     rospy.loginfo(str(message)+"x: %f,\ty:%f,\tz=%f",vec.x,vec.y,vec.z)
@@ -406,7 +414,7 @@ def main():
         actual_module_accel = moduleAcceleration(2/float(SAMPLE_FREQUENCY))
 
         module_state = [actual_module_pose, actual_module_vel, actual_module_accel]
-        acceleration_setpoint = calculate_lqr_acc(module_state)
+        acceleration_setpoint = calculate_lqr_acc(module_state,USE_SQRT)
 
         #todo: don't forget to add FEEDFORWARD TO LQR!
         if(not rospy.is_shutdown() and current_state.connected):
