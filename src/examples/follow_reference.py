@@ -22,15 +22,17 @@ CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't 
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
 control_type = CONTROL_LQR_ATTITUDE
-#K_lqr = [0.8377, 3.0525, 2.6655] #matrix from bryon's rule
-K_lqr = [0.8377, 1.0525, 0.6655]
+#K_lqr = [3.3508, 3.0525, 2.6655] #matrix from bryon's rule with diameter as max distance
+a = 1.0
+K_lqr = [a*3.3508, a*3.0525, a*2.6655] #matrix from bryon's rule
+#K_lqr = [a*1.0, a*1.0, a*0.5]
 K_lqr_x = K_lqr
 K_lqr_y = K_lqr
 #K_lqr_x = [0.10, 0.10, 0.100] 
 #K_lqr_y = [0.10, 0.10, 0.100]
 
-MAX_ACCEL_X = 0.3
-MAX_ACCEL_Y = 0.6
+MAX_ACCEL_X = 0.15 #0.3
+MAX_ACCEL_Y = 0.30 #0.6
 
 
 # parameters for modul position reference
@@ -42,8 +44,8 @@ omega = 2.0 * pi / 10.0
 z = takeoff_height
 
 #parameters for data files
-module_pose_path = str(Path.home())+"/module_position.txt"    #file saved in home
-drone_pose_path  = str(Path.home())+"/drone_position.txt"     #file saved in home
+module_pose_path = str(Path.home())+"/module_state.txt"    #file saved in home
+drone_pose_path  = str(Path.home())+"/drone_state.txt"     #file saved in home
 drone_setpoints_path=str(Path.home())+"/drone_setpoints.txt"     #file saved in home
 
 
@@ -308,11 +310,13 @@ def quaternion_to_euler_angle(orientation):
     return ret
 
 def constrain_acc(acc):
+    #x and y axes are independant
     if acc.x > MAX_ACCEL_X:
         acc.x = MAX_ACCEL_X
     elif acc.x < -MAX_ACCEL_X:
         acc.x = -MAX_ACCEL_X
-    elif acc.y > MAX_ACCEL_Y:
+
+    if acc.y > MAX_ACCEL_Y:
         acc.y = MAX_ACCEL_Y
     elif acc.y < -MAX_ACCEL_Y:
         acc.y = -MAX_ACCEL_Y
