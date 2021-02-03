@@ -363,7 +363,10 @@ def main():
     if (control_type == CONTROL_LQR):
         rospy.loginfo("Drone will be controled with LQR")
     if (control_type == CONTROL_LQR_ATTITUDE):
-        rospy.loginfo("Drone will be controled with LQR by ATTITUDE")
+        if USE_SQRT:
+            rospy.loginfo("Drone will be controled with LQR by ATTITUDE using SQRT error!")
+        else:
+            rospy.loginfo("Drone will be controled with LQR by ATTITUDE")
         rospy.loginfo("K_lqr_x = %.2f, %.2f, %.2f", K_lqr_x[0], K_lqr_x[1], K_lqr_x[2]) 
         rospy.loginfo("K_lqr_y = %.2f, %.2f, %.2f", K_lqr_y[0], K_lqr_y[1], K_lqr_y[2]) 
 
