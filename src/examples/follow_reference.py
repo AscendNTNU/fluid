@@ -171,63 +171,70 @@ def update_targeted_state():
 
     #todo: check signs +, - and transition_state.sign
 
-    if comparPoints(transition_state.pose, drone_distance_from_mast,0.001):
+    if not comparPoints(transition_state.pose, drone_distance_from_mast,0.001):
     # if we are in a transition state
         if comparPoints(transition_state.pose,drone_distance_from_mast,0.02) \
-            and comparPoints(transition_state.vel,Point(0,0,0),0.1): 
+            and comparPoints(transition_state.vel,Point(0.0, 0.0, 0.0),0.1): 
         #todo: should the acceleration be tested?            
         # if the transition phase can be concidered as finished with some margin
             #we reset all the transition state to 0
-            transition_state.vel = Point(0,0,0)
-            transition_state.acc = Point(0,0,0)
+            transition_state.vel = Point(0.0, 0.0, 0.0)
+            transition_state.acc = Point(0.0, 0.0, 0.0)
             
             #and we set the targeted drone position to the desired one
             transition_state.pose = drone_distance_from_mast #todo: perhaps need a deepcopy
             return
 
 # Analysis on the x axys
-        if transition_state.vel.x ** 2  / 2.0 / transition_state.max_acc >= abs(drone_distance_from_mast.x - transition_state.pose.x):
+    if abs(drone_distance_from_mast.x - transition_state.pose.x) > 0.001:
+    # if we are in a transition state on the x axys
+        if transition_state.vel.x ** 2  / 2.0 / transition_state.cte_acc >= abs(drone_distance_from_mast.x - transition_state.pose.x):
         # if it is time to brake to avoid overshoot
             #set the transition acceleration (or deceleration) to the one that will lead us to the exact point we want
             transition_state.acc.x = - transition_state.vel.x ** 2  /2.0 / (drone_distance_from_mast.x - transition_state.pose.x)
+            print("in break mode")
         elif abs(transition_state.vel.x) > transition_state.max_vel:
         # if we have reached max transitionning speed
             #we stop accelerating and maintain speed
             transition_state.acc.x = 0.0
+            print("in cte velocity mode")
             #transition_state.vel = signe(transition_state.vel) * transition_state.vel #to set the speed to the exact chosen value
         else:
         #we are in the acceleration phase of the transition:
-            if drone_distance_from_mast.x - transition_state.pose.x > 0:
-                transition_state.acc.x = transition_state.max_acc
+            if drone_distance_from_mast.x - transition_state.pose.x > 0.0:
+                transition_state.acc.x = transition_state.cte_acc
             else:
-                transition_state.acc.x = - transition_state.max_acc
+                transition_state.acc.x = - transition_state.cte_acc
+            print("in accleration mode")
         # Whatever the state we are in, update velocity and position of the target
         transition_state.vel.x  =   transition_state.acc.x  + transition_state.acc.x / SAMPLE_FREQUENCY
         transition_state.pose.x =  transition_state.pose.x  + transition_state.vel.x / SAMPLE_FREQUENCY
 
 # Analysis on the y axys, same as on the x axys
-        if transition_state.vel.y ** 2  / 2.0 / transition_state.max_acc >= abs(drone_distance_from_mast.y - transition_state.pose.y):
+    if abs(drone_distance_from_mast.y - transition_state.pose.y) > 0.001:
+        if transition_state.vel.y ** 2  / 2.0 / transition_state.cte_acc >= abs(drone_distance_from_mast.y - transition_state.pose.y):
             transition_state.acc.y = - transition_state.vel.y ** 2  /2.0 / (drone_distance_from_mast.y - transition_state.pose.y)
         elif abs(transition_state.vel.y) > transition_state.max_vel:
             transition_state.acc.y = 0.0
         else:
-            if drone_distance_from_mast.y - transition_state.pose.y > 0:
-                transition_state.acc.y = transition_state.max_acc
+            if drone_distance_from_mast.y - transition_state.pose.y > 0.0:
+                transition_state.acc.y = transition_state.cte_acc
             else:
-                transition_state.acc.y = - transition_state.max_acc
+                transition_state.acc.y = - transition_state.cte_acc
         transition_state.vel.y  =   transition_state.acc.y  + transition_state.acc.y / SAMPLE_FREQUENCY
         transition_state.pose.y =  transition_state.pose.y  + transition_state.vel.y / SAMPLE_FREQUENCY
 
 # Analysis on the z axys, same as on the x axys
-        if transition_state.vel.z ** 2  / 2.0 / transition_state.max_acc >= abs(drone_distance_from_mast.z - transition_state.pose.z):
+    if abs(drone_distance_from_mast.z - transition_state.pose.z) > 0.001:
+        if transition_state.vel.z ** 2  / 2.0 / transition_state.cte_acc >= abs(drone_distance_from_mast.z - transition_state.pose.z):
             transition_state.acc.z = - transition_state.vel.z ** 2  /2.0 / (drone_distance_from_mast.z - transition_state.pose.z)
         elif abs(transition_state.vel.z) > transition_state.max_vel:
             transition_state.acc.z = 0.0
         else:
-            if drone_distance_from_mast.z - transition_state.pose.z > 0:
-                transition_state.acc.z = transition_state.max_acc
+            if drone_distance_from_mast.z - transition_state.pose.z > 0.0:
+                transition_state.acc.z = transition_state.cte_acc
             else:
-                transition_state.acc.z = - transition_state.max_acc
+                transition_state.acc.z = - transition_state.cte_acc
         transition_state.vel.z  =   transition_state.acc.z  + transition_state.acc.z / SAMPLE_FREQUENCY
         transition_state.pose.z =  transition_state.pose.z  + transition_state.vel.z / SAMPLE_FREQUENCY
     return
@@ -575,6 +582,9 @@ def main():
                 if elapsed_time >= simulation_time:
                     print("%.1fsec elapsed, simulation is over!" % elapsed_time)
                     return
+            if elapsed_time >= 13.0 and elapsed_time <14.0:
+                transition_state.pose = Point(0.5, 0.0, 0.0)
+                print("offset distance from the mast has been updated!")
 
         
 #        rospy.loginfo("asked to pose %f,%f",x,y)
