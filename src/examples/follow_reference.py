@@ -13,7 +13,7 @@ from pathlib import Path
 # If LQR is used, the gains can be chosen with the variables K_lqr_x and K_lqr_y.
 # If LQR is used, one can choose to multiply the feedback LQR gain by the squared root of the error in stead of the error with USE_SQRT
 #  
-# The drone will try to follow the module_state + targeted_state_away_from_mast - smoothing = targeted_drone_state
+# The drone will try to follow the module_state + drone_distance_from_mast - smoothing = 
 # 
 # Parameters:
 # SAVE_Z choose to store the z axis in position velocity and acceleration into the datafiles.
@@ -55,7 +55,7 @@ omega = 2.0 * pi / 10.0
 z = takeoff_height
 
 #parameters for data files
-module_pose_path = str(Path.home())+"/module_state.txt"    #file saved in home
+reference_pose_path = str(Path.home())+"/reference_state.txt"    #file saved in home
 drone_pose_path  = str(Path.home())+"/drone_state.txt"     #file saved in home
 drone_setpoints_path=str(Path.home())+"/drone_setpoints.txt"     #file saved in home
 
@@ -66,19 +66,27 @@ drone_velocity = Point()
 drone_acceleration = Point()
 drone_quaternion = Quaternion()
 current_state = State()
-targeted_state_away_from_mast = Point() # in meters
-targeted_state_away_from_mast.x = 0.0
-targeted_state_away_from_mast.y = 0.7
-targeted_state_away_from_mast.z = 0.0
+drone_distance_from_mast = Point() # distance offset from the mast.
+drone_distance_from_mast.x = 0.0
+drone_distance_from_mast.y = 0.7
+drone_distance_from_mast.z = 0.0
 
-targeted_drone_state = Point()
+target = PositionTarget()
+
+
+class TransitionStruct():
+    def __init__(self, max_vel, cte_acc, pose=Point(), vel=Point(), acc=Point(), sign=0):
+        self.max_vel = max_vel
+        self.cte_acc = cte_acc
+        self.pose = pose
+        self.vel = vel
+        self.acc = acc
+
+transition_state = TransitionStruct(0.05, 0.03) # max_vel and cte_acc #first tried with 0.05 and 0.03 as these are usual values on the folowing of the mast.
 
 
 local_pose_publisher = rospy.Publisher('/mavros/setpoint_raw/local', PositionTarget, queue_size=10)    
 local_attitude_publisher = rospy.Publisher('/mavros/setpoint_raw/attitude', AttitudeTarget, queue_size=10)    
-
-target = PositionTarget()
-
 def poseCallback(message):
     global drone_position
     global drone_acceleration
@@ -135,18 +143,18 @@ def derivate(actual,last):
     #printPoint(vel,"module velocity: ")
     return vel
 
-def calculate_lqr_acc(module_state,use_sqrt=False):
-    pos = module_state[0]
-    vel = module_state[1]
-    acc = module_state[2]
+def calculate_lqr_acc(target_pos, trans_offset, use_sqrt=False):
+    ref_pos = addPoints(target_pos[0], trans_offset.pose)
+    ref_vel = addPoints(target_pos[1], trans_offset.vel)
+    ref_acc = addPoints(target_pos[2], trans_offset.acc)
     accel_target = Point()
     accel_target.z = 0
     if use_sqrt:
-        accel_target.x = K_lqr_x[0]*signed_sqrt(pos.x-drone_position.x)  + K_lqr_x[1]*signed_sqrt(vel.x-drone_velocity.x) + K_lqr_x[2]*signed_sqrt(acc.x-drone_acceleration.x)
-        accel_target.y = K_lqr_y[0]*signed_sqrt(pos.y-drone_position.y)  + K_lqr_y[1]*signed_sqrt(vel.y-drone_velocity.y) + K_lqr_y[2]*signed_sqrt(acc.y-drone_acceleration.y)
+        accel_target.x = K_lqr_x[0]*signed_sqrt(ref_pos.x-drone_position.x)  + K_lqr_x[1]*signed_sqrt(ref_vel.x-drone_velocity.x) + K_lqr_x[2]*signed_sqrt(ref_acc.x-drone_acceleration.x)
+        accel_target.y = K_lqr_y[0]*signed_sqrt(ref_pos.y-drone_position.y)  + K_lqr_y[1]*signed_sqrt(ref_vel.y-drone_velocity.y) + K_lqr_y[2]*signed_sqrt(ref_acc.y-drone_acceleration.y)
     else:
-        accel_target.x = K_lqr_x[0]*(pos.x-drone_position.x)  + K_lqr_x[1]*(vel.x-drone_velocity.x) + K_lqr_x[2]*(acc.x-drone_acceleration.x)
-        accel_target.y = K_lqr_y[0]*(pos.y-drone_position.y)  + K_lqr_y[1]*(vel.y-drone_velocity.y) + K_lqr_y[2]*(acc.y-drone_acceleration.y)
+        accel_target.x = K_lqr_x[0]*(ref_pos.x-drone_position.x)  + K_lqr_x[1]*(ref_vel.x-drone_velocity.x) + K_lqr_x[2]*(ref_acc.x-drone_acceleration.x)
+        accel_target.y = K_lqr_y[0]*(ref_pos.y-drone_position.y)  + K_lqr_y[1]*(ref_vel.y-drone_velocity.y) + K_lqr_y[2]*(ref_acc.y-drone_acceleration.y)
 
     return accel_target
 
@@ -157,67 +165,96 @@ def signed_sqrt(nb):
         return sqrt(nb)
 
 
-class TransitionStruct():
-    def __init__(self, max_vel, cte_acc, vel=0, acc,0, sign,0):
-        self.max_vel = max_vel
-        self.cte_acc = cte_acc
-        self.vel = vel
-        self.acc = acc
-        self.sign = sign
-
-transition_state = TransitionStruct(0.05, 0.03, 0, 0) #first tried with 0.05 and 0.03 as these are usual values on the folowing of the mast.
-
 def update_targeted_state():
     #try to make a smooth transition when the relative targeted position between the drone
     #and the mast is changed
 
-    #todo: check that all the variable are defined correctly within this scope and have the intended meaning
+    #todo: check signs +, - and transition_state.sign
 
-    if targeted_drone_position != drone_distance_from_mast + module_pos():
+    if comparPoints(transition_state.pose, drone_distance_from_mast,0.001):
     # if we are in a transition state
-        if abs(targeted_drone_position-drone_distance_from_mast + module_pos()) < 0.02 ... #in meters
-            and abs(transition_state.vel) <= 0.1: #in m/s
+        if comparPoints(transition_state.pose,drone_distance_from_mast,0.02) \
+            and comparPoints(transition_state.vel,Point(0,0,0),0.1): 
         #todo: should the acceleration be tested?            
         # if the transition phase can be concidered as finished with some margin
             #we reset all the transition state to 0
-            transition_state.vel = 0
-            transition_state.acc = 0
-            transition_state.sign = 0
-
+            transition_state.vel = Point(0,0,0)
+            transition_state.acc = Point(0,0,0)
+            
             #and we set the targeted drone position to the desired one
-            targeted_drone_position = drone_distance_from_mast + module_pos()
+            transition_state.pose = drone_distance_from_mast #todo: perhaps need a deepcopy
             return
 
-        if transition_state.vel ** 2  /2.0 / transition_state.max_acc >= transition_state.sign * (module_pos - targeted_drone_position):
+# Analysis on the x axys
+        if transition_state.vel.x ** 2  / 2.0 / transition_state.max_acc >= abs(drone_distance_from_mast.x - transition_state.pose.x):
         # if it is time to brake to avoid overshoot
-            #set the transition acceleration to the one that will lead us to the exact point we want
-            transition_state.acc = transition_state.vel ** 2  /2.0 / (module_pos - targeted_drone_position)
-            #update velocity and position accordingly
-            transition_state.vel = transition_state.acc - transition_state.sign * transition_state.acc / SAMPLE_FREQUENCY
-            targeted_drone_position =  targeted_drone_position + transition_state.vel / SAMPLE_FREQUENCY
-        
-        elif abs(transition_state.vel) >= transition_state.max_vel:
+            #set the transition acceleration (or deceleration) to the one that will lead us to the exact point we want
+            transition_state.acc.x = - transition_state.vel.x ** 2  /2.0 / (drone_distance_from_mast.x - transition_state.pose.x)
+        elif abs(transition_state.vel.x) > transition_state.max_vel:
         # if we have reached max transitionning speed
             #we stop accelerating and maintain speed
-            transition_state.vel = signed(transition_state.vel) * transition_state.vel
-            targeted_drone_position =  targeted_drone_position + transition_state.vel / SAMPLE_FREQUENCY
-
+            transition_state.acc.x = 0.0
+            #transition_state.vel = signe(transition_state.vel) * transition_state.vel #to set the speed to the exact chosen value
         else:
         #we are in the acceleration phase of the transition:
-            transition_state.acc = transition_state.max_acc
-            #update velocity and position accordingly
-            transition_state.vel = transition_state.acc + transition_state.sign * transition_state.acc / SAMPLE_FREQUENCY
-            targeted_drone_position =  targeted_drone_position + transition_state.vel / SAMPLE_FREQUENCY
+            if drone_distance_from_mast.x - transition_state.pose.x > 0:
+                transition_state.acc.x = transition_state.max_acc
+            else:
+                transition_state.acc.x = - transition_state.max_acc
+        # Whatever the state we are in, update velocity and position of the target
+        transition_state.vel.x  =   transition_state.acc.x  + transition_state.acc.x / SAMPLE_FREQUENCY
+        transition_state.pose.x =  transition_state.pose.x  + transition_state.vel.x / SAMPLE_FREQUENCY
+
+# Analysis on the y axys, same as on the x axys
+        if transition_state.vel.y ** 2  / 2.0 / transition_state.max_acc >= abs(drone_distance_from_mast.y - transition_state.pose.y):
+            transition_state.acc.y = - transition_state.vel.y ** 2  /2.0 / (drone_distance_from_mast.y - transition_state.pose.y)
+        elif abs(transition_state.vel.y) > transition_state.max_vel:
+            transition_state.acc.y = 0.0
+        else:
+            if drone_distance_from_mast.y - transition_state.pose.y > 0:
+                transition_state.acc.y = transition_state.max_acc
+            else:
+                transition_state.acc.y = - transition_state.max_acc
+        transition_state.vel.y  =   transition_state.acc.y  + transition_state.acc.y / SAMPLE_FREQUENCY
+        transition_state.pose.y =  transition_state.pose.y  + transition_state.vel.y / SAMPLE_FREQUENCY
+
+# Analysis on the z axys, same as on the x axys
+        if transition_state.vel.z ** 2  / 2.0 / transition_state.max_acc >= abs(drone_distance_from_mast.z - transition_state.pose.z):
+            transition_state.acc.z = - transition_state.vel.z ** 2  /2.0 / (drone_distance_from_mast.z - transition_state.pose.z)
+        elif abs(transition_state.vel.z) > transition_state.max_vel:
+            transition_state.acc.z = 0.0
+        else:
+            if drone_distance_from_mast.z - transition_state.pose.z > 0:
+                transition_state.acc.z = transition_state.max_acc
+            else:
+                transition_state.acc.z = - transition_state.max_acc
+        transition_state.vel.z  =   transition_state.acc.z  + transition_state.acc.z / SAMPLE_FREQUENCY
+        transition_state.pose.z =  transition_state.pose.z  + transition_state.vel.z / SAMPLE_FREQUENCY
     return
 
+def comparPoints(pt1, pt2, r):
+    if abs(pt1.x - pt2.x) >r:
+        return False
+    if abs(pt1.y - pt2.y) >r:
+        return False
+    if abs(pt1.z - pt2.z) >r:
+        return False
+    return True
 
-def signed(nb):
-    if nb > 0:
-        return 1
-    elif nb == 0:
-        return 0
-    else:
-        return -1
+#def signe(nb):
+#    if nb > 0:
+#        return 1
+#    elif nb == 0:
+#        return 0
+#    else:
+#        return -1
+
+def addPoints(pt1,pt2):
+    ret = Point()
+    ret.x = pt1.x + pt2.x
+    ret.y = pt1.y + pt2.y
+    ret.z = pt1.z + pt2.z
+    return ret
 
 def printPoint(vec,message=None):
     rospy.loginfo(str(message)+"x: %f,\ty:%f,\tz=%f",vec.x,vec.y,vec.z)
@@ -403,17 +440,17 @@ def quaternion_to_euler_angle(orientation):
 
 def constrain_acc(acc):
     #x and y axes are independant
-    if acc.x > MAX_ACCEL_X:
-        acc.x = MAX_ACCEL_X
-    elif acc.x < -MAX_ACCEL_X:
-        acc.x = -MAX_ACCEL_X
-
-    if acc.y > MAX_ACCEL_Y:
-        acc.y = MAX_ACCEL_Y
-    elif acc.y < -MAX_ACCEL_Y:
-        acc.y = -MAX_ACCEL_Y
+    acc.x = constrain(acc.x, -MAX_ACCEL_X, MAX_ACCEL_X)
+    acc.y = constrain(acc.y, -MAX_ACCEL_Y, MAX_ACCEL_Y)
     return acc
-    
+
+def constrain(x,min,max):
+    if x > max:
+        return max
+    if x < min:
+        return min
+    return x
+
 def main():
     global drone_position 
     global drone_velocity
@@ -425,7 +462,7 @@ def main():
     rate = rospy.Rate(SAMPLE_FREQUENCY)
 
     initLog(drone_pose_path)
-    initLog(module_pose_path)
+    initLog(reference_pose_path)
     
     #init log for acceleration setpoints. Not the same way as the rest because much shorter
     log = open(drone_setpoints_path,"w")
@@ -500,8 +537,11 @@ def main():
         actual_module_vel = moduleVelocity(1/float(SAMPLE_FREQUENCY))
         actual_module_accel = moduleAcceleration(2/float(SAMPLE_FREQUENCY))
 
+        #allow smooth movements arround the mast in its referentiel
         module_state = [actual_module_pose, actual_module_vel, actual_module_accel]
-        acceleration_setpoint = calculate_lqr_acc(module_state,USE_SQRT)
+        update_targeted_state()
+
+        acceleration_setpoint = calculate_lqr_acc(module_state, transition_state,USE_SQRT)
 
         #todo: don't forget to add FEEDFORWARD TO LQR!
         if(not rospy.is_shutdown() and current_state.connected):
@@ -515,7 +555,8 @@ def main():
             return
 
         saveLog(drone_pose_path,drone_position,drone_velocity,drone_acceleration)
-        saveLog(module_pose_path,actual_module_pose,actual_module_vel,actual_module_accel)
+        saveLog(reference_pose_path,addPoints(actual_module_pose,transition_state.pose), \
+            addPoints(actual_module_vel,transition_state.vel),addPoints(actual_module_accel,transition_state.acc))
 
         #save log for acceleration setpoints. Not the same way as the rest because much shorter
         log = open(drone_setpoints_path,'a')
