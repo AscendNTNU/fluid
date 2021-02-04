@@ -20,6 +20,10 @@ void ExploreOperation::initialize() {
     original_path = path;
     original_path_set = true;
 
+    // TODO: what if path.size() == 0?
+    point_of_interest = path.back();
+    path.pop_back();
+
     dense_path.clear();
 
     if (original_path.size() == 1) {
@@ -84,8 +88,8 @@ void ExploreOperation::pathCallback(ascend_msgs::Path corrected_path) {
 void ExploreOperation::tick() {
     MoveOperation::tick();
 
-    double dx = dense_path.back().x - getCurrentPose().pose.position.x;
-    double dy = dense_path.back().y - getCurrentPose().pose.position.y;
+    double dx = point_of_interest.x - getCurrentPose().pose.position.x;
+    double dy = point_of_interest.y - getCurrentPose().pose.position.y;
     setpoint.yaw = std::atan2(dy, dx);
    
 

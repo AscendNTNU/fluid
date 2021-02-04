@@ -53,6 +53,11 @@ class ExploreOperation : public MoveOperation {
     bool original_path_set = false;
 
     /**
+     * @brief Point of interest from the end of the original path.
+     */
+    geometry_msgs::Point point_of_interest;
+
+    /**
      * @brief Callback for the corrected path from obstacle avoidance.
      *
      * @param corrected_path The corrected path.

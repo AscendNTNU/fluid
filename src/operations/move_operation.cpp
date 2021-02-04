@@ -58,17 +58,11 @@ void MoveOperation::tick() {
         if (current_setpoint_iterator < path.end() - 1) {
             current_setpoint_iterator++;
 
-            if (current_setpoint_iterator == path.end() - 1 && identifier == OperationIdentifier::EXPLORE) {
-                been_to_all_points = true;
-            }
+            setpoint.position = *current_setpoint_iterator;
 
-            else {
-                setpoint.position = *current_setpoint_iterator;
-
-                double dx = current_setpoint_iterator->x - getCurrentPose().pose.position.x;
-                double dy = current_setpoint_iterator->y - getCurrentPose().pose.position.y;
-                setpoint.yaw = std::atan2(dy, dx);
-            }
+            double dx = current_setpoint_iterator->x - getCurrentPose().pose.position.x;
+            double dy = current_setpoint_iterator->y - getCurrentPose().pose.position.y;
+            setpoint.yaw = std::atan2(dy, dx);
         
         } else {
             been_to_all_points = true;
