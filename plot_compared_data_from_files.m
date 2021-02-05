@@ -8,8 +8,8 @@
 
 clear();
 files_to_compare = [ % put the files you want to compare h
-     "module_position.txt"
-     "drone_position.txt"
+     "reference_state.txt"
+     "drone_state.txt"
      "drone_setpoints.txt"
 %     "log_drone_pos_and_velocity_long.txt"
 %     "log_module_position_long.txt"
@@ -154,8 +154,9 @@ xlabel(merge_titles(2));
 ylabel(merge_titles(3));
 hold off
 
-%% Other fewer display to get them bigger
-% Here we print only the second and first variable from merge_titles
+
+%% Other fewer displays to get them bigger
+% Here we print only the first and second variable from merge_titles
 % assuming that it is pos_x and pos_y.
 % We still check that each log file has the corresponding data.
 figure
@@ -170,6 +171,34 @@ xlabel(merge_titles(2));
 ylabel(merge_titles(3));
 for i = 2*titleInColumn(1):titleInColumn(1):3*titleInColumn(1)
     subplot(1,3,i/titleInColumn(1));   %,'replace')
+    for file_ind=1:nb_file
+        if find(titles(file_ind,:)==merge_titles(i))
+            % a log has data if it has the required title
+            if find(ploted_files ==file_ind) 
+                %function not does not work here
+            else
+                ploted_files(end+1) = file_ind;
+            end
+            plot(shiftdim(results(file_ind,titleInColumn(1),1:nb_lines(file_ind)),1),shiftdim(results(file_ind,i,1:nb_lines(file_ind)),1),'color',colors(file_ind,:));
+        end
+        hold on
+    end
+    ylabel(merge_titles(i/titleInColumn(1)));
+    xlabel(merge_titles(1));
+    hold off
+end
+
+%% Last few displays to get them bigger
+% Here we print only the 5th and 6th variable from merge_titles
+% assuming that it is accel_x and accel_y.
+% We still check that each log file has the corresponding data.
+figure
+subplot(1,3,1)
+ploted_files = [1]; %we want to know which files have been ploted to set the legend
+xlabel(merge_titles(5));
+ylabel(merge_titles(6));
+for i = 2*titleInColumn(1):2*titleInColumn(1):6*titleInColumn(1)
+    subplot(1,3,i/titleInColumn(1)/2);   %,'replace')
     for file_ind=1:nb_file
         if find(titles(file_ind,:)==merge_titles(i))
             % a log has data if it has the required title
