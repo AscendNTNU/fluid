@@ -28,7 +28,7 @@ from pathlib import Path
 # common convention for Ascend is z axis upward, y axis is pointing forward and x axis to the right
 
 
-SAVE_Z = False
+SAVE_Z = True
 
 #type of control
 CONTROL_POSITION = 2552
@@ -116,7 +116,7 @@ def modulePosition():
     t = rospy.Time.now()
     module_pos.x = center[0] - pitch_radius * cos(rospy.Time.now().to_time()*omega)
     module_pos.y = center[1] - roll_radius  * sin(rospy.Time.now().to_time()*omega)
-    module_pos.z = z
+    module_pos.z = takeoff_height
     return module_pos
 
 def moduleVelocity(latency=None):
@@ -124,7 +124,7 @@ def moduleVelocity(latency=None):
     t = rospy.Time.now()
     module_vel.x = center[0] + pitch_radius * omega * sin((rospy.Time.now().to_time()-latency)*omega)
     module_vel.y = center[1] - roll_radius  * omega * cos((rospy.Time.now().to_time()-latency)*omega)
-    module_vel.z = z
+    module_vel.z = 0.0
     return module_vel
 
 def moduleAcceleration(latency=None):
@@ -132,7 +132,7 @@ def moduleAcceleration(latency=None):
     t = rospy.Time.now()
     module_accel.x = center[0] + pitch_radius * omega * omega * cos((rospy.Time.now().to_time()-latency)*omega)
     module_accel.y = center[1] + roll_radius  * omega * omega * sin((rospy.Time.now().to_time()-latency)*omega)
-    module_accel.z = z
+    module_accel.z = 0.0
     return module_accel
 
 
@@ -541,6 +541,7 @@ def main():
     module_state = module_state_P.points
     count =0
     start_time = rospy.Time.now().to_time()
+    elapsed_time = 0.0
 
     transition_state = TransitionStruct(0.05, 0.03) # max_vel and cte_acc #first tried with 0.05 and 0.03 as these are usual values on the folowing of the mast.
     transition_state.pose = Point(0.0, 0.0, 0.0)
@@ -564,6 +565,9 @@ def main():
 
         acceleration_setpoint = calculate_lqr_acc(module_state, transition_state,USE_SQRT)
 
+        #update zaxis
+        actual_module_pose.z = takeoff_height + elapsed_time/50.0
+        move(addPoints(actual_module_pose,transition_state.pose),actual_module_vel,actual_module_accel,CONTROL_POSITION_AND_VELOCITY)
         #todo: don't forget to add FEEDFORWARD TO LQR!
         if(not rospy.is_shutdown() and current_state.connected):
             if control_type !=CONTROL_LQR_ATTITUDE:
