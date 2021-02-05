@@ -116,7 +116,7 @@ def modulePosition():
     t = rospy.Time.now()
     module_pos.x = center[0] - pitch_radius * cos(rospy.Time.now().to_time()*omega)
     module_pos.y = center[1] - roll_radius  * sin(rospy.Time.now().to_time()*omega)
-    module_pos.z = takeoff_height
+    module_pos.z = sqrt(takeoff_height**2 - module_pos.x **2 - module_pos.y **2)
     return module_pos
 
 def moduleVelocity(latency=None):
@@ -566,7 +566,6 @@ def main():
         acceleration_setpoint = calculate_lqr_acc(module_state, transition_state,USE_SQRT)
 
         #update zaxis
-        actual_module_pose.z = takeoff_height + elapsed_time/50.0
         move(addPoints(actual_module_pose,transition_state.pose),actual_module_vel,actual_module_accel,CONTROL_POSITION_AND_VELOCITY)
         #todo: don't forget to add FEEDFORWARD TO LQR!
         if(not rospy.is_shutdown() and current_state.connected):
