@@ -15,14 +15,14 @@ ExploreOperation::ExploreOperation(const std::vector<geometry_msgs::Point>& path
           node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreOperation::pathCallback, this)) {}
 
 void ExploreOperation::initialize() {
+    // TODO: what if path.size() == 0?
+    point_of_interest = path.back();
+    path.pop_back();
+
     MoveOperation::initialize();
 
     original_path = path;
     original_path_set = true;
-
-    // TODO: what if path.size() == 0?
-    point_of_interest = path.back();
-    path.pop_back();
 
     dense_path.clear();
 
