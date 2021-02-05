@@ -13,7 +13,14 @@ from pathlib import Path
 # If LQR is used, the gains can be chosen with the variables K_lqr_x and K_lqr_y.
 # If LQR is used, one can choose to multiply the feedback LQR gain by the squared root of the error in stead of the error with USE_SQRT
 #  
-# The drone will try to follow the module_state + drone_distance_from_mast - smoothing = 
+# The drone will try to follow the drone_distance_from_mast offset in a smooth way, using 
+# setpoints from transition_state.
+# drone_distance_from_mast is the offset distance between the mast and the drone to ensure that
+# the drone is not completely inside the mast.
+# transition_state is a setpoints that smoothly move from the different iterations of the 
+# drone_distance_from_mast offset to ensure that the drone stays in a steay state.
+# 
+# 
 # 
 # Parameters:
 # SAVE_Z choose to store the z axis in position velocity and acceleration into the datafiles.
@@ -66,10 +73,6 @@ drone_velocity = Point()
 drone_acceleration = Point()
 drone_quaternion = Quaternion()
 current_state = State()
-drone_distance_from_mast = Point() # distance offset from the mast.
-drone_distance_from_mast.x = 0.0
-drone_distance_from_mast.y = 0.7
-drone_distance_from_mast.z = 0.0
 
 target = PositionTarget()
 
@@ -81,8 +84,7 @@ class TransitionStruct():
         self.pose = pose
         self.vel = vel
         self.acc = acc
-
-transition_state = TransitionStruct(0.05, 0.03) # max_vel and cte_acc #first tried with 0.05 and 0.03 as these are usual values on the folowing of the mast.
+        self.transition_finished = False
 
 
 local_pose_publisher = rospy.Publisher('/mavros/setpoint_raw/local', PositionTarget, queue_size=10)    
@@ -165,29 +167,14 @@ def signed_sqrt(nb):
         return sqrt(nb)
 
 
-def update_targeted_state():
+def update_transition_state(transition_state, drone_distance_from_mast):
     #try to make a smooth transition when the relative targeted position between the drone
     #and the mast is changed
 
-    #todo: check signs +, - and transition_state.sign
-
-    if not comparPoints(transition_state.pose, drone_distance_from_mast,0.001):
-    # if we are in a transition state
-        if comparPoints(transition_state.pose,drone_distance_from_mast,0.02) \
-            and comparPoints(transition_state.vel,Point(0.0, 0.0, 0.0),0.1): 
-        #todo: should the acceleration be tested?            
-        # if the transition phase can be concidered as finished with some margin
-            #we reset all the transition state to 0
-            transition_state.vel = Point(0.0, 0.0, 0.0)
-            transition_state.acc = Point(0.0, 0.0, 0.0)
-            
-            #and we set the targeted drone position to the desired one
-            transition_state.pose = drone_distance_from_mast #todo: perhaps need a deepcopy
-            return
-
-# Analysis on the x axys
-    if abs(drone_distance_from_mast.x - transition_state.pose.x) > 0.001:
-    # if we are in a transition state on the x axys
+# Analysis on the x axis
+    if abs(drone_distance_from_mast.x - transition_state.pose.x) > 0.002:
+        print("Analyzing X axis")
+    # if we are in a transition state on the x axis
         if transition_state.vel.x ** 2  / 2.0 / transition_state.cte_acc >= abs(drone_distance_from_mast.x - transition_state.pose.x):
         # if it is time to brake to avoid overshoot
             #set the transition acceleration (or deceleration) to the one that will lead us to the exact point we want
@@ -209,8 +196,16 @@ def update_targeted_state():
         # Whatever the state we are in, update velocity and position of the target
         transition_state.vel.x  =   transition_state.acc.x  + transition_state.acc.x / SAMPLE_FREQUENCY
         transition_state.pose.x =  transition_state.pose.x  + transition_state.vel.x / SAMPLE_FREQUENCY
+    else:
+        if abs(transition_state.vel.x) < 0.1:
+        #setpoint reached destination on this axis
+            #todo: should the acceleration be tested?            
+            transition_state.pose.x = drone_distance_from_mast.x
+            transition_state.vel.x = 0.0
+            transition_state.acc.x = 0.0
+            print("destination reached on x axis!")
 
-# Analysis on the y axys, same as on the x axys
+# Analysis on the y axis, same as on the x axis
     if abs(drone_distance_from_mast.y - transition_state.pose.y) > 0.001:
         if transition_state.vel.y ** 2  / 2.0 / transition_state.cte_acc >= abs(drone_distance_from_mast.y - transition_state.pose.y):
             transition_state.acc.y = - transition_state.vel.y ** 2  /2.0 / (drone_distance_from_mast.y - transition_state.pose.y)
@@ -223,8 +218,13 @@ def update_targeted_state():
                 transition_state.acc.y = - transition_state.cte_acc
         transition_state.vel.y  =   transition_state.acc.y  + transition_state.acc.y / SAMPLE_FREQUENCY
         transition_state.pose.y =  transition_state.pose.y  + transition_state.vel.y / SAMPLE_FREQUENCY
+    else:
+        if abs(transition_state.vel.y) < 0.1:
+            transition_state.pose.y = drone_distance_from_mast.y
+            transition_state.vel.y = 0.0
+            transition_state.acc.y = 0.0
 
-# Analysis on the z axys, same as on the x axys
+# Analysis on the z axis, same as on the x axis
     if abs(drone_distance_from_mast.z - transition_state.pose.z) > 0.001:
         if transition_state.vel.z ** 2  / 2.0 / transition_state.cte_acc >= abs(drone_distance_from_mast.z - transition_state.pose.z):
             transition_state.acc.z = - transition_state.vel.z ** 2  /2.0 / (drone_distance_from_mast.z - transition_state.pose.z)
@@ -237,7 +237,18 @@ def update_targeted_state():
                 transition_state.acc.z = - transition_state.cte_acc
         transition_state.vel.z  =   transition_state.acc.z  + transition_state.acc.z / SAMPLE_FREQUENCY
         transition_state.pose.z =  transition_state.pose.z  + transition_state.vel.z / SAMPLE_FREQUENCY
-    return
+    else:
+        if abs(transition_state.vel.z) < 0.1:
+            transition_state.pose.z = drone_distance_from_mast.z
+            transition_state.vel.z = 0.0
+            transition_state.acc.z = 0.0
+    
+    if comparPoints(drone_distance_from_mast,transition_state.pose,0.001) and not transition_state.transition_finished:
+        transition_state.transition_finished = True
+        print ("transition finished!") 
+    else :
+        transition_state.transition_finished = False
+    return transition_state
 
 def comparPoints(pt1, pt2, r):
     if abs(pt1.x - pt2.x) >r:
@@ -534,6 +545,13 @@ def main():
     module_state = module_state_P.points
     count =0
     start_time = rospy.Time.now().to_time()
+
+    transition_state = TransitionStruct(0.05, 0.03) # max_vel and cte_acc #first tried with 0.05 and 0.03 as these are usual values on the folowing of the mast.
+    transition_state.pose = Point(0.0, 0.0, 0.0)
+    drone_distance_from_mast = Point(0.0, 0.0, 0.0) # distance offset from the mast.
+
+
+
     while not rospy.is_shutdown():
         #estimate module state
         last_module_pose = actual_module_pose
@@ -546,7 +564,7 @@ def main():
 
         #allow smooth movements arround the mast in its referentiel
         module_state = [actual_module_pose, actual_module_vel, actual_module_accel]
-        update_targeted_state()
+        transition_state = update_transition_state(transition_state, drone_distance_from_mast)
 
         acceleration_setpoint = calculate_lqr_acc(module_state, transition_state,USE_SQRT)
 
@@ -574,8 +592,12 @@ def main():
         rate.sleep()
 
         count = count +1
-        elapsed_time = rospy.Time.now().to_time() - start_time
+        if count %2:
+            printPoint(transition_state.pose,"transition_state pose ")
+            printPoint(drone_distance_from_mast,"drone distance from mast ")
+
         if count == 30: #30 --> 1Hz
+            elapsed_time = rospy.Time.now().to_time() - start_time
             print("elapsed time: %.1f" % elapsed_time)
             count = 0
             if simulation_time !=None:
@@ -583,7 +605,7 @@ def main():
                     print("%.1fsec elapsed, simulation is over!" % elapsed_time)
                     return
             if elapsed_time >= 13.0 and elapsed_time <14.0:
-                transition_state.pose = Point(0.5, 0.0, 0.0)
+                drone_distance_from_mast = Point(0.5, 0.0, 0.0)
                 print("offset distance from the mast has been updated!")
 
         
