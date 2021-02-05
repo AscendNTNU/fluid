@@ -172,19 +172,16 @@ def update_transition_state(transition_state, drone_distance_from_mast):
     #and the mast is changed
 
 # Analysis on the x axis
-    if abs(drone_distance_from_mast.x - transition_state.pose.x) > 0.002:
-        print("Analyzing X axis")
+    if abs(drone_distance_from_mast.x - transition_state.pose.x) > 0.001:
     # if we are in a transition state on the x axis
         if transition_state.vel.x ** 2  / 2.0 / transition_state.cte_acc >= abs(drone_distance_from_mast.x - transition_state.pose.x):
         # if it is time to brake to avoid overshoot
             #set the transition acceleration (or deceleration) to the one that will lead us to the exact point we want
             transition_state.acc.x = - transition_state.vel.x ** 2  /2.0 / (drone_distance_from_mast.x - transition_state.pose.x)
-            print("in break mode")
         elif abs(transition_state.vel.x) > transition_state.max_vel:
         # if we have reached max transitionning speed
             #we stop accelerating and maintain speed
             transition_state.acc.x = 0.0
-            print("in cte velocity mode")
             #transition_state.vel = signe(transition_state.vel) * transition_state.vel #to set the speed to the exact chosen value
         else:
         #we are in the acceleration phase of the transition:
@@ -192,9 +189,8 @@ def update_transition_state(transition_state, drone_distance_from_mast):
                 transition_state.acc.x = transition_state.cte_acc
             else:
                 transition_state.acc.x = - transition_state.cte_acc
-            print("in accleration mode")
         # Whatever the state we are in, update velocity and position of the target
-        transition_state.vel.x  =   transition_state.acc.x  + transition_state.acc.x / SAMPLE_FREQUENCY
+        transition_state.vel.x  =   transition_state.vel.x  + transition_state.acc.x / SAMPLE_FREQUENCY
         transition_state.pose.x =  transition_state.pose.x  + transition_state.vel.x / SAMPLE_FREQUENCY
     else:
         if abs(transition_state.vel.x) < 0.1:
@@ -203,7 +199,6 @@ def update_transition_state(transition_state, drone_distance_from_mast):
             transition_state.pose.x = drone_distance_from_mast.x
             transition_state.vel.x = 0.0
             transition_state.acc.x = 0.0
-            print("destination reached on x axis!")
 
 # Analysis on the y axis, same as on the x axis
     if abs(drone_distance_from_mast.y - transition_state.pose.y) > 0.001:
@@ -216,7 +211,7 @@ def update_transition_state(transition_state, drone_distance_from_mast):
                 transition_state.acc.y = transition_state.cte_acc
             else:
                 transition_state.acc.y = - transition_state.cte_acc
-        transition_state.vel.y  =   transition_state.acc.y  + transition_state.acc.y / SAMPLE_FREQUENCY
+        transition_state.vel.y  =   transition_state.vel.y  + transition_state.acc.y / SAMPLE_FREQUENCY
         transition_state.pose.y =  transition_state.pose.y  + transition_state.vel.y / SAMPLE_FREQUENCY
     else:
         if abs(transition_state.vel.y) < 0.1:
@@ -235,7 +230,7 @@ def update_transition_state(transition_state, drone_distance_from_mast):
                 transition_state.acc.z = transition_state.cte_acc
             else:
                 transition_state.acc.z = - transition_state.cte_acc
-        transition_state.vel.z  =   transition_state.acc.z  + transition_state.acc.z / SAMPLE_FREQUENCY
+        transition_state.vel.z  =   transition_state.vel.z  + transition_state.acc.z / SAMPLE_FREQUENCY
         transition_state.pose.z =  transition_state.pose.z  + transition_state.vel.z / SAMPLE_FREQUENCY
     else:
         if abs(transition_state.vel.z) < 0.1:
@@ -592,9 +587,11 @@ def main():
         rate.sleep()
 
         count = count +1
-        if count %2:
-            printPoint(transition_state.pose,"transition_state pose ")
-            printPoint(drone_distance_from_mast,"drone distance from mast ")
+
+#        printPoint(transition_state.pose,"transition_state pose ")
+#        printPoint(transition_state.vel, "transition_state vel")
+#        printPoint(transition_state.acc, "transition_state acc")
+#        printPoint(drone_distance_from_mast,"drone distance from mast ")
 
         if count == 30: #30 --> 1Hz
             elapsed_time = rospy.Time.now().to_time() - start_time
