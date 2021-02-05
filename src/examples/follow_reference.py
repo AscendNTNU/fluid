@@ -150,7 +150,7 @@ def calculate_lqr_acc(target_pos, trans_offset, use_sqrt=False):
     ref_vel = addPoints(target_pos[1], trans_offset.vel)
     ref_acc = addPoints(target_pos[2], trans_offset.acc)
     accel_target = Point()
-    accel_target.z = 0
+    accel_target.z = 0.0
     if use_sqrt:
         accel_target.x = K_lqr_x[0]*signed_sqrt(ref_pos.x-drone_position.x)  + K_lqr_x[1]*signed_sqrt(ref_vel.x-drone_velocity.x) + K_lqr_x[2]*signed_sqrt(ref_acc.x-drone_acceleration.x)
         accel_target.y = K_lqr_y[0]*signed_sqrt(ref_pos.y-drone_position.y)  + K_lqr_y[1]*signed_sqrt(ref_vel.y-drone_velocity.y) + K_lqr_y[2]*signed_sqrt(ref_acc.y-drone_acceleration.y)
@@ -174,6 +174,7 @@ def update_transition_state(transition_state, drone_distance_from_mast):
 # Analysis on the x axis
     if abs(drone_distance_from_mast.x - transition_state.pose.x) > 0.001:
     # if we are in a transition state on the x axis
+        transition_state.transition_finished = False
         if transition_state.vel.x ** 2  / 2.0 / transition_state.cte_acc >= abs(drone_distance_from_mast.x - transition_state.pose.x):
         # if it is time to brake to avoid overshoot
             #set the transition acceleration (or deceleration) to the one that will lead us to the exact point we want
@@ -202,6 +203,7 @@ def update_transition_state(transition_state, drone_distance_from_mast):
 
 # Analysis on the y axis, same as on the x axis
     if abs(drone_distance_from_mast.y - transition_state.pose.y) > 0.001:
+        transition_state.transition_finished = False
         if transition_state.vel.y ** 2  / 2.0 / transition_state.cte_acc >= abs(drone_distance_from_mast.y - transition_state.pose.y):
             transition_state.acc.y = - transition_state.vel.y ** 2  /2.0 / (drone_distance_from_mast.y - transition_state.pose.y)
         elif abs(transition_state.vel.y) > transition_state.max_vel:
@@ -221,6 +223,7 @@ def update_transition_state(transition_state, drone_distance_from_mast):
 
 # Analysis on the z axis, same as on the x axis
     if abs(drone_distance_from_mast.z - transition_state.pose.z) > 0.001:
+        transition_state.transition_finished = False
         if transition_state.vel.z ** 2  / 2.0 / transition_state.cte_acc >= abs(drone_distance_from_mast.z - transition_state.pose.z):
             transition_state.acc.z = - transition_state.vel.z ** 2  /2.0 / (drone_distance_from_mast.z - transition_state.pose.z)
         elif abs(transition_state.vel.z) > transition_state.max_vel:
@@ -241,8 +244,6 @@ def update_transition_state(transition_state, drone_distance_from_mast):
     if comparPoints(drone_distance_from_mast,transition_state.pose,0.001) and not transition_state.transition_finished:
         transition_state.transition_finished = True
         print ("transition finished!") 
-    else :
-        transition_state.transition_finished = False
     return transition_state
 
 def comparPoints(pt1, pt2, r):
@@ -400,7 +401,7 @@ def accel_to_orientation(accel,yaw=0): #yaw, double pitch, double roll) # yaw (Z
 # We consider that the drone will always be facing the mast 
 # --> accel.x = roll & accel.y = pitch
     # Abbreviations for the various angular functions
-    yaw = 0
+    yaw = 0.0
     roll = atan2(accel.x,9.81)
     pitch = atan2(accel.y,9.81)
     return euler_to_quaternion(yaw, pitch, roll)
@@ -554,8 +555,8 @@ def main():
         actual_module_pose = modulePosition()
         #actual_module_vel = derivate(actual_module_pose,last_module_pose)
         #actual_module_accel = derivate(actual_module_vel,last_module_vel)
-        actual_module_vel = moduleVelocity(1/float(SAMPLE_FREQUENCY))
-        actual_module_accel = moduleAcceleration(2/float(SAMPLE_FREQUENCY))
+        actual_module_vel = moduleVelocity(1.0/float(SAMPLE_FREQUENCY))
+        actual_module_accel = moduleAcceleration(2.0/float(SAMPLE_FREQUENCY))
 
         #allow smooth movements arround the mast in its referentiel
         module_state = [actual_module_pose, actual_module_vel, actual_module_accel]
