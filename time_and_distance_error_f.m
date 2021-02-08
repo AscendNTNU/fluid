@@ -62,7 +62,7 @@ if sample_per_sin ~= 300
 end
 %sample_per_sin = mean(sample_per_sin(2:end-2));
 period = sample_per_sin/Fs;
-start = round(sample_per_sin/2);
+start = round(3*sample_per_sin/4);
 %fprintf("%2.3fsec will be omited for calulculation, which correspond" + ...
 %                "to the %i/%i element\n",period/2,start,length(reference));
 
@@ -84,7 +84,12 @@ delay2 = finddelay(reference(2,:),measurement(2,:)) * time_step;
 %% Average maximum error calculation
 % The maximum error of each half period will be calculated and averaged
 
-first_zero_ind = crossing_reference_indexes(2);
+i = 2;
+while start>= crossing_reference_indexes(i)
+    i = i+1;
+end
+first_zero_ind = crossing_reference_indexes(i);
+
 round_half_sample_periode = round(sample_per_sin/2);
 last_zero_ind =  first_zero_ind+floor((length(measurement)-first_zero_ind+1)/round_half_sample_periode)*round_half_sample_periode;
 samples = reshape(error(2,first_zero_ind-start:last_zero_ind-start-1),round_half_sample_periode,[]);

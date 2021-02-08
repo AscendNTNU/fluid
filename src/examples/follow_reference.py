@@ -42,15 +42,18 @@ CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't 
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
 control_type = CONTROL_LQR_ATTITUDE
-USE_SQRT = True
-#K_lqr = [3.3508, 3.0525, 2.6655] #matrix from bryon's rule with diameter as max distance
-a = 0.20
-b = 0.40
-K_lqr_x = [a*3.3508, a*3.0525, a*2.6655]
-K_lqr_y = [b*3.3508, b*3.0525, b*2.6655]
+USE_SQRT = False
+#K_lqr = [0.4189, 1.1062] #matrix from bryon's rule with diameter as max distance
+a = 1.0
+b = 2.0*a
+K_lqr_x = [a*0.4189, a*1.1062]
+K_lqr_y = [b*0.4189, b*1.1062]
 
-MAX_ACCEL_X = 0.15 #0.3
-MAX_ACCEL_Y = 0.30 #0.6
+accel_feedforward_x = 0.0
+accel_feedforward_y = 0.0
+
+MAX_ACCEL_X = 0.15
+MAX_ACCEL_Y = 0.30
 
 
 # parameters for modul position reference
@@ -116,7 +119,7 @@ def modulePosition():
     t = rospy.Time.now()
     module_pos.x = center[0] - pitch_radius * cos(rospy.Time.now().to_time()*omega)
     module_pos.y = center[1] - roll_radius  * sin(rospy.Time.now().to_time()*omega)
-    module_pos.z = sqrt(takeoff_height**2 - module_pos.x **2 - module_pos.y **2)
+    module_pos.z = sqrt(3.0**2 - module_pos.x **2 - module_pos.y **2) - 1.5 #weird formula to have the drone at 1.5m high in stead of 3. Easier to see in the sim.
     return module_pos
 
 def moduleVelocity(latency=None):
@@ -145,18 +148,26 @@ def derivate(actual,last):
     #printPoint(vel,"module velocity: ")
     return vel
 
-def calculate_lqr_acc(target_pos, trans_offset, use_sqrt=False):
+def calculate_acc_input(target_pos, trans_offset, use_sqrt=False):
     ref_pos = addPoints(target_pos[0], trans_offset.pose)
     ref_vel = addPoints(target_pos[1], trans_offset.vel)
     ref_acc = addPoints(target_pos[2], trans_offset.acc)
     accel_target = Point()
     accel_target.z = 0.0
-    if use_sqrt:
-        accel_target.x = K_lqr_x[0]*signed_sqrt(ref_pos.x-drone_position.x)  + K_lqr_x[1]*signed_sqrt(ref_vel.x-drone_velocity.x) + K_lqr_x[2]*signed_sqrt(ref_acc.x-drone_acceleration.x)
-        accel_target.y = K_lqr_y[0]*signed_sqrt(ref_pos.y-drone_position.y)  + K_lqr_y[1]*signed_sqrt(ref_vel.y-drone_velocity.y) + K_lqr_y[2]*signed_sqrt(ref_acc.y-drone_acceleration.y)
+    if not USE_SQRT:
+        accel_target.x =  K_lqr_x[0] * (ref_pos.x - drone_position.x) \
+                        + K_lqr_x[1] * (ref_vel.x - drone_velocity.x) \
+                        + accel_feedforward_x * ref_acc.x 
+        accel_target.y =  K_lqr_y[0] * (ref_pos.y - drone_position.y) \
+                        + K_lqr_y[1] * (ref_vel.y - drone_velocity.y) \
+                        + accel_feedforward_y * ref_acc.y 
     else:
-        accel_target.x = K_lqr_x[0]*(ref_pos.x-drone_position.x)  + K_lqr_x[1]*(ref_vel.x-drone_velocity.x) + K_lqr_x[2]*(ref_acc.x-drone_acceleration.x)
-        accel_target.y = K_lqr_y[0]*(ref_pos.y-drone_position.y)  + K_lqr_y[1]*(ref_vel.y-drone_velocity.y) + K_lqr_y[2]*(ref_acc.y-drone_acceleration.y)
+        accel_target.x =  K_lqr_x[0] * signed_sqrt(ref_pos.x - drone_position.x) \
+                        + K_lqr_x[1] * signed_sqrt(ref_vel.x - drone_velocity.x) \
+                        + accel_feedforward_x * ref_acc.x 
+        accel_target.y =  K_lqr_y[0] * signed_sqrt(ref_pos.y - drone_position.y) \
+                        + K_lqr_y[1] * signed_sqrt(ref_vel.y - drone_velocity.y) \
+                        + accel_feedforward_y * ref_acc.y 
 
     return accel_target
 
@@ -502,8 +513,8 @@ def main():
             rospy.loginfo("Drone will be controled with LQR by ATTITUDE using SQRT error!")
         else:
             rospy.loginfo("Drone will be controled with LQR by ATTITUDE")
-        rospy.loginfo("K_lqr_x = %.2f, %.2f, %.2f", K_lqr_x[0], K_lqr_x[1], K_lqr_x[2]) 
-        rospy.loginfo("K_lqr_y = %.2f, %.2f, %.2f", K_lqr_y[0], K_lqr_y[1], K_lqr_y[2]) 
+        rospy.loginfo("K_lqr_x = %.2f, %.2f", K_lqr_x[0], K_lqr_x[1]) 
+        rospy.loginfo("K_lqr_y = %.2f, %.2f", K_lqr_y[0], K_lqr_y[1]) 
 
     simulation_time = None
     if len(sys.argv)>1:
@@ -563,11 +574,10 @@ def main():
         module_state = [actual_module_pose, actual_module_vel, actual_module_accel]
         transition_state = update_transition_state(transition_state, drone_distance_from_mast)
 
-        acceleration_setpoint = calculate_lqr_acc(module_state, transition_state,USE_SQRT)
+        acceleration_setpoint = calculate_acc_input(module_state, transition_state,USE_SQRT)
 
         #update zaxis
         move(addPoints(actual_module_pose,transition_state.pose),actual_module_vel,actual_module_accel,CONTROL_POSITION_AND_VELOCITY)
-        #todo: don't forget to add FEEDFORWARD TO LQR!
         if(not rospy.is_shutdown() and current_state.connected):
             if control_type !=CONTROL_LQR_ATTITUDE:
                 move(actual_module_pose,actual_module_vel, acceleration_setpoint,control_type)
