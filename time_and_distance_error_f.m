@@ -49,14 +49,18 @@ measurement = measurement(:,1:sample_length);
 
 Fs=length(reference(1,:))/(reference(1,end)-reference(1,1));
 crossing_reference_indexes = zci(reference(2,:));
-if length(crossing_reference_indexes)<=4
-    fprintf('/!\\ The sample is not long enough to estimate errors! /!\\ \n'); %todo, try to write it in red
-    return
-elseif crossing_reference_indexes(2) - crossing_reference_indexes(1) == 1 %here we have zeros in the ref and so zci returns each crossing zero twice
+if crossing_reference_indexes(2) - crossing_reference_indexes(1) == 1 %here we have zeros in the ref and so zci returns each crossing zero twice
     crossing_reference_indexes = crossing_reference_indexes(1:2:end);
 end
-sample_per_sin = 2*(circshift(crossing_reference_indexes,[-1 0]) - crossing_reference_indexes);
-sample_per_sin = mean(sample_per_sin(2:end-2));
+if length(crossing_reference_indexes)<=1
+    fprintf('/!\\ The sample is not long enough to estimate errors! /!\\ \n'); %todo, try to write it in red
+    return
+end
+sample_per_sin = 2*(crossing_reference_indexes(2) - crossing_reference_indexes(1));
+if sample_per_sin ~= 300
+    fprintf("/!\\ The periode is no longer 300 samples, is it normal? /!\\ \n");
+end
+%sample_per_sin = mean(sample_per_sin(2:end-2));
 period = sample_per_sin/Fs;
 start = round(sample_per_sin/2);
 %fprintf("%2.3fsec will be omited for calulculation, which correspond" + ...
