@@ -28,7 +28,7 @@ from pathlib import Path
 # common convention for Ascend is z axis upward, y axis is pointing forward and x axis to the right
 
 
-SAVE_Z = True
+SAVE_Z = False
 
 #type of control
 CONTROL_POSITION = 2552
@@ -42,7 +42,7 @@ CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't 
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
 control_type = CONTROL_LQR_ATTITUDE
-USE_SQRT = False
+USE_SQRT = True
 #K_lqr = [0.4189, 1.1062] #matrix from bryon's rule with diameter as max distance
 a = 1.0
 b = 2.0*a
