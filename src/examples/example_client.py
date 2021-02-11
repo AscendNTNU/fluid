@@ -68,7 +68,6 @@ def main():
 
     for i in range(num_points + 1):
         explore_points.append(Point(-5*math.sin(2*math.pi*i/num_points), -10 + 5*math.cos(2*math.pi*i/num_points), 2))
-    explore_points.append(Point(0,-10,2))
     ###
 
     global is_executing_operation
@@ -101,8 +100,8 @@ def main():
         if not is_executing_operation:
             if finished_operation == "TAKE_OFF":
                 # Perform a explore with a (list of) point(s)
-                response = explore([Point(0, 10, 2), Point(0, -10, 2)], Point(5, 5, 5))
-                #response = explore(explore_points, Point(0, -10, 2))
+                #response = explore([Point(0, 10, 2), Point(0, -10, 2)], Point(5, 5, 5))
+                response = explore(explore_points, Point(0, -10, 2))
                 if (not response.success):
                     rospy.logerr(response.message)
                 else:
