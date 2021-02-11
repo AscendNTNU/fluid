@@ -108,6 +108,14 @@ def main():
                 else:
                     is_executing_operation = True
             elif finished_operation == "EXPLORE":
+                # Perform a the extraction module state using a LQR to follow the mast
+                print("LET US EXTRACT THAT MODULE !!\n")
+                response = extract_module(0.1)
+                if (not response.success):
+                    rospy.logerr(response.message)
+                else:
+                    is_executing_operation = True
+            elif finished_operation == "EXTRACT_MODULE":
 
                 # Perform a travel with a list of points
                 response = travel([Point(15, 0, 1.5), Point(-15, 0, 1.5)])
