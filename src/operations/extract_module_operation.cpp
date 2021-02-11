@@ -44,6 +44,30 @@ std::ofstream reference_state_f;
 std::ofstream drone_pose_f; 
 std::ofstream drone_setpoints_f; 
 
+
+
+mavros_msgs::PositionTarget addState(mavros_msgs::PositionTarget a, mavros_msgs::PositionTarget b){
+    mavros_msgs::PositionTarget res;
+    res.header = a.header; // this is arbitrary. Did no find a perfect solution, but should not have any impact
+
+    res.position.x = a.position.x + b.position.x;
+    res.position.y = a.position.y + b.position.y;
+    res.position.z = a.position.z + b.position.z;
+
+    res.velocity.x = a.velocity.x + b.velocity.x;
+    res.velocity.y = a.velocity.y + b.velocity.y;
+    res.velocity.z = a.velocity.z + b.velocity.z;
+
+    res.acceleration_or_force.x = a.acceleration_or_force.x + b.acceleration_or_force.x;
+    res.acceleration_or_force.y = a.acceleration_or_force.y + b.acceleration_or_force.y;
+    res.acceleration_or_force.z = a.acceleration_or_force.z + b.acceleration_or_force.z;
+
+    return res;
+}
+
+double signed_sqrt(double nb){
+    return nb>0 ? sqrt(nb) : -sqrt(-nb);
+}
 //todo: add that again
 /*void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
@@ -126,22 +150,55 @@ void ExtractModuleOperation::initialize() {
     previous_time = ros::Time::now();
 }
 
-bool ExtractModuleOperation::hasFinishedExecution() const { return module_state == ModuleState::EXTRACTED; }
+bool ExtractModuleOperation::hasFinishedExecution() const { return extraction_state == ExtractionState::EXTRACTED; }
 
 void ExtractModuleOperation::modulePoseCallback(
     const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
-    previous_module_pose = module_pose;
-    module_pose = *module_pose_ptr;
-    ros::Time new_time = ros::Time::now();
-    double dt = (new_time - previous_time).nsec/1000000000.0;
-    module_calculated_velocity.x = (previous_module_pose.pose.pose.position.x - module_pose.pose.pose.position.x)/dt;
-    module_calculated_velocity.y = (previous_module_pose.pose.pose.position.y - module_pose.pose.pose.position.y)/dt;
-    module_calculated_velocity.z = (previous_module_pose.pose.pose.position.z - module_pose.pose.pose.position.z)/dt;
-    previous_time = new_time;
+    previous_module_state = module_state;
+
+    module_state.header.stamp = ros::Time::now();
+    module_state.position = module_pose_ptr->pose.pose.position;
+    //module_state.velocity = derivate(module_state.position,previous_module_state.position,module_state.header.stamp - previous_module_state.header.stamp);
+    //module_state.acceleration_or_force = derivate(module_state.velocity,previous_module_state.velocity,module_state.header.stamp - previous_module_state.header.stamp);
+    module_state.velocity = estimateModuleVel();    
+    module_state.acceleration_or_force = estimateModuleAccel();
 }
 
-mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::PositionTarget setpoint)
-{
+geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleVel(){
+    // estimate the velocity of the module by simply derivating the position.
+    // In the long run, I expect to receive a nicer estimate by perception or to createa KF myself.
+    geometry_msgs::Vector3 vel;
+    double dt = (module_state.header.stamp - previous_module_state.header.stamp).nsec/1000000000.0;
+    // TODO: check that the sign if the output vel is correct
+    vel.x = (module_state.position.x - previous_module_state.position.x)/dt;
+    vel.y = (module_state.position.y - previous_module_state.position.y)/dt;
+    vel.z = (module_state.position.z - previous_module_state.position.z)/dt;
+    return vel;
+}
+
+geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleAccel(){
+    // estimate the velocity of the module by simply derivating the position.
+    // In the long run, I expect to receive a nicer estimate by perception or to createa KF myself.
+    geometry_msgs::Vector3 Accel;
+    double dt = (module_state.header.stamp - previous_module_state.header.stamp).nsec/1000000000.0;
+    // TODO: check that the sign if the output vel is correct
+    Accel.x = (module_state.velocity.x - previous_module_state.velocity.x)/dt;
+    Accel.y = (module_state.velocity.y - previous_module_state.velocity.y)/dt;
+    Accel.z = (module_state.velocity.z - previous_module_state.velocity.z)/dt;
+    return Accel;
+}
+
+geometry_msgs::Vector3 ExtractModuleOperation::derivate(geometry_msgs::Vector3 actual, geometry_msgs::Vector3 last, ros::Time dt_ros){
+    geometry_msgs::Vector3 res;
+    double dt = dt_ros.nsec/1000000000.0;
+    // TODO: check that the sign if the output vel is correct
+    res.x = (actual.x - last.x)/dt;
+    res.y = (actual.y - last.y)/dt;
+    res.z = (actual.z - last.z)/dt;
+    return res;
+}
+
+mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::PositionTarget setpoint){
     mavros_msgs::PositionTarget rotated_setpoint;
     rotated_setpoint.position = rotate((geometry_msgs::Vector3) setpoint.position);
     rotated_setpoint.velocity = rotate(setpoint.velocity);
@@ -150,8 +207,7 @@ mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::Position
     return rotated_setpoint;
 }
 
-geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt)
-{
+geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt){
     geometry_msgs::Vector3 rotated_point;
     rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
     rotated_point.y = cos(fixed_mast_yaw) * pt.y + sin(fixed_mast_yaw) * pt.x;
@@ -160,14 +216,68 @@ geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt)
     return rotated_point;
 }
 
+void ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget* ref, geometry_msgs::PointPtr accel_targ, bool use_sqrt){
+    accel_targ->z = 0;
+    if (!use_sqrt)
+    {
+        accel_targ->x = K_LQR_X[0] * (ref->position.x - getCurrentPose().pose.position.x) 
+                     + K_LQR_X[1] * (ref->velocity.x - getCurrentTwist().twist.linear.x) 
+                     + ACCEL_FEEDFORWARD_X * ref->acceleration_or_force.x;
+        accel_targ->y = K_LQR_X[0] * (ref->position.y - getCurrentPose().pose.position.y) 
+                     + K_LQR_X[1] * (ref->velocity.y - getCurrentTwist().twist.linear.y) 
+                     + ACCEL_FEEDFORWARD_X * ref->acceleration_or_force.y;
+    }
+    else
+    {
+        accel_targ->x = K_LQR_X[0] * signed_sqrt(ref->position.x - getCurrentPose().pose.position.x) 
+                     + K_LQR_X[1] * signed_sqrt(ref->velocity.x - getCurrentTwist().twist.linear.x) 
+                     + ACCEL_FEEDFORWARD_X * ref->acceleration_or_force.x;
+        accel_targ->y = K_LQR_X[0] * signed_sqrt(ref->position.y - getCurrentPose().pose.position.y) 
+                     + K_LQR_X[1] * signed_sqrt(ref->velocity.y - getCurrentTwist().twist.linear.y) 
+                     + ACCEL_FEEDFORWARD_X * ref->acceleration_or_force.y;
+    }
+
+}
+
+geometry_msgs::Quaternion ExtractModuleOperation::euler_to_quaternion(double yaw, double roll, double pitch){
+    double cy = cos(yaw * 0.5);
+    double sy = sin(yaw * 0.5);
+    double cp = cos(pitch * 0.5);
+    double sp = sin(pitch * 0.5);
+    double cr = cos(roll * 0.5);
+    double sr = sin(roll * 0.5);
+
+    geometry_msgs::Quaternion q;
+    q.w = cr * cp * cy + sr * sp * sy;
+    q.x = sr * cp * cy - cr * sp * sy;
+    q.y = cr * sp * cy + sr * cp * sy;
+    q.z = cr * cp * sy - sr * sp * cy;
+    return q;
+}
+
+geometry_msgs::Quaternion ExtractModuleOperation::accel_to_orientation(geometry_msgs::PointPtr accel){
+    double yaw = fixed_mast_yaw + M_PI; //we want to face the mast
+    double roll = atan2(accel->x,9.81);
+    double pitch = atan2(accel->y,9.81);
+    return euler_to_quaternion(yaw, pitch, roll);
+}
+
+void ExtractModuleOperation::update_attitude_input(mavros_msgs::PositionTarget module,mavros_msgs::PositionTarget offset, bool use_sqrt){
+    mavros_msgs::PositionTarget ref = addState(module, offset);
+
+    geometry_msgs::PointPtr accel_targ;
+    LQR_to_acceleration(&ref, accel_targ, use_sqrt);
+    attitude_setpoint.orientation = accel_to_orientation(accel_targ);
+}
+
 void ExtractModuleOperation::tick() {
     // Wait until we get the first module position readings before we do anything else.
-    if (module_pose.header.seq == 0) {
+    if (module_state.header.seq == 0) {
         return;
     }
     
-    const double dx = module_pose.pose.pose.position.y - getCurrentPose().pose.position.x;
-    const double dy = module_pose.pose.pose.position.x - getCurrentPose().pose.position.y;
+    const double dx = module_state.position.y - getCurrentPose().pose.position.x;
+    const double dy = module_state.position.x - getCurrentPose().pose.position.y;
 
     setpoint.yaw = std::atan2(dy, dx) - M_PI / 18.0;
 
@@ -179,20 +289,21 @@ void ExtractModuleOperation::tick() {
 
     const double drone_speed = sqrt(dvx * dvx + dvy * dvy + dvz * dvz); //not used 
 
-    switch (module_state) {
-        case ModuleState::APPROACHING: {
+    switch (extraction_state) {
+        case ExtractionState::APPROACHING: {
             // TODO: This has to be fixed, should be facing towards the module from any given position,
             // not just from the x direction
             mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state);
 
-            setpoint.position.x = module_pose.pose.pose.position.x + smooth_rotated_offset.position.x;
-            setpoint.position.y = module_pose.pose.pose.position.y + smooth_rotated_offset.position.y;
-            setpoint.position.z = module_pose.pose.pose.position.z + smooth_rotated_offset.position.z;
+            setpoint.position.x = extraction_state.position.x + smooth_rotated_offset.position.x;
+            setpoint.position.y = module_state.position.y + smooth_rotated_offset.position.y;
+            setpoint.position.z = module_state.position.z + smooth_rotated_offset.position.z;
             
             setpoint.velocity.x = module_calculated_velocity.x + smooth_rotated_offset.velocity.x; 
             setpoint.velocity.y = module_calculated_velocity.y + smooth_rotated_offset.velocity.y;
             setpoint.velocity.z = module_calculated_velocity.z + smooth_rotated_offset.velocity.z;
-                                    
+
+            attitude_setpoint = calculate_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
             //TODO: remove this big print
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
@@ -210,7 +321,7 @@ void ExtractModuleOperation::tick() {
             //for testing purposes, I toggle the possibility to go to the next step
             //*
             if (distance_to_module < 1.8) {
-                module_state = ModuleState::OVER;
+                extraction_state = ExtractionState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": "
                                 << "Approaching -> Over");
@@ -219,38 +330,38 @@ void ExtractModuleOperation::tick() {
             //*/
             break;
         }
-        case ModuleState::OVER: {
-            setpoint.position.x = module_pose.pose.pose.position.y;
-            setpoint.position.y = module_pose.pose.pose.position.x + 0.78;
-            setpoint.position.z = module_pose.pose.pose.position.z + 0.3;
+        case ExtractionState::OVER: {
+            setpoint.position.x = module_state.position.y;
+            setpoint.position.y = module_state.position.x + 0.78;
+            setpoint.position.z = module_state.position.z + 0.3;
 
             const double distance_to_setpoint =
                 Util::distanceBetween(setpoint.position, getCurrentPose().pose.position);
 
             if (distance_to_setpoint < 0.1 && std::abs(getCurrentYaw() - setpoint.yaw) < M_PI / 50.0) {
-                module_state = ModuleState::BEHIND_WITH_HOOKS;
+                extraction_state = ExtractionState::BEHIND_WITH_HOOKS;
             }
             
             break;
         }
-        case ModuleState::BEHIND_WITH_HOOKS: {
-            setpoint.position.x = module_pose.pose.pose.position.y;
-            setpoint.position.y = module_pose.pose.pose.position.x + 0.78;
-            setpoint.position.z = module_pose.pose.pose.position.z - 0.1;
+        case ExtractionState::BEHIND_WITH_HOOKS: {
+            setpoint.position.x = module_state.position.y;
+            setpoint.position.y = module_state.position.x + 0.78;
+            setpoint.position.z = module_state.position.z - 0.1;
 
             const double distance_to_setpoint =
                 Util::distanceBetween(setpoint.position, getCurrentPose().pose.position);
 
             if (distance_to_setpoint < 0.05 && getCurrentTwist().twist.linear.z < 0.03 && std::abs(getCurrentYaw() - setpoint.yaw) < M_PI / 50.0) {
-                module_state = ModuleState::EXTRACTING;
+                extraction_state = ExtractionState::EXTRACTING;
             }
 
             break;
         }
-        case ModuleState::EXTRACTING: {
-            setpoint.position.x = module_pose.pose.pose.position.y;
-            setpoint.position.y = module_pose.pose.pose.position.x + 2.0;
-            setpoint.position.z = module_pose.pose.pose.position.z - 0.1;
+        case ExtractionState::EXTRACTING: {
+            setpoint.position.x = module_state.position.y;
+            setpoint.position.y = module_state.position.x + 2.0;
+            setpoint.position.z = module_state.position.z - 0.1;
 
             if (!called_backpropeller_service) {
                 std_srvs::SetBool request;
@@ -261,8 +372,8 @@ void ExtractModuleOperation::tick() {
 
             // If the module is on the way down
             // TODO: this should be checked in a better way
-            if (module_pose.pose.pose.position.z < 0.5) {
-                module_state = ModuleState::EXTRACTED;
+            if (module_state.position.z < 0.5) {
+                extraction_state = ExtractionState::EXTRACTED;
                 std_srvs::SetBool request;
                 request.request.data = false;
                 backpropeller_client.call(request);

@@ -17,7 +17,7 @@
 class ExtractModuleOperation : public Operation {
    private:
 	
-	enum class ModuleState {
+	enum class ExtractionState {
 		APPROACHING,
 		OVER,
 		BEHIND_WITH_HOOKS,
@@ -32,15 +32,13 @@ class ExtractModuleOperation : public Operation {
         uint8_t finished_bitmask;
     };
 
-	ModuleState module_state = ModuleState::APPROACHING;
+	ExtractionState extraction_state = ExtractionState::APPROACHING;
     float fixed_mast_yaw; //Should be given by perception and known before entering in ExtractModuleOperation
     const float speed = 500;
     
-    geometry_msgs::PoseWithCovarianceStamped module_pose;
-    geometry_msgs::PoseWithCovarianceStamped previous_module_pose;
-    geometry_msgs::Vector3_<double> module_calculated_velocity;
-    ros::Time previous_time;
-
+    mavros_msgs::PositionTarget module_state;
+    mavros_msgs::PositionTarget previous_module_state;
+    
     TransitionSetpointStruct transition_state;
     geometry_msgs::Point desired_offset;
     
@@ -55,10 +53,19 @@ class ExtractModuleOperation : public Operation {
 
     bool called_backpropeller_service = false;
 
-    mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint);
+    geometry_msgs::Vector3 derivate(geometry_msgs::Vector3 actual, geometry_msgs::Vector3 last, ros::Time dt_ros);
+    mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget pt);
     geometry_msgs::Vector3 rotate(geometry_msgs::Vector3 pt);
+    geometry_msgs::Vector3 estimateModuleVel();
+    geometry_msgs::Vector3 estimateModuleAccel();
 
-
+    //functions in realtion to the following of the mast
+    //not sure if they should be public or private, but private seems nice, ikke sant?
+    geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::PointPtr accel);
+    geometry_msgs::Quaternion euler_to_quaternion(double yaw, double roll, double pitch);
+    void LQR_to_acceleration(mavros_msgs::PositionTarget* ref, geometry_msgs::PointPtr accel_targ, bool use_sqrt);
+    void update_attitude_input(mavros_msgs::PositionTarget module,mavros_msgs::PositionTarget offset, bool use_sqrt);
+    
    public:
     /**
      * @brief Sets up the subscriber for the module pose.
