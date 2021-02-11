@@ -13,7 +13,7 @@
     <param name="should_auto_arm"                     value="$(arg should_auto_arm)"/>
     <param name="should_auto_offboard"                value="$(arg should_auto_offboard)"/>
     <param name="distance_completion_threshold"       value="$(arg distance_completion_threshold)"/>
-    <param name="velocity_completion_threshold"       value="$(arg distance_completion_threshold)"/>
+    <param name="velocity_completion_threshold"       value="$(arg velocity_completion_threshold)"/>
     <param name="default_height"                      value="$(arg default_height)"/>
   </node>
 

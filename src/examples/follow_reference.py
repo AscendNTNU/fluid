@@ -104,12 +104,10 @@ def velCallback(message):
     global drone_velocity
     drone_velocity = message.twist.linear
     #printPoint(drone_velocity,"drone velocity: ")
-
-def AccelCallback(message): #does not work with Ardupilot
-    global drone_acceleration
-    drone_acceleration = message.accel.accel
-    printPoint(drone_acceleration,"drone_acc ")
     
+def moduleCallback(message):
+    global module_pose
+    module_pose = message.pose
 
 def stateCallback(data):
     global current_state
@@ -480,10 +478,11 @@ def constrain(x,min,max):
 def main():
     global drone_position 
     global drone_velocity
+    global module_pose
     rospy.init_node('test_node', anonymous=True)
     rospy.Subscriber("/mavros/local_position/pose", PoseStamped, poseCallback)
     rospy.Subscriber("/mavros/local_position/velocity_local", TwistStamped, velCallback)
-    
+    rospy.Subscriber("/simulator/module/pose", PoseStamped, moduleCallback)
     global rate
     rate = rospy.Rate(SAMPLE_FREQUENCY)
 

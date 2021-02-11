@@ -122,11 +122,11 @@ ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(Opera
 
 void ExtractModuleOperation::initialize() {
     MavrosInterface mavros_interface;
-    mavros_interface.setParam("WPNAV_SPEED", speed);
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
+    //mavros_interface.setParam("WPNAV_SPEED", speed);
+    //ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
 
-    //mavros_interface.setParam("ANGLE_MAX", 20);
-    //mavros_interface.setParam("WPNAV_SPEED_DN", 0.5);
+    //mavros_interface.setParam("MPC_TILTMAX_AIR", 20);
+    //mavros_interface.setParam("MPC_Z_VEL_MAX_DN", 0.5);
 
     // Use the current position as setpoint until we get a message with the module position
     setpoint.position = getCurrentPose().pose.position;

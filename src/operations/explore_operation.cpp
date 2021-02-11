@@ -3,18 +3,25 @@
  */
 
 #include "explore_operation.h"
+#include "mavros_interface.h"
 
 #include <limits>
 
 #include "util.h"
 
-ExploreOperation::ExploreOperation(const std::vector<geometry_msgs::Point>& path)
-    : MoveOperation(OperationIdentifier::EXPLORE, path, 500, 3, 3),
+ExploreOperation::ExploreOperation(const std::vector<geometry_msgs::Point>& path, const geometry_msgs::Point& point_of_interest)
+    : MoveOperation(OperationIdentifier::EXPLORE, path, 0.5, 0.5, 1, 15),
       obstacle_avoidance_path_publisher(node_handle.advertise<ascend_msgs::Path>("/obstacle_avoidance/path", 10)),
       obstacle_avoidance_path_subscriber(
-          node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreOperation::pathCallback, this)) {}
+          node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreOperation::pathCallback, this)),
+      point_of_interest(point_of_interest) {}
 
 void ExploreOperation::initialize() {
+    //Face straight ahead
+    if (path.size() == 0) {
+        path.push_back(getCurrentPose().pose.position);
+    }
+
     MoveOperation::initialize();
 
     original_path = path;
@@ -84,6 +91,10 @@ void ExploreOperation::pathCallback(ascend_msgs::Path corrected_path) {
 void ExploreOperation::tick() {
     MoveOperation::tick();
 
+    double dx = point_of_interest.x - getCurrentPose().pose.position.x;
+    double dy = point_of_interest.y - getCurrentPose().pose.position.y;
+    setpoint.yaw = std::atan2(dy, dx);
+   
     ascend_msgs::Path path_msg;
     path_msg.points = dense_path;
     obstacle_avoidance_path_publisher.publish(path_msg);
