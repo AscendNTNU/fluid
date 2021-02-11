@@ -3,13 +3,14 @@
  */
 
 #include "explore_operation.h"
+#include "mavros_interface.h"
 
 #include <limits>
 
 #include "util.h"
 
 ExploreOperation::ExploreOperation(const std::vector<geometry_msgs::Point>& path)
-    : MoveOperation(OperationIdentifier::EXPLORE, path, 500, 0.5, 1),
+    : MoveOperation(OperationIdentifier::EXPLORE, path, 0.5, 0.5, 1),
       obstacle_avoidance_path_publisher(node_handle.advertise<ascend_msgs::Path>("/obstacle_avoidance/path", 10)),
       obstacle_avoidance_path_subscriber(
           node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreOperation::pathCallback, this)) {}
@@ -39,6 +40,10 @@ void ExploreOperation::initialize() {
             Util::createPath(original_path[i - 1], original_path[i], path_density);
         dense_path.insert(dense_path.end(), begin(filler_points), end(filler_points));
     }
+
+    MavrosInterface mavros_interface;
+    mavros_interface.setParam("ANGLE_MAX", 1500);
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << 15 << " deg.");
 }
 
 void ExploreOperation::pathCallback(ascend_msgs::Path corrected_path) {

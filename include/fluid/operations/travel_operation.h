@@ -19,7 +19,7 @@ class TravelOperation : public MoveOperation {
      * @param path List of setpoints.
      */
     TravelOperation(const std::vector<geometry_msgs::Point>& path)
-        : MoveOperation(OperationIdentifier::TRAVEL, path, 2000, 2, 3) {}
+        : MoveOperation(OperationIdentifier::TRAVEL, path, 20, 2, 3) {}
 };
 
 #endif

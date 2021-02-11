@@ -53,7 +53,7 @@ class ExploreOperation : public MoveOperation {
     bool original_path_set = false;
 
     /**
-     * @brief Point of interest from the end of the original path.
+     * @brief The point of interest will be faced during exploration.
      */
     geometry_msgs::Point point_of_interest;
 

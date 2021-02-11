@@ -54,9 +54,9 @@ class MoveOperation : public Operation {
      *
      * @param operation_identifier The operation identifier.
      * @param path The path of the operation.
-     * @param speed The speed at which to move.
-     * @param position_threshold The setpoint distance threshold.
-     * @param velocity_threshold The velocity threshold.
+     * @param speed The speed at which to move in [m/s].
+     * @param position_threshold The setpoint distance threshold in [m].
+     * @param velocity_threshold The velocity threshold in [m].
      */
     explicit MoveOperation(const OperationIdentifier& operation_identifier,
                            const std::vector<geometry_msgs::Point>& path, const double& speed,

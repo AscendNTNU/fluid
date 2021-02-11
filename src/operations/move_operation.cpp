@@ -19,7 +19,7 @@ MoveOperation::MoveOperation(const OperationIdentifier& operation_identifier,
                              const double& position_threshold, const double& velocity_threshold)
     : Operation(operation_identifier, false),
       path(path),
-      speed(speed),
+      speed(speed*100),
       position_threshold(position_threshold),
       velocity_threshold(velocity_threshold) {}
 
@@ -43,8 +43,12 @@ void MoveOperation::initialize() {
     
     
     MavrosInterface mavros_interface;
-    //mavros_interface.setParam("WPNAV_SPEED", speed);
-    //ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
+    mavros_interface.setParam("WPNAV_SPEED", speed);
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed/100 << " m/s.");
+
+    mavros_interface.setParam("ANGLE_MAX", 4500);
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << 45 << " deg.");
+
 }
 
 void MoveOperation::tick() {
