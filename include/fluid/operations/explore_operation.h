@@ -66,11 +66,11 @@ class ExploreOperation : public MoveOperation {
 
    public:
     /**
-     * @brief Sets up the explore operation.
+     * @brief Sets up the explore operation, the last point will be faced during exploration.
      *
-     * @param path List of setpoints.
+     * @param path_with_POI A sequence of setpoints and points of interest the drone will face in corresponding setpoint.
      */
-    explicit ExploreOperation(const std::vector<geometry_msgs::Point>& path);
+    explicit ExploreOperation(const std::vector<geometry_msgs::Point>& path, const geometry_msgs::Point& point_of_interest);
 
     /**
      * @brief Sets up the #dense_path.

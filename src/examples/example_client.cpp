@@ -113,10 +113,12 @@ int main(int argc, char** argv) {
             if (finished_operation == "TAKE_OFF") {
                 ROS_INFO_STREAM("[example_client]: Take_off finished, go exploring");
                 // Perform an explore with a (list of) point(s)
-                geometry_msgs::Point point;
+                geometry_msgs::Point point, POI;
                 point.x = 5;
+                POI.y = 2;
                 fluid::Explore explore_service_handle;
                 explore_service_handle.request.path = {point};
+                explore_service_handle.request.point_of_interest = POI;
                 if (explore.call(explore_service_handle)) {
                     if (!explore_service_handle.response.success) {
                         ROS_FATAL_STREAM(explore_service_handle.response.message);

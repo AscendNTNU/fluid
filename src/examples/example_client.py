@@ -101,8 +101,8 @@ def main():
         if not is_executing_operation:
             if finished_operation == "TAKE_OFF":
                 # Perform a explore with a (list of) point(s)
-                response = explore([Point(0, 10, 2), Point(0, -10, 2)])
-                #response = explore(explore_points)
+                response = explore([Point(0, 10, 2), Point(0, -10, 2)], Point(5, 5, 5))
+                #response = explore(explore_points, Point(0, -10, 2))
                 if (not response.success):
                     rospy.logerr(response.message)
                 else:
