@@ -55,6 +55,7 @@ accel_feedforward_y = 0.0
 MAX_ACCEL_X = 0.15
 MAX_ACCEL_Y = 0.30
 
+FIXED_MAST_YAW = pi()/4
 
 # parameters for modul position reference
 center = [0.0, 0.0]

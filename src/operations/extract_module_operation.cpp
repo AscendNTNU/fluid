@@ -4,6 +4,7 @@
 #include "extract_module_operation.h"
 
 #include "mavros_interface.h"
+#include <mavros_msgs/AttitudeTarget.h>
 #include "util.h"
 
 #include <std_srvs/SetBool.h>
@@ -13,10 +14,37 @@
 #include <fstream>
 #include <unistd.h> //to get the current directory
 
-bool store_data = true;
-std::ofstream save_drone_position_f; 
-const std::string logFileName = std::string(get_current_dir_name()) + "/../catkin_ws/drone_pos_and_velocity.txt"; //file saved in home/catkin_ws
+//A list of parameters for the user
+#define SAVE_DATA   True
+#define SAVE_Z      False
+#define USE_SQRT    False
+#define CONTROL_TYPE 0      //Attitude control does not work without thrust
 
+// LQR tuning
+#define POW          1.0
+#define RATION       2.84       // =0.37 / 0.13
+#define LQR_POS_GAIN 0.4189     //tuned for 0.13m pitch radius and 0.37m roll radius
+#define LQR_VEL_GAIN 1.1062
+#define ACCEL_FEEDFORWARD_X 0.0
+#define ACCEL_FEEDFORWARD_Y 0.0
+const float K_LQR_X[2] = {POW*LQR_POS_GAIN, POW*LQR_VEL_GAIN};
+const float K_LQR_Y[2] = {RATION*POW*LQR_POS_GAIN, RATION*POW*LQR_VEL_GAIN};
+
+//smooth transition
+#define MAX_VEL     0.05
+#define MAX_ACCEL   0.03
+
+#define MAX_ACCEL_X 0.15 //todo, implement that properly as a drone parameter
+#define MAX_ACCEL_Y 0.30
+
+const std::string reference_state_path = std::string(get_current_dir_name()) + "/../reference_state.txt";   //file saved in home
+const std::string drone_pose_path = std::string(get_current_dir_name()) + "/../drone_state.txt";            //file saved in home
+const std::string drone_setpoints_path = std::string(get_current_dir_name()) + "/../drone_setpoints.txt";   //file saved in home
+std::ofstream reference_state_f; 
+std::ofstream drone_pose_f; 
+std::ofstream drone_setpoints_f; 
+
+//todo: add that again
 /*void ExtractModuleOperation::initLog()
 { //create a header for the logfile.
     save_drone_position_f.open(logFileName);
@@ -57,11 +85,15 @@ void ExtractModuleOperation::saveLog()
     }
 }
 */
-ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
+ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
     module_pose_subscriber =
         node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
-    setpoint.type_mask = TypeMask::POSITION;
+    attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10); //the published topic of the setpoint is redefined
+    attitude_setpoint.type_mask = CONTROL_TYPE;
+    fixed_mast_yaw = mast_yaw;
+
+    //TODO: find a way to desactivate the position setpoints we are normaly using.
 }
 
 void ExtractModuleOperation::initialize() {
@@ -75,6 +107,21 @@ void ExtractModuleOperation::initialize() {
     // Use the current position as setpoint until we get a message with the module position
     setpoint.position = getCurrentPose().pose.position;
     
+    transition_state.max_vel = MAX_VEL;
+    transition_state.cte_acc = MAX_ACCEL;
+    
+    // Entering smooth zone. We could also durectly place the transition_state to 
+    // the initial desired offset if we are not scared of hitting the mast.
+    // That could save some time without taking risks (?) 
+
+    // The desired offset is mesured in the masr frame (x to the right, y forward, and z upward)
+    desired_offset.x = 0.0;
+    desired_offset.y = 1.0;
+    desired_offset.z = 0.05;
+    transition_state.state.position.x = getCurrentPose().pose.position.x;
+    transition_state.state.position.y = getCurrentPose().pose.position.y;
+    transition_state.state.position.z = getCurrentPose().pose.position.z;
+
     //initLog(); //create a header for the logfile.
     previous_time = ros::Time::now();
 }
@@ -93,6 +140,25 @@ void ExtractModuleOperation::modulePoseCallback(
     previous_time = new_time;
 }
 
+mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::PositionTarget setpoint)
+{
+    mavros_msgs::PositionTarget rotated_setpoint;
+    rotated_setpoint.position = rotate((geometry_msgs::Vector3) setpoint.position);
+    rotated_setpoint.velocity = rotate(setpoint.velocity);
+    rotated_setpoint.acceleration_or_force = rotate(setpoint.acceleration_or_force);
+
+    return rotated_setpoint;
+}
+
+geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt)
+{
+    geometry_msgs::Vector3 rotated_point;
+    rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
+    rotated_point.y = cos(fixed_mast_yaw) * pt.y + sin(fixed_mast_yaw) * pt.x;
+    rotated_point.z = pt.z;
+
+    return rotated_point;
+}
 
 void ExtractModuleOperation::tick() {
     // Wait until we get the first module position readings before we do anything else.
@@ -117,14 +183,17 @@ void ExtractModuleOperation::tick() {
         case ModuleState::APPROACHING: {
             // TODO: This has to be fixed, should be facing towards the module from any given position,
             // not just from the x direction
+            mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state);
 
-            setpoint.position.x = module_pose.pose.pose.position.y;
-            setpoint.position.y = module_pose.pose.pose.position.x +1.5;
-            setpoint.position.z = module_pose.pose.pose.position.z;
-            setpoint.velocity.x = module_calculated_velocity.x;
-            setpoint.velocity.y = module_calculated_velocity.y;
-            setpoint.velocity.z = module_calculated_velocity.z;
+            setpoint.position.x = module_pose.pose.pose.position.x + smooth_rotated_offset.position.x;
+            setpoint.position.y = module_pose.pose.pose.position.y + smooth_rotated_offset.position.y;
+            setpoint.position.z = module_pose.pose.pose.position.z + smooth_rotated_offset.position.z;
+            
+            setpoint.velocity.x = module_calculated_velocity.x + smooth_rotated_offset.velocity.x; 
+            setpoint.velocity.y = module_calculated_velocity.y + smooth_rotated_offset.velocity.y;
+            setpoint.velocity.z = module_calculated_velocity.z + smooth_rotated_offset.velocity.z;
                                     
+            //TODO: remove this big print
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
                             << "Approaching, "
@@ -145,6 +214,7 @@ void ExtractModuleOperation::tick() {
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": "
                                 << "Approaching -> Over");
+                distance_to_module
             }
             //*/
             break;
