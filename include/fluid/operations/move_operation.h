@@ -29,6 +29,11 @@ class MoveOperation : public Operation {
     const double speed;
 
     /**
+     * @brief Maximum allowed angle during movement.
+     */
+    const double max_angle;
+
+    /**
      * @brief Convenicene variable representing that the drone has been through all the setpoints in the #path.
      */
     bool been_to_all_points = false;
@@ -60,7 +65,8 @@ class MoveOperation : public Operation {
      */
     explicit MoveOperation(const OperationIdentifier& operation_identifier,
                            const std::vector<geometry_msgs::Point>& path, const double& speed,
-                           const double& position_threshold, const double& velocity_threshold);
+                           const double& position_threshold, const double& velocity_threshold,
+                           const double& max_angle);
 
    public:
     /**

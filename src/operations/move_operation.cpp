@@ -16,12 +16,14 @@
 
 MoveOperation::MoveOperation(const OperationIdentifier& operation_identifier,
                              const std::vector<geometry_msgs::Point>& path, const double& speed,
-                             const double& position_threshold, const double& velocity_threshold)
+                             const double& position_threshold, const double& velocity_threshold,
+                             const double& max_angle = 45)
     : Operation(operation_identifier, false),
       path(path),
       speed(speed*100),
       position_threshold(position_threshold),
-      velocity_threshold(velocity_threshold) {}
+      velocity_threshold(velocity_threshold),
+      max_angle(max_angle*100) {}
 
 bool MoveOperation::hasFinishedExecution() const { return been_to_all_points; }
 
@@ -46,8 +48,8 @@ void MoveOperation::initialize() {
     mavros_interface.setParam("WPNAV_SPEED", speed);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed/100 << " m/s.");
 
-    mavros_interface.setParam("ANGLE_MAX", 4500);
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << 45 << " deg.");
+    mavros_interface.setParam("ANGLE_MAX", max_angle);
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << max_angle/100 << " deg.");
 
 }
 
