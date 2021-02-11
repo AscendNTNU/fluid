@@ -60,8 +60,9 @@ class MoveOperation : public Operation {
      * @param operation_identifier The operation identifier.
      * @param path The path of the operation.
      * @param speed The speed at which to move in [m/s].
-     * @param position_threshold The setpoint distance threshold in [m].
-     * @param velocity_threshold The velocity threshold in [m].
+     * @param position_threshold Distance setpoints must be within to count as visited [m].
+     * @param velocity_threshold The velocity threshold in [m/s].
+     * @param max_angle Is the maximum allowed angle during movement [deg].
      */
     explicit MoveOperation(const OperationIdentifier& operation_identifier,
                            const std::vector<geometry_msgs::Point>& path, const double& speed,
