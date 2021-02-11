@@ -10,6 +10,7 @@
 #include "operation.h"
 #include "operation_identifier.h"
 #include "mavros_msgs/PositionTarget.h"
+#include "mavros_msgs/AttitudeTarget.h"
 
 /**
  * @brief Represents the operation where the drone is extracting the module.
@@ -54,8 +55,9 @@ class ExtractModuleOperation : public Operation {
     bool called_backpropeller_service = false;
 
     geometry_msgs::Vector3 derivate(geometry_msgs::Vector3 actual, geometry_msgs::Vector3 last, ros::Time dt_ros);
-    mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget pt);
-    geometry_msgs::Vector3 rotate(geometry_msgs::Vector3 pt);
+    mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint, float yaw=0);
+    geometry_msgs::Vector3 rotate(geometry_msgs::Vector3 pt, float yaw=0);
+    geometry_msgs::Point rotate(geometry_msgs::Point pt, float yaw=0);
     geometry_msgs::Vector3 estimateModuleVel();
     geometry_msgs::Vector3 estimateModuleAccel();
 

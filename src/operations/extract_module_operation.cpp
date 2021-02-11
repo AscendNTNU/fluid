@@ -15,9 +15,9 @@
 #include <unistd.h> //to get the current directory
 
 //A list of parameters for the user
-#define SAVE_DATA   True
-#define SAVE_Z      False
-#define USE_SQRT    False
+#define SAVE_DATA   true
+#define SAVE_Z      false
+#define USE_SQRT    false
 #define CONTROL_TYPE 0      //Attitude control does not work without thrust
 
 // LQR tuning
@@ -147,7 +147,6 @@ void ExtractModuleOperation::initialize() {
     transition_state.state.position.z = getCurrentPose().pose.position.z;
 
     //initLog(); //create a header for the logfile.
-    previous_time = ros::Time::now();
 }
 
 bool ExtractModuleOperation::hasFinishedExecution() const { return extraction_state == ExtractionState::EXTRACTED; }
@@ -198,17 +197,26 @@ geometry_msgs::Vector3 ExtractModuleOperation::derivate(geometry_msgs::Vector3 a
     return res;
 }
 
-mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::PositionTarget setpoint){
+mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::PositionTarget setpoint, float yaw){
     mavros_msgs::PositionTarget rotated_setpoint;
-    rotated_setpoint.position = rotate((geometry_msgs::Vector3) setpoint.position);
+    rotated_setpoint.position = rotate(setpoint.position);
     rotated_setpoint.velocity = rotate(setpoint.velocity);
     rotated_setpoint.acceleration_or_force = rotate(setpoint.acceleration_or_force);
 
     return rotated_setpoint;
 }
 
-geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt){
+geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt, float yaw){
     geometry_msgs::Vector3 rotated_point;
+    rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
+    rotated_point.y = cos(fixed_mast_yaw) * pt.y + sin(fixed_mast_yaw) * pt.x;
+    rotated_point.z = pt.z;
+
+    return rotated_point;
+}
+
+geometry_msgs::Point ExtractModuleOperation::rotate(geometry_msgs::Point pt, float yaw){
+    geometry_msgs::Point rotated_point;
     rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
     rotated_point.y = cos(fixed_mast_yaw) * pt.y + sin(fixed_mast_yaw) * pt.x;
     rotated_point.z = pt.z;
@@ -265,6 +273,9 @@ geometry_msgs::Quaternion ExtractModuleOperation::accel_to_orientation(geometry_
 void ExtractModuleOperation::update_attitude_input(mavros_msgs::PositionTarget module,mavros_msgs::PositionTarget offset, bool use_sqrt){
     mavros_msgs::PositionTarget ref = addState(module, offset);
 
+    attitude_setpoint.header.stamp = ros::Time::now();
+    attitude_setpoint.thrust = 0.5; //this is the thrust that allow a contanst altitude no matter what
+
     geometry_msgs::PointPtr accel_targ;
     LQR_to_acceleration(&ref, accel_targ, use_sqrt);
     attitude_setpoint.orientation = accel_to_orientation(accel_targ);
@@ -293,17 +304,9 @@ void ExtractModuleOperation::tick() {
         case ExtractionState::APPROACHING: {
             // TODO: This has to be fixed, should be facing towards the module from any given position,
             // not just from the x direction
-            mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state);
+            mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
 
-            setpoint.position.x = extraction_state.position.x + smooth_rotated_offset.position.x;
-            setpoint.position.y = module_state.position.y + smooth_rotated_offset.position.y;
-            setpoint.position.z = module_state.position.z + smooth_rotated_offset.position.z;
-            
-            setpoint.velocity.x = module_calculated_velocity.x + smooth_rotated_offset.velocity.x; 
-            setpoint.velocity.y = module_calculated_velocity.y + smooth_rotated_offset.velocity.y;
-            setpoint.velocity.z = module_calculated_velocity.z + smooth_rotated_offset.velocity.z;
-
-            attitude_setpoint = calculate_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
+            update_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
             //TODO: remove this big print
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
@@ -313,19 +316,18 @@ void ExtractModuleOperation::tick() {
                             << getCurrentPose().pose.position.x << " ; "
                             << getCurrentPose().pose.position.y << " ; "
                             << getCurrentPose().pose.position.z
-                            << "\tcaluculated velocity"
-                            << module_calculated_velocity.x << " ; "
-                            << module_calculated_velocity.y << " ; "
-                            << module_calculated_velocity.z);
+                            << "\tcalculated velocity"
+                            << module_state.velocity.x << " ; "
+                            << module_state.velocity.y << " ; "
+                            << module_state.velocity.z);
             //saveLog();
             //for testing purposes, I toggle the possibility to go to the next step
             //*
-            if (distance_to_module < 1.8) {
+            if (distance_to_module < 0.04) {
                 extraction_state = ExtractionState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": "
                                 << "Approaching -> Over");
-                distance_to_module
             }
             //*/
             break;

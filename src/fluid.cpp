@@ -70,8 +70,8 @@ bool Fluid::explore(fluid::Explore::Request& request, fluid::Explore::Response& 
 bool Fluid::extractModule(fluid::ExtractModule::Request& request, fluid::ExtractModule::Response& response) {
     Response attempt_response =
         attemptToCreateOperation(OperationIdentifier::EXTRACT_MODULE,
-                                 {std::make_shared<ExtractModuleOperation>(), std::make_shared<HoldOperation>()});
-
+                                 {std::make_shared<ExtractModuleOperation>(0), std::make_shared<HoldOperation>()});
+//TODO: somehow, we need to get the orientation of the mast
     response.message = attempt_response.message;
     response.success = attempt_response.success;
     return true;

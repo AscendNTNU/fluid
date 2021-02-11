@@ -26,4 +26,5 @@ std::string getStringFromOperationIdentifier(const OperationIdentifier& operatio
         case OperationIdentifier::UNDEFINED:
             return "UNDEFINED";
     }
+    return ""; //to avoid warning
 }
