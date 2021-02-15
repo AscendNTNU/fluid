@@ -35,14 +35,15 @@ CONTROL_POSITION = 2552
 CONTROL_VELOCITY = 2503
 CONTROL_POSITION_AND_VELOCITY = 2496
 CONTROL_LQR = 2111 #this is acceleration_xy_mask. We assume that we wont use it for anything else than LQR
-#Attitude typemask is not the same as the one for raw setpoints. 
+#Attitude typemask is not the same as the one for raw setpoints:
+#see here http://docs.ros.org/en/api/mavros_msgs/html/msg/AttitudeTarget.html
 CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't work
 
 #General parameters
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
-control_type = CONTROL_LQR_ATTITUDE
-USE_SQRT = True
+control_type = CONTROL_POSITION_AND_VELOCITY #CONTROL_LQR_ATTITUDE
+USE_SQRT = False
 #K_lqr = [0.4189, 1.1062] #matrix from bryon's rule with diameter as max distance
 a = 1.0
 b = 2.0*a
@@ -55,6 +56,7 @@ accel_feedforward_y = 0.0
 MAX_ACCEL_X = 0.15
 MAX_ACCEL_Y = 0.30
 
+FIXED_MAST_YAW = pi/4
 
 # parameters for modul position reference
 center = [0.0, 0.0]
@@ -103,13 +105,7 @@ def velCallback(message):
     global drone_velocity
     drone_velocity = message.twist.linear
     #printPoint(drone_velocity,"drone velocity: ")
-
-def AccelCallback(message): #does not work with Ardupilot
-    global drone_acceleration
-    drone_acceleration = message.accel.accel
-    printPoint(drone_acceleration,"drone_acc ")
     
-
 def stateCallback(data):
     global current_state
     current_state = data
@@ -162,7 +158,7 @@ def calculate_acc_input(target_pos, trans_offset, use_sqrt=False):
                         + K_lqr_y[1] * (ref_vel.y - drone_velocity.y) \
                         + accel_feedforward_y * ref_acc.y 
     else:
-        accel_target.x =  K_lqr_x[0] * signed_sqrt(ref_pos.x - drone_position.x) \
+        accel_target.x =  K_lqr_x[0] * signed_sqrt(ref_pos.x - drone_position.y) \
                         + K_lqr_x[1] * signed_sqrt(ref_vel.x - drone_velocity.x) \
                         + accel_feedforward_x * ref_acc.x 
         accel_target.y =  K_lqr_y[0] * signed_sqrt(ref_pos.y - drone_position.y) \
@@ -330,6 +326,7 @@ def takeoff(height):
 
     # Send a few set points initially
     target.position.z = 0.0
+    target.yaw = FIXED_MAST_YAW
     
     for _ in range(20): #not sure how many are really useful. Has worked with only 10
         target.header.stamp = rospy.Time.now()
@@ -362,15 +359,14 @@ def takeoff(height):
         local_pose_publisher.publish(target)
         rate.sleep()
 
-    # Send take off command
-
-    takeoff_client = rospy.ServiceProxy("/mavros/cmd/takeoff", CommandTOL)
+    # Send take off command: http://docs.ros.org/en/noetic/api/mavros_msgs/html/srv/CommandTOL.html
+    takeoff_client = rospy.ServiceProxy("/mavros/cmd/takeoff", CommandTOL) 
     last_request = rospy.Time.now()
     take_off_sent = False
 
     while not rospy.is_shutdown() and not take_off_sent:
         if (rospy.Time.now() - last_request) > rospy.Duration(3.0):
-            response = takeoff_client.call(0, 0, 0, 0, height)
+            response = takeoff_client.call(0, FIXED_MAST_YAW, 0, 0, height) #min pitch, yaw, lat, long, height
 
             if response.success:
                 rospy.loginfo("Take off sent!")
@@ -380,19 +376,29 @@ def takeoff(height):
             last_request = rospy.Time.now()
 
         rate.sleep()
+    return 0
 
-def move(position, velocity=None, acceleration=None, type_mask=None):
+def set_yaw(yaw):
+    global rate
+    target.position.x = drone_position.x
+    target.position.y = drone_position.y
+    target.position.z = drone_position.z
+    target.yaw = yaw
+    target.type_mask = CONTROL_POSITION
+    target.header.stamp = rospy.Time.now()
+    target.coordinate_frame = 1
+    
+    local_pose_publisher.publish(target)
+
+def move(position, velocity=None, type_mask=None):
     target.position.x = position.x
     target.position.y = position.y
     target.position.z = position.z
+    target.yaw = FIXED_MAST_YAW
     if velocity:
         target.velocity.x = velocity.x
         target.velocity.y = velocity.y
         target.velocity.z = velocity.z
-    if acceleration:
-        target.acceleration_or_force.x = acceleration.x
-        target.acceleration_or_force.y = acceleration.y
-        target.acceleration_or_force.z = acceleration.z
     if type_mask:
         target.type_mask = type_mask
     target.header.stamp = rospy.Time.now()
@@ -412,7 +418,7 @@ def accel_to_orientation(accel,yaw=0): #yaw, double pitch, double roll) # yaw (Z
 # We consider that the drone will always be facing the mast 
 # --> accel.x = roll & accel.y = pitch
     # Abbreviations for the various angular functions
-    yaw = 0.0
+    yaw = FIXED_MAST_YAW
     roll = atan2(accel.x,9.81)
     pitch = atan2(accel.y,9.81)
     return euler_to_quaternion(yaw, pitch, roll)
@@ -482,7 +488,7 @@ def main():
     rospy.init_node('test_node', anonymous=True)
     rospy.Subscriber("/mavros/local_position/pose", PoseStamped, poseCallback)
     rospy.Subscriber("/mavros/local_position/velocity_local", TwistStamped, velCallback)
-    
+#    rospy.Subscriber("/simulator/module/pose", PoseStamped, moduleCallback)
     global rate
     rate = rospy.Rate(SAMPLE_FREQUENCY)
 
@@ -528,20 +534,13 @@ def main():
     #waiting for takeoff to be finished
     #ugly, need to be done properly perhaps?
     
-    while drone_position.z < takeoff_height /2 :
+    while drone_position.z < takeoff_height - 0.1 :
         #print("drone altitude: ",drone_position.z)
         rate.sleep()
     rospy.loginfo("Take off finished")
 
-    if len(sys.argv)>1:
-        if sys.argv[1]=="takeoff":
-            rospy.loginfo("asked to only take off. Operations finished\n")
-            return
-    
-    #while drone_position.z < takeoff_height-0.2:
-    #    rospy.loginfo
-    #    rospy.loginfo("waiting for drone to be in altitude : %f/%f",drone_position.z,takeoff_height)
-    #    rate.sleep()
+    set_yaw(FIXED_MAST_YAW)
+
     rospy.loginfo("start to follow the module")
     last_module_pose   = Point()
     actual_module_pose = Point()
@@ -577,14 +576,15 @@ def main():
         acceleration_setpoint = calculate_acc_input(module_state, transition_state,USE_SQRT)
 
         #update zaxis
-        move(addPoints(actual_module_pose,transition_state.pose),actual_module_vel,actual_module_accel,CONTROL_POSITION_AND_VELOCITY)
+        move(addPoints(actual_module_pose,transition_state.pose),actual_module_vel,CONTROL_POSITION_AND_VELOCITY)
         if(not rospy.is_shutdown() and current_state.connected):
             if control_type !=CONTROL_LQR_ATTITUDE:
-                move(actual_module_pose,actual_module_vel, acceleration_setpoint,control_type)
+                move(actual_module_pose,actual_module_vel,control_type)
             else:
                 acceleration_setpoint = constrain_acc(acceleration_setpoint)
                 orientation = accel_to_orientation(acceleration_setpoint)
                 move_attitude(orientation,control_type)
+                #print("module ", actual_module_pose.x, " drone ", drone_position.x," acc ", acceleration_setpoint.x)
         else:
             return
 
@@ -615,9 +615,9 @@ def main():
                 if elapsed_time >= simulation_time:
                     print("%.1fsec elapsed, simulation is over!" % elapsed_time)
                     return
-            if elapsed_time >= 13.0 and elapsed_time <14.0:
-                drone_distance_from_mast = Point(0.5, 0.0, 0.0)
-                print("offset distance from the mast has been updated!")
+#            if elapsed_time >= 13.0 and elapsed_time <14.0:
+#                drone_distance_from_mast = Point(0.5, 0.0, 0.0)
+#                print("offset distance from the mast has been updated!")
 
         
 #        rospy.loginfo("asked to pose %f,%f",x,y)
