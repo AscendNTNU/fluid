@@ -20,6 +20,7 @@
 #define USE_SQRT    false
 #define CONTROL_TYPE 0      //Attitude control does not work without thrust
 
+<<<<<<< HEAD
 // LQR tuning
 #define POW          1.0
 #define RATION       2.84       // =0.37 / 0.13
@@ -70,6 +71,9 @@ double signed_sqrt(double nb){
 }
 //todo: add that again
 /*void ExtractModuleOperation::initLog()
+=======
+void ExtractModuleOperation::initLog()
+>>>>>>> 4b6ee4bb1c997e703f248811fee0f7c63f62c210
 { //create a header for the logfile.
     save_drone_position_f.open(logFileName);
     if(save_drone_position_f.is_open())
@@ -108,8 +112,13 @@ void ExtractModuleOperation::saveLog()
         }
     }
 }
+<<<<<<< HEAD
 */
 ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
+=======
+
+ExtractModuleOperation::ExtractModuleOperation() : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
+>>>>>>> 4b6ee4bb1c997e703f248811fee0f7c63f62c210
     module_pose_subscriber =
         node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
@@ -131,6 +140,7 @@ void ExtractModuleOperation::initialize() {
     // Use the current position as setpoint until we get a message with the module position
     setpoint.position = getCurrentPose().pose.position;
     
+<<<<<<< HEAD
     transition_state.max_vel = MAX_VEL;
     transition_state.cte_acc = MAX_ACCEL;
     
@@ -147,6 +157,10 @@ void ExtractModuleOperation::initialize() {
     transition_state.state.position.z = getCurrentPose().pose.position.z;
 
     //initLog(); //create a header for the logfile.
+=======
+    initLog(); //create a header for the logfile.
+    previous_time = ros::Time::now();
+>>>>>>> 4b6ee4bb1c997e703f248811fee0f7c63f62c210
 }
 
 bool ExtractModuleOperation::hasFinishedExecution() const { return extraction_state == ExtractionState::EXTRACTED; }
@@ -316,11 +330,19 @@ void ExtractModuleOperation::tick() {
                             << getCurrentPose().pose.position.x << " ; "
                             << getCurrentPose().pose.position.y << " ; "
                             << getCurrentPose().pose.position.z
+<<<<<<< HEAD
                             << "\tcalculated velocity"
                             << module_state.velocity.x << " ; "
                             << module_state.velocity.y << " ; "
                             << module_state.velocity.z);
             //saveLog();
+=======
+                            << "\tcaluculated velocity"
+                            << module_calculated_velocity.x << " ; "
+                            << module_calculated_velocity.y << " ; "
+                            << module_calculated_velocity.z);
+            saveLog();
+>>>>>>> 4b6ee4bb1c997e703f248811fee0f7c63f62c210
             //for testing purposes, I toggle the possibility to go to the next step
             //*
             if (distance_to_module < 0.04) {

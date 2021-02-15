@@ -109,6 +109,10 @@ def moduleCallback(message):
     global module_pose
     module_pose = message.pose
 
+def moduleCallback(message):
+    global module_pose
+    module_pose = message.pose
+
 def stateCallback(data):
     global current_state
     current_state = data
