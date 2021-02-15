@@ -64,7 +64,7 @@ def main():
 
     ###explore points
     explore_points = []
-    num_points = 30
+    num_points = 10
 
     for i in range(num_points + 1):
         explore_points.append(Point(-5*math.sin(2*math.pi*i/num_points), -10 + 5*math.cos(2*math.pi*i/num_points), 2))
@@ -109,7 +109,7 @@ def main():
             elif finished_operation == "EXPLORE":
                 # Perform a the extraction module state using a LQR to follow the mast
                 print("LET US EXTRACT THAT MODULE !!\n")
-                response = extract_module(0.1)
+                response = extract_module(0.0)
                 if (not response.success):
                     rospy.logerr(response.message)
                 else:
