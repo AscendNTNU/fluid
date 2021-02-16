@@ -112,6 +112,8 @@ void ExtractModuleOperation::saveLog()
 ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
     module_pose_subscriber =
         node_handle.subscribe("/simulator/module/ground_truth/pose", 10, &ExtractModuleOperation::modulePoseCallback, this);
+    module_pose_subscriber_old =
+        node_handle.subscribe("/simulator/module_pose", 10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10); //the published topic of the setpoint is redefined
     attitude_setpoint.type_mask = CONTROL_TYPE;
@@ -224,28 +226,29 @@ geometry_msgs::Point ExtractModuleOperation::rotate(geometry_msgs::Point pt, flo
     return rotated_point;
 }
 
-geometry_msgs::Point ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt){
-    geometry_msgs::Point accel_targ;
-    accel_targ.z = 0;
+void ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt){
+    accel_target.z = 0;
     if (!use_sqrt)
     {
-        accel_targ.x = K_LQR_X[0] * (ref.position.x - getCurrentPose().pose.position.x) 
+        accel_target.x = K_LQR_X[0] * (ref.position.x - getCurrentPose().pose.position.x) 
                      + K_LQR_X[1] * (ref.velocity.x - getCurrentTwist().twist.linear.x) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
-        accel_targ.y = K_LQR_X[0] * (ref.position.y - getCurrentPose().pose.position.y) 
+        accel_target.y = K_LQR_X[0] * (ref.position.y - getCurrentPose().pose.position.y) 
                      + K_LQR_X[1] * (ref.velocity.y - getCurrentTwist().twist.linear.y) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
     }
     else
     {
-        accel_targ.x = K_LQR_X[0] * signed_sqrt(ref.position.x - getCurrentPose().pose.position.x) 
+        accel_target.x = K_LQR_X[0] * signed_sqrt(ref.position.x - getCurrentPose().pose.position.x) 
                      + K_LQR_X[1] * signed_sqrt(ref.velocity.x - getCurrentTwist().twist.linear.x) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
-        accel_targ.y = K_LQR_X[0] * signed_sqrt(ref.position.y - getCurrentPose().pose.position.y) 
+        accel_target.y = K_LQR_X[0] * signed_sqrt(ref.position.y - getCurrentPose().pose.position.y) 
                      + K_LQR_X[1] * signed_sqrt(ref.velocity.y - getCurrentTwist().twist.linear.y) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
     }
-    return accel_targ;
+    //taking the opposite of the acc because the drone is facing the mast
+    accel_target.x = - accel_target.x;
+    accel_target.y = accel_target.y;
 }
 
 geometry_msgs::Quaternion ExtractModuleOperation::euler_to_quaternion(double yaw, double roll, double pitch){
@@ -277,13 +280,14 @@ void ExtractModuleOperation::update_attitude_input(mavros_msgs::PositionTarget m
     attitude_setpoint.header.stamp = ros::Time::now();
     attitude_setpoint.thrust = 0.5; //this is the thrust that allow a contanst altitude no matter what
 
-    geometry_msgs::Point accel_targ = LQR_to_acceleration(ref, use_sqrt);
-    attitude_setpoint.orientation = accel_to_orientation(accel_targ);
+    LQR_to_acceleration(ref, use_sqrt);
+    attitude_setpoint.orientation = accel_to_orientation(accel_target);
 }
 
 void ExtractModuleOperation::tick() {
     // Wait until we get the first module position readings before we do anything else.
     if (module_state.header.seq == 0) {
+        printf("waiting for callback\n");
         return;
     }
     
@@ -308,12 +312,12 @@ void ExtractModuleOperation::tick() {
             mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
             update_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
             attitude_pub.publish(attitude_setpoint);
-            
+
             //TODO: remove this big print
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
-                            << "Approaching, "
-                            << "Curent pose : "
+                            << "Approaching,\n "
+                            << "drone pose : "
                             << std::fixed << std::setprecision(3) //only 3 decimals
                             << getCurrentPose().pose.position.x << " ; "
                             << getCurrentPose().pose.position.y << " ; "
@@ -321,7 +325,13 @@ void ExtractModuleOperation::tick() {
                             << "\tmodule pose"
                             << module_state.position.x << " ; "
                             << module_state.position.y << " ; "
-                            << module_state.position.z);
+                            << module_state.position.z
+                            << "\taccel setpoint"
+                            << accel_target.x << " ; "
+                            << accel_target.y << " ; "
+                            << accel_target.z );
+                            
+                            
             //saveLog();
             //for testing purposes, I toggle the possibility to go to the next step
             //*

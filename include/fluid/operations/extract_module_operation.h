@@ -44,8 +44,10 @@ class ExtractModuleOperation : public Operation {
     geometry_msgs::Point desired_offset;
     
     ros::Subscriber module_pose_subscriber;
+    ros::Subscriber module_pose_subscriber_old;
     ros::Publisher attitude_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;
+    geometry_msgs::Point accel_target;
     
 
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
@@ -65,7 +67,7 @@ class ExtractModuleOperation : public Operation {
     //not sure if they should be public or private, but private seems nice, ikke sant?
     geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::Point accel);
     geometry_msgs::Quaternion euler_to_quaternion(double yaw, double roll, double pitch);
-    geometry_msgs::Point LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt);
+    void LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt);
     void update_attitude_input(mavros_msgs::PositionTarget module,mavros_msgs::PositionTarget offset, bool use_sqrt);
     
    public:
