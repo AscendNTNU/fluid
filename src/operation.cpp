@@ -33,13 +33,50 @@ geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_po
 void Operation::poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
     current_pose.pose = pose->pose;
     current_pose.header = pose->header;
+    current_accel = orientation_to_acceleration(pose->pose.orientation);
 }
 
 geometry_msgs::TwistStamped Operation::getCurrentTwist() const { return current_twist; }
 
+
 void Operation::twistCallback(const geometry_msgs::TwistStampedConstPtr twist) {
     current_twist.twist = twist->twist;
     current_twist.header = twist->header;
+}
+
+geometry_msgs::Vector3 Operation::getCurrentAccel() const { return current_accel; }
+
+geometry_msgs::Vector3 Operation::orientation_to_acceleration(geometry_msgs::Quaternion orientation)
+{
+    geometry_msgs::Vector3 accel;
+    geometry_msgs::Vector3 angle = quaternion_to_euler_angle(orientation);
+    accel.x = tan(angle.x) *9.81;
+    accel.y = tan(angle.y) *9.81;
+    accel.z = 0.0; //we actually don't know ...
+    return accel;
+}
+
+geometry_msgs::Vector3 Operation::quaternion_to_euler_angle(geometry_msgs::Quaternion orientation)
+{
+    geometry_msgs::Vector3 ret;
+    float w = orientation.w;
+    float x = orientation.x;
+    float y = orientation.y;
+    float z = orientation.z;
+
+    float t0 = +2.0 * (w * x + y * z);
+    float t1 = +1.0 - 2.0 * (x * x + y * y);
+    ret.x = atan2(t0, t1);
+
+    float t2 = +2.0 * (w * y - z * x);
+    t2 = t2>1.0 ? 1.0 : t2;
+    t2 = t2<-1.0 ? -1.0 : t2;
+    ret.y = asin(t2);
+
+    float t3 = +2.0 * (w * z + x * y);
+    float t4 = +1.0 - 2.0 * (y * y + z * z);
+    ret.z = atan2(t3, t4);
+    return ret;
 }
 
 float Operation::getCurrentYaw() const {

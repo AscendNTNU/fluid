@@ -56,6 +56,12 @@ class Operation {
      */
     void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
 
+    
+    /**
+     * @brief Current acceleration.
+     */
+    geometry_msgs::Vector3 current_accel;
+
     /**
      * @brief Publishes setpoints.
      *
@@ -110,9 +116,34 @@ class Operation {
     geometry_msgs::TwistStamped getCurrentTwist() const;
 
     /**
+     * @return The current twist.
+     */
+    geometry_msgs::Vector3 getCurrentAccel() const;
+
+    /**
      * @return The current yaw.
      */
     float getCurrentYaw() const;
+
+
+    /**
+     * @brief Estimate the acceleration of the drone from its orientation.
+     * 
+     * @param orientation The orientation of the drone as from poseCallback.
+     * 
+     * @return The estimation of the drone acceleration.
+     */
+    geometry_msgs::Vector3 orientation_to_acceleration(geometry_msgs::Quaternion orientation);
+
+/**
+     * @brief Transform an a quaternion orientation into euler angles.
+     * 
+     * @param orientation The quaternion orientation.
+     * 
+     * @return The equivalent euler angle.
+     */
+    geometry_msgs::Vector3 quaternion_to_euler_angle(geometry_msgs::Quaternion orientation);
+
 
    public:
     /**
