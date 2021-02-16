@@ -23,6 +23,7 @@ bool TakeOffOperation::hasFinishedExecution() const {
 void TakeOffOperation::initialize() {
 
     MavrosInterface mavros_interface;
+    mavros_interface.setParam("ANGLE_MAX", 4000);
     mavros_interface.establishContactToArduPilot();
     Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_px4 = 1;
 
