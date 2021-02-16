@@ -16,7 +16,7 @@
 
 //A list of parameters for the user
 #define SAVE_DATA   true
-#define PRINTS      true
+#define SHOW_PRINTS false
 #define SAVE_Z      false
 #define USE_SQRT    false
 #define CONTROL_TYPE 0      //Attitude control does not work without thrust
@@ -37,6 +37,7 @@ const float K_LQR_Y[2] = {RATION*POW*LQR_POS_GAIN, RATION*POW*LQR_VEL_GAIN};
 
 #define MAX_ACCEL_X 0.15 //todo, implement that properly as a drone parameter
 #define MAX_ACCEL_Y 0.30
+#define MAX_ANGLE   400 // in centi-degrees
 
 
 #if SAVE_DATA
@@ -169,11 +170,8 @@ ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(Opera
 
 void ExtractModuleOperation::initialize() {
     MavrosInterface mavros_interface;
-    //mavros_interface.setParam("WPNAV_SPEED", speed);
-    //ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat speed to: " << speed);
-
-    //mavros_interface.setParam("MPC_TILTMAX_AIR", 20);
-    //mavros_interface.setParam("MPC_Z_VEL_MAX_DN", 0.5);
+    mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << MAX_ANGLE/100.0 << " deg.");
 
     // Use the current position as setpoint until we get a message with the module position
     setpoint.position = getCurrentPose().pose.position;
@@ -295,7 +293,7 @@ void ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref
     }
     //taking the opposite of the acc because the drone is facing the mast
     // the right of the mast is the left of the drone
-    // accel_target.x = accel_target.x;
+    accel_target.x = - accel_target.x;
 }
 
 geometry_msgs::Quaternion ExtractModuleOperation::euler_to_quaternion(double yaw, double roll, double pitch){
@@ -360,6 +358,7 @@ void ExtractModuleOperation::tick() {
             desired_offset.z = 0.05; //up
 
             //TODO: remove this big print
+            #if SHOW_PRINTS
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
                             << "Approaching,\n "
@@ -376,16 +375,13 @@ void ExtractModuleOperation::tick() {
                             << accel_target.x << " ; "
                             << accel_target.y << " ; "
                             << accel_target.z );
-                            
-            //for testing purposes, I toggle the possibility to go to the next step
-            //*
+            #endif                
             if (distance_to_reference_with_offset < 0.04) {
                 extraction_state = ExtractionState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": "
                                 << "Approaching -> Over");
             }
-            //*/
             break;
         }
         case ExtractionState::OVER: {
