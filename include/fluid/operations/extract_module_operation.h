@@ -64,7 +64,7 @@ class ExtractModuleOperation : public Operation {
     geometry_msgs::Vector3 estimateModuleAccel();
 
     //functions in realtion to the following of the mast
-    //not sure if they should be public or private, but private seems nice, ikke sant?
+    //not sure if they should be public or private
     geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::Point accel);
     geometry_msgs::Quaternion euler_to_quaternion(double yaw, double roll, double pitch);
     void LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt);
@@ -87,12 +87,17 @@ class ExtractModuleOperation : public Operation {
     /**
      * @brief //create a header for the logfile.
      */
-    void initLog();
+    void initLog(const std::string file_name);
 
     /**
      * @brief //Add a new line to the logfile with the actual position and velocity
      */
-    void saveLog();
+    void saveLog(const std::string file_name, const mavros_msgs::PositionTarget data);
+
+    /**
+     * @brief //Add a new line to the logfile with the actual position and velocity
+     */
+    void saveLog(const std::string file_name, const geometry_msgs::PoseStamped pose, const geometry_msgs::TwistStamped vel, const geometry_msgs::Vector3 accel);
 
     /**
      * @return true When the module has been extracted.

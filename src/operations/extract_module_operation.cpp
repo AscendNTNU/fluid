@@ -16,6 +16,7 @@
 
 //A list of parameters for the user
 #define SAVE_DATA   true
+#define PRINTS      true
 #define SAVE_Z      false
 #define USE_SQRT    false
 #define CONTROL_TYPE 0      //Attitude control does not work without thrust
@@ -37,14 +38,17 @@ const float K_LQR_Y[2] = {RATION*POW*LQR_POS_GAIN, RATION*POW*LQR_VEL_GAIN};
 #define MAX_ACCEL_X 0.15 //todo, implement that properly as a drone parameter
 #define MAX_ACCEL_Y 0.30
 
-const std::string reference_state_path = std::string(get_current_dir_name()) + "/../reference_state.txt";   //file saved in home
-const std::string drone_pose_path = std::string(get_current_dir_name()) + "/../drone_state.txt";            //file saved in home
-const std::string drone_setpoints_path = std::string(get_current_dir_name()) + "/../drone_setpoints.txt";   //file saved in home
+
+#if SAVE_DATA
+//files saved in home directory
+const std::string reference_state_path = std::string(get_current_dir_name()) + "/../reference_state.txt";
+const std::string drone_pose_path      = std::string(get_current_dir_name()) + "/../drone_state.txt";    
+const std::string drone_setpoints_path = std::string(get_current_dir_name()) + "/../drone_setpoints.txt";
 std::ofstream reference_state_f; 
 std::ofstream drone_pose_f; 
 std::ofstream drone_setpoints_f; 
-
-
+bool store_data = true;
+#endif
 
 mavros_msgs::PositionTarget addState(mavros_msgs::PositionTarget a, mavros_msgs::PositionTarget b){
     mavros_msgs::PositionTarget res;
@@ -69,46 +73,87 @@ double signed_sqrt(double nb){
     return nb>0 ? sqrt(nb) : -sqrt(-nb);
 }
 //todo: add that again
-/*void ExtractModuleOperation::initLog()
+#if SAVE_DATA
+void ExtractModuleOperation::initLog(const std::string file_name)
 { //create a header for the logfile.
-    save_drone_position_f.open(logFileName);
-    if(save_drone_position_f.is_open())
+    std::ofstream save_file_f;
+     save_file_f.open(file_name);
+    if(save_file_f.is_open())
     {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << logFileName << " open successfully");
-        save_drone_position_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
-        save_drone_position_f.close();
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
+        save_file_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
+        save_file_f.close();
     }
     else
     {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << logFileName);
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
         store_data = false; //if we can't save data, we don't want to do it
     }
 }
 
-void ExtractModuleOperation::saveLog()
+void ExtractModuleOperation::saveLog(const std::string file_name, const geometry_msgs::PoseStamped pose, const geometry_msgs::TwistStamped vel, const geometry_msgs::Vector3 accel)
 {
     if(store_data)
     {
-        save_drone_position_f.open (logFileName, std::ios::app); //stored in fluid directory
-        if(save_drone_position_f.is_open())
+        std::ofstream save_file_f;
+        save_file_f.open (file_name, std::ios::app);
+        if(save_file_f.is_open())
         {
-            save_drone_position_f << std::fixed << std::setprecision(3) //only 3 decimals
+            save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
                             << ros::Time::now() << "\t"
-                            << getCurrentPose().pose.position.x << "\t"
-                            << getCurrentPose().pose.position.y << "\t"
-                            << getCurrentPose().pose.position.z << "\t"
-                            << getCurrentTwist().twist.linear.x << "\t"
-                            << getCurrentTwist().twist.linear.y << "\t"
-                            << getCurrentTwist().twist.linear.z << "\t"
-                            << module_calculated_velocity.x << "\t"
-                            << module_calculated_velocity.y << "\t"
-                            << module_calculated_velocity.z
+                            << pose.pose.position.x << "\t"
+                            << pose.pose.position.y << "\t"
+                            #if SAVE_Z
+                            << pose.pose.position.z << "\t"
+                            #endif
+                            << vel.twist.linear.x << "\t"
+                            << vel.twist.linear.y << "\t"
+                            #if SAVE_Z
+                            << vel.twist.linear.z << "\t"
+                            #endif
+                            << accel.x << "\t"
+                            << accel.y 
+                            #if SAVE_Z
+                            << "\t" << accel.z
+                            #endif
                             << "\n";
-            save_drone_position_f.close();
+            save_file_f.close();
         }
     }
 }
-*/
+
+void ExtractModuleOperation::saveLog(const std::string file_name, const mavros_msgs::PositionTarget data)
+{
+    if(store_data)
+    {
+        std::ofstream save_file_f;
+        save_file_f.open (file_name, std::ios::app);
+        if(save_file_f.is_open())
+        {
+            save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
+                            << ros::Time::now() << "\t"
+                            << data.position.x << "\t"
+                            << data.position.y << "\t"
+                            #if SAVE_Z
+                            << data.position.z << "\t"
+                            #endif
+                            << data.velocity.x << "\t"
+                            << data.velocity.y << "\t"
+                            #if SAVE_Z
+                            << data.velocity.z << "\t"
+                            #endif
+                            << data.acceleration_or_force.x << "\t"
+                            << data.acceleration_or_force.y 
+                            #if SAVE_Z
+                            << "\t" << data.acceleration_or_force.z
+                            #endif
+                            << "\n";
+            save_file_f.close();
+        }
+    }
+}
+#endif
+
 ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
     module_pose_subscriber =
         node_handle.subscribe("/simulator/module/ground_truth/pose", 10, &ExtractModuleOperation::modulePoseCallback, this);
@@ -141,14 +186,16 @@ void ExtractModuleOperation::initialize() {
     // That could save some time without taking risks (?) 
 
     // The desired offset is mesured in the masr frame (x to the right, y forward, and z upward)
-    desired_offset.x = 0.0;
-    desired_offset.y = 1.0;
-    desired_offset.z = 0.05;
     transition_state.state.position.x = getCurrentPose().pose.position.x;
     transition_state.state.position.y = getCurrentPose().pose.position.y;
     transition_state.state.position.z = getCurrentPose().pose.position.z;
 
-    //initLog(); //create a header for the logfile.
+    #if SAVE_DATA
+    //create a header for the datafiles.
+    initLog(reference_state_path); 
+    initLog(drone_pose_path); 
+    //initLog(drone_setpoints_path); 
+    #endif
 }
 
 bool ExtractModuleOperation::hasFinishedExecution() const { return extraction_state == ExtractionState::EXTRACTED; }
@@ -248,7 +295,7 @@ void ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref
     }
     //taking the opposite of the acc because the drone is facing the mast
     // the right of the mast is the left of the drone
-    accel_target.x = - accel_target.x;
+    // accel_target.x = accel_target.x;
 }
 
 geometry_msgs::Quaternion ExtractModuleOperation::euler_to_quaternion(double yaw, double roll, double pitch){
@@ -291,12 +338,12 @@ void ExtractModuleOperation::tick() {
         return;
     }
     
-    const double dx = module_state.position.y - getCurrentPose().pose.position.x;
-    const double dy = module_state.position.x - getCurrentPose().pose.position.y;
+    const double dx = module_state.position.x + desired_offset.x - getCurrentPose().pose.position.x;
+    const double dy = module_state.position.y + desired_offset.y - getCurrentPose().pose.position.y;
 
-    setpoint.yaw = std::atan2(dy, dx) - M_PI / 18.0;
+    //setpoint.yaw = std::atan2(dy, dx) - M_PI / 18.0;
 
-    const double distance_to_module = sqrt(dx * dx + dy * dy);
+    const double distance_to_reference_with_offset = sqrt(dx * dx + dy * dy);
 
     const double dvx = getCurrentTwist().twist.linear.x;
     const double dvy = getCurrentTwist().twist.linear.y;
@@ -308,10 +355,9 @@ void ExtractModuleOperation::tick() {
         case ExtractionState::APPROACHING: {
             // TODO: This has to be fixed, should be facing towards the module from any given position,
             // not just from the x direction
-    
-            mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
-            update_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
-            attitude_pub.publish(attitude_setpoint);
+            desired_offset.x = 0.0;  //right
+            desired_offset.y = 2.0;  //front
+            desired_offset.z = 0.05; //up
 
             //TODO: remove this big print
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
@@ -331,11 +377,9 @@ void ExtractModuleOperation::tick() {
                             << accel_target.y << " ; "
                             << accel_target.z );
                             
-                            
-            //saveLog();
             //for testing purposes, I toggle the possibility to go to the next step
             //*
-            if (distance_to_module < 0.04) {
+            if (distance_to_reference_with_offset < 0.04) {
                 extraction_state = ExtractionState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": "
@@ -396,5 +440,17 @@ void ExtractModuleOperation::tick() {
 
             break;
         }
-    }
+    }//end switch state
+
+    mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
+    update_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
+    attitude_pub.publish(attitude_setpoint);
+
+    #if SAVE_DATA
+    //save the control data into files
+    saveLog(reference_state_path,addState(module_state, smooth_rotated_offset));
+    saveLog(drone_pose_path, getCurrentPose(),getCurrentTwist(),getCurrentAccel());
+    //saveLog(drone_setpoints_path);
+    #endif
+
 }
