@@ -113,10 +113,12 @@ int main(int argc, char** argv) {
             if (finished_operation == "TAKE_OFF") {
                 ROS_INFO_STREAM("[example_client]: Take_off finished, go exploring");
                 // Perform an explore with a (list of) point(s)
-                geometry_msgs::Point point;
+                geometry_msgs::Point point, POI;
                 point.x = 5;
+                POI.y = 2;
                 fluid::Explore explore_service_handle;
                 explore_service_handle.request.path = {point};
+                explore_service_handle.request.point_of_interest = POI;
                 if (explore.call(explore_service_handle)) {
                     if (!explore_service_handle.response.success) {
                         ROS_FATAL_STREAM(explore_service_handle.response.message);
@@ -130,7 +132,22 @@ int main(int argc, char** argv) {
                 }
 
             } else if (finished_operation == "EXPLORE") {
-                ROS_INFO_STREAM("[example_client]: Exploring finished, go Traveling");
+                ROS_INFO_STREAM("[example_client]: Exploring finished, go extracting module");
+                fluid::ExtractModule extract_module_service_handle;
+                extract_module_service_handle.request.fixed_mast_yaw = 0.0;
+                if (extract_module.call(extract_module_service_handle)) {
+                    if (!extract_module_service_handle.response.success) {
+                        ROS_FATAL_STREAM(extract_module_service_handle.response.message);
+                        return 1;
+                    } else {
+                        is_executing_operation = true;
+                    }
+                } else {
+                    ROS_FATAL("Failed to call extract_module service.");
+                    return 1;
+                }
+            } else if (finished_operation == "EXTRACT_MODULE") {
+                ROS_INFO_STREAM("[example_client]: extracting module finished, go travel");
                 geometry_msgs::Point point;
                 point.x = 100;
                 fluid::Travel travel_service_handle;

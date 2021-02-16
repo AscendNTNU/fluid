@@ -1,3 +1,4 @@
+float32 fixed_mast_yaw
 ---
 bool success
 string message

@@ -195,6 +195,7 @@ void MavrosInterface::setParam(const std::string& parameter, const float& value)
     ros::Rate rate(UPDATE_REFRESH_RATE);
     ros::NodeHandle node_handle;
     ros::ServiceClient param_set_service_client = node_handle.serviceClient<mavros_msgs::ParamSet>("mavros/param/set");
+
     mavros_msgs::ParamSet param_set_service;
 
     param_set_service.request.param_id = parameter;
@@ -205,7 +206,7 @@ void MavrosInterface::setParam(const std::string& parameter, const float& value)
     while (!param_set_service_client.call(param_set_service) && ros::ok()) {
         if (!failed_setting) {
             ROS_FATAL_STREAM(ros::this_node::getName().c_str()
-                             << "Failed to set param " << parameter.c_str() << " for PX4. Retrying...");
+                             << "Failed to set param " << parameter.c_str() << " for ArduPilot. Retrying...");
             failed_setting = true;
         }
 

@@ -61,6 +61,15 @@ def gotConnectionWithServices(timeout):
 
 
 def main():
+
+    ###explore points
+    explore_points = []
+    num_points = 10
+
+    for i in range(num_points + 1):
+        explore_points.append(Point(-5*math.sin(2*math.pi*i/num_points), -10 + 5*math.cos(2*math.pi*i/num_points), 2))
+    ###
+
     global is_executing_operation
     rospy.init_node('fluid_client')
 
@@ -91,19 +100,24 @@ def main():
         if not is_executing_operation:
             if finished_operation == "TAKE_OFF":
                 # Perform a explore with a (list of) point(s)
-                point = Point()
-                point.y = 10
-                response = explore([point])
+                #response = explore([Point(0, 10, 2), Point(0, -10, 2)], Point(5, 5, 5))
+                response = explore(explore_points, Point(0, -10, 2))
                 if (not response.success):
                     rospy.logerr(response.message)
                 else:
                     is_executing_operation = True
             elif finished_operation == "EXPLORE":
+                # Perform a the extraction module state using a LQR to follow the mast
+                print("LET US EXTRACT THAT MODULE !!\n")
+                response = extract_module(0.0)
+                if (not response.success):
+                    rospy.logerr(response.message)
+                else:
+                    is_executing_operation = True
+            elif finished_operation == "EXTRACT_MODULE":
 
                 # Perform a travel with a list of points
-                point = Point()
-                point.x = 20
-                response = travel([point])
+                response = travel([Point(15, 0, 1.5), Point(-15, 0, 1.5)])
                 if (not response.success):
                     rospy.logerr(response.message)
                 else:

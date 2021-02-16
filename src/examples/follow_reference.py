@@ -106,6 +106,14 @@ def velCallback(message):
     drone_velocity = message.twist.linear
     #printPoint(drone_velocity,"drone velocity: ")
     
+def moduleCallback(message):
+    global module_pose
+    module_pose = message.pose
+
+def moduleCallback(message):
+    global module_pose
+    module_pose = message.pose
+
 def stateCallback(data):
     global current_state
     current_state = data
@@ -485,10 +493,11 @@ def constrain(x,min,max):
 def main():
     global drone_position 
     global drone_velocity
+    global module_pose
     rospy.init_node('test_node', anonymous=True)
     rospy.Subscriber("/mavros/local_position/pose", PoseStamped, poseCallback)
     rospy.Subscriber("/mavros/local_position/velocity_local", TwistStamped, velCallback)
-#    rospy.Subscriber("/simulator/module/pose", PoseStamped, moduleCallback)
+    rospy.Subscriber("/simulator/module/pose", PoseStamped, moduleCallback)
     global rate
     rate = rospy.Rate(SAMPLE_FREQUENCY)
 
