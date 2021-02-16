@@ -111,7 +111,7 @@ void ExtractModuleOperation::saveLog()
 */
 ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
     module_pose_subscriber =
-        node_handle.subscribe("/sim/module_position", 10, &ExtractModuleOperation::modulePoseCallback, this);
+        node_handle.subscribe("/simulator/module/ground_truth/pose", 10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10); //the published topic of the setpoint is redefined
     attitude_setpoint.type_mask = CONTROL_TYPE;
@@ -152,11 +152,11 @@ void ExtractModuleOperation::initialize() {
 bool ExtractModuleOperation::hasFinishedExecution() const { return extraction_state == ExtractionState::EXTRACTED; }
 
 void ExtractModuleOperation::modulePoseCallback(
-    const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
+    const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
     previous_module_state = module_state;
 
-    module_state.header.stamp = ros::Time::now();
-    module_state.position = module_pose_ptr->pose.pose.position;
+    module_state.header = module_pose_ptr->header;
+    module_state.position = module_pose_ptr->pose.position;
     //module_state.velocity = derivate(module_state.position,previous_module_state.position,module_state.header.stamp - previous_module_state.header.stamp);
     //module_state.acceleration_or_force = derivate(module_state.velocity,previous_module_state.velocity,module_state.header.stamp - previous_module_state.header.stamp);
     module_state.velocity = estimateModuleVel();    
@@ -224,27 +224,28 @@ geometry_msgs::Point ExtractModuleOperation::rotate(geometry_msgs::Point pt, flo
     return rotated_point;
 }
 
-void ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget* ref, geometry_msgs::PointPtr accel_targ, bool use_sqrt){
-    accel_targ->z = 0;
+geometry_msgs::Point ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt){
+    geometry_msgs::Point accel_targ;
+    accel_targ.z = 0;
     if (!use_sqrt)
     {
-        accel_targ->x = K_LQR_X[0] * (ref->position.x - getCurrentPose().pose.position.x) 
-                     + K_LQR_X[1] * (ref->velocity.x - getCurrentTwist().twist.linear.x) 
-                     + ACCEL_FEEDFORWARD_X * ref->acceleration_or_force.x;
-        accel_targ->y = K_LQR_X[0] * (ref->position.y - getCurrentPose().pose.position.y) 
-                     + K_LQR_X[1] * (ref->velocity.y - getCurrentTwist().twist.linear.y) 
-                     + ACCEL_FEEDFORWARD_X * ref->acceleration_or_force.y;
+        accel_targ.x = K_LQR_X[0] * (ref.position.x - getCurrentPose().pose.position.x) 
+                     + K_LQR_X[1] * (ref.velocity.x - getCurrentTwist().twist.linear.x) 
+                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
+        accel_targ.y = K_LQR_X[0] * (ref.position.y - getCurrentPose().pose.position.y) 
+                     + K_LQR_X[1] * (ref.velocity.y - getCurrentTwist().twist.linear.y) 
+                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
     }
     else
     {
-        accel_targ->x = K_LQR_X[0] * signed_sqrt(ref->position.x - getCurrentPose().pose.position.x) 
-                     + K_LQR_X[1] * signed_sqrt(ref->velocity.x - getCurrentTwist().twist.linear.x) 
-                     + ACCEL_FEEDFORWARD_X * ref->acceleration_or_force.x;
-        accel_targ->y = K_LQR_X[0] * signed_sqrt(ref->position.y - getCurrentPose().pose.position.y) 
-                     + K_LQR_X[1] * signed_sqrt(ref->velocity.y - getCurrentTwist().twist.linear.y) 
-                     + ACCEL_FEEDFORWARD_X * ref->acceleration_or_force.y;
+        accel_targ.x = K_LQR_X[0] * signed_sqrt(ref.position.x - getCurrentPose().pose.position.x) 
+                     + K_LQR_X[1] * signed_sqrt(ref.velocity.x - getCurrentTwist().twist.linear.x) 
+                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
+        accel_targ.y = K_LQR_X[0] * signed_sqrt(ref.position.y - getCurrentPose().pose.position.y) 
+                     + K_LQR_X[1] * signed_sqrt(ref.velocity.y - getCurrentTwist().twist.linear.y) 
+                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
     }
-
+    return accel_targ;
 }
 
 geometry_msgs::Quaternion ExtractModuleOperation::euler_to_quaternion(double yaw, double roll, double pitch){
@@ -263,10 +264,10 @@ geometry_msgs::Quaternion ExtractModuleOperation::euler_to_quaternion(double yaw
     return q;
 }
 
-geometry_msgs::Quaternion ExtractModuleOperation::accel_to_orientation(geometry_msgs::PointPtr accel){
+geometry_msgs::Quaternion ExtractModuleOperation::accel_to_orientation(geometry_msgs::Point accel){
     double yaw = fixed_mast_yaw + M_PI; //we want to face the mast
-    double roll = atan2(accel->x,9.81);
-    double pitch = atan2(accel->y,9.81);
+    double roll = atan2(accel.x,9.81);
+    double pitch = atan2(accel.y,9.81);
     return euler_to_quaternion(yaw, pitch, roll);
 }
 
@@ -276,8 +277,7 @@ void ExtractModuleOperation::update_attitude_input(mavros_msgs::PositionTarget m
     attitude_setpoint.header.stamp = ros::Time::now();
     attitude_setpoint.thrust = 0.5; //this is the thrust that allow a contanst altitude no matter what
 
-    geometry_msgs::PointPtr accel_targ;
-    LQR_to_acceleration(&ref, accel_targ, use_sqrt);
+    geometry_msgs::Point accel_targ = LQR_to_acceleration(ref, use_sqrt);
     attitude_setpoint.orientation = accel_to_orientation(accel_targ);
 }
 
@@ -297,16 +297,18 @@ void ExtractModuleOperation::tick() {
     const double dvx = getCurrentTwist().twist.linear.x;
     const double dvy = getCurrentTwist().twist.linear.y;
     const double dvz = getCurrentTwist().twist.linear.z;
-
-    const double drone_speed = sqrt(dvx * dvx + dvy * dvy + dvz * dvz); //not used 
+    
+    //const double drone_speed = sqrt(dvx * dvx + dvy * dvy + dvz * dvz); //not used 
 
     switch (extraction_state) {
         case ExtractionState::APPROACHING: {
             // TODO: This has to be fixed, should be facing towards the module from any given position,
             // not just from the x direction
+    
             mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
-
             update_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
+            attitude_pub.publish(attitude_setpoint);
+            
             //TODO: remove this big print
             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": "
@@ -316,10 +318,10 @@ void ExtractModuleOperation::tick() {
                             << getCurrentPose().pose.position.x << " ; "
                             << getCurrentPose().pose.position.y << " ; "
                             << getCurrentPose().pose.position.z
-                            << "\tcalculated velocity"
-                            << module_state.velocity.x << " ; "
-                            << module_state.velocity.y << " ; "
-                            << module_state.velocity.z);
+                            << "\tmodule pose"
+                            << module_state.position.x << " ; "
+                            << module_state.position.y << " ; "
+                            << module_state.position.z);
             //saveLog();
             //for testing purposes, I toggle the possibility to go to the next step
             //*

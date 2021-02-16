@@ -5,7 +5,7 @@
 #ifndef EXTRACT_MODULE_OPERATION_H
 #define EXTRACT_MODULE_OPERATION_H
 
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/PoseStamped.h>
 
 #include "operation.h"
 #include "operation_identifier.h"
@@ -48,7 +48,7 @@ class ExtractModuleOperation : public Operation {
     mavros_msgs::AttitudeTarget attitude_setpoint;
     
 
-    void modulePoseCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose);
+    void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
 
     ros::ServiceClient backpropeller_client;
 
@@ -63,9 +63,9 @@ class ExtractModuleOperation : public Operation {
 
     //functions in realtion to the following of the mast
     //not sure if they should be public or private, but private seems nice, ikke sant?
-    geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::PointPtr accel);
+    geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::Point accel);
     geometry_msgs::Quaternion euler_to_quaternion(double yaw, double roll, double pitch);
-    void LQR_to_acceleration(mavros_msgs::PositionTarget* ref, geometry_msgs::PointPtr accel_targ, bool use_sqrt);
+    geometry_msgs::Point LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt);
     void update_attitude_input(mavros_msgs::PositionTarget module,mavros_msgs::PositionTarget offset, bool use_sqrt);
     
    public:
