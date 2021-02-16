@@ -247,8 +247,8 @@ void ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
     }
     //taking the opposite of the acc because the drone is facing the mast
+    // the right of the mast is the left of the drone
     accel_target.x = - accel_target.x;
-    accel_target.y = accel_target.y;
 }
 
 geometry_msgs::Quaternion ExtractModuleOperation::euler_to_quaternion(double yaw, double roll, double pitch){
