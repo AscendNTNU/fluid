@@ -46,6 +46,7 @@ class ExtractModuleOperation : public Operation {
     ros::Subscriber module_pose_subscriber;
     ros::Subscriber module_pose_subscriber_old;
     ros::Publisher attitude_pub;
+    ros::Publisher altitude_and_yaw_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;
     geometry_msgs::Point accel_target;
     
@@ -69,6 +70,8 @@ class ExtractModuleOperation : public Operation {
     geometry_msgs::Quaternion euler_to_quaternion(double yaw, double roll, double pitch);
     void LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt);
     void update_attitude_input(mavros_msgs::PositionTarget module,mavros_msgs::PositionTarget offset, bool use_sqrt);
+
+    void update_transition_state();
     
    public:
     /**

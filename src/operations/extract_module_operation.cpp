@@ -17,9 +17,11 @@
 //A list of parameters for the user
 #define SAVE_DATA   true
 #define SHOW_PRINTS false
-#define SAVE_Z      false
+#define SAVE_Z      true
 #define USE_SQRT    false
-#define CONTROL_TYPE 0      //Attitude control does not work without thrust
+#define ATTITUDE_CONTROL 0      //Attitude control does not work without thrust
+#define POS_AND_VEL_CONTROL 2496 //typemask for setpoint_raw/local
+
 
 // LQR tuning
 #define POW          1.0
@@ -51,6 +53,11 @@ std::ofstream drone_setpoints_f;
 bool store_data = true;
 #endif
 
+uint8_t time_cout = 0;
+float rate =  30.; //todo, measure or get the exact value.
+
+double sq(double n) {return n*n;}
+
 mavros_msgs::PositionTarget addState(mavros_msgs::PositionTarget a, mavros_msgs::PositionTarget b){
     mavros_msgs::PositionTarget res;
     res.header = a.header; // this is arbitrary. Did no find a perfect solution, but should not have any impact
@@ -81,7 +88,7 @@ void ExtractModuleOperation::initLog(const std::string file_name)
      save_file_f.open(file_name);
     if(save_file_f.is_open())
     {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
+//        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
         save_file_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
         save_file_f.close();
     }
@@ -162,9 +169,11 @@ ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(Opera
         node_handle.subscribe("/simulator/module_pose", 10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10); //the published topic of the setpoint is redefined
-    attitude_setpoint.type_mask = CONTROL_TYPE;
+    altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10); //the published topic of the setpoint is redefined
+    attitude_setpoint.type_mask = ATTITUDE_CONTROL;
     fixed_mast_yaw = mast_yaw;
-
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+            << ": mast yaw received: " << fixed_mast_yaw);
     //TODO: find a way to desactivate the position setpoints we are normaly using.
 }
 
@@ -175,24 +184,28 @@ void ExtractModuleOperation::initialize() {
 
     // Use the current position as setpoint until we get a message with the module position
     setpoint.position = getCurrentPose().pose.position;
-    
-    transition_state.max_vel = MAX_VEL;
-    transition_state.cte_acc = MAX_ACCEL;
-    
+        
     // Entering smooth zone. We could also durectly place the transition_state to 
     // the initial desired offset if we are not scared of hitting the mast.
     // That could save some time without taking risks (?) 
 
     // The desired offset is mesured in the masr frame (x to the right, y forward, and z upward)
-    transition_state.state.position.x = getCurrentPose().pose.position.x;
-    transition_state.state.position.y = getCurrentPose().pose.position.y;
-    transition_state.state.position.z = getCurrentPose().pose.position.z;
+    transition_state.state.position.x = getCurrentPose().pose.position.x - module_state.position.x;
+    transition_state.state.position.y = getCurrentPose().pose.position.y - module_state.position.y;
+    transition_state.state.position.z = getCurrentPose().pose.position.z - module_state.position.z;
+
+    //the offset is set in the frame of the mast:    
+    desired_offset.x = 3.0;   //forward   //right
+    desired_offset.y = 0.0;   //left   //front
+    desired_offset.z = 0.05; //up   //up
+    transition_state.cte_acc = 3*MAX_ACCEL;
+    transition_state.max_vel = 3*MAX_VEL;
 
     #if SAVE_DATA
     //create a header for the datafiles.
     initLog(reference_state_path); 
     initLog(drone_pose_path); 
-    //initLog(drone_setpoints_path); 
+    initLog(drone_setpoints_path); 
     #endif
 }
 
@@ -329,7 +342,104 @@ void ExtractModuleOperation::update_attitude_input(mavros_msgs::PositionTarget m
     attitude_setpoint.orientation = accel_to_orientation(accel_target);
 }
 
+void ExtractModuleOperation::update_transition_state()
+{
+//try to make a smooth transition when the relative targeted position between the drone
+//and the mast is changed
+
+// Analysis on the x axis
+    if (abs(desired_offset.x - transition_state.state.position.x) > 0.001){
+    // if we are in a transition state on the x axis
+        transition_state.finished_bitmask &= ~0x1;
+        if (sq(transition_state.state.velocity.x) / 2.0 / transition_state.cte_acc >= abs(desired_offset.x - transition_state.state.position.x))
+        {
+        // if it is time to brake to avoid overshoot
+            //set the transition acceleration (or deceleration) to the one that will lead us to the exact point we want
+            transition_state.state.acceleration_or_force.x = - sq(transition_state.state.velocity.x) /2.0 / (desired_offset.x - transition_state.state.position.x);
+        }
+        else if (abs(transition_state.state.velocity.x) > transition_state.max_vel)
+        {
+        // if we have reached max transitionning speed
+            //we stop accelerating and maintain speed
+            transition_state.state.acceleration_or_force.x = 0.0;
+            //transition_state.state.velocity = signe(transition_state.state.velocity) * transition_state.state.velocity //to set the speed to the exact chosen value
+        }
+        else{
+        //we are in the acceleration phase of the transition){
+            if (desired_offset.x - transition_state.state.position.x > 0.0)
+                transition_state.state.acceleration_or_force.x = transition_state.cte_acc;
+            else
+                transition_state.state.acceleration_or_force.x = - transition_state.cte_acc;
+        }
+        // Whatever the state we are in, update velocity and position of the target
+        transition_state.state.velocity.x = transition_state.state.velocity.x + transition_state.state.acceleration_or_force.x / rate;
+        transition_state.state.position.x = transition_state.state.position.x + transition_state.state.velocity.x / rate;
+        
+    }
+    else if (abs(transition_state.state.velocity.x) < 0.1){
+        //setpoint reached destination on this axis
+        //todo: should the acceleration be tested?            
+        transition_state.state.position.x = desired_offset.x;
+        transition_state.state.velocity.x = 0.0;
+        transition_state.state.acceleration_or_force.x = 0.0;
+        transition_state.finished_bitmask |= 0x1;
+    }
+
+// Analysis on the y axis, same as on the x axis
+    if (abs(desired_offset.y - transition_state.state.position.y) > 0.001){
+        transition_state.finished_bitmask = ~0x2;
+        if (sq(transition_state.state.velocity.y) / 2.0 / transition_state.cte_acc >= abs(desired_offset.y - transition_state.state.position.y))
+            transition_state.state.acceleration_or_force.y = - sq(transition_state.state.velocity.y) /2.0 / (desired_offset.y - transition_state.state.position.y);
+        else if (abs(transition_state.state.velocity.y) > transition_state.max_vel)
+            transition_state.state.acceleration_or_force.y = 0.0;
+        else{
+            if (desired_offset.y - transition_state.state.position.y > 0.0)
+                transition_state.state.acceleration_or_force.y = transition_state.cte_acc;
+            else
+                transition_state.state.acceleration_or_force.y = - transition_state.cte_acc;
+            }
+        transition_state.state.velocity.y  =   transition_state.state.velocity.y  + transition_state.state.acceleration_or_force.y / rate;
+        transition_state.state.position.y =  transition_state.state.position.y  + transition_state.state.velocity.y / rate;
+    }
+    else if (abs(transition_state.state.velocity.y) < 0.1){
+        transition_state.state.position.y = desired_offset.y;
+        transition_state.state.velocity.y = 0.0;
+        transition_state.state.acceleration_or_force.y = 0.0;
+        transition_state.finished_bitmask |= 0x2;
+    }
+
+// Analysis on the z axis, same as on the x axis
+    if (abs(desired_offset.z - transition_state.state.position.z) > 0.001){
+        transition_state.finished_bitmask = ~0x4;
+        if (sq(transition_state.state.velocity.z) / 2.0 / transition_state.cte_acc >= abs(desired_offset.z - transition_state.state.position.z))
+            transition_state.state.acceleration_or_force.z = - sq(transition_state.state.velocity.z) /2.0 / (desired_offset.z - transition_state.state.position.z);
+        else if (abs(transition_state.state.velocity.z) > transition_state.max_vel)
+            transition_state.state.acceleration_or_force.z = 0.0;
+        else {
+            if (desired_offset.z - transition_state.state.position.z > 0.0)
+                transition_state.state.acceleration_or_force.z = transition_state.cte_acc;
+            else 
+                transition_state.state.acceleration_or_force.z = - transition_state.cte_acc;
+        }
+        transition_state.state.velocity.z  =   transition_state.state.velocity.z  + transition_state.state.acceleration_or_force.z / rate;
+        transition_state.state.position.z =  transition_state.state.position.z  + transition_state.state.velocity.z / rate;
+    }
+    else if (abs(transition_state.state.velocity.z) < 0.1){
+        transition_state.state.position.z = desired_offset.z;
+        transition_state.state.velocity.z = 0.0;
+        transition_state.state.acceleration_or_force.z = 0.0;
+        transition_state.finished_bitmask |= 0x4;
+    }
+    
+//    if (comparPoints(desired_offset,transition_state.state.position,0.001) and not transition_state.transition_finished){
+//        transition_state.transition_finished = true;
+//        printf ("transition finished!");
+//    }
+
+}
+
 void ExtractModuleOperation::tick() {
+    time_cout++;
     // Wait until we get the first module position readings before we do anything else.
     if (module_state.header.seq == 0) {
         printf("waiting for callback\n");
@@ -338,8 +448,6 @@ void ExtractModuleOperation::tick() {
     
     const double dx = module_state.position.x + desired_offset.x - getCurrentPose().pose.position.x;
     const double dy = module_state.position.y + desired_offset.y - getCurrentPose().pose.position.y;
-
-    //setpoint.yaw = std::atan2(dy, dx) - M_PI / 18.0;
 
     const double distance_to_reference_with_offset = sqrt(dx * dx + dy * dy);
 
@@ -351,40 +459,25 @@ void ExtractModuleOperation::tick() {
 
     switch (extraction_state) {
         case ExtractionState::APPROACHING: {
-            // TODO: This has to be fixed, should be facing towards the module from any given position,
-            // not just from the x direction
-            desired_offset.x = 0.0;  //right
-            desired_offset.y = 2.0;  //front
-            desired_offset.z = 0.05; //up
+            if(time_cout%45==0) printf("APPROACHING\n");
 
-            //TODO: remove this big print
-            #if SHOW_PRINTS
-            ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": "
-                            << "Approaching,\n "
-                            << "drone pose : "
-                            << std::fixed << std::setprecision(3) //only 3 decimals
-                            << getCurrentPose().pose.position.x << " ; "
-                            << getCurrentPose().pose.position.y << " ; "
-                            << getCurrentPose().pose.position.z
-                            << "\tmodule pose"
-                            << module_state.position.x << " ; "
-                            << module_state.position.y << " ; "
-                            << module_state.position.z
-                            << "\taccel setpoint"
-                            << accel_target.x << " ; "
-                            << accel_target.y << " ; "
-                            << accel_target.z );
-            #endif                
             if (distance_to_reference_with_offset < 0.04) {
                 extraction_state = ExtractionState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                                << ": "
-                                << "Approaching -> Over");
+                            << ": " << "Approaching -> Over");
+                //the offset is set in the frame of the mast:    
+                desired_offset.x = 0.50;  //forward   //right //the distance from the drone to the FaceHugger
+                desired_offset.y = 0.0;   //left   //front
+                desired_offset.z = 0.05;  //up   //up
+                transition_state.cte_acc = MAX_ACCEL;
+                transition_state.max_vel = MAX_VEL;
+
+
             }
             break;
         }
         case ExtractionState::OVER: {
+            if(time_cout%45==0) printf("OVER\n");
             setpoint.position.x = module_state.position.y;
             setpoint.position.y = module_state.position.x + 0.78;
             setpoint.position.z = module_state.position.z + 0.3;
@@ -394,6 +487,8 @@ void ExtractModuleOperation::tick() {
 
             if (distance_to_setpoint < 0.1 && std::abs(getCurrentYaw() - setpoint.yaw) < M_PI / 50.0) {
                 extraction_state = ExtractionState::BEHIND_WITH_HOOKS;
+                ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                            << ": " << "Over -> Behind Hooks");
             }
             
             break;
@@ -437,16 +532,41 @@ void ExtractModuleOperation::tick() {
             break;
         }
     }//end switch state
-
+    update_transition_state();
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
+
+    if (time_cout % 5 == 0)
+    {
+    //    printf("desired offset \t\tx %f, y %f, z %f\n",desired_offset.x,
+    //                    desired_offset.y, desired_offset.z);
+        printf("transition state\t x %f, y %f, z %f\n",transition_state.state.position.x,
+                        transition_state.state.position.y, transition_state.state.position.z);
+    //    printf("transition vel\t x %f, y %f, z %f\n",transition_state.state.velocity.x,
+    //                    transition_state.state.velocity.y, transition_state.state.velocity.z);
+    //    printf("transition accel\t x %f, y %f, z %f\n",transition_state.state.acceleration_or_force.x,
+    //                    transition_state.state.acceleration_or_force.y, transition_state.state.acceleration_or_force.z);
+        setpoint.yaw = fixed_mast_yaw+M_PI;
+        setpoint.position.x = module_state.position.x + smooth_rotated_offset.position.x;
+        setpoint.position.y = module_state.position.y + smooth_rotated_offset.position.y;
+        setpoint.position.z = module_state.position.z + smooth_rotated_offset.position.z;
+        setpoint.velocity.x = module_state.velocity.x + smooth_rotated_offset.velocity.x;
+        setpoint.velocity.y = module_state.velocity.y + smooth_rotated_offset.velocity.y;
+        setpoint.velocity.z = module_state.velocity.z + smooth_rotated_offset.velocity.z;
+        setpoint.type_mask = POS_AND_VEL_CONTROL;
+        setpoint.header.stamp = ros::Time::now();
+
+        altitude_and_yaw_pub.publish(setpoint);
+
+    }
     update_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
+
     attitude_pub.publish(attitude_setpoint);
 
     #if SAVE_DATA
     //save the control data into files
     saveLog(reference_state_path,addState(module_state, smooth_rotated_offset));
     saveLog(drone_pose_path, getCurrentPose(),getCurrentTwist(),getCurrentAccel());
-    //saveLog(drone_setpoints_path);
+    saveLog(drone_setpoints_path,smooth_rotated_offset);
     #endif
 
 }
