@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
             } else if (finished_operation == "EXPLORE") {
                 ROS_INFO_STREAM("[example_client]: Exploring finished, go extracting module");
                 fluid::ExtractModule extract_module_service_handle;
-                extract_module_service_handle.request.fixed_mast_yaw = M_PI/4; //TODO: does not work
+                extract_module_service_handle.request.fixed_mast_yaw = 0; //TODO: does not work
                 if (extract_module.call(extract_module_service_handle)) {
                     if (!extract_module_service_handle.response.success) {
                         ROS_FATAL_STREAM(extract_module_service_handle.response.message);
