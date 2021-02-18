@@ -35,7 +35,7 @@ class ExtractModuleOperation : public Operation {
 
 	ExtractionState extraction_state = ExtractionState::APPROACHING;
     float fixed_mast_yaw; //Should be given by perception and known before entering in ExtractModuleOperation
-    const float speed = 500;
+    float tick_rate;
     
     mavros_msgs::PositionTarget module_state;
     mavros_msgs::PositionTarget previous_module_state;

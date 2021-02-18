@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h> //to get the current directory
+#include "fluid.h" //to get access to the tick rate
 
 //A list of parameters for the user
 #define SAVE_DATA   true
@@ -37,8 +38,6 @@ const float K_LQR_Y[2] = {RATION*POW*LQR_POS_GAIN, RATION*POW*LQR_VEL_GAIN};
 #define MAX_VEL     0.05
 #define MAX_ACCEL   0.03
 
-#define MAX_ACCEL_X 0.15 //todo, implement that properly as a drone parameter
-#define MAX_ACCEL_Y 0.30
 #define MAX_ANGLE   400 // in centi-degrees
 
 
@@ -54,7 +53,6 @@ bool store_data = true;
 #endif
 
 uint8_t time_cout = 0;
-float rate =  30.; //todo, measure or get the exact value.
 
 double sq(double n) {return n*n;}
 
@@ -172,6 +170,7 @@ ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(Opera
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10); //the published topic of the setpoint is redefined
     attitude_setpoint.type_mask = ATTITUDE_CONTROL;
     fixed_mast_yaw = mast_yaw;
+    tick_rate = (float) Fluid::getInstance().configuration.refresh_rate;
     ROS_INFO_STREAM(ros::this_node::getName().c_str() 
             << ": mast yaw received: " << fixed_mast_yaw);
     //TODO: find a way to desactivate the position setpoints we are normaly using.
@@ -372,8 +371,8 @@ void ExtractModuleOperation::update_transition_state()
                 transition_state.state.acceleration_or_force.x = - transition_state.cte_acc;
         }
         // Whatever the state we are in, update velocity and position of the target
-        transition_state.state.velocity.x = transition_state.state.velocity.x + transition_state.state.acceleration_or_force.x / rate;
-        transition_state.state.position.x = transition_state.state.position.x + transition_state.state.velocity.x / rate;
+        transition_state.state.velocity.x = transition_state.state.velocity.x + transition_state.state.acceleration_or_force.x / tick_rate;
+        transition_state.state.position.x = transition_state.state.position.x + transition_state.state.velocity.x / tick_rate;
         
     }
     else if (abs(transition_state.state.velocity.x) < 0.1){
@@ -398,8 +397,8 @@ void ExtractModuleOperation::update_transition_state()
             else
                 transition_state.state.acceleration_or_force.y = - transition_state.cte_acc;
             }
-        transition_state.state.velocity.y  =   transition_state.state.velocity.y  + transition_state.state.acceleration_or_force.y / rate;
-        transition_state.state.position.y =  transition_state.state.position.y  + transition_state.state.velocity.y / rate;
+        transition_state.state.velocity.y  =   transition_state.state.velocity.y  + transition_state.state.acceleration_or_force.y / tick_rate;
+        transition_state.state.position.y =  transition_state.state.position.y  + transition_state.state.velocity.y / tick_rate;
     }
     else if (abs(transition_state.state.velocity.y) < 0.1){
         transition_state.state.position.y = desired_offset.y;
@@ -421,8 +420,8 @@ void ExtractModuleOperation::update_transition_state()
             else 
                 transition_state.state.acceleration_or_force.z = - transition_state.cte_acc;
         }
-        transition_state.state.velocity.z  =   transition_state.state.velocity.z  + transition_state.state.acceleration_or_force.z / rate;
-        transition_state.state.position.z =  transition_state.state.position.z  + transition_state.state.velocity.z / rate;
+        transition_state.state.velocity.z  =   transition_state.state.velocity.z  + transition_state.state.acceleration_or_force.z / tick_rate;
+        transition_state.state.position.z =  transition_state.state.position.z  + transition_state.state.velocity.z / tick_rate;
     }
     else if (abs(transition_state.state.velocity.z) < 0.1){
         transition_state.state.position.z = desired_offset.z;
