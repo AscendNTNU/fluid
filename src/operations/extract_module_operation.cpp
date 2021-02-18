@@ -54,8 +54,10 @@ bool store_data = true;
 
 uint8_t time_cout = 0;
 
+//todo: this function should probably be place in Util
 double sq(double n) {return n*n;}
 
+//todo: this function should probably be place in Util
 mavros_msgs::PositionTarget addState(mavros_msgs::PositionTarget a, mavros_msgs::PositionTarget b){
     mavros_msgs::PositionTarget res;
     res.header = a.header; // this is arbitrary. Did no find a perfect solution, but should not have any impact
@@ -75,6 +77,7 @@ mavros_msgs::PositionTarget addState(mavros_msgs::PositionTarget a, mavros_msgs:
     return res;
 }
 
+//todo: this function should probably be place in Util
 double signed_sqrt(double nb){
     return nb>0 ? sqrt(nb) : -sqrt(-nb);
 }
@@ -196,7 +199,7 @@ void ExtractModuleOperation::initialize() {
     //the offset is set in the frame of the mast:    
     desired_offset.x = 3.0;   //forward   //right
     desired_offset.y = 0.0;   //left   //front
-    desired_offset.z = 0.05; //up   //up
+    desired_offset.z = -0.5; //up   //up
     transition_state.cte_acc = 3*MAX_ACCEL;
     transition_state.max_vel = 3*MAX_VEL;
 
@@ -256,6 +259,7 @@ geometry_msgs::Vector3 ExtractModuleOperation::derivate(geometry_msgs::Vector3 a
     return res;
 }
 
+//todo: this function should probably be place in Util
 mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::PositionTarget setpoint, float yaw){
     mavros_msgs::PositionTarget rotated_setpoint;
     rotated_setpoint.position = rotate(setpoint.position);
@@ -265,6 +269,7 @@ mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::Position
     return rotated_setpoint;
 }
 
+//todo: this function should probably be place in Util
 geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt, float yaw){
     geometry_msgs::Vector3 rotated_point;
     rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
@@ -274,6 +279,7 @@ geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt,
     return rotated_point;
 }
 
+//todo: this function should probably be place in Util
 geometry_msgs::Point ExtractModuleOperation::rotate(geometry_msgs::Point pt, float yaw){
     geometry_msgs::Point rotated_point;
     rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
@@ -308,6 +314,7 @@ void ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref
     accel_target.x = - accel_target.x;
 }
 
+//todo: this function should probably be place in Util
 geometry_msgs::Quaternion ExtractModuleOperation::euler_to_quaternion(double yaw, double roll, double pitch){
     double cy = cos(yaw * 0.5);
     double sy = sin(yaw * 0.5);
@@ -324,6 +331,7 @@ geometry_msgs::Quaternion ExtractModuleOperation::euler_to_quaternion(double yaw
     return q;
 }
 
+//todo: this function should probably be place in Util
 geometry_msgs::Quaternion ExtractModuleOperation::accel_to_orientation(geometry_msgs::Point accel){
     double yaw = fixed_mast_yaw + M_PI; //we want to face the mast
     double roll = atan2(accel.x,9.81);
@@ -447,18 +455,14 @@ void ExtractModuleOperation::tick() {
     
     const double dx = module_state.position.x + desired_offset.x - getCurrentPose().pose.position.x;
     const double dy = module_state.position.y + desired_offset.y - getCurrentPose().pose.position.y;
+    const double dz = module_state.position.z + desired_offset.z - getCurrentPose().pose.position.z;
 
-    const double distance_to_reference_with_offset = sqrt(dx * dx + dy * dy);
-
-    const double dvx = getCurrentTwist().twist.linear.x;
-    const double dvy = getCurrentTwist().twist.linear.y;
-    const double dvz = getCurrentTwist().twist.linear.z;
+    const double distance_to_reference_with_offset = sqrt(sq(dx) + sq(dy) + sq(dz));
     
-    //const double drone_speed = sqrt(dvx * dvx + dvy * dvy + dvz * dvz); //not used 
 
     switch (extraction_state) {
         case ExtractionState::APPROACHING: {
-            if(time_cout%45==0) printf("APPROACHING\n");
+            if(time_cout%((int)tick_rate*2)==0) printf("APPROACHING\n");
 
             if (distance_to_reference_with_offset < 0.04) {
                 extraction_state = ExtractionState::OVER;
@@ -467,7 +471,7 @@ void ExtractModuleOperation::tick() {
                 //the offset is set in the frame of the mast:    
                 desired_offset.x = 0.50;  //forward   //right //the distance from the drone to the FaceHugger
                 desired_offset.y = 0.0;   //left   //front
-                desired_offset.z = 0.05;  //up   //up
+                desired_offset.z = -0.5;  //up   //up
                 transition_state.cte_acc = MAX_ACCEL;
                 transition_state.max_vel = MAX_VEL;
 
@@ -476,56 +480,49 @@ void ExtractModuleOperation::tick() {
             break;
         }
         case ExtractionState::OVER: {
-            if(time_cout%45==0) printf("OVER\n");
-            setpoint.position.x = module_state.position.y;
-            setpoint.position.y = module_state.position.x + 0.78;
-            setpoint.position.z = module_state.position.z + 0.3;
-
+            if(time_cout%((int)tick_rate*2)==0) printf("OVER\n");
             const double distance_to_setpoint =
                 Util::distanceBetween(setpoint.position, getCurrentPose().pose.position);
 
-            if (distance_to_setpoint < 0.1 && std::abs(getCurrentYaw() - setpoint.yaw) < M_PI / 50.0) {
-                extraction_state = ExtractionState::BEHIND_WITH_HOOKS;
+            //todo write a smart evalutation function to know when to move to the next state
+            if (distance_to_reference_with_offset < 0.02 && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 50.0) {
+                extraction_state = ExtractionState::EXTRACTING;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "Over -> Behind Hooks");
+                            << ": " << "Over -> Extracting");
+                desired_offset.x = 0.50;  //forward   //right //the distance from the drone to the FaceHugger
+                desired_offset.y = 0.0;   //left      //front
+                desired_offset.z = -0.8;  //up        //up
+
             }
             
             break;
         }
-        case ExtractionState::BEHIND_WITH_HOOKS: {
-            setpoint.position.x = module_state.position.y;
-            setpoint.position.y = module_state.position.x + 0.78;
-            setpoint.position.z = module_state.position.z - 0.1;
-
-            const double distance_to_setpoint =
-                Util::distanceBetween(setpoint.position, getCurrentPose().pose.position);
-
-            if (distance_to_setpoint < 0.05 && getCurrentTwist().twist.linear.z < 0.03 && std::abs(getCurrentYaw() - setpoint.yaw) < M_PI / 50.0) {
-                extraction_state = ExtractionState::EXTRACTING;
-            }
-
-            break;
-        }
         case ExtractionState::EXTRACTING: {
-            setpoint.position.x = module_state.position.y;
-            setpoint.position.y = module_state.position.x + 2.0;
-            setpoint.position.z = module_state.position.z - 0.1;
-
+            if(time_cout%((int)tick_rate*2)==0) printf("EXTRACTING\n");
+            //Do something to release the FaceHugger at the righ moment
+            /*
             if (!called_backpropeller_service) {
                 std_srvs::SetBool request;
                 request.request.data = true;
                 backpropeller_client.call(request);
                 called_backpropeller_service = true;
-            }           
+            } */          
 
             // If the module is on the way down
             // TODO: this should be checked in a better way
             if (module_state.position.z < 0.5) {
                 extraction_state = ExtractionState::EXTRACTED;
+                ROS_INFO_STREAM(ros::this_node::getName().c_str() << "Module extracted!"); 
                 std_srvs::SetBool request;
                 request.request.data = false;
-                backpropeller_client.call(request);
-                called_backpropeller_service = false;
+//                backpropeller_client.call(request);
+//                called_backpropeller_service = false;
+
+                //we move backward to ensure there will be no colision
+                desired_offset.x = 1.70;  //forward   //right //the distance from the drone to the FaceHugger
+                desired_offset.y = 0.0;   //left      //front
+                desired_offset.z = -0.8;  //up        //up
+
             }
 
             break;
@@ -534,7 +531,7 @@ void ExtractModuleOperation::tick() {
     update_transition_state();
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
 
-    if (time_cout % 5 == 0)
+    if (time_cout % ((int)tick_rate) == 0)
     {
     //    printf("desired offset \t\tx %f, y %f, z %f\n",desired_offset.x,
     //                    desired_offset.y, desired_offset.z);
@@ -544,6 +541,9 @@ void ExtractModuleOperation::tick() {
     //                    transition_state.state.velocity.y, transition_state.state.velocity.z);
     //    printf("transition accel\t x %f, y %f, z %f\n",transition_state.state.acceleration_or_force.x,
     //                    transition_state.state.acceleration_or_force.y, transition_state.state.acceleration_or_force.z);
+    }
+    if (time_cout % 5 == 0)
+    {
         setpoint.yaw = fixed_mast_yaw+M_PI;
         setpoint.position.x = module_state.position.x + smooth_rotated_offset.position.x;
         setpoint.position.y = module_state.position.y + smooth_rotated_offset.position.y;
