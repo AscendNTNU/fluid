@@ -26,6 +26,9 @@ Operation::Operation(const OperationIdentifier& identifier, const bool& steady, 
 
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
     setpoint.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+            << ": should publish position setpoints?" << should_publish_setpoints);
+
 }
 
 geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_pose; }

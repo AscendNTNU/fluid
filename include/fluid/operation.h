@@ -63,12 +63,6 @@ class Operation {
     geometry_msgs::Vector3 current_accel;
 
     /**
-     * @brief Publishes setpoints.
-     *
-     */
-    ros::Publisher setpoint_publisher;
-
-    /**
      * @brief Determines whether this operation is a operation we can be at for longer periods of time. E.g. hold or
      * land.
      */
@@ -81,6 +75,14 @@ class Operation {
     bool should_publish_setpoints;
 
    protected:
+
+    /**
+     * @brief Publishes setpoints.
+     *
+     */
+    ros::Publisher setpoint_publisher;
+
+
     /**
      * @brief Used to construct the subscribers.
      */

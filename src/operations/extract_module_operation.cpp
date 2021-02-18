@@ -20,7 +20,7 @@
 #define SHOW_PRINTS false //not used
 #define SAVE_Z      true
 #define USE_SQRT    false
-#define ATTITUDE_CONTROL 0      //Attitude control does not work without thrust
+#define ATTITUDE_CONTROL 0   //4 = ignore yaw rate   //Attitude control does not work without thrust
 #define POS_AND_VEL_CONTROL 2496 //typemask for setpoint_raw/local
 
 
@@ -76,18 +76,21 @@ void ExtractModuleOperation::initialize() {
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << MAX_ANGLE/100.0 << " deg.");
 
-    // Use the current position as setpoint until we get a message with the module position
-    setpoint.position = getCurrentPose().pose.position;
+    //Asking to ignore everything not to get anoyed by the setpoint publisher.
+    //If the drone does not have any indication, it won't move. So it is safe
+    setpoint.type_mask = TypeMask::IGNORE_ALL;
+    setpoint_publisher.publish(setpoint);
         
     // Entering smooth zone. We could also durectly place the transition_state to 
     // the initial desired offset if we are not scared of hitting the mast.
     // That could save some time without taking risks (?) 
 
-    // The desired offset is mesured in the masr frame (x to the right, y forward, and z upward)
+    // The desired offset and the transition state are mesured in the mast frame
     transition_state.state.position.x = getCurrentPose().pose.position.x - module_state.position.x;
     transition_state.state.position.y = getCurrentPose().pose.position.y - module_state.position.y;
     transition_state.state.position.z = getCurrentPose().pose.position.z - module_state.position.z;
 
+    //Choose an offset to begin with. It is the offset for the approaching state.
     //the offset is set in the frame of the mast:    
     desired_offset.x = 3.0;   //forward   //right
     desired_offset.y = 0.0;   //left   //front
@@ -435,8 +438,6 @@ void ExtractModuleOperation::tick() {
         }
         case ExtractionState::OVER: {
             if(time_cout%((int)tick_rate*2)==0) printf("OVER\n");
-            const double distance_to_setpoint =
-                Util::distanceBetween(setpoint.position, getCurrentPose().pose.position);
 
             //todo write a smart evalutation function to know when to move to the next state
             if (distance_to_reference_with_offset < 0.02 && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 50.0) {
@@ -489,14 +490,18 @@ void ExtractModuleOperation::tick() {
     {
     //    printf("desired offset \t\tx %f, y %f, z %f\n",desired_offset.x,
     //                    desired_offset.y, desired_offset.z);
-        printf("transition state\t x %f, y %f, z %f\n",transition_state.state.position.x,
-                        transition_state.state.position.y, transition_state.state.position.z);
+        printf("transition state\t x %f, y %f, z %f \tyaw: %f\n",transition_state.state.position.x,
+                        transition_state.state.position.y, transition_state.state.position.z,
+                        getCurrentYaw());
     //    printf("transition vel\t x %f, y %f, z %f\n",transition_state.state.velocity.x,
     //                    transition_state.state.velocity.y, transition_state.state.velocity.z);
     //    printf("transition accel\t x %f, y %f, z %f\n",transition_state.state.acceleration_or_force.x,
     //                    transition_state.state.acceleration_or_force.y, transition_state.state.acceleration_or_force.z);
     }
-    if (time_cout % 5 == 0)
+
+    update_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
+
+    if (time_cout % 10 == 0)
     {
         setpoint.yaw = fixed_mast_yaw+M_PI;
         setpoint.position.x = module_state.position.x + smooth_rotated_offset.position.x;
@@ -511,7 +516,6 @@ void ExtractModuleOperation::tick() {
         altitude_and_yaw_pub.publish(setpoint);
 
     }
-    update_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
 
     attitude_pub.publish(attitude_setpoint);
 
