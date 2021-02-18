@@ -324,8 +324,8 @@ void ExtractModuleOperation::update_transition_state()
                 transition_state.state.acceleration_or_force.x = - transition_state.cte_acc;
         }
         // Whatever the state we are in, update velocity and position of the target
-        transition_state.state.velocity.x = transition_state.state.velocity.x + transition_state.state.acceleration_or_force.x / tick_rate;
-        transition_state.state.position.x = transition_state.state.position.x + transition_state.state.velocity.x / tick_rate;
+        transition_state.state.velocity.x = transition_state.state.velocity.x + transition_state.state.acceleration_or_force.x / (float)rate_int;
+        transition_state.state.position.x = transition_state.state.position.x + transition_state.state.velocity.x / (float)rate_int;
         
     }
     else if (abs(transition_state.state.velocity.x) < 0.1){
@@ -349,8 +349,8 @@ void ExtractModuleOperation::update_transition_state()
             else
                 transition_state.state.acceleration_or_force.y = - transition_state.cte_acc;
             }
-        transition_state.state.velocity.y  =   transition_state.state.velocity.y  + transition_state.state.acceleration_or_force.y / tick_rate;
-        transition_state.state.position.y =  transition_state.state.position.y  + transition_state.state.velocity.y / tick_rate;
+        transition_state.state.velocity.y  =   transition_state.state.velocity.y  + transition_state.state.acceleration_or_force.y / (float)rate_int;
+        transition_state.state.position.y =  transition_state.state.position.y  + transition_state.state.velocity.y / (float)rate_int;
     }
     else if (abs(transition_state.state.velocity.y) < 0.1){
         transition_state.state.position.y = desired_offset.y;
@@ -372,8 +372,8 @@ void ExtractModuleOperation::update_transition_state()
             else 
                 transition_state.state.acceleration_or_force.z = - transition_state.cte_acc;
         }
-        transition_state.state.velocity.z  =   transition_state.state.velocity.z  + transition_state.state.acceleration_or_force.z / tick_rate;
-        transition_state.state.position.z =  transition_state.state.position.z  + transition_state.state.velocity.z / tick_rate;
+        transition_state.state.velocity.z  =   transition_state.state.velocity.z  + transition_state.state.acceleration_or_force.z / (float)rate_int;
+        transition_state.state.position.z =  transition_state.state.position.z  + transition_state.state.velocity.z / (float)rate_int;
     }
     else if (abs(transition_state.state.velocity.z) < 0.1){
         transition_state.state.position.z = desired_offset.z;
@@ -393,7 +393,7 @@ void ExtractModuleOperation::tick() {
     time_cout++;
     // Wait until we get the first module position readings before we do anything else.
     if (module_state.header.seq == 0) {
-        if(time_cout%((int)tick_rate)==0)
+        if(time_cout%rate_int==0)
             printf("waiting for callback\n");
         return;
     }
@@ -407,7 +407,7 @@ void ExtractModuleOperation::tick() {
 
     switch (extraction_state) {
         case ExtractionState::APPROACHING: {
-            if(time_cout%((int)tick_rate*2)==0) printf("APPROACHING\n");
+            if(time_cout%(rate_int*2)==0) printf("APPROACHING\n");
 
             if (distance_to_reference_with_offset < 0.04) {
                 extraction_state = ExtractionState::OVER;
@@ -425,7 +425,7 @@ void ExtractModuleOperation::tick() {
             break;
         }
         case ExtractionState::OVER: {
-            if(time_cout%((int)tick_rate*2)==0) printf("OVER\n");
+            if(time_cout%(rate_int*2)==0) printf("OVER\n");
 
             //todo write a smart evalutation function to know when to move to the next state
             if (distance_to_reference_with_offset < 0.02 && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 50.0) {
@@ -441,7 +441,7 @@ void ExtractModuleOperation::tick() {
             break;
         }
         case ExtractionState::EXTRACTING: {
-            if(time_cout%((int)tick_rate*2)==0) printf("EXTRACTING\n");
+            if(time_cout%(rate_int*2)==0) printf("EXTRACTING\n");
             //Do something to release the FaceHugger at the righ moment
             /*
             if (!called_backpropeller_service) {
@@ -474,7 +474,7 @@ void ExtractModuleOperation::tick() {
     update_transition_state();
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
 
-    if (time_cout % ((int)tick_rate) == 0)
+    if (time_cout % rate_int == 0)
     {
     //    printf("desired offset \t\tx %f, y %f, z %f\n",desired_offset.x,
     //                    desired_offset.y, desired_offset.z);

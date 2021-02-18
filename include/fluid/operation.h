@@ -80,7 +80,7 @@ class Operation {
      * @brief Rate at which the operation is run
      *
      */
-    ros::Rate rate;
+    int rate_int;
 
     /**
      * @brief Publishes setpoints.

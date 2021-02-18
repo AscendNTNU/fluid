@@ -26,8 +26,7 @@ Operation::Operation(const OperationIdentifier& identifier, const bool& steady)
 
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
     setpoint.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
-    
-    rate = Fluid::getInstance().configuration.refresh_rate;
+    rate_int = (int) Fluid::getInstance().configuration.refresh_rate;
 }
 
 geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_pose; }
@@ -77,6 +76,7 @@ void Operation::publishSetpoint() {
 
 void Operation::perform(std::function<bool(void)> should_tick, bool should_halt_if_steady) {
 
+    ros::Rate rate(rate_int);
     initialize();
 
     do {
