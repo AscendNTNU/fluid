@@ -233,27 +233,6 @@ geometry_msgs::Vector3 ExtractModuleOperation::derivate(geometry_msgs::Vector3 a
 }
 
 //todo: this function should probably be place in Util
-/*
-mavros_msgs::PositionTarget addState(mavros_msgs::PositionTarget a, mavros_msgs::PositionTarget b){
-    mavros_msgs::PositionTarget res;
-    res.header = a.header; // this is arbitrary. Did no find a perfect solution, but should not have any impact
-
-    res.position.x = a.position.x + b.position.x;
-    res.position.y = a.position.y + b.position.y;
-    res.position.z = a.position.z + b.position.z;
-
-    res.velocity.x = a.velocity.x + b.velocity.x;
-    res.velocity.y = a.velocity.y + b.velocity.y;
-    res.velocity.z = a.velocity.z + b.velocity.z;
-
-    res.acceleration_or_force.x = a.acceleration_or_force.x + b.acceleration_or_force.x;
-    res.acceleration_or_force.y = a.acceleration_or_force.y + b.acceleration_or_force.y;
-    res.acceleration_or_force.z = a.acceleration_or_force.z + b.acceleration_or_force.z;
-
-    return res;
-}
-*/
-//todo: this function should probably be place in Util
 mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::PositionTarget setpoint, float yaw){
     mavros_msgs::PositionTarget rotated_setpoint;
     rotated_setpoint.position = rotate(setpoint.position);
@@ -307,25 +286,6 @@ void ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref
     // the right of the mast is the left of the drone
     accel_target.x = - accel_target.x;
 }
-
-//todo: this function should probably be place in Util
-/*
-geometry_msgs::Quaternion ExtractModuleOperation::euler_to_quaternion(double yaw, double roll, double pitch){
-    double cy = cos(yaw * 0.5);
-    double sy = sin(yaw * 0.5);
-    double cp = cos(pitch * 0.5);
-    double sp = sin(pitch * 0.5);
-    double cr = cos(roll * 0.5);
-    double sr = sin(roll * 0.5);
-
-    geometry_msgs::Quaternion q;
-    q.w = cr * cp * cy + sr * sp * sy;
-    q.x = sr * cp * cy - cr * sp * sy;
-    q.y = cr * sp * cy + sr * cp * sy;
-    q.z = cr * cp * sy - sr * sp * cy;
-    return q;
-}
-*/
 
 //todo: this function should probably be place in Util
 geometry_msgs::Quaternion ExtractModuleOperation::accel_to_orientation(geometry_msgs::Point accel){
