@@ -77,11 +77,16 @@ class Operation {
    protected:
 
     /**
+     * @brief Rate at which the operation is run
+     *
+     */
+    ros::Rate rate;
+
+    /**
      * @brief Publishes setpoints.
      *
      */
     ros::Publisher setpoint_publisher;
-
 
     /**
      * @brief Used to construct the subscribers.
@@ -157,7 +162,7 @@ class Operation {
      * consequences.
      * @param should_publish_setpoints Allow to prevent the operation publishing position setpoins
      */
-    Operation(const OperationIdentifier& identifier, const bool& steady, bool should_publish_setpoints = true);
+    Operation(const OperationIdentifier& identifier, const bool& steady);
 
     /**
      * @brief Performs the loop for executing logic within this operation.

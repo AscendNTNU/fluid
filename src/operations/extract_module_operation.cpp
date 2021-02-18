@@ -49,26 +49,21 @@ const std::string drone_setpoints_path = std::string(get_current_dir_name()) + "
 std::ofstream reference_state_f; 
 std::ofstream drone_pose_f; 
 std::ofstream drone_setpoints_f; 
-bool store_data = true;
 #endif
 
 uint8_t time_cout = 0;
 
 
-ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(OperationIdentifier::EXTRACT_MODULE, false, false) { //function called at the when initiating the operation
-    module_pose_subscriber =
-        node_handle.subscribe("/simulator/module/ground_truth/pose", 10, &ExtractModuleOperation::modulePoseCallback, this);
-    module_pose_subscriber_old =
-        node_handle.subscribe("/simulator/module_pose", 10, &ExtractModuleOperation::modulePoseCallback, this);
+//function called at the when creating the operation
+ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : 
+            Operation(OperationIdentifier::EXTRACT_MODULE, false), fixed_mast_yaw(mast_yaw) { 
+    module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+                                     10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
-    attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10); //the published topic of the setpoint is redefined
-    altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10); //the published topic of the setpoint is redefined
+    attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
+    //creating my own not to interfer with fluid setpoint pulisher:
+    altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
     attitude_setpoint.type_mask = ATTITUDE_CONTROL;
-    fixed_mast_yaw = mast_yaw;
-    tick_rate = (float) Fluid::getInstance().configuration.refresh_rate;
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-            << ": mast yaw received: " << fixed_mast_yaw);
-    //TODO: find a way to desactivate the position setpoints we are normaly using.
 }
 
 void ExtractModuleOperation::initialize() {
@@ -134,69 +129,62 @@ void ExtractModuleOperation::initLog(const std::string file_name)
     else
     {
         ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
-        store_data = false; //if we can't save data, we don't want to do it
     }
 }
 
 void ExtractModuleOperation::saveLog(const std::string file_name, const geometry_msgs::PoseStamped pose, const geometry_msgs::TwistStamped vel, const geometry_msgs::Vector3 accel)
 {
-    if(store_data)
+    std::ofstream save_file_f;
+    save_file_f.open (file_name, std::ios::app);
+    if(save_file_f.is_open())
     {
-        std::ofstream save_file_f;
-        save_file_f.open (file_name, std::ios::app);
-        if(save_file_f.is_open())
-        {
-            save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
-                            << ros::Time::now() << "\t"
-                            << pose.pose.position.x << "\t"
-                            << pose.pose.position.y << "\t"
-                            #if SAVE_Z
-                            << pose.pose.position.z << "\t"
-                            #endif
-                            << vel.twist.linear.x << "\t"
-                            << vel.twist.linear.y << "\t"
-                            #if SAVE_Z
-                            << vel.twist.linear.z << "\t"
-                            #endif
-                            << accel.x << "\t"
-                            << accel.y 
-                            #if SAVE_Z
-                            << "\t" << accel.z
-                            #endif
-                            << "\n";
-            save_file_f.close();
-        }
+        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
+                        << ros::Time::now() << "\t"
+                        << pose.pose.position.x << "\t"
+                        << pose.pose.position.y << "\t"
+                        #if SAVE_Z
+                        << pose.pose.position.z << "\t"
+                        #endif
+                        << vel.twist.linear.x << "\t"
+                        << vel.twist.linear.y << "\t"
+                        #if SAVE_Z
+                        << vel.twist.linear.z << "\t"
+                        #endif
+                        << accel.x << "\t"
+                        << accel.y 
+                        #if SAVE_Z
+                        << "\t" << accel.z
+                        #endif
+                        << "\n";
+        save_file_f.close();
     }
 }
 
 void ExtractModuleOperation::saveLog(const std::string file_name, const mavros_msgs::PositionTarget data)
 {
-    if(store_data)
+    std::ofstream save_file_f;
+    save_file_f.open (file_name, std::ios::app);
+    if(save_file_f.is_open())
     {
-        std::ofstream save_file_f;
-        save_file_f.open (file_name, std::ios::app);
-        if(save_file_f.is_open())
-        {
-            save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
-                            << ros::Time::now() << "\t"
-                            << data.position.x << "\t"
-                            << data.position.y << "\t"
-                            #if SAVE_Z
-                            << data.position.z << "\t"
-                            #endif
-                            << data.velocity.x << "\t"
-                            << data.velocity.y << "\t"
-                            #if SAVE_Z
-                            << data.velocity.z << "\t"
-                            #endif
-                            << data.acceleration_or_force.x << "\t"
-                            << data.acceleration_or_force.y 
-                            #if SAVE_Z
-                            << "\t" << data.acceleration_or_force.z
-                            #endif
-                            << "\n";
-            save_file_f.close();
-        }
+        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
+                        << ros::Time::now() << "\t"
+                        << data.position.x << "\t"
+                        << data.position.y << "\t"
+                        #if SAVE_Z
+                        << data.position.z << "\t"
+                        #endif
+                        << data.velocity.x << "\t"
+                        << data.velocity.y << "\t"
+                        #if SAVE_Z
+                        << data.velocity.z << "\t"
+                        #endif
+                        << data.acceleration_or_force.x << "\t"
+                        << data.acceleration_or_force.y 
+                        #if SAVE_Z
+                        << "\t" << data.acceleration_or_force.z
+                        #endif
+                        << "\n";
+        save_file_f.close();
     }
 }
 #endif

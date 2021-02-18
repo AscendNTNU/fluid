@@ -18,17 +18,16 @@
 #include "fluid.h"
 #include "util.h"
 
-Operation::Operation(const OperationIdentifier& identifier, const bool& steady, bool should_publish_setpoints)
-    : identifier(identifier), steady(steady), should_publish_setpoints(should_publish_setpoints) {
+Operation::Operation(const OperationIdentifier& identifier, const bool& steady)
+                                        : identifier(identifier), steady(steady) {
     pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &Operation::poseCallback, this);
     twist_subscriber =
         node_handle.subscribe("mavros/local_position/velocity_local", 1, &Operation::twistCallback, this);
 
     setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
     setpoint.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-            << ": should publish position setpoints?" << should_publish_setpoints);
-
+    
+    rate = Fluid::getInstance().configuration.refresh_rate;
 }
 
 geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_pose; }
@@ -73,12 +72,10 @@ float Operation::getCurrentYaw() const {
 }
 
 void Operation::publishSetpoint() { 
-    if(should_publish_setpoints)
-        setpoint_publisher.publish(setpoint); 
+    setpoint_publisher.publish(setpoint); 
 }
 
 void Operation::perform(std::function<bool(void)> should_tick, bool should_halt_if_steady) {
-    ros::Rate rate(Fluid::getInstance().configuration.refresh_rate);
 
     initialize();
 
