@@ -222,6 +222,7 @@ geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleAccel(){
     return Accel;
 }
 
+//todo: this function should probably be place in Util
 geometry_msgs::Vector3 ExtractModuleOperation::derivate(geometry_msgs::Vector3 actual, geometry_msgs::Vector3 last, ros::Time dt_ros){
     geometry_msgs::Vector3 res;
     double dt = dt_ros.nsec/1000000000.0;

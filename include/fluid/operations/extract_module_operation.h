@@ -67,7 +67,6 @@ class ExtractModuleOperation : public Operation {
     //functions in realtion to the following of the mast
     //not sure if they should be public or private
     geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::Point accel);
-    geometry_msgs::Quaternion euler_to_quaternion(double yaw, double roll, double pitch);
     void LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt);
     void update_attitude_input(mavros_msgs::PositionTarget module,mavros_msgs::PositionTarget offset, bool use_sqrt);
 
