@@ -18,8 +18,8 @@
 #include "fluid.h"
 #include "util.h"
 
-Operation::Operation(const OperationIdentifier& identifier, const bool& steady)
-    : identifier(identifier), steady(steady) {
+Operation::Operation(const OperationIdentifier& identifier, const bool& steady, bool should_publish_setpoints)
+    : identifier(identifier), steady(steady), should_publish_setpoints(should_publish_setpoints) {
     pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &Operation::poseCallback, this);
     twist_subscriber =
         node_handle.subscribe("mavros/local_position/velocity_local", 1, &Operation::twistCallback, this);
@@ -49,34 +49,11 @@ geometry_msgs::Vector3 Operation::getCurrentAccel() const { return current_accel
 geometry_msgs::Vector3 Operation::orientation_to_acceleration(geometry_msgs::Quaternion orientation)
 {
     geometry_msgs::Vector3 accel;
-    geometry_msgs::Vector3 angle = quaternion_to_euler_angle(orientation);
+    geometry_msgs::Vector3 angle = Util::quaternion_to_euler_angle(orientation);
     accel.x = tan(angle.x) *9.81;
     accel.y = tan(angle.y) *9.81;
     accel.z = 0.0; //we actually don't know ...
     return accel;
-}
-
-geometry_msgs::Vector3 Operation::quaternion_to_euler_angle(geometry_msgs::Quaternion orientation)
-{
-    geometry_msgs::Vector3 ret;
-    float w = orientation.w;
-    float x = orientation.x;
-    float y = orientation.y;
-    float z = orientation.z;
-
-    float t0 = +2.0 * (w * x + y * z);
-    float t1 = +1.0 - 2.0 * (x * x + y * y);
-    ret.x = atan2(t0, t1);
-
-    float t2 = +2.0 * (w * y - z * x);
-    t2 = t2>1.0 ? 1.0 : t2;
-    t2 = t2<-1.0 ? -1.0 : t2;
-    ret.y = asin(t2);
-
-    float t3 = +2.0 * (w * z + x * y);
-    float t4 = +1.0 - 2.0 * (y * y + z * z);
-    ret.z = atan2(t3, t4);
-    return ret;
 }
 
 float Operation::getCurrentYaw() const {
@@ -92,7 +69,10 @@ float Operation::getCurrentYaw() const {
     return yaw;
 }
 
-void Operation::publishSetpoint() { setpoint_publisher.publish(setpoint); }
+void Operation::publishSetpoint() { 
+    if(should_publish_setpoints)
+        setpoint_publisher.publish(setpoint); 
+}
 
 void Operation::perform(std::function<bool(void)> should_tick, bool should_halt_if_steady) {
     ros::Rate rate(Fluid::getInstance().configuration.refresh_rate);

@@ -74,6 +74,12 @@ class Operation {
      */
     const bool steady;
 
+    
+    /**
+     * @brief Allow publishing positionTarget setpoints.
+     */
+    bool should_publish_setpoints;
+
    protected:
     /**
      * @brief Used to construct the subscribers.
@@ -135,16 +141,6 @@ class Operation {
      */
     geometry_msgs::Vector3 orientation_to_acceleration(geometry_msgs::Quaternion orientation);
 
-/**
-     * @brief Transform an a quaternion orientation into euler angles.
-     * 
-     * @param orientation The quaternion orientation.
-     * 
-     * @return The equivalent euler angle.
-     */
-    geometry_msgs::Vector3 quaternion_to_euler_angle(geometry_msgs::Quaternion orientation);
-
-
    public:
     /**
      * @brief The identifier for this operation.
@@ -157,8 +153,9 @@ class Operation {
      * @param identifier The identifier of the operation.
      * @param steady Whether the operation is steady, it can be executed for longer periods of time without
      * consequences.
+     * @param should_publish_setpoints Allow to prevent the operation publishing position setpoins
      */
-    Operation(const OperationIdentifier& identifier, const bool& steady);
+    Operation(const OperationIdentifier& identifier, const bool& steady, bool should_publish_setpoints = true);
 
     /**
      * @brief Performs the loop for executing logic within this operation.

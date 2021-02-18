@@ -148,6 +148,36 @@ class Util {
         return euler_to_quaternion(euler.z, euler.y, euler.x);
     }
 
+    /**
+     * @brief Transform an a quaternion orientation into euler angles.
+     * 
+     * @param orientation The quaternion orientation.
+     * 
+     * @return The equivalent euler angle.
+     */
+    static geometry_msgs::Vector3 quaternion_to_euler_angle(geometry_msgs::Quaternion orientation){
+        float w = orientation.w;
+        float x = orientation.x;
+        float y = orientation.y;
+        float z = orientation.z;
+
+        geometry_msgs::Vector3 ret;
+        float t0 = +2.0 * (w * x + y * z);
+        float t1 = +1.0 - 2.0 * (x * x + y * y);
+        ret.x = atan2(t0, t1);
+
+        float t2 = +2.0 * (w * y - z * x);
+        t2 = t2>1.0 ? 1.0 : t2;
+        t2 = t2<-1.0 ? -1.0 : t2;
+        ret.y = asin(t2);
+
+        float t3 = +2.0 * (w * z + x * y);
+        float t4 = +1.0 - 2.0 * (y * y + z * z);
+        ret.z = atan2(t3, t4);
+        return ret;
+    }
+
+
 };
 
 #endif

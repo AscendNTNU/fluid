@@ -55,7 +55,7 @@ bool store_data = true;
 uint8_t time_cout = 0;
 
 
-ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(OperationIdentifier::EXTRACT_MODULE, false) { //function called at the when initiating the operation
+ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : Operation(OperationIdentifier::EXTRACT_MODULE, false, false) { //function called at the when initiating the operation
     module_pose_subscriber =
         node_handle.subscribe("/simulator/module/ground_truth/pose", 10, &ExtractModuleOperation::modulePoseCallback, this);
     module_pose_subscriber_old =
@@ -203,7 +203,6 @@ geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleVel(){
     // In the long run, I expect to receive a nicer estimate by perception or to createa KF myself.
     geometry_msgs::Vector3 vel;
     double dt = (module_state.header.stamp - previous_module_state.header.stamp).nsec/1000000000.0;
-    // TODO: check that the sign if the output vel is correct
     vel.x = (module_state.position.x - previous_module_state.position.x)/dt;
     vel.y = (module_state.position.y - previous_module_state.position.y)/dt;
     vel.z = (module_state.position.z - previous_module_state.position.z)/dt;
@@ -215,7 +214,6 @@ geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleAccel(){
     // In the long run, I expect to receive a nicer estimate by perception or to createa KF myself.
     geometry_msgs::Vector3 Accel;
     double dt = (module_state.header.stamp - previous_module_state.header.stamp).nsec/1000000000.0;
-    // TODO: check that the sign if the output vel is correct
     Accel.x = (module_state.velocity.x - previous_module_state.velocity.x)/dt;
     Accel.y = (module_state.velocity.y - previous_module_state.velocity.y)/dt;
     Accel.z = (module_state.velocity.z - previous_module_state.velocity.z)/dt;
@@ -226,7 +224,6 @@ geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleAccel(){
 geometry_msgs::Vector3 ExtractModuleOperation::derivate(geometry_msgs::Vector3 actual, geometry_msgs::Vector3 last, ros::Time dt_ros){
     geometry_msgs::Vector3 res;
     double dt = dt_ros.nsec/1000000000.0;
-    // TODO: check that the sign if the output vel is correct
     res.x = (actual.x - last.x)/dt;
     res.y = (actual.y - last.y)/dt;
     res.z = (actual.z - last.z)/dt;
