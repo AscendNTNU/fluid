@@ -35,8 +35,8 @@ const float K_LQR_X[2] = {POW*LQR_POS_GAIN, POW*LQR_VEL_GAIN};
 const float K_LQR_Y[2] = {RATION*POW*LQR_POS_GAIN, RATION*POW*LQR_VEL_GAIN};
 
 //smooth transition
-#define MAX_VEL     0.05
-#define MAX_ACCEL   0.03
+#define MAX_VEL     0.14
+#define MAX_ACCEL   0.07
 
 #define MAX_ANGLE   400 // in centi-degrees
 
@@ -469,9 +469,9 @@ void ExtractModuleOperation::tick() {
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Approaching -> Over");
                 //the offset is set in the frame of the mast:    
-                desired_offset.x = 0.50;  //forward   //right //the distance from the drone to the FaceHugger
+                desired_offset.x = 0.25;  //forward   //right //the distance from the drone to the FaceHugger
                 desired_offset.y = 0.0;   //left   //front
-                desired_offset.z = -0.5;  //up   //up
+                desired_offset.z = -0.45;  //up   //up
                 transition_state.cte_acc = MAX_ACCEL;
                 transition_state.max_vel = MAX_VEL;
 
@@ -489,7 +489,7 @@ void ExtractModuleOperation::tick() {
                 extraction_state = ExtractionState::EXTRACTING;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Over -> Extracting");
-                desired_offset.x = 0.50;  //forward   //right //the distance from the drone to the FaceHugger
+                desired_offset.x = 0.25;  //forward   //right //the distance from the drone to the FaceHugger
                 desired_offset.y = 0.0;   //left      //front
                 desired_offset.z = -0.8;  //up        //up
 

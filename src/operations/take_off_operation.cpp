@@ -24,6 +24,8 @@ void TakeOffOperation::initialize() {
 
     MavrosInterface mavros_interface;
     mavros_interface.setParam("ANGLE_MAX", 4000);
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << "set ANGLE_MAX to " << 4000./100.);
+        
     mavros_interface.establishContactToArduPilot();
     Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_px4 = 1;
 
