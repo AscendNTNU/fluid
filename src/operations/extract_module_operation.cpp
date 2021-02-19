@@ -20,7 +20,7 @@
 #define SHOW_PRINTS false //not used
 #define SAVE_Z      true
 #define USE_SQRT    false
-#define ATTITUDE_CONTROL 0   //4 = ignore yaw rate   //Attitude control does not work without thrust
+#define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 #define POS_AND_VEL_CONTROL 2496 //typemask for setpoint_raw/local
 
 
@@ -491,17 +491,19 @@ void ExtractModuleOperation::tick() {
 
     if (time_cout % 10 == 0)
     {
-        setpoint.yaw = fixed_mast_yaw+M_PI;
-        setpoint.position.x = module_state.position.x + smooth_rotated_offset.position.x;
-        setpoint.position.y = module_state.position.y + smooth_rotated_offset.position.y;
-        setpoint.position.z = module_state.position.z + smooth_rotated_offset.position.z;
-        setpoint.velocity.x = module_state.velocity.x + smooth_rotated_offset.velocity.x;
-        setpoint.velocity.y = module_state.velocity.y + smooth_rotated_offset.velocity.y;
-        setpoint.velocity.z = module_state.velocity.z + smooth_rotated_offset.velocity.z;
-        setpoint.type_mask = POS_AND_VEL_CONTROL;
-        setpoint.header.stamp = ros::Time::now();
+        mavros_msgs::PositionTarget setpt;
+        setpt.header.stamp = ros::Time::now();
+        setpt.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
+        setpt.type_mask = POS_AND_VEL_CONTROL;
+        setpt.yaw = fixed_mast_yaw+M_PI;
+        setpt.position.x = module_state.position.x + smooth_rotated_offset.position.x;
+        setpt.position.y = module_state.position.y + smooth_rotated_offset.position.y;
+        setpt.position.z = module_state.position.z + smooth_rotated_offset.position.z;
+        setpt.velocity.x = module_state.velocity.x + smooth_rotated_offset.velocity.x;
+        setpt.velocity.y = module_state.velocity.y + smooth_rotated_offset.velocity.y;
+        setpt.velocity.z = module_state.velocity.z + smooth_rotated_offset.velocity.z;
 
-        altitude_and_yaw_pub.publish(setpoint);
+        altitude_and_yaw_pub.publish(setpt);
 
     }
 
