@@ -54,19 +54,20 @@ std::ofstream drone_setpoints_f;
 uint8_t time_cout = 0;
 
 
-//function called at the when creating the operation
-ExtractModuleOperation::ExtractModuleOperation(float mast_yaw) : 
-            Operation(OperationIdentifier::EXTRACT_MODULE, false), fixed_mast_yaw(mast_yaw) { 
+//function called when creating the operation
+ExtractModuleOperation::ExtractModuleOperation(const float& fixed_mast_yaw) : 
+            Operation(OperationIdentifier::EXTRACT_MODULE, false), fixed_mast_yaw(fixed_mast_yaw) { }
+
+void ExtractModuleOperation::initialize() {
+    printf("received mast angle of %f\n",fixed_mast_yaw);
     module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                      10, &ExtractModuleOperation::modulePoseCallback, this);
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
     //creating my own not to interfer with fluid setpoint pulisher:
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
-    attitude_setpoint.type_mask = ATTITUDE_CONTROL;
-}
+    attitude_setpoint.type_mask = ATTITUDE_CONTROL;   
 
-void ExtractModuleOperation::initialize() {
     MavrosInterface mavros_interface;
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << MAX_ANGLE/100.0 << " deg.");

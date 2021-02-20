@@ -78,7 +78,7 @@ class ExtractModuleOperation : public Operation {
      * 
      * @param mast_yaw yaw angle of the mast compare to the world frame.
      */
-    explicit ExtractModuleOperation(float mast_yaw);
+    explicit ExtractModuleOperation(const float& fixed_mast_yaw);
 
     /**
      * @brief Sets up #speed at which to move.
