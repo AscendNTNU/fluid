@@ -6,7 +6,7 @@
 
 #include "fluid.h"
 
-LandOperation::LandOperation() : Operation(OperationIdentifier::LAND, true) {}
+LandOperation::LandOperation() : Operation(OperationIdentifier::LAND, true, true) {}
 
 bool LandOperation::isBelowThreshold() const {
     return getCurrentPose().pose.position.z < 0.05 &&

@@ -72,7 +72,7 @@ class Operation {
     /**
      * @brief Allow publishing positionTarget setpoints.
      */
-    bool should_publish_setpoints;
+    bool autoPublish;
 
    protected:
 
@@ -162,7 +162,7 @@ class Operation {
      * consequences.
      * @param should_publish_setpoints Allow to prevent the operation publishing position setpoins
      */
-    Operation(const OperationIdentifier& identifier, const bool& steady);
+    Operation(const OperationIdentifier& identifier, const bool& steady, const bool& autoPublish);
 
     /**
      * @brief Performs the loop for executing logic within this operation.

@@ -10,6 +10,7 @@
 #include <mavros_msgs/PositionTarget.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
+#include "fluid.h"
 
 #include <string>
 
@@ -60,7 +61,7 @@ int main(int argc, char** argv) {
 
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Initiailzing set point publisher.");
 
-    int refresh_rate = 20;
+    int refresh_rate = Fluid::getInstance().configuration.refresh_rate;
     ros::NodeHandle node_handle;
 
     if (!node_handle.getParam(ros::this_node::getName() + "/refresh_rate", refresh_rate)) {
@@ -69,17 +70,11 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    ros::Subscriber subscriber = node_handle.subscribe("fluid/setpoint", 1, subscriptionCallback);
-    ros::Publisher publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 1);
     ros::Subscriber pose_subscriber = node_handle.subscribe("/mavros/local_position/pose", 1, &poseCallback);
     ros::Rate rate(refresh_rate);
 
     while (ros::ok()) {
         setpoint.header.stamp = ros::Time::now();
-
-        if (position_is_set) {
-            publisher.publish(setpoint);
-        }
 
         ros::spinOnce();
         rate.sleep();

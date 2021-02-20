@@ -56,7 +56,7 @@ uint8_t time_cout = 0;
 
 //function called when creating the operation
 ExtractModuleOperation::ExtractModuleOperation(const float& fixed_mast_yaw) : 
-            Operation(OperationIdentifier::EXTRACT_MODULE, false), fixed_mast_yaw(fixed_mast_yaw) { }
+            Operation(OperationIdentifier::EXTRACT_MODULE, false, false), fixed_mast_yaw(fixed_mast_yaw) { }
 
 void ExtractModuleOperation::initialize() {
     printf("received mast angle of %f\n",fixed_mast_yaw);
