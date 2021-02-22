@@ -91,6 +91,9 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
                     if (arming_client.call(arm_command) && arm_command.response.success) {
                         armed = true;
                     }
+                    else{
+                        setParam("ANGLE_MAX", 4000);
+                    }
                 }
             } else {
                 armed = true;
