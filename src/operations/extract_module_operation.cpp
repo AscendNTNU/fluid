@@ -22,6 +22,7 @@
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 #define POS_AND_VEL_CONTROL 2496 //typemask for setpoint_raw/local
+#define GROUND_TRUTH false
 
 
 // LQR tuning
@@ -60,8 +61,13 @@ ExtractModuleOperation::ExtractModuleOperation(const float& fixed_mast_yaw) :
 
 void ExtractModuleOperation::initialize() {
     printf("received mast angle of %f\n",fixed_mast_yaw);
+    #if GROUND8TRUTH
     module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                      10, &ExtractModuleOperation::modulePoseCallback, this);
+    #else
+    module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
+                                     10, &ExtractModuleOperation::modulePoseCallback, this);
+    #endif
     backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
     //creating my own not to interfer with fluid setpoint pulisher:
