@@ -22,7 +22,7 @@
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 #define POS_AND_VEL_CONTROL 2496 //typemask for setpoint_raw/local
-#define GROUND_TRUTH false
+#define GROUND_TRUTH true
 
 
 // LQR tuning
