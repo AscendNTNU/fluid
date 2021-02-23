@@ -30,10 +30,11 @@ class ExtractModuleOperation : public Operation {
         float max_vel;
         float cte_acc;
         mavros_msgs::PositionTarget state;
-        uint8_t finished_bitmask;
+        uint8_t finished_bitmask; //updated but unused
     };
 
 	ExtractionState extraction_state = ExtractionState::APPROACHING;
+    uint8_t completion_count; //count the number of ticks since we completeted the current state
     float fixed_mast_yaw; //Should be given by perception and known before entering in ExtractModuleOperation
     
     mavros_msgs::PositionTarget module_state;
@@ -43,11 +44,10 @@ class ExtractModuleOperation : public Operation {
     geometry_msgs::Point desired_offset;
     
     ros::Subscriber module_pose_subscriber;
-    ros::Subscriber module_pose_subscriber_old;
     ros::Publisher attitude_pub;
     ros::Publisher altitude_and_yaw_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;
-    geometry_msgs::Point accel_target;
+    geometry_msgs::Vector3 accel_target;
     
 
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
@@ -56,18 +56,18 @@ class ExtractModuleOperation : public Operation {
 
     bool called_backpropeller_service = false;
 
-    geometry_msgs::Vector3 derivate(geometry_msgs::Vector3 actual, geometry_msgs::Vector3 last, ros::Time dt_ros);
     mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint, float yaw=0);
     geometry_msgs::Vector3 rotate(geometry_msgs::Vector3 pt, float yaw=0);
     geometry_msgs::Point rotate(geometry_msgs::Point pt, float yaw=0);
     geometry_msgs::Vector3 estimateModuleVel();
     geometry_msgs::Vector3 estimateModuleAccel();
 
-    //functions in realtion to the following of the mast
+    
+    //functions in relation to the following of the mast
     //not sure if they should be public or private
-    geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::Point accel);
-    void LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt);
-    void update_attitude_input(mavros_msgs::PositionTarget module,mavros_msgs::PositionTarget offset, bool use_sqrt);
+    geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::Vector3 accel);
+    geometry_msgs::Vector3 LQR_to_acceleration(mavros_msgs::PositionTarget ref);
+    void update_attitude_input(mavros_msgs::PositionTarget offset);
 
     void update_transition_state();
     
@@ -81,8 +81,10 @@ class ExtractModuleOperation : public Operation {
     explicit ExtractModuleOperation(const float& fixed_mast_yaw);
 
     /**
-     * @brief Sets up #speed at which to move.
-     */ //TODO: update comment
+     * @brief Sets up max leaning angle to 4°, subscribe to mast pose topic,
+     * Set up Publisher for attitude and its own position control,
+     * Choose initial offset, set up transitino and init data_files.
+     */
     void initialize() override;
 
     /**

@@ -4,7 +4,6 @@
 #include "extract_module_operation.h"
 
 #include "mavros_interface.h"
-#include <mavros_msgs/AttitudeTarget.h>
 #include "util.h"
 
 #include <std_srvs/SetBool.h>
@@ -17,16 +16,18 @@
 
 //A list of parameters for the user
 #define SAVE_DATA   true
-#define SHOW_PRINTS false //not used
+#define SHOW_PRINTS true
 #define SAVE_Z      true
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 #define POS_AND_VEL_CONTROL 2496 //typemask for setpoint_raw/local
 #define GROUND_TRUTH true
 
+#define TIME_TO_COMPLETION 0.5 //time in second during which we want the drone to succeed a state before moving to the other.
+
 
 // LQR tuning
-#define POW          1.0
+#define POW          1.0        // A factor that multiplies each LQR gains
 #define RATION       2.84       // =0.37 / 0.13
 #define LQR_POS_GAIN 0.4189     //tuned for 0.13m pitch radius and 0.37m roll radius
 #define LQR_VEL_GAIN 1.1062
@@ -52,53 +53,52 @@ std::ofstream drone_pose_f;
 std::ofstream drone_setpoints_f; 
 #endif
 
-uint8_t time_cout = 0;
-
+uint8_t time_cout = 0; //used not to do some stuffs at every tick
 
 //function called when creating the operation
 ExtractModuleOperation::ExtractModuleOperation(const float& fixed_mast_yaw) : 
             Operation(OperationIdentifier::EXTRACT_MODULE, false), fixed_mast_yaw(fixed_mast_yaw) { }
 
 void ExtractModuleOperation::initialize() {
-    printf("received mast angle of %f\n",fixed_mast_yaw);
-    #if GROUND8TRUTH
+    #if GROUND_TRUTH
     module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                      10, &ExtractModuleOperation::modulePoseCallback, this);
     #else
     module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
                                      10, &ExtractModuleOperation::modulePoseCallback, this);
     #endif
-    backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
+    // backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
+
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
-    //creating my own not to interfer with fluid setpoint pulisher:
+    //creating own publisher to choose exactly when we send messages
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
     attitude_setpoint.type_mask = ATTITUDE_CONTROL;   
+    setpoint.type_mask = POS_AND_VEL_CONTROL;
 
     MavrosInterface mavros_interface;
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << MAX_ANGLE/100.0 << " deg.");
 
-    //Asking to ignore everything not to get anoyed by the setpoint publisher.
-    //If the drone does not have any indication, it won't move. So it is safe
-    setpoint.type_mask = TypeMask::IGNORE_ALL;
-    setpoint_publisher.publish(setpoint);
-        
     // Entering smooth zone. We could also durectly place the transition_state to 
     // the initial desired offset if we are not scared of hitting the mast.
-    // That could save some time without taking risks (?) 
+    // That could save some time, potentially without taking risks (?) 
+    // Probably AI choice.
 
     // The desired offset and the transition state are mesured in the mast frame
     transition_state.state.position.x = getCurrentPose().pose.position.x - module_state.position.x;
     transition_state.state.position.y = getCurrentPose().pose.position.y - module_state.position.y;
     transition_state.state.position.z = getCurrentPose().pose.position.z - module_state.position.z;
 
-    //Choose an offset to begin with. It is the offset for the approaching state.
+    //Choose an initial offset. It is the offset for the approaching state.
     //the offset is set in the frame of the mast:    
-    desired_offset.x = 3.0;   //forward   //right
-    desired_offset.y = 0.0;   //left   //front
-    desired_offset.z = -0.5; //up   //up
-    transition_state.cte_acc = 3*MAX_ACCEL;
+    desired_offset.x = 3.0;     //forward
+    desired_offset.y = 0.0;     //left
+    desired_offset.z = -0.5;    //up
+    //At the beginning we are far from the mast, so we can transionne fast.
+    transition_state.cte_acc = 3*MAX_ACCEL; 
     transition_state.max_vel = 3*MAX_VEL;
+
+    completion_count =0;
 
     #if SAVE_DATA
     //create a header for the datafiles.
@@ -116,10 +116,9 @@ void ExtractModuleOperation::modulePoseCallback(
 
     module_state.header = module_pose_ptr->header;
     module_state.position = module_pose_ptr->pose.position;
-    //module_state.velocity = derivate(module_state.position,previous_module_state.position,module_state.header.stamp - previous_module_state.header.stamp);
-    //module_state.acceleration_or_force = derivate(module_state.velocity,previous_module_state.velocity,module_state.header.stamp - previous_module_state.header.stamp);
     module_state.velocity = estimateModuleVel();    
     module_state.acceleration_or_force = estimateModuleAccel();
+    //I may want to also extract the mast_yaw
 }
 
 #if SAVE_DATA
@@ -197,8 +196,8 @@ void ExtractModuleOperation::saveLog(const std::string file_name, const mavros_m
 #endif
 
 geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleVel(){
-    // estimate the velocity of the module by simply derivating the position.
-    // In the long run, I expect to receive a nicer estimate by perception or to createa KF myself.
+    // estimate the velocity of the module by a simple derivation of the position.
+    // In the long run, I expect to receive a nicer estimate by perception or to create a KF myself.
     geometry_msgs::Vector3 vel;
     double dt = (module_state.header.stamp - previous_module_state.header.stamp).nsec/1000000000.0;
     vel.x = (module_state.position.x - previous_module_state.position.x)/dt;
@@ -208,7 +207,7 @@ geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleVel(){
 }
 
 geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleAccel(){
-    // estimate the velocity of the module by simply derivating the position.
+    // estimate the acceleration of the module by simply derivating the velocity.
     // In the long run, I expect to receive a nicer estimate by perception or to createa KF myself.
     geometry_msgs::Vector3 Accel;
     double dt = (module_state.header.stamp - previous_module_state.header.stamp).nsec/1000000000.0;
@@ -218,17 +217,6 @@ geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleAccel(){
     return Accel;
 }
 
-//todo: this function should probably be place in Util
-geometry_msgs::Vector3 ExtractModuleOperation::derivate(geometry_msgs::Vector3 actual, geometry_msgs::Vector3 last, ros::Time dt_ros){
-    geometry_msgs::Vector3 res;
-    double dt = dt_ros.nsec/1000000000.0;
-    res.x = (actual.x - last.x)/dt;
-    res.y = (actual.y - last.y)/dt;
-    res.z = (actual.z - last.z)/dt;
-    return res;
-}
-
-//todo: this function should probably be place in Util
 mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::PositionTarget setpoint, float yaw){
     mavros_msgs::PositionTarget rotated_setpoint;
     rotated_setpoint.position = rotate(setpoint.position);
@@ -238,7 +226,6 @@ mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::Position
     return rotated_setpoint;
 }
 
-//todo: this function should probably be place in Util
 geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt, float yaw){
     geometry_msgs::Vector3 rotated_point;
     rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
@@ -248,7 +235,6 @@ geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt,
     return rotated_point;
 }
 
-//todo: this function should probably be place in Util
 geometry_msgs::Point ExtractModuleOperation::rotate(geometry_msgs::Point pt, float yaw){
     geometry_msgs::Point rotated_point;
     rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
@@ -258,70 +244,68 @@ geometry_msgs::Point ExtractModuleOperation::rotate(geometry_msgs::Point pt, flo
     return rotated_point;
 }
 
-void ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref, bool use_sqrt){
+geometry_msgs::Vector3 ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref){
     accel_target.z = 0;
-    if (!use_sqrt)
-    {
-        accel_target.x = K_LQR_X[0] * (ref.position.x - getCurrentPose().pose.position.x) 
-                     + K_LQR_X[1] * (ref.velocity.x - getCurrentTwist().twist.linear.x) 
-                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
-        accel_target.y = K_LQR_X[0] * (ref.position.y - getCurrentPose().pose.position.y) 
-                     + K_LQR_X[1] * (ref.velocity.y - getCurrentTwist().twist.linear.y) 
-                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
-    }
-    else
-    {
+    #if USE_SQRT
         accel_target.x = K_LQR_X[0] * Util::signed_sqrt(ref.position.x - getCurrentPose().pose.position.x) 
                      + K_LQR_X[1] * Util::signed_sqrt(ref.velocity.x - getCurrentTwist().twist.linear.x) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
         accel_target.y = K_LQR_X[0] * Util::signed_sqrt(ref.position.y - getCurrentPose().pose.position.y) 
                      + K_LQR_X[1] * Util::signed_sqrt(ref.velocity.y - getCurrentTwist().twist.linear.y) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
-    }
-    //taking the opposite of the acc because the drone is facing the mast
-    // the right of the mast is the left of the drone
+
+    #else
+        accel_target.x = K_LQR_X[0] * (ref.position.x - getCurrentPose().pose.position.x) 
+                     + K_LQR_X[1] * (ref.velocity.x - getCurrentTwist().twist.linear.x) 
+                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
+        accel_target.y = K_LQR_X[0] * (ref.position.y - getCurrentPose().pose.position.y) 
+                     + K_LQR_X[1] * (ref.velocity.y - getCurrentTwist().twist.linear.y) 
+                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
+    #endif
+    // the right of the mast is the left of the drone: the drone is facing the mast
     accel_target.x = - accel_target.x;
+    return accel_target;
 }
 
-//todo: this function should probably be place in Util
-geometry_msgs::Quaternion ExtractModuleOperation::accel_to_orientation(geometry_msgs::Point accel){
+geometry_msgs::Quaternion ExtractModuleOperation::accel_to_orientation(geometry_msgs::Vector3 accel){
     double yaw = fixed_mast_yaw + M_PI; //we want to face the mast
     double roll = atan2(accel.x,9.81);
     double pitch = atan2(accel.y,9.81);
-    return Util::euler_to_quaternion(yaw, pitch, roll);
+    return Util::euler_to_quaternion(yaw, pitch, roll); //TODO: the euler angle are swap in the parameters!!!!
 }
 
-void ExtractModuleOperation::update_attitude_input(mavros_msgs::PositionTarget module,mavros_msgs::PositionTarget offset, bool use_sqrt){
-    mavros_msgs::PositionTarget ref = Util::addPositionTarget(module, offset);
+void ExtractModuleOperation::update_attitude_input(mavros_msgs::PositionTarget offset){
+    mavros_msgs::PositionTarget ref = Util::addPositionTarget(module_state, offset);
 
     attitude_setpoint.header.stamp = ros::Time::now();
-    attitude_setpoint.thrust = 0.5; //this is the thrust that allow a contanst altitude no matter what
+    attitude_setpoint.thrust = 0.5; //this is the thrust that allow a constant altitude no matter what
 
-    LQR_to_acceleration(ref, use_sqrt);
+    accel_target = LQR_to_acceleration(ref);
     attitude_setpoint.orientation = accel_to_orientation(accel_target);
 }
 
 void ExtractModuleOperation::update_transition_state()
 {
-//try to make a smooth transition when the relative targeted position between the drone
-//and the mast is changed
+// try to make a smooth transition when the relative targeted position between the drone
+// and the mast is changed
 
 // Analysis on the x axis
-    if (abs(desired_offset.x - transition_state.state.position.x) > 0.001){
+    if (abs(desired_offset.x - transition_state.state.position.x) >= 0.001){
     // if we are in a transition state on the x axis
         transition_state.finished_bitmask &= ~0x1;
-        if (Util::sq(transition_state.state.velocity.x) / 2.0 / transition_state.cte_acc >= abs(desired_offset.x - transition_state.state.position.x))
+        if (Util::sq(transition_state.state.velocity.x) / 2.0 / transition_state.cte_acc 
+                            >= abs(desired_offset.x - transition_state.state.position.x))
         {
         // if it is time to brake to avoid overshoot
             //set the transition acceleration (or deceleration) to the one that will lead us to the exact point we want
-            transition_state.state.acceleration_or_force.x = - Util::sq(transition_state.state.velocity.x) /2.0 / (desired_offset.x - transition_state.state.position.x);
+            transition_state.state.acceleration_or_force.x = - Util::sq(transition_state.state.velocity.x) 
+                                            /2.0 / (desired_offset.x - transition_state.state.position.x);
         }
         else if (abs(transition_state.state.velocity.x) > transition_state.max_vel)
         {
         // if we have reached max transitionning speed
             //we stop accelerating and maintain speed
             transition_state.state.acceleration_or_force.x = 0.0;
-            //transition_state.state.velocity = signe(transition_state.state.velocity) * transition_state.state.velocity //to set the speed to the exact chosen value
         }
         else{
         //we are in the acceleration phase of the transition){
@@ -344,10 +328,12 @@ void ExtractModuleOperation::update_transition_state()
     }
 
 // Analysis on the y axis, same as on the x axis
-    if (abs(desired_offset.y - transition_state.state.position.y) > 0.001){
+    if (abs(desired_offset.y - transition_state.state.position.y) >= 0.001){
         transition_state.finished_bitmask = ~0x2;
-        if (Util::sq(transition_state.state.velocity.y) / 2.0 / transition_state.cte_acc >= abs(desired_offset.y - transition_state.state.position.y))
-            transition_state.state.acceleration_or_force.y = - Util::sq(transition_state.state.velocity.y) /2.0 / (desired_offset.y - transition_state.state.position.y);
+        if (Util::sq(transition_state.state.velocity.y) / 2.0 / transition_state.cte_acc 
+                            >= abs(desired_offset.y - transition_state.state.position.y))
+            transition_state.state.acceleration_or_force.y = - Util::sq(transition_state.state.velocity.y) 
+                                            /2.0 / (desired_offset.y - transition_state.state.position.y);
         else if (abs(transition_state.state.velocity.y) > transition_state.max_vel)
             transition_state.state.acceleration_or_force.y = 0.0;
         else{
@@ -367,10 +353,12 @@ void ExtractModuleOperation::update_transition_state()
     }
 
 // Analysis on the z axis, same as on the x axis
-    if (abs(desired_offset.z - transition_state.state.position.z) > 0.001){
+    if (abs(desired_offset.z - transition_state.state.position.z) >= 0.001){
         transition_state.finished_bitmask = ~0x4;
-        if (Util::sq(transition_state.state.velocity.z) / 2.0 / transition_state.cte_acc >= abs(desired_offset.z - transition_state.state.position.z))
-            transition_state.state.acceleration_or_force.z = - Util::sq(transition_state.state.velocity.z) /2.0 / (desired_offset.z - transition_state.state.position.z);
+        if (Util::sq(transition_state.state.velocity.z) / 2.0 / transition_state.cte_acc 
+                            >= abs(desired_offset.z - transition_state.state.position.z))
+            transition_state.state.acceleration_or_force.z = - Util::sq(transition_state.state.velocity.z) 
+                                            /2.0 / (desired_offset.z - transition_state.state.position.z);
         else if (abs(transition_state.state.velocity.z) > transition_state.max_vel)
             transition_state.state.acceleration_or_force.z = 0.0;
         else {
@@ -379,8 +367,8 @@ void ExtractModuleOperation::update_transition_state()
             else 
                 transition_state.state.acceleration_or_force.z = - transition_state.cte_acc;
         }
-        transition_state.state.velocity.z  =   transition_state.state.velocity.z  + transition_state.state.acceleration_or_force.z / (float)rate_int;
-        transition_state.state.position.z =  transition_state.state.position.z  + transition_state.state.velocity.z / (float)rate_int;
+        transition_state.state.velocity.z =  transition_state.state.velocity.z + transition_state.state.acceleration_or_force.z / (float)rate_int;
+        transition_state.state.position.z =  transition_state.state.position.z + transition_state.state.velocity.z / (float)rate_int;
     }
     else if (abs(transition_state.state.velocity.z) < 0.1){
         transition_state.state.position.z = desired_offset.z;
@@ -388,12 +376,6 @@ void ExtractModuleOperation::update_transition_state()
         transition_state.state.acceleration_or_force.z = 0.0;
         transition_state.finished_bitmask |= 0x4;
     }
-    
-//    if (comparPoints(desired_offset,transition_state.state.position,0.001) and not transition_state.transition_finished){
-//        transition_state.transition_finished = true;
-//        printf ("transition finished!");
-//    }
-
 }
 
 void ExtractModuleOperation::tick() {
@@ -401,34 +383,40 @@ void ExtractModuleOperation::tick() {
     // Wait until we get the first module position readings before we do anything else.
     if (module_state.header.seq == 0) {
         if(time_cout%rate_int==0)
-            printf("waiting for callback\n");
+            printf("Waiting for callback\n");
         return;
     }
     
     const double dx = module_state.position.x + desired_offset.x - getCurrentPose().pose.position.x;
     const double dy = module_state.position.y + desired_offset.y - getCurrentPose().pose.position.y;
     const double dz = module_state.position.z + desired_offset.z - getCurrentPose().pose.position.z;
-
     const double distance_to_reference_with_offset = sqrt(Util::sq(dx) + Util::sq(dy) + Util::sq(dz));
     
 
     switch (extraction_state) {
         case ExtractionState::APPROACHING: {
+            #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("APPROACHING\n");
+            #endif
 
             if (distance_to_reference_with_offset < 0.04) {
-                extraction_state = ExtractionState::OVER;
-                ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "Approaching -> Over");
-                //the offset is set in the frame of the mast:    
-                desired_offset.x = 0.25;  //forward   //right //the distance from the drone to the FaceHugger
-                desired_offset.y = 0.0;   //left   //front
-                desired_offset.z = -0.45;  //up   //up
-                transition_state.cte_acc = MAX_ACCEL;
-                transition_state.max_vel = MAX_VEL;
-
-
+                if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
+                    completion_count++;
+                else{
+                    extraction_state = ExtractionState::OVER;
+                    ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                                << ": " << "Approaching -> Over");
+                    //the offset is set in the frame of the mast:    
+                    desired_offset.x = 0.25;  //forward   //right //the distance from the drone to the FaceHugger
+                    desired_offset.y = 0.0;   //left   //front
+                    desired_offset.z = -0.45;  //up   //up
+                    transition_state.cte_acc = MAX_ACCEL;
+                    transition_state.max_vel = MAX_VEL;
+                    completion_count= 0;
+                }
             }
+            else
+                completion_count = 0;
             break;
         }
         case ExtractionState::OVER: {
@@ -494,7 +482,7 @@ void ExtractModuleOperation::tick() {
     //                    transition_state.state.acceleration_or_force.y, transition_state.state.acceleration_or_force.z);
     }
 
-    update_attitude_input(module_state,smooth_rotated_offset, USE_SQRT);
+    update_attitude_input(smooth_rotated_offset);
 
     if (time_cout % 10 == 0)
     {
