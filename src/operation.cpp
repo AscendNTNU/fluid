@@ -5,16 +5,8 @@
 #include "operation.h"
 
 #include <mavros_msgs/PositionTarget.h>
-#include <sensor_msgs/Imu.h>
-#include <tf/tf.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2/transform_datatypes.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
-#include <tf/transform_broadcaster.h>
-#include <visualization_msgs/Marker.h>
-
-#include <utility>
 
 #include "fluid.h"
 #include "util.h"
