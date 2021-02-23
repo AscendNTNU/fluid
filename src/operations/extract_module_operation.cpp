@@ -487,6 +487,7 @@ void ExtractModuleOperation::tick() {
 
     if (time_cout % rate_int == 0)
     {
+    #if SHOW_PRINTS
     //    printf("desired offset \t\tx %f, y %f, z %f\n",desired_offset.x,
     //                    desired_offset.y, desired_offset.z);
         printf("transition state\t x %f, y %f, z %f \tyaw: %f\n",transition_state.state.position.x,
@@ -496,25 +497,25 @@ void ExtractModuleOperation::tick() {
     //                    transition_state.state.velocity.y, transition_state.state.velocity.z);
     //    printf("transition accel\t x %f, y %f, z %f\n",transition_state.state.acceleration_or_force.x,
     //                    transition_state.state.acceleration_or_force.y, transition_state.state.acceleration_or_force.z);
+    #endif
     }
 
     update_attitude_input(smooth_rotated_offset);
 
+    // We don't want to update yaw and altitude too often not to disturbe the position control
     if (time_cout % 10 == 0)
     {
-        mavros_msgs::PositionTarget setpt;
-        setpt.header.stamp = ros::Time::now();
-        setpt.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
-        setpt.type_mask = POS_AND_VEL_CONTROL;
-        setpt.yaw = fixed_mast_yaw+M_PI;
-        setpt.position.x = module_state.position.x + smooth_rotated_offset.position.x;
-        setpt.position.y = module_state.position.y + smooth_rotated_offset.position.y;
-        setpt.position.z = module_state.position.z + smooth_rotated_offset.position.z;
-        setpt.velocity.x = module_state.velocity.x + smooth_rotated_offset.velocity.x;
-        setpt.velocity.y = module_state.velocity.y + smooth_rotated_offset.velocity.y;
-        setpt.velocity.z = module_state.velocity.z + smooth_rotated_offset.velocity.z;
+        //We can use the setpoint variable created in operation.cpp as we desactivate the automatic sending.
+        setpoint.header.stamp = ros::Time::now();
+        setpoint.yaw = fixed_mast_yaw+M_PI;
+        setpoint.position.x = module_state.position.x + smooth_rotated_offset.position.x;
+        setpoint.position.y = module_state.position.y + smooth_rotated_offset.position.y;
+        setpoint.position.z = module_state.position.z + smooth_rotated_offset.position.z;
+        setpoint.velocity.x = module_state.velocity.x + smooth_rotated_offset.velocity.x;
+        setpoint.velocity.y = module_state.velocity.y + smooth_rotated_offset.velocity.y;
+        setpoint.velocity.z = module_state.velocity.z + smooth_rotated_offset.velocity.z;
 
-        altitude_and_yaw_pub.publish(setpt);
+        altitude_and_yaw_pub.publish(setpoint);
 
     }
 
