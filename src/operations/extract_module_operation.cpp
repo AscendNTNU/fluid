@@ -423,16 +423,21 @@ void ExtractModuleOperation::tick() {
             if(time_cout%(rate_int*2)==0) printf("OVER\n");
 
             //todo write a smart evalutation function to know when to move to the next state
-            if (distance_to_reference_with_offset < 0.02 && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 50.0) {
-                extraction_state = ExtractionState::EXTRACTING;
-                ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "Over -> Extracting");
-                desired_offset.x = 0.25;  //forward   //right //the distance from the drone to the FaceHugger
-                desired_offset.y = 0.0;   //left      //front
-                desired_offset.z = -0.8;  //up        //up
-
+            if (distance_to_reference_with_offset < 
+                    0.02 && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 50.0) {
+                if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
+                    completion_count++;
+                else{
+                    extraction_state = ExtractionState::EXTRACTING;
+                    ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                                << ": " << "Over -> Extracting");
+                    desired_offset.x = 0.25;  //forward   //right //the distance from the drone to the FaceHugger
+                    desired_offset.y = 0.0;   //left      //front
+                    desired_offset.z = -0.8;  //up        //up
+                }
             }
-            
+            else
+                completion_count = 0;
             break;
         }
         case ExtractionState::EXTRACTING: {
@@ -449,20 +454,24 @@ void ExtractModuleOperation::tick() {
             // If the module is on the way down
             // TODO: this should be checked in a better way
             if (module_state.position.z < 0.5) {
-                extraction_state = ExtractionState::EXTRACTED;
-                ROS_INFO_STREAM(ros::this_node::getName().c_str() << "Module extracted!"); 
-                std_srvs::SetBool request;
-                request.request.data = false;
-//                backpropeller_client.call(request);
-//                called_backpropeller_service = false;
+                if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
+                    completion_count++;
+                else{
+                    extraction_state = ExtractionState::EXTRACTED;
+                    ROS_INFO_STREAM(ros::this_node::getName().c_str() << "Module extracted!"); 
+                    std_srvs::SetBool request;
+                    request.request.data = false;
+    //                backpropeller_client.call(request);
+    //                called_backpropeller_service = false;
 
-                //we move backward to ensure there will be no colision
-                desired_offset.x = 1.70;  //forward   //right //the distance from the drone to the FaceHugger
-                desired_offset.y = 0.0;   //left      //front
-                desired_offset.z = -0.8;  //up        //up
-
+                    //we move backward to ensure there will be no colision
+                    desired_offset.x = 1.70;  //forward   //right //the distance from the drone to the FaceHugger
+                    desired_offset.y = 0.0;   //left      //front
+                    desired_offset.z = -0.8;  //up        //up
+                }
             }
-
+            else
+                completion_count = 0;
             break;
         }
     }//end switch state
