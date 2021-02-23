@@ -420,7 +420,9 @@ void ExtractModuleOperation::tick() {
             break;
         }
         case ExtractionState::OVER: {
+            #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("OVER\n");
+            #endif
 
             //todo write a smart evalutation function to know when to move to the next state
             if (distance_to_reference_with_offset < 
@@ -441,7 +443,10 @@ void ExtractModuleOperation::tick() {
             break;
         }
         case ExtractionState::EXTRACTING: {
+            #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("EXTRACTING\n");
+            #endif
+
             //Do something to release the FaceHugger at the righ moment
             /*
             if (!called_backpropeller_service) {
@@ -460,14 +465,16 @@ void ExtractModuleOperation::tick() {
                     extraction_state = ExtractionState::EXTRACTED;
                     ROS_INFO_STREAM(ros::this_node::getName().c_str() << "Module extracted!"); 
                     std_srvs::SetBool request;
-                    request.request.data = false;
+                    request.request.data = false; 
     //                backpropeller_client.call(request);
     //                called_backpropeller_service = false;
 
                     //we move backward to ensure there will be no colision
-                    desired_offset.x = 1.70;  //forward   //right //the distance from the drone to the FaceHugger
-                    desired_offset.y = 0.0;   //left      //front
-                    desired_offset.z = -0.8;  //up        //up
+                    // We directly set the transition state as we want to move as fast as possible
+                    // and we don't mind anymore about the relative position to the mast
+                    transition_state.state.position.x = 1.70;  //forward   //right //the distance from the drone to the FaceHugger
+                    transition_state.state.position.y = 0.0;   //left      //front
+                    transition_state.state.position.z = -0.8;  //up        //up
                 }
             }
             else
