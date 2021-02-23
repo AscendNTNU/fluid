@@ -74,10 +74,7 @@ void ExtractModuleOperation::initialize() {
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
     attitude_setpoint.type_mask = ATTITUDE_CONTROL;   
     
-    //we have not merge remove_setpoint_publisher yet, so I am anihiling the side effects:
-    setpoint.type_mask = TypeMask::IGNORE_ALL;
-    //the line above will need to be replaced by the line under
-    //setpoint.type_mask = POS_AND_VEL_CONTROL;
+    setpoint.type_mask = TypeMask::POSITION_AND_VELOCITY;
 
     MavrosInterface mavros_interface;
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
@@ -509,23 +506,17 @@ void ExtractModuleOperation::tick() {
 
     if (time_cout % 10 == 0)
     {
-        // As soon as we merge remove_setpoint_publisher, We can use the setpoint variable created 
-        // in operation.cpp as we desactivate the automatic sending.
-        // At that time, it will also probably be possible to pulish more often
-        // Meanwhile, I am creating a new one.
-        mavros_msgs::PositionTarget stpt;
-        stpt.header.stamp = ros::Time::now();
-        stpt.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
-        stpt.type_mask = TypeMask::POSITION_AND_VELOCITY;
-        stpt.yaw = fixed_mast_yaw+M_PI;
-        stpt.position.x = module_state.position.x + smooth_rotated_offset.position.x;
-        stpt.position.y = module_state.position.y + smooth_rotated_offset.position.y;
-        stpt.position.z = module_state.position.z + smooth_rotated_offset.position.z;
-        stpt.velocity.x = module_state.velocity.x + smooth_rotated_offset.velocity.x;
-        stpt.velocity.y = module_state.velocity.y + smooth_rotated_offset.velocity.y;
-        stpt.velocity.z = module_state.velocity.z + smooth_rotated_offset.velocity.z;
+        // todo: it may be possible to publish more often without any trouble.
+        setpoint.header.stamp = ros::Time::now();
+        setpoint.yaw = fixed_mast_yaw+M_PI;
+        setpoint.position.x = module_state.position.x + smooth_rotated_offset.position.x;
+        setpoint.position.y = module_state.position.y + smooth_rotated_offset.position.y;
+        setpoint.position.z = module_state.position.z + smooth_rotated_offset.position.z;
+        setpoint.velocity.x = module_state.velocity.x + smooth_rotated_offset.velocity.x;
+        setpoint.velocity.y = module_state.velocity.y + smooth_rotated_offset.velocity.y;
+        setpoint.velocity.z = module_state.velocity.z + smooth_rotated_offset.velocity.z;
 
-        altitude_and_yaw_pub.publish(stpt);
+        altitude_and_yaw_pub.publish(setpoint);
 
     }
 
