@@ -5,6 +5,8 @@
 
 #include "mavros_interface.h"
 #include "util.h"
+#include "fluid.h" //to get access to the tick rate
+#include "type_mask.h"
 
 #include <std_srvs/SetBool.h>
 
@@ -12,7 +14,6 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h> //to get the current directory
-#include "fluid.h" //to get access to the tick rate
 
 //A list of parameters for the user
 #define SAVE_DATA   true
@@ -20,7 +21,6 @@
 #define SAVE_Z      true
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
-#define POS_AND_VEL_CONTROL 2496 //typemask for setpoint_raw/local
 #define GROUND_TRUTH true
 
 #define TIME_TO_COMPLETION 0.5 //time in second during which we want the drone to succeed a state before moving to the other.
@@ -73,7 +73,11 @@ void ExtractModuleOperation::initialize() {
     //creating own publisher to choose exactly when we send messages
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
     attitude_setpoint.type_mask = ATTITUDE_CONTROL;   
-    setpoint.type_mask = POS_AND_VEL_CONTROL;
+    
+    //we have not merge remove_setpoint_publisher yet, so I am anihiling the side effects:
+    setpoint.type_mask = TypeMask::IGNORE_ALL;
+    //the line above will need to be replaced by the line under
+    //setpoint.type_mask = POS_AND_VEL_CONTROL;
 
     MavrosInterface mavros_interface;
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
@@ -387,9 +391,12 @@ void ExtractModuleOperation::tick() {
         return;
     }
     
-    const double dx = module_state.position.x + desired_offset.x - getCurrentPose().pose.position.x;
-    const double dy = module_state.position.y + desired_offset.y - getCurrentPose().pose.position.y;
-    const double dz = module_state.position.z + desired_offset.z - getCurrentPose().pose.position.z;
+    update_transition_state();
+    mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
+
+    const double dx = module_state.position.x + smooth_rotated_offset.position.x - getCurrentPose().pose.position.x;
+    const double dy = module_state.position.y + smooth_rotated_offset.position.y - getCurrentPose().pose.position.y;
+    const double dz = module_state.position.z + smooth_rotated_offset.position.z - getCurrentPose().pose.position.z;
     const double distance_to_reference_with_offset = sqrt(Util::sq(dx) + Util::sq(dy) + Util::sq(dz));
     
 
@@ -398,8 +405,9 @@ void ExtractModuleOperation::tick() {
             #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("APPROACHING\n");
             #endif
-
-            if (distance_to_reference_with_offset < 0.04) {
+            printf("distance to ref %f\n", distance_to_reference_with_offset);
+            if (transition_state.finished_bitmask & 0x7 && distance_to_reference_with_offset < 0.07) {
+                printf("completion_count %d\n", completion_count);
                 if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{
@@ -426,7 +434,7 @@ void ExtractModuleOperation::tick() {
 
             //todo write a smart evalutation function to know when to move to the next state
             if (distance_to_reference_with_offset < 
-                    0.02 && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 50.0) {
+                    0.04 && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 50.0) {
                 if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{
@@ -482,8 +490,6 @@ void ExtractModuleOperation::tick() {
             break;
         }
     }//end switch state
-    update_transition_state();
-    mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
 
     if (time_cout % rate_int == 0)
     {
@@ -511,7 +517,7 @@ void ExtractModuleOperation::tick() {
         mavros_msgs::PositionTarget stpt;
         stpt.header.stamp = ros::Time::now();
         stpt.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
-        stpt.type_mask = POS_AND_VEL_CONTROL;
+        stpt.type_mask = TypeMask::POSITION_AND_VELOCITY;
         stpt.yaw = fixed_mast_yaw+M_PI;
         stpt.position.x = module_state.position.x + smooth_rotated_offset.position.x;
         stpt.position.y = module_state.position.y + smooth_rotated_offset.position.y;
