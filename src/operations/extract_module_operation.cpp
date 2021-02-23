@@ -57,7 +57,7 @@ uint8_t time_cout = 0; //used not to do some stuffs at every tick
 
 //function called when creating the operation
 ExtractModuleOperation::ExtractModuleOperation(const float& fixed_mast_yaw) : 
-            Operation(OperationIdentifier::EXTRACT_MODULE, false), fixed_mast_yaw(fixed_mast_yaw) { }
+            Operation(OperationIdentifier::EXTRACT_MODULE, false, false), fixed_mast_yaw(fixed_mast_yaw) { }
 
 void ExtractModuleOperation::initialize() {
     #if GROUND_TRUTH

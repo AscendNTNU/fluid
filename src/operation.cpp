@@ -11,6 +11,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/transform_datatypes.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf/transform_broadcaster.h>
 #include <visualization_msgs/Marker.h>
 
 #include <utility>
@@ -18,16 +19,17 @@
 #include "fluid.h"
 #include "util.h"
 
-Operation::Operation(const OperationIdentifier& identifier, const bool& steady)
-                                        : identifier(identifier), steady(steady) {
+Operation::Operation(const OperationIdentifier& identifier, const bool& steady, const bool& autoPublish)
+                                        : identifier(identifier), steady(steady), autoPublish(autoPublish){
     pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &Operation::poseCallback, this);
     twist_subscriber =
         node_handle.subscribe("mavros/local_position/velocity_local", 1, &Operation::twistCallback, this);
 
-    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
+    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
     setpoint.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
     rate_int = (int) Fluid::getInstance().configuration.refresh_rate;
 }
+
 
 geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_pose; }
 
@@ -81,7 +83,8 @@ void Operation::perform(std::function<bool(void)> should_tick, bool should_halt_
 
     do {
         tick();
-        publishSetpoint();
+        if (autoPublish)
+            publishSetpoint();
         Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.x = setpoint.position.x;
         Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.y = setpoint.position.y;
         Fluid::getInstance().getStatusPublisherPtr()->status.setpoint.z = setpoint.position.z;
