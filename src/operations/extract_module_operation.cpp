@@ -17,7 +17,7 @@
 
 //A list of parameters for the user
 #define SAVE_DATA   true
-#define SHOW_PRINTS true
+#define SHOW_PRINTS false
 #define SAVE_Z      true
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
@@ -403,11 +403,10 @@ void ExtractModuleOperation::tick() {
     switch (extraction_state) {
         case ExtractionState::APPROACHING: {
             #if SHOW_PRINTS
-            if(time_cout%(rate_int*2)==0) printf("APPROACHING\n");
-            #endif
+            if(time_cout%(rate_int*2)==0) printf("APPROACHING\t");
             printf("distance to ref %f\n", distance_to_reference_with_offset);
+            #endif
             if (transition_state.finished_bitmask & 0x7 && distance_to_reference_with_offset < 0.07) {
-                printf("completion_count %d\n", completion_count);
                 if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{
