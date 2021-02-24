@@ -80,22 +80,19 @@ void ExtractModuleOperation::initialize() {
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << MAX_ANGLE/100.0 << " deg.");
 
-    // Entering smooth zone. We could also durectly place the transition_state to 
-    // the initial desired offset if we are not scared of hitting the mast.
-    // That could save some time, potentially without taking risks (?) 
-    // Probably AI choice.
-
-    // The desired offset and the transition state are mesured in the mast frame
-    transition_state.state.position.x = getCurrentPose().pose.position.x - module_state.position.x;
-    transition_state.state.position.y = getCurrentPose().pose.position.y - module_state.position.y;
-    transition_state.state.position.z = getCurrentPose().pose.position.z - module_state.position.z;
-
     //Choose an initial offset. It is the offset for the approaching state.
     //the offset is set in the frame of the mast:    
     desired_offset.x = 3.0;     //forward
     desired_offset.y = 0.0;     //left
     desired_offset.z = -0.5;    //up
-    //At the beginning we are far from the mast, so we can transionne fast.
+    
+    // The desired offset and the transition state are mesured in the mast frame
+    transition_state.state.position = desired_offset;
+    //transition_state.state.position.y = desired_offset.y;
+    //transition_state.state.position.z = desired_offset.z;
+
+    //At the beginning we are far from the mast, we can safely so do a fast transion.
+    //But transition state is also the desired offset, so it should be useless.
     transition_state.cte_acc = 3*MAX_ACCEL; 
     transition_state.max_vel = 3*MAX_VEL;
 
