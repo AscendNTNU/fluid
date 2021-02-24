@@ -504,7 +504,7 @@ void ExtractModuleOperation::tick() {
 
     update_attitude_input(smooth_rotated_offset);
 
-    if (time_cout % 10 == 0)
+    if (time_cout % 2 == 0)
     {
         // todo: it may be possible to publish more often without any trouble.
         setpoint.header.stamp = ros::Time::now();
