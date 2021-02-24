@@ -270,9 +270,9 @@ geometry_msgs::Vector3 ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::
 
 geometry_msgs::Quaternion ExtractModuleOperation::accel_to_orientation(geometry_msgs::Vector3 accel){
     double yaw = fixed_mast_yaw + M_PI; //we want to face the mast
-    double roll = atan2(accel.x,9.81);
-    double pitch = atan2(accel.y,9.81);
-    return Util::euler_to_quaternion(yaw, pitch, roll); //TODO: the euler angle are swap in the parameters!!!!
+    double roll = atan2(accel.y,9.81);
+    double pitch = atan2(accel.x,9.81);
+    return Util::euler_to_quaternion(yaw, roll, pitch);
 }
 
 void ExtractModuleOperation::update_attitude_input(mavros_msgs::PositionTarget offset){
