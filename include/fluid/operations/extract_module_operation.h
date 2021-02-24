@@ -78,7 +78,7 @@ class ExtractModuleOperation : public Operation {
      * 
      * @param mast_yaw yaw angle of the mast compare to the world frame.
      */
-    explicit ExtractModuleOperation(const float& fixed_mast_yaw);
+    explicit ExtractModuleOperation(const float& fixed_mast_yaw, const float& offset=3.0);
 
     /**
      * @brief Sets up max leaning angle to 4°, subscribe to mast pose topic,

@@ -56,8 +56,16 @@ std::ofstream drone_setpoints_f;
 uint8_t time_cout = 0; //used not to do some stuffs at every tick
 
 //function called when creating the operation
-ExtractModuleOperation::ExtractModuleOperation(const float& fixed_mast_yaw) : 
-            Operation(OperationIdentifier::EXTRACT_MODULE, false, false), fixed_mast_yaw(fixed_mast_yaw) { }
+ExtractModuleOperation::ExtractModuleOperation(const float& fixed_mast_yaw, const float& offset) : 
+            Operation(OperationIdentifier::EXTRACT_MODULE, false, false), fixed_mast_yaw(fixed_mast_yaw) 
+    { 
+        //Choose an initial offset. It is the offset for the approaching state.
+        //the offset is set in the frame of the mast:    
+        desired_offset.x = offset;     //forward
+        desired_offset.y = 0.0;     //left
+        desired_offset.z = -0.5;    //up
+
+    }
 
 void ExtractModuleOperation::initialize() {
     #if GROUND_TRUTH
@@ -80,12 +88,6 @@ void ExtractModuleOperation::initialize() {
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << MAX_ANGLE/100.0 << " deg.");
 
-    //Choose an initial offset. It is the offset for the approaching state.
-    //the offset is set in the frame of the mast:    
-    desired_offset.x = 3.0;     //forward
-    desired_offset.y = 0.0;     //left
-    desired_offset.z = -0.5;    //up
-    
     // The desired offset and the transition state are mesured in the mast frame
     transition_state.state.position = desired_offset;
     //transition_state.state.position.y = desired_offset.y;

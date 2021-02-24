@@ -136,7 +136,9 @@ int main(int argc, char** argv) {
                 float mast_yaw = M_PI/20.0;
                 printf("send yaw mast of %f\n",mast_yaw);
                 fluid::ExtractModule extract_module_service_handle;
-                extract_module_service_handle.request.fixed_mast_yaw = mast_yaw; //TODO: Parameter value not received
+                extract_module_service_handle.request.fixed_mast_yaw = mast_yaw;
+                extract_module_service_handle.request.offset = 3.0;
+                
                 if (extract_module.call(extract_module_service_handle)) {
                     if (!extract_module_service_handle.response.success) {
                         ROS_FATAL_STREAM(extract_module_service_handle.response.message);
