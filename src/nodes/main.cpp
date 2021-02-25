@@ -15,8 +15,9 @@ int main(int argc, char** argv) {
     ros::NodeHandle node_handle;
     const std::string prefix = ros::this_node::getName() + "/";
     int refresh_rate;
-    bool should_auto_arm, should_auto_offboard;
+    bool should_auto_arm, should_auto_offboard, interact_show_prints, interact_ground_truth;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
+    float interact_max_vel, interact_max_acc;
     float* LQR_gains = (float*) calloc(4,sizeof(float));
 
     if (!node_handle.getParam(prefix + "refresh_rate", refresh_rate)) {
@@ -58,13 +59,31 @@ int main(int argc, char** argv) {
     if (!node_handle.getParam(prefix + "Kvy", LQR_gains[3])) {
         exitAtParameterExtractionFailure(prefix + "Kvy");
     }
+
+    if (!node_handle.getParam(prefix + "interaction_show_prints", interact_show_prints)) {
+        exitAtParameterExtractionFailure(prefix + "interaction_show_prints");
+    }
+
+    if (!node_handle.getParam(prefix + "interaction_ground_truth_data", interact_ground_truth)) {
+        exitAtParameterExtractionFailure(prefix + "interaction_ground_truth_data");
+    }
+    
+    if (!node_handle.getParam(prefix + "interaction_max_vel", interact_max_vel)) {
+        exitAtParameterExtractionFailure(prefix + "interaction_max_vel");
+    }
+
+    if (!node_handle.getParam(prefix + "interaction_max_acc", interact_max_acc)) {
+        exitAtParameterExtractionFailure(prefix + "interaction_max_acc");
+    }
     FluidConfiguration configuration{refresh_rate,
                                      should_auto_arm,
                                      should_auto_offboard,
                                      distance_completion_threshold,
                                      velocity_completion_threshold,
                                      default_height,
-                                     LQR_gains};
+                                     LQR_gains,
+                                     interact_show_prints,
+                                     interact_ground_truth};
 
     Fluid::initialize(configuration);
 

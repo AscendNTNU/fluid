@@ -16,35 +16,17 @@
 #include <unistd.h> //to get the current directory
 
 //A list of parameters for the user
-<<<<<<< HEAD:src/operations/extract_module_operation.cpp
 #define SAVE_DATA   true
-#define SHOW_PRINTS false
 #define SAVE_Z      false
-=======
-#define SAVE_DATA   true  //to put in launch
-#define SHOW_PRINTS false //to put in launch
-#define SAVE_Z      true
->>>>>>> follow_mast:src/operations/interact_operation.cpp
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
-#define GROUND_TRUTH true
 
 #define TIME_TO_COMPLETION 0.5 //time in second during which we want the drone to succeed a state before moving to the other.
 
 
-// LQR tuning
-//#define POW          1.0        // A factor that multiplies each LQR gains
-//#define RATION       2.84       // =0.37 / 0.13
-//#define LQR_POS_GAIN 0.4189     //tuned for 0.13m pitch radius and 0.37m roll radius
-//#define LQR_VEL_GAIN 1.1062
+// Feedforward tuning
 #define ACCEL_FEEDFORWARD_X 0.0
 #define ACCEL_FEEDFORWARD_Y 0.0
-//const float K_LQR_X[2] = {POW*LQR_POS_GAIN, POW*LQR_VEL_GAIN};
-//const float K_LQR_Y[2] = {RATION*POW*LQR_POS_GAIN, RATION*POW*LQR_VEL_GAIN};
-
-//smooth transition
-#define MAX_VEL     0.14
-#define MAX_ACCEL   0.07
 
 #define MAX_ANGLE   400 // in centi-degrees
 
@@ -74,13 +56,14 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
     }
 
 void InteractOperation::initialize() {
-    #if GROUND_TRUTH
-    module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+    if (GROUND_TRUTH){
+        module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                      10, &InteractOperation::modulePoseCallback, this);
-    #else
-    module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
+    }
+    else{
+        module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
                                      10, &InteractOperation::modulePoseCallback, this);
-    #endif
+    }
     // backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
 
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
@@ -105,13 +88,17 @@ void InteractOperation::initialize() {
     transition_state.max_vel = 3*MAX_VEL;
     completion_count =0;
 
-    //get the gains from the launch file.
+    //get parameters from the launch file.
     const float* temp = Fluid::getInstance().configuration.LQR_gains;
     for (uint8_t i=0 ; i<2 ; i++) { 
         K_LQR_X[i] = temp[2*i];
         K_LQR_Y[i] = temp[2*i+1];
     }
-
+    SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
+    GROUND_TRUTH = Fluid::getInstance().configuration.interaction_ground_truth;
+    MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
+    MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
+    
     
     #if SAVE_DATA
     //create a header for the datafiles.
@@ -135,66 +122,14 @@ void InteractOperation::modulePoseCallback(
 }
 
 #if SAVE_DATA
-<<<<<<< HEAD:src/operations/extract_module_operation.cpp
-void ExtractModuleOperation::initSetpointLog(const std::string file_name)
-{ //create a header for the logfile.
-    std::ofstream save_file_f;
-     save_file_f.open(file_name);
-    if(save_file_f.is_open())
-    {
-//        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
-        save_file_f << "Time\tAccel.x\tAccel.y\n";
-        save_file_f.close();
-    }
-    else
-    {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
-    }
-}
-
-void ExtractModuleOperation::saveSetpointLog(const std::string file_name, const geometry_msgs::Vector3 accel)
-{
-    std::ofstream save_file_f;
-    save_file_f.open (file_name, std::ios::app);
-    if(save_file_f.is_open())
-    {
-        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
-                        << ros::Time::now() << "\t"
-                        << accel.x << "\t"
-                        << accel.y 
-                        << "\n";
-        save_file_f.close();
-    }
-}
-
-
-void ExtractModuleOperation::initLog(const std::string file_name)
-=======
 void InteractOperation::initSetpointLog(const std::string file_name)
->>>>>>> follow_mast:src/operations/interact_operation.cpp
 { //create a header for the logfile.
     std::ofstream save_file_f;
      save_file_f.open(file_name);
     if(save_file_f.is_open())
     {
 //        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
-<<<<<<< HEAD:src/operations/extract_module_operation.cpp
-        save_file_f << "Time\tPos.x\tPos.y"
-            #if SAVE_Z        
-            << "\tPos.z"
-            #endif
-            << "\tVel.x\tVel.y"
-            #if SAVE_Z        
-            << "\tVel.z"
-            #endif
-            << "\tAccel.x\tAccel.y"
-            #if SAVE_Z        
-            << "\tAccel.z";
-            #endif
-            << "\n";
-=======
         save_file_f << "Time\tAccel.x\tAccel.y\n";
->>>>>>> follow_mast:src/operations/interact_operation.cpp
         save_file_f.close();
     }
     else
@@ -236,7 +171,7 @@ void InteractOperation::initLog(const std::string file_name)
             #endif
             << "\tAccel.x\tAccel.y"
             #if SAVE_Z        
-            << "\tAccel.z"
+            << "\tAccel.z";
             #endif
             << "\n";
         save_file_f.close();
@@ -246,6 +181,7 @@ void InteractOperation::initLog(const std::string file_name)
         ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
     }
 }
+
 
 void InteractOperation::saveLog(const std::string file_name, const geometry_msgs::PoseStamped pose, const geometry_msgs::TwistStamped vel, const geometry_msgs::Vector3 accel)
 {
@@ -391,6 +327,11 @@ void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget offset
 
     accel_target = LQR_to_acceleration(ref);
     attitude_setpoint.orientation = accel_to_orientation(accel_target);
+    if(SHOW_PRINTS & time_cout%rate_int==0){
+        printf("ref pose\tx %f,\ty %f,\tz %f\n",ref.position.x,
+                            ref.position.y, ref.position.z);
+    }    
+
 }
 
 void InteractOperation::update_transition_state()
@@ -507,10 +448,12 @@ void InteractOperation::tick() {
 
     switch (interaction_state) {
         case InteractionState::APPROACHING: {
-            #if SHOW_PRINTS
-            if(time_cout%(rate_int*2)==0) printf("APPROACHING\t");
-            printf("distance to ref %f\n", distance_to_reference_with_offset);
-            #endif
+            if (SHOW_PRINTS){
+                if(time_cout%rate_int==0) {
+                    printf("APPROACHING\t");
+                    printf("distance to ref %f\n", distance_to_reference_with_offset);
+                }
+            }
             if (transition_state.finished_bitmask & 0x7 && distance_to_reference_with_offset < 0.07) {
                 if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
@@ -532,9 +475,9 @@ void InteractOperation::tick() {
             break;
         }
         case InteractionState::OVER: {
-            #if SHOW_PRINTS
-            if(time_cout%(rate_int*2)==0) printf("OVER\n");
-            #endif
+            if (SHOW_PRINTS){
+                if(time_cout%(rate_int*2)==0) printf("OVER\n");
+            }
 
             //todo write a smart evalutation function to know when to move to the next state
             if (distance_to_reference_with_offset < 
@@ -555,9 +498,9 @@ void InteractOperation::tick() {
             break;
         }
         case InteractionState::INTERACT: {
-            #if SHOW_PRINTS
-            if(time_cout%(rate_int*2)==0) printf("INTERACT\n");
-            #endif
+            if (SHOW_PRINTS){
+                if(time_cout%(rate_int*2)==0) printf("INTERACT\n");
+            }
 
             //Do something to release the FaceHugger at the righ moment
             /*
@@ -597,17 +540,21 @@ void InteractOperation::tick() {
 
     if (time_cout % rate_int == 0)
     {
-    #if SHOW_PRINTS
-    //    printf("desired offset \t\tx %f, y %f, z %f\n",desired_offset.x,
-    //                    desired_offset.y, desired_offset.z);
-        printf("transition state\t x %f, y %f, z %f \tyaw: %f\n",transition_state.state.position.x,
-                        transition_state.state.position.y, transition_state.state.position.z,
-                        getCurrentYaw());
-    //    printf("transition vel\t x %f, y %f, z %f\n",transition_state.state.velocity.x,
-    //                    transition_state.state.velocity.y, transition_state.state.velocity.z);
-    //    printf("transition accel\t x %f, y %f, z %f\n",transition_state.state.acceleration_or_force.x,
-    //                    transition_state.state.acceleration_or_force.y, transition_state.state.acceleration_or_force.z);
-    #endif
+        if (SHOW_PRINTS){
+        //    printf("desired offset \t\tx %f, y %f, z %f\n",desired_offset.x,
+        //                    desired_offset.y, desired_offset.z);
+            printf("transition pose\tx %f,\ty %f,\tz %f\n",transition_state.state.position.x,
+                            transition_state.state.position.y, transition_state.state.position.z);
+        //    printf("transition vel\t x %f, y %f, z %f\n",transition_state.state.velocity.x,
+        //                    transition_state.state.velocity.y, transition_state.state.velocity.z);
+        //    printf("transition accel\t x %f, y %f, z %f\n",transition_state.state.acceleration_or_force.x,
+        //                    transition_state.state.acceleration_or_force.y, transition_state.state.acceleration_or_force.z);
+            geometry_msgs::Point cur_drone_pose = getCurrentPose().pose.position;
+            printf("Drone pose\tx %f,\ty %f,\tz %f\tyaw %f\n",cur_drone_pose.x,
+                                         cur_drone_pose.y, cur_drone_pose.z,getCurrentYaw());
+            printf("Accel target\tx %f,\ty %f,\tz %f\n",accel_target.x,
+                                         accel_target.y, accel_target.z);
+        }
     }
 
     update_attitude_input(smooth_rotated_offset);

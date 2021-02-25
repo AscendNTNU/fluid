@@ -33,6 +33,8 @@ class InteractOperation : public Operation {
         uint8_t finished_bitmask; //updated but unused
     };
 
+    bool SHOW_PRINTS;
+    bool GROUND_TRUTH;
 	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
     float fixed_mast_yaw; //Should be given by perception and known before entering in InteractOperation
@@ -52,6 +54,9 @@ class InteractOperation : public Operation {
     float LQR_gains[4];
     float K_LQR_X[2];
     float K_LQR_Y[2];
+    float MAX_ACCEL;
+    float MAX_VEL;
+    
 
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
 
