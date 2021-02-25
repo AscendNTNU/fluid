@@ -254,16 +254,16 @@ geometry_msgs::Vector3 ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::
         accel_target.x = K_LQR_X[0] * Util::signed_sqrt(ref.position.x - getCurrentPose().pose.position.x) 
                      + K_LQR_X[1] * Util::signed_sqrt(ref.velocity.x - getCurrentTwist().twist.linear.x) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
-        accel_target.y = K_LQR_X[0] * Util::signed_sqrt(ref.position.y - getCurrentPose().pose.position.y) 
-                     + K_LQR_X[1] * Util::signed_sqrt(ref.velocity.y - getCurrentTwist().twist.linear.y) 
+        accel_target.y = K_LQR_Y[0] * Util::signed_sqrt(ref.position.y - getCurrentPose().pose.position.y) 
+                     + K_LQR_Y[1] * Util::signed_sqrt(ref.velocity.y - getCurrentTwist().twist.linear.y) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
 
     #else
         accel_target.x = K_LQR_X[0] * (ref.position.x - getCurrentPose().pose.position.x) 
                      + K_LQR_X[1] * (ref.velocity.x - getCurrentTwist().twist.linear.x) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
-        accel_target.y = K_LQR_X[0] * (ref.position.y - getCurrentPose().pose.position.y) 
-                     + K_LQR_X[1] * (ref.velocity.y - getCurrentTwist().twist.linear.y) 
+        accel_target.y = K_LQR_Y[0] * (ref.position.y - getCurrentPose().pose.position.y) 
+                     + K_LQR_Y[1] * (ref.velocity.y - getCurrentTwist().twist.linear.y) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
     #endif
     // the right of the mast is the left of the drone: the drone is facing the mast
