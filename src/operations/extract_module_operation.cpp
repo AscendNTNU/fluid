@@ -122,6 +122,38 @@ void ExtractModuleOperation::modulePoseCallback(
 }
 
 #if SAVE_DATA
+void ExtractModuleOperation::initSetpointLog(const std::string file_name)
+{ //create a header for the logfile.
+    std::ofstream save_file_f;
+     save_file_f.open(file_name);
+    if(save_file_f.is_open())
+    {
+//        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
+        save_file_f << "Time\tAccel.x\tAccel.y\n";
+        save_file_f.close();
+    }
+    else
+    {
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
+    }
+}
+
+void ExtractModuleOperation::saveSetpointLog(const std::string file_name, const geometry_msgs::Vector3 accel)
+{
+    std::ofstream save_file_f;
+    save_file_f.open (file_name, std::ios::app);
+    if(save_file_f.is_open())
+    {
+        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
+                        << ros::Time::now() << "\t"
+                        << accel.x << "\t"
+                        << accel.y 
+                        << "\n";
+        save_file_f.close();
+    }
+}
+
+
 void ExtractModuleOperation::initLog(const std::string file_name)
 { //create a header for the logfile.
     std::ofstream save_file_f;
@@ -129,7 +161,19 @@ void ExtractModuleOperation::initLog(const std::string file_name)
     if(save_file_f.is_open())
     {
 //        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
-        save_file_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
+        save_file_f << "Time\tPos.x\tPos.y"
+            #if SAVE_Z        
+            << "\tPos.z"
+            #endif
+            << "\tVel.x\tVel.y"
+            #if SAVE_Z        
+            << "\tVel.z"
+            #endif
+            << "\tAccel.x\tAccel.y"
+            #if SAVE_Z        
+            << "\tAccel.z";
+            #endif
+            << "\n";
         save_file_f.close();
     }
     else

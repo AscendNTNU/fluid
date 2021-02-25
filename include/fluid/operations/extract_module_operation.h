@@ -93,14 +93,26 @@ class ExtractModuleOperation : public Operation {
     void initLog(const std::string file_name);
 
     /**
-     * @brief //Add a new line to the logfile with the actual position and velocity
+     * @brief //Add a new line to the logfile with the given position, velocity and acceleration
      */
     void saveLog(const std::string file_name, const mavros_msgs::PositionTarget data);
 
     /**
-     * @brief //Add a new line to the logfile with the actual position and velocity
+     * @brief //Add a new line to the logfile with the given position, velocity and acceleration
      */
     void saveLog(const std::string file_name, const geometry_msgs::PoseStamped pose, const geometry_msgs::TwistStamped vel, const geometry_msgs::Vector3 accel);
+
+    /**
+     * @brief //create a header for the setpoint logfile. 
+     *          It only includes acceleration setpoints
+     */
+    void initSetpointLog(const std::string file_name);
+
+    /**
+     * @brief //Add a new line to the logfile with acceleration setpoint
+     */
+    void saveSetpointLog(const std::string file_name, const geometry_msgs::Vector3 accel);
+
 
     /**
      * @return true When the module has been extracted.
