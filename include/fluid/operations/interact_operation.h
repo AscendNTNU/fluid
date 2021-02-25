@@ -1,9 +1,9 @@
 /**
- * @file extract_module_operation.h
+ * @file interact_operation.h
  */
 
-#ifndef EXTRACT_MODULE_OPERATION_H
-#define EXTRACT_MODULE_OPERATION_H
+#ifndef INTERACT_OPERATION_H
+#define INTERACT_OPERATION_H
 
 #include <geometry_msgs/PoseStamped.h>
 
@@ -13,16 +13,16 @@
 #include "mavros_msgs/AttitudeTarget.h"
 
 /**
- * @brief Represents the operation where the drone is extracting the module.
+ * @brief Represents the operation where the drone is interact with the mast.
  */
-class ExtractModuleOperation : public Operation {
+class InteractOperation : public Operation {
    private:
 	
-	enum class ExtractionState {
+	enum class InteractionState {
 		APPROACHING,
 		OVER,
 		BEHIND_WITH_HOOKS,
-	 	EXTRACTING,
+	 	INTERACT,
 		EXTRACTED
 	};
 
@@ -33,9 +33,9 @@ class ExtractModuleOperation : public Operation {
         uint8_t finished_bitmask; //updated but unused
     };
 
-	ExtractionState extraction_state = ExtractionState::APPROACHING;
+	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
-    float fixed_mast_yaw; //Should be given by perception and known before entering in ExtractModuleOperation
+    float fixed_mast_yaw; //Should be given by perception and known before entering in InteractOperation
     
     mavros_msgs::PositionTarget module_state;
     mavros_msgs::PositionTarget previous_module_state;
@@ -81,7 +81,7 @@ class ExtractModuleOperation : public Operation {
      * 
      * @param mast_yaw yaw angle of the mast compare to the world frame.
      */
-    explicit ExtractModuleOperation(const float& fixed_mast_yaw, const float& offset=3.0);
+    explicit InteractOperation(const float& fixed_mast_yaw, const float& offset=3.0);
 
     /**
      * @brief Sets up max leaning angle to 4°, subscribe to mast pose topic,

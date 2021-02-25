@@ -12,7 +12,7 @@ take_off = rospy.ServiceProxy('fluid/take_off', TakeOff)
 explore = rospy.ServiceProxy('fluid/explore', Explore)
 travel = rospy.ServiceProxy('fluid/travel', Travel)
 land = rospy.ServiceProxy('fluid/land', Land)
-extract_module = rospy.ServiceProxy('fluid/extract_module', ExtractModule)
+Interact = rospy.ServiceProxy('fluid/interact', Interact)
 
 finished_operation = ""
 is_executing_operation = False
@@ -54,7 +54,7 @@ def gotConnectionWithServices(timeout):
         rospy.wait_for_service('fluid/explore', timeout=timeout)
         rospy.wait_for_service('fluid/travel', timeout=timeout)
         rospy.wait_for_service('fluid/land', timeout=timeout)
-        rospy.wait_for_service('fluid/extract_module', timeout=timeout)
+        rospy.wait_for_service('fluid/interact', timeout=timeout)
         return True
     except rospy.ROSException:
         return False
@@ -109,12 +109,12 @@ def main():
             elif finished_operation == "EXPLORE":
                 # Perform a the extraction module state using a LQR to follow the mast
                 print("LET US EXTRACT THAT MODULE !!\n")
-                response = extract_module(0.0)
+                response = interact(0.0)
                 if (not response.success):
                     rospy.logerr(response.message)
                 else:
                     is_executing_operation = True
-            elif finished_operation == "EXTRACT_MODULE":
+            elif finished_operation == "INTERACT":
 
                 # Perform a travel with a list of points
                 response = travel([Point(15, 0, 1.5), Point(-15, 0, 1.5)])

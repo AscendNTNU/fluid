@@ -1,7 +1,7 @@
 /**
- * @file extract_module_operation.cpp
+ * @file interact_operation.cpp
  */
-#include "extract_module_operation.h"
+#include "interact_operation.h"
 
 #include "mavros_interface.h"
 #include "util.h"
@@ -16,9 +16,15 @@
 #include <unistd.h> //to get the current directory
 
 //A list of parameters for the user
+<<<<<<< HEAD:src/operations/extract_module_operation.cpp
 #define SAVE_DATA   true
 #define SHOW_PRINTS false
 #define SAVE_Z      false
+=======
+#define SAVE_DATA   true  //to put in launch
+#define SHOW_PRINTS false //to put in launch
+#define SAVE_Z      true
+>>>>>>> follow_mast:src/operations/interact_operation.cpp
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 #define GROUND_TRUTH true
@@ -56,8 +62,8 @@ std::ofstream drone_setpoints_f;
 uint8_t time_cout = 0; //used not to do some stuffs at every tick
 
 //function called when creating the operation
-ExtractModuleOperation::ExtractModuleOperation(const float& fixed_mast_yaw, const float& offset) : 
-            Operation(OperationIdentifier::EXTRACT_MODULE, false, false), fixed_mast_yaw(fixed_mast_yaw) 
+InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& offset) : 
+            Operation(OperationIdentifier::INTERACT, false, false), fixed_mast_yaw(fixed_mast_yaw) 
     { 
         //Choose an initial offset. It is the offset for the approaching state.
         //the offset is set in the frame of the mast:    
@@ -67,13 +73,13 @@ ExtractModuleOperation::ExtractModuleOperation(const float& fixed_mast_yaw, cons
 
     }
 
-void ExtractModuleOperation::initialize() {
+void InteractOperation::initialize() {
     #if GROUND_TRUTH
     module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
-                                     10, &ExtractModuleOperation::modulePoseCallback, this);
+                                     10, &InteractOperation::modulePoseCallback, this);
     #else
     module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
-                                     10, &ExtractModuleOperation::modulePoseCallback, this);
+                                     10, &InteractOperation::modulePoseCallback, this);
     #endif
     // backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
 
@@ -115,9 +121,9 @@ void ExtractModuleOperation::initialize() {
     #endif
 }
 
-bool ExtractModuleOperation::hasFinishedExecution() const { return extraction_state == ExtractionState::EXTRACTED; }
+bool InteractOperation::hasFinishedExecution() const { return interaction_state == InteractionState::EXTRACTED; }
 
-void ExtractModuleOperation::modulePoseCallback(
+void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
     previous_module_state = module_state;
 
@@ -129,6 +135,7 @@ void ExtractModuleOperation::modulePoseCallback(
 }
 
 #if SAVE_DATA
+<<<<<<< HEAD:src/operations/extract_module_operation.cpp
 void ExtractModuleOperation::initSetpointLog(const std::string file_name)
 { //create a header for the logfile.
     std::ofstream save_file_f;
@@ -162,6 +169,57 @@ void ExtractModuleOperation::saveSetpointLog(const std::string file_name, const 
 
 
 void ExtractModuleOperation::initLog(const std::string file_name)
+=======
+void InteractOperation::initSetpointLog(const std::string file_name)
+>>>>>>> follow_mast:src/operations/interact_operation.cpp
+{ //create a header for the logfile.
+    std::ofstream save_file_f;
+     save_file_f.open(file_name);
+    if(save_file_f.is_open())
+    {
+//        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
+<<<<<<< HEAD:src/operations/extract_module_operation.cpp
+        save_file_f << "Time\tPos.x\tPos.y"
+            #if SAVE_Z        
+            << "\tPos.z"
+            #endif
+            << "\tVel.x\tVel.y"
+            #if SAVE_Z        
+            << "\tVel.z"
+            #endif
+            << "\tAccel.x\tAccel.y"
+            #if SAVE_Z        
+            << "\tAccel.z";
+            #endif
+            << "\n";
+=======
+        save_file_f << "Time\tAccel.x\tAccel.y\n";
+>>>>>>> follow_mast:src/operations/interact_operation.cpp
+        save_file_f.close();
+    }
+    else
+    {
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
+    }
+}
+
+void InteractOperation::saveSetpointLog(const std::string file_name, const geometry_msgs::Vector3 accel)
+{
+    std::ofstream save_file_f;
+    save_file_f.open (file_name, std::ios::app);
+    if(save_file_f.is_open())
+    {
+        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
+                        << ros::Time::now() << "\t"
+                        << accel.x << "\t"
+                        << accel.y 
+                        << "\n";
+        save_file_f.close();
+    }
+}
+
+
+void InteractOperation::initLog(const std::string file_name)
 { //create a header for the logfile.
     std::ofstream save_file_f;
      save_file_f.open(file_name);
@@ -178,7 +236,7 @@ void ExtractModuleOperation::initLog(const std::string file_name)
             #endif
             << "\tAccel.x\tAccel.y"
             #if SAVE_Z        
-            << "\tAccel.z";
+            << "\tAccel.z"
             #endif
             << "\n";
         save_file_f.close();
@@ -189,7 +247,7 @@ void ExtractModuleOperation::initLog(const std::string file_name)
     }
 }
 
-void ExtractModuleOperation::saveLog(const std::string file_name, const geometry_msgs::PoseStamped pose, const geometry_msgs::TwistStamped vel, const geometry_msgs::Vector3 accel)
+void InteractOperation::saveLog(const std::string file_name, const geometry_msgs::PoseStamped pose, const geometry_msgs::TwistStamped vel, const geometry_msgs::Vector3 accel)
 {
     std::ofstream save_file_f;
     save_file_f.open (file_name, std::ios::app);
@@ -217,7 +275,7 @@ void ExtractModuleOperation::saveLog(const std::string file_name, const geometry
     }
 }
 
-void ExtractModuleOperation::saveLog(const std::string file_name, const mavros_msgs::PositionTarget data)
+void InteractOperation::saveLog(const std::string file_name, const mavros_msgs::PositionTarget data)
 {
     std::ofstream save_file_f;
     save_file_f.open (file_name, std::ios::app);
@@ -246,7 +304,7 @@ void ExtractModuleOperation::saveLog(const std::string file_name, const mavros_m
 }
 #endif
 
-geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleVel(){
+geometry_msgs::Vector3 InteractOperation::estimateModuleVel(){
     // estimate the velocity of the module by a simple derivation of the position.
     // In the long run, I expect to receive a nicer estimate by perception or to create a KF myself.
     geometry_msgs::Vector3 vel;
@@ -257,7 +315,7 @@ geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleVel(){
     return vel;
 }
 
-geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleAccel(){
+geometry_msgs::Vector3 InteractOperation::estimateModuleAccel(){
     // estimate the acceleration of the module by simply derivating the velocity.
     // In the long run, I expect to receive a nicer estimate by perception or to createa KF myself.
     geometry_msgs::Vector3 Accel;
@@ -268,7 +326,7 @@ geometry_msgs::Vector3 ExtractModuleOperation::estimateModuleAccel(){
     return Accel;
 }
 
-mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::PositionTarget setpoint, float yaw){
+mavros_msgs::PositionTarget InteractOperation::rotate(mavros_msgs::PositionTarget setpoint, float yaw){
     mavros_msgs::PositionTarget rotated_setpoint;
     rotated_setpoint.position = rotate(setpoint.position);
     rotated_setpoint.velocity = rotate(setpoint.velocity);
@@ -277,7 +335,7 @@ mavros_msgs::PositionTarget ExtractModuleOperation::rotate(mavros_msgs::Position
     return rotated_setpoint;
 }
 
-geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt, float yaw){
+geometry_msgs::Vector3 InteractOperation::rotate(geometry_msgs::Vector3 pt, float yaw){
     geometry_msgs::Vector3 rotated_point;
     rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
     rotated_point.y = cos(fixed_mast_yaw) * pt.y + sin(fixed_mast_yaw) * pt.x;
@@ -286,7 +344,7 @@ geometry_msgs::Vector3 ExtractModuleOperation::rotate(geometry_msgs::Vector3 pt,
     return rotated_point;
 }
 
-geometry_msgs::Point ExtractModuleOperation::rotate(geometry_msgs::Point pt, float yaw){
+geometry_msgs::Point InteractOperation::rotate(geometry_msgs::Point pt, float yaw){
     geometry_msgs::Point rotated_point;
     rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
     rotated_point.y = cos(fixed_mast_yaw) * pt.y + sin(fixed_mast_yaw) * pt.x;
@@ -295,7 +353,7 @@ geometry_msgs::Point ExtractModuleOperation::rotate(geometry_msgs::Point pt, flo
     return rotated_point;
 }
 
-geometry_msgs::Vector3 ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref){
+geometry_msgs::Vector3 InteractOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref){
     accel_target.z = 0;
     #if USE_SQRT
         accel_target.x = K_LQR_X[0] * Util::signed_sqrt(ref.position.x - getCurrentPose().pose.position.x) 
@@ -318,14 +376,14 @@ geometry_msgs::Vector3 ExtractModuleOperation::LQR_to_acceleration(mavros_msgs::
     return accel_target;
 }
 
-geometry_msgs::Quaternion ExtractModuleOperation::accel_to_orientation(geometry_msgs::Vector3 accel){
+geometry_msgs::Quaternion InteractOperation::accel_to_orientation(geometry_msgs::Vector3 accel){
     double yaw = fixed_mast_yaw + M_PI; //we want to face the mast
     double roll = atan2(accel.y,9.81);
     double pitch = atan2(accel.x,9.81);
     return Util::euler_to_quaternion(yaw, roll, pitch);
 }
 
-void ExtractModuleOperation::update_attitude_input(mavros_msgs::PositionTarget offset){
+void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget offset){
     mavros_msgs::PositionTarget ref = Util::addPositionTarget(module_state, offset);
 
     attitude_setpoint.header.stamp = ros::Time::now();
@@ -335,7 +393,7 @@ void ExtractModuleOperation::update_attitude_input(mavros_msgs::PositionTarget o
     attitude_setpoint.orientation = accel_to_orientation(accel_target);
 }
 
-void ExtractModuleOperation::update_transition_state()
+void InteractOperation::update_transition_state()
 {
 // try to make a smooth transition when the relative targeted position between the drone
 // and the mast is changed
@@ -429,7 +487,7 @@ void ExtractModuleOperation::update_transition_state()
     }
 }
 
-void ExtractModuleOperation::tick() {
+void InteractOperation::tick() {
     time_cout++;
     // Wait until we get the first module position readings before we do anything else.
     if (module_state.header.seq == 0) {
@@ -447,8 +505,8 @@ void ExtractModuleOperation::tick() {
     const double distance_to_reference_with_offset = sqrt(Util::sq(dx) + Util::sq(dy) + Util::sq(dz));
     
 
-    switch (extraction_state) {
-        case ExtractionState::APPROACHING: {
+    switch (interaction_state) {
+        case InteractionState::APPROACHING: {
             #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("APPROACHING\t");
             printf("distance to ref %f\n", distance_to_reference_with_offset);
@@ -457,7 +515,7 @@ void ExtractModuleOperation::tick() {
                 if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{
-                    extraction_state = ExtractionState::OVER;
+                    interaction_state = InteractionState::OVER;
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": " << "Approaching -> Over");
                     //the offset is set in the frame of the mast:    
@@ -473,7 +531,7 @@ void ExtractModuleOperation::tick() {
                 completion_count = 0;
             break;
         }
-        case ExtractionState::OVER: {
+        case InteractionState::OVER: {
             #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("OVER\n");
             #endif
@@ -484,9 +542,9 @@ void ExtractModuleOperation::tick() {
                 if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{
-                    extraction_state = ExtractionState::EXTRACTING;
+                    interaction_state = InteractionState::INTERACT;
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                                << ": " << "Over -> Extracting");
+                                << ": " << "Over -> Interacting");
                     desired_offset.x = 0.25;  //forward   //right //the distance from the drone to the FaceHugger
                     desired_offset.y = 0.0;   //left      //front
                     desired_offset.z = -0.8;  //up        //up
@@ -496,9 +554,9 @@ void ExtractModuleOperation::tick() {
                 completion_count = 0;
             break;
         }
-        case ExtractionState::EXTRACTING: {
+        case InteractionState::INTERACT: {
             #if SHOW_PRINTS
-            if(time_cout%(rate_int*2)==0) printf("EXTRACTING\n");
+            if(time_cout%(rate_int*2)==0) printf("INTERACT\n");
             #endif
 
             //Do something to release the FaceHugger at the righ moment
@@ -516,7 +574,7 @@ void ExtractModuleOperation::tick() {
                 if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{
-                    extraction_state = ExtractionState::EXTRACTED;
+                    interaction_state = InteractionState::EXTRACTED;
                     ROS_INFO_STREAM(ros::this_node::getName().c_str() << "Module extracted!"); 
                     std_srvs::SetBool request;
                     request.request.data = false; 

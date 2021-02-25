@@ -19,7 +19,7 @@ add_service_files(
         FILES
         OperationCompletion.srv
         Explore.srv
-        ExtractModule.srv
+        Interact.srv
         Land.srv
         TakeOff.srv
         Travel.srv
