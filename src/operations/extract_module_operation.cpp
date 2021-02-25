@@ -18,7 +18,7 @@
 //A list of parameters for the user
 #define SAVE_DATA   true
 #define SHOW_PRINTS false
-#define SAVE_Z      true
+#define SAVE_Z      false
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 #define GROUND_TRUTH true
@@ -27,14 +27,14 @@
 
 
 // LQR tuning
-#define POW          1.0        // A factor that multiplies each LQR gains
-#define RATION       2.84       // =0.37 / 0.13
-#define LQR_POS_GAIN 0.4189     //tuned for 0.13m pitch radius and 0.37m roll radius
-#define LQR_VEL_GAIN 1.1062
+//#define POW          1.0        // A factor that multiplies each LQR gains
+//#define RATION       2.84       // =0.37 / 0.13
+//#define LQR_POS_GAIN 0.4189     //tuned for 0.13m pitch radius and 0.37m roll radius
+//#define LQR_VEL_GAIN 1.1062
 #define ACCEL_FEEDFORWARD_X 0.0
 #define ACCEL_FEEDFORWARD_Y 0.0
-const float K_LQR_X[2] = {POW*LQR_POS_GAIN, POW*LQR_VEL_GAIN};
-const float K_LQR_Y[2] = {RATION*POW*LQR_POS_GAIN, RATION*POW*LQR_VEL_GAIN};
+//const float K_LQR_X[2] = {POW*LQR_POS_GAIN, POW*LQR_VEL_GAIN};
+//const float K_LQR_Y[2] = {RATION*POW*LQR_POS_GAIN, RATION*POW*LQR_VEL_GAIN};
 
 //smooth transition
 #define MAX_VEL     0.14
@@ -101,14 +101,17 @@ void ExtractModuleOperation::initialize() {
 
     //get the gains from the launch file.
     const float* temp = Fluid::getInstance().configuration.LQR_gains;
-    for (uint8_t i=0 ; i<4 ; i++) { LQR_gains[i] = temp[i];}
-    ROS_INFO_STREAM("GOT LQR GAINS: "<< LQR_gains[0] << " ; " << LQR_gains[1]);
+    for (uint8_t i=0 ; i<2 ; i++) { 
+        K_LQR_X[i] = temp[2*i];
+        K_LQR_Y[i] = temp[2*i+1];
+    }
+
     
     #if SAVE_DATA
     //create a header for the datafiles.
     initLog(reference_state_path); 
     initLog(drone_pose_path); 
-    initLog(drone_setpoints_path); 
+    initSetpointLog(drone_setpoints_path); 
     #endif
 }
 
@@ -126,6 +129,38 @@ void ExtractModuleOperation::modulePoseCallback(
 }
 
 #if SAVE_DATA
+void ExtractModuleOperation::initSetpointLog(const std::string file_name)
+{ //create a header for the logfile.
+    std::ofstream save_file_f;
+     save_file_f.open(file_name);
+    if(save_file_f.is_open())
+    {
+//        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
+        save_file_f << "Time\tAccel.x\tAccel.y\n";
+        save_file_f.close();
+    }
+    else
+    {
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
+    }
+}
+
+void ExtractModuleOperation::saveSetpointLog(const std::string file_name, const geometry_msgs::Vector3 accel)
+{
+    std::ofstream save_file_f;
+    save_file_f.open (file_name, std::ios::app);
+    if(save_file_f.is_open())
+    {
+        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
+                        << ros::Time::now() << "\t"
+                        << accel.x << "\t"
+                        << accel.y 
+                        << "\n";
+        save_file_f.close();
+    }
+}
+
+
 void ExtractModuleOperation::initLog(const std::string file_name)
 { //create a header for the logfile.
     std::ofstream save_file_f;
@@ -133,7 +168,19 @@ void ExtractModuleOperation::initLog(const std::string file_name)
     if(save_file_f.is_open())
     {
 //        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
-        save_file_f << "Time\tPos.x\tPos.y\tPos.z\tVel.x\tVel.y\tVel.z\tmodule_estimate_vel.x\tmodule_estimate_vel.y\tmodule_estimate_vel.z\n";
+        save_file_f << "Time\tPos.x\tPos.y"
+            #if SAVE_Z        
+            << "\tPos.z"
+            #endif
+            << "\tVel.x\tVel.y"
+            #if SAVE_Z        
+            << "\tVel.z"
+            #endif
+            << "\tAccel.x\tAccel.y"
+            #if SAVE_Z        
+            << "\tAccel.z";
+            #endif
+            << "\n";
         save_file_f.close();
     }
     else
@@ -414,7 +461,7 @@ void ExtractModuleOperation::tick() {
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": " << "Approaching -> Over");
                     //the offset is set in the frame of the mast:    
-                    desired_offset.x = 0.25;  //forward   //right //the distance from the drone to the FaceHugger
+                    desired_offset.x = 0.30;  //forward   //right //the distance from the drone to the FaceHugger
                     desired_offset.y = 0.0;   //left   //front
                     desired_offset.z = -0.45;  //up   //up
                     transition_state.cte_acc = MAX_ACCEL;
@@ -529,7 +576,7 @@ void ExtractModuleOperation::tick() {
     //save the control data into files
     saveLog(reference_state_path,Util::addPositionTarget(module_state, smooth_rotated_offset));
     saveLog(drone_pose_path, getCurrentPose(),getCurrentTwist(),getCurrentAccel());
-    saveLog(drone_setpoints_path,smooth_rotated_offset);
+    saveSetpointLog(drone_setpoints_path,accel_target);
     #endif
 
 }
