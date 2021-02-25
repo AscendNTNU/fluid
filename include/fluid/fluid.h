@@ -63,6 +63,12 @@ struct FluidConfiguration {
      * @brief Height used when e.g. 0 was given for a setpoint.
      */
     const float default_height;
+
+    /**
+     * @brief Kpx, Kpy, Kvx, Kvy are the gains used by the LQR.
+     *        Respectively the gain in position for both axes and in velocity for both axes.
+     */
+    const float* LQR_gains; 
 };
 
 /**

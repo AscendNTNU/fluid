@@ -94,12 +94,16 @@ void ExtractModuleOperation::initialize() {
     //transition_state.state.position.z = desired_offset.z;
 
     //At the beginning we are far from the mast, we can safely so do a fast transion.
-    //But transition state is also the desired offset, so it should be useless.
+    //But transition state is also the offset, so it should be useless.
     transition_state.cte_acc = 3*MAX_ACCEL; 
     transition_state.max_vel = 3*MAX_VEL;
-
     completion_count =0;
 
+    //get the gains from the launch file.
+    const float* temp = Fluid::getInstance().configuration.LQR_gains;
+    for (uint8_t i=0 ; i<4 ; i++) { LQR_gains[i] = temp[i];}
+    ROS_INFO_STREAM("GOT LQR GAINS: "<< LQR_gains[0] << " ; " << LQR_gains[1]);
+    
     #if SAVE_DATA
     //create a header for the datafiles.
     initLog(reference_state_path); 

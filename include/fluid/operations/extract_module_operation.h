@@ -49,6 +49,7 @@ class ExtractModuleOperation : public Operation {
     mavros_msgs::AttitudeTarget attitude_setpoint;
     geometry_msgs::Vector3 accel_target;
     
+    float LQR_gains[4];
 
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
 

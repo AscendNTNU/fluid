@@ -7,6 +7,12 @@
   <arg name="velocity_completion_threshold"           default="10"/>
   <arg name="default_height"                          default="2.0"/>
   <arg name="launch_rviz"/>
+  
+  <arg name="Kpx"                                     default="0.4189"/>
+  <arg name="Kpy"                                     default="0.8368"/>
+  <arg name="Kvx"                                     default="1.1062"/>
+  <arg name="Kvy"                                     default="2.2124"/>
+  
 
   <node name="fluid" pkg="fluid" type="fluid" output="screen"> 
     <param name="refresh_rate"                        value="$(arg refresh_rate)"/>
@@ -15,6 +21,12 @@
     <param name="distance_completion_threshold"       value="$(arg distance_completion_threshold)"/>
     <param name="velocity_completion_threshold"       value="$(arg velocity_completion_threshold)"/>
     <param name="default_height"                      value="$(arg default_height)"/>
+
+    <param name="Kpx"                                 value="$(arg Kpx)"/>
+    <param name="Kpy"                                 value="$(arg Kpy)"/>
+    <param name="Kvx"                                 value="$(arg Kvx)"/>
+    <param name="Kvy"                                 value="$(arg Kvy)"/>
+
   </node>
 
   <node if="$(arg launch_rviz)" type="rviz" name="rviz" pkg="rviz" args="-d $(find fluid)/rviz_configs/fluid.rviz" />
