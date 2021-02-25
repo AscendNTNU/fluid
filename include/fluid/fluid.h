@@ -13,7 +13,7 @@
 #define FLUID_H
 
 #include <fluid/Explore.h>
-#include <fluid/ExtractModule.h>
+#include <fluid/Interact.h>
 #include <fluid/Land.h>
 #include <fluid/OperationCompletion.h>
 #include <fluid/TakeOff.h>
@@ -87,7 +87,7 @@ class Fluid {
         take_off_server = node_handle.advertiseService("fluid/take_off", &Fluid::take_off, this);
         travel_server = node_handle.advertiseService("fluid/travel", &Fluid::travel, this);
         explore_server = node_handle.advertiseService("fluid/explore", &Fluid::explore, this);
-        extract_module_server = node_handle.advertiseService("fluid/extract_module", &Fluid::extractModule, this);
+        interact_server = node_handle.advertiseService("fluid/interact", &Fluid::interact, this);
         land_server = node_handle.advertiseService("fluid/land", &Fluid::land, this);
         operation_completion_client =
             node_handle.serviceClient<fluid::OperationCompletion>("fluid/operation_completion");
@@ -144,7 +144,7 @@ class Fluid {
     /**
      * @brief The servers which advertise the operations.
      */
-    ros::ServiceServer take_off_server, travel_server, explore_server, extract_module_server, land_server;
+    ros::ServiceServer take_off_server, travel_server, explore_server, interact_server, land_server;
 
     /**
      * @brief Used to give completion calls of operations.
@@ -182,14 +182,14 @@ class Fluid {
     bool explore(fluid::Explore::Request& request, fluid::Explore::Response& response);
 
     /**
-     * @brief Service handler for the extract module service.
+     * @brief Service handler for the interact service.
      *
-     * @param request The extract request.
-     * @param response The extract response.
+     * @param request The interact request.
+     * @param response The interact response.
      *
      * @return true When the service call has been handled.
      */
-    bool extractModule(fluid::ExtractModule::Request& request, fluid::ExtractModule::Response& response);
+    bool interact(fluid::Interact::Request& request, fluid::Interact::Response& response);
 
     /**
      * @brief Service handler for the land service.

@@ -7,7 +7,7 @@
 #include <fluid/OperationCompletion.h>
 
 #include "explore_operation.h"
-#include "extract_module_operation.h"
+#include "interact_operation.h"
 #include "fluid.h"
 #include "hold_operation.h"
 #include "land_operation.h"
@@ -67,10 +67,10 @@ bool Fluid::explore(fluid::Explore::Request& request, fluid::Explore::Response& 
     return true;
 }
 
-bool Fluid::extractModule(fluid::ExtractModule::Request& request, fluid::ExtractModule::Response& response) {
+bool Fluid::interact(fluid::Interact::Request& request, fluid::Interact::Response& response) {
     Response attempt_response =
-        attemptToCreateOperation(OperationIdentifier::EXTRACT_MODULE,
-                                 {std::make_shared<ExtractModuleOperation>(request.fixed_mast_yaw, request.offset), std::make_shared<HoldOperation>()});
+        attemptToCreateOperation(OperationIdentifier::INTERACT,
+                                 {std::make_shared<InteractOperation>(request.fixed_mast_yaw, request.offset), std::make_shared<HoldOperation>()});
     response.message = attempt_response.message;
     response.success = attempt_response.success;
     return true;
@@ -159,7 +159,7 @@ bool Fluid::isValidOperation(const OperationIdentifier& current_operation_identi
             return current_operation_identifier != OperationIdentifier::TAKE_OFF &&
                    current_operation_identifier != OperationIdentifier::UNDEFINED;
 
-        case OperationIdentifier::EXTRACT_MODULE:
+        case OperationIdentifier::INTERACT:
             return current_operation_identifier != OperationIdentifier::TAKE_OFF &&
                    current_operation_identifier != OperationIdentifier::LAND &&
                    current_operation_identifier != OperationIdentifier::UNDEFINED;

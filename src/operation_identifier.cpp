@@ -21,8 +21,8 @@ std::string getStringFromOperationIdentifier(const OperationIdentifier& operatio
             return "TRAVEL";
         case OperationIdentifier::LAND:
             return "LAND";
-        case OperationIdentifier::EXTRACT_MODULE:
-            return "EXTRACT_MODULE";
+        case OperationIdentifier::INTERACT:
+            return "INTERACT";
         case OperationIdentifier::UNDEFINED:
             return "UNDEFINED";
     }

@@ -21,7 +21,7 @@ enum class OperationIdentifier {
     EXPLORE,
     TRAVEL,
     LAND,
-    EXTRACT_MODULE,
+    INTERACT,
     UNDEFINED
 };
 
