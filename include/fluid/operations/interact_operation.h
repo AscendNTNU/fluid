@@ -24,14 +24,15 @@ class InteractOperation : public Operation {
 		OVER,
 		BEHIND_WITH_HOOKS,
 	 	INTERACT,
-		EXTRACTED
+		EXTRACTED,
+        LEAVE
 	};
 
     struct TransitionSetpointStruct {
         float max_vel;
         float cte_acc;
         mavros_msgs::PositionTarget state;
-        uint8_t finished_bitmask; //updated but unused
+        uint8_t finished_bitmask;
     };
 
 	InteractionState interaction_state = InteractionState::APPROACHING;
@@ -58,6 +59,7 @@ class InteractOperation : public Operation {
     
 
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
+    void FaceHuggerCallback(const bool released);
 
     ros::ServiceClient backpropeller_client;
 

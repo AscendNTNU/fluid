@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
                 printf("send yaw mast of %f\n",mast_yaw);
                 fluid::Interact interact_service_handle;
                 interact_service_handle.request.fixed_mast_yaw = mast_yaw;
-                interact_service_handle.request.offset = 3.0;
+                interact_service_handle.request.offset = 1.5;
                 
                 if (Interact.call(interact_service_handle)) {
                     if (!interact_service_handle.response.success) {

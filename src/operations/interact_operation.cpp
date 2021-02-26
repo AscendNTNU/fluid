@@ -17,7 +17,7 @@
 
 //A list of parameters for the user
 #define SAVE_DATA   true  //to put in launch
-#define SHOW_PRINTS false //to put in launch
+#define SHOW_PRINTS true  //to put in launch
 #define SAVE_Z      true
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
@@ -63,7 +63,7 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
         //the offset is set in the frame of the mast:    
         desired_offset.x = offset;     //forward
         desired_offset.y = 0.0;     //left
-        desired_offset.z = -0.5;    //up
+        desired_offset.z = -0.45;    //up
 
     }
 
@@ -123,6 +123,13 @@ void InteractOperation::modulePoseCallback(
     mast_angle.x =  mast_euler_angle.y;
     mast_angle.y = -mast_euler_angle.z;
     mast_angle.z =  180.0/M_PI * atan2(mast_euler_angle.y,-mast_euler_angle.z);
+}
+
+void InteractOperation::FaceHuggerCallback(const bool released){
+    if (released){
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast!");
+        interaction_state =  InteractionState::EXTRACTED;
+    }
 }
 
 #if SAVE_DATA
@@ -451,7 +458,7 @@ void InteractOperation::tick() {
             if(time_cout%(rate_int*2)==0) printf("APPROACHING\t");
             printf("distance to ref %f\n", distance_to_reference_with_offset);
             #endif
-            if (transition_state.finished_bitmask & 0x7 && distance_to_reference_with_offset < 0.07) {
+            if ((transition_state.finished_bitmask & 0x7 == 0x7) && (distance_to_reference_with_offset < 0.07)) {
                 if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{
@@ -465,6 +472,10 @@ void InteractOperation::tick() {
                     transition_state.cte_acc = MAX_ACCEL;
                     transition_state.max_vel = MAX_VEL;
                     completion_count= 0;
+
+                    // Avoid going to the next step before the transition is actuallized
+                    transition_state.finished_bitmask = 0;
+
                 }
             }
             else
@@ -475,22 +486,18 @@ void InteractOperation::tick() {
             #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("OVER\n");
             #endif
-            //todo write a smart evalutation function to know when to move to the next state
-            if (distance_to_reference_with_offset <= 0.04 
-                        && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 10.0) {
-                if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
-                    completion_count++;
-                else{
-                    interaction_state = InteractionState::INTERACT;
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                                << ": " << "Over -> Interacting");
-                    desired_offset.x = 0.25;  //forward   //right //the distance from the drone to the FaceHugger
-                    desired_offset.y = 0.0;   //left      //front
-                    desired_offset.z = -0.8;  //up        //up
-                }
+            //We assume that the accuracy is fine, we don't want to take the risk to stay too long
+            if (transition_state.finished_bitmask & 0x7 == 0x7) {
+                interaction_state = InteractionState::INTERACT;
+                ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                            << ": " << "Over -> Interact");
+                desired_offset.x = 0.25;  //forward    //the distance from the drone to the FaceHugger
+                desired_offset.y = 0.0;   //left      
+                desired_offset.z -= 0.2; //up        // going down by 20 cms
+
+                // Avoid going to the next step before the transition is actuallized
+                transition_state.finished_bitmask = 0;
             }
-            else
-                completion_count = 0;
             break;
         }
         case InteractionState::INTERACT: {
@@ -498,40 +505,56 @@ void InteractOperation::tick() {
             if(time_cout%(rate_int*2)==0) printf("INTERACT\n");
             #endif
 
-            //Do something to release the FaceHugger at the righ moment
-            /*
-            if (!called_backpropeller_service) {
-                std_srvs::SetBool request;
-                request.request.data = true;
-                backpropeller_client.call(request);
-                called_backpropeller_service = true;
-            } */          
+            //We assume that the FaceHugger is set, we don't want to take the risk to stay too long
+            // If the faceHugger is set, an interupt function will be called to change the state to LEAVE
+            if (transition_state.finished_bitmask & 0x7) {
+                interaction_state = InteractionState::LEAVE;
+                ROS_INFO_STREAM(ros::this_node::getName().c_str() << "Leaving the mast for safety reasons, the FaceHugger could not be placed..."); 
 
-            // If the module is on the way down
-            // TODO: this should be checked in a better way
-            if (module_state.position.z < 0.5) {
-                if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
-                    completion_count++;
-                else{
-                    interaction_state = InteractionState::EXTRACTED;
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str() << "Module extracted!"); 
-                    std_srvs::SetBool request;
-                    request.request.data = false; 
-    //                backpropeller_client.call(request);
-    //                called_backpropeller_service = false;
-
-                    //we move backward to ensure there will be no colision
-                    // We directly set the transition state as we want to move as fast as possible
-                    // and we don't mind anymore about the relative position to the mast
-                    transition_state.state.position.x = 1.70;  //forward   //right //the distance from the drone to the FaceHugger
-                    transition_state.state.position.y = 0.0;   //left      //front
-                    transition_state.state.position.z = -0.8;  //up        //up
-                }
+                //we move backward to ensure there will be no colision
+                // We directly set the transition state as we want to move as fast as possible
+                // and we don't mind anymore about the relative position to the mast
+                transition_state.state.position.x = 1.70;  //forward   //right //the distance from the drone to the FaceHugger
+                transition_state.state.position.y = 0.0;   //left      //front
+                transition_state.state.position.z = -0.8;  //up        //up
+                desired_offset.x = 1.70;  //forward    //the distance from the drone to the FaceHugger
+                desired_offset.y = 0.0;   //left      
+                desired_offset.z = -0.8; //up        // going down by 20 cms
             }
-            else
-                completion_count = 0;
             break;
         }
+        case InteractionState::LEAVE: {
+            #if SHOW_PRINTS
+            if(time_cout%(rate_int*2)==0) printf("LEAVE\n");
+            #endif
+            //This is a transition state before going back to approach and try again.
+            if (distance_to_reference_with_offset < 0.2) {
+                interaction_state = InteractionState::APPROACHING;
+                desired_offset.x = 1.5;
+                desired_offset.y = 0.0;
+                desired_offset.z = -0.45;
+
+                // Avoid going to the next step before the transition is actuallized
+                transition_state.finished_bitmask = 0;
+            }
+            break;
+        }
+        case InteractionState::EXTRACTED: {
+            #if SHOW_PRINTS
+            if(time_cout%(rate_int*2)==0) printf("LEAVE\n");
+            #endif
+            // This is also a transition state before AI takes the lead back and travel back to the starting point
+            std_srvs::SetBool request;
+            request.request.data = false; 
+            if (distance_to_reference_with_offset < 0.2) {
+                desired_offset.x = 2;
+                desired_offset.y = 0.0;
+                desired_offset.z = 2;
+            }
+        }
+
+
+
     }//end switch state
 
     if (time_cout % rate_int == 0)
