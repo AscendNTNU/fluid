@@ -118,7 +118,11 @@ void InteractOperation::modulePoseCallback(
     module_state.position = module_pose_ptr->pose.position;
     module_state.velocity = estimateModuleVel();    
     module_state.acceleration_or_force = estimateModuleAccel();
-    //I may want to also extract the mast_yaw
+    
+    const geometry_msgs::Vector3 mast_euler_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
+    mast_angle.x =  mast_euler_angle.y;
+    mast_angle.y = -mast_euler_angle.z;
+    mast_angle.z =  180.0/M_PI * atan2(mast_euler_angle.y,-mast_euler_angle.z);
 }
 
 #if SAVE_DATA
@@ -424,6 +428,7 @@ void InteractOperation::update_transition_state()
 
 void InteractOperation::tick() {
     time_cout++;
+    //printf("mast pitch %f, roll %f, angle %f\n", mast_angle.x, mast_angle.y, mast_angle.z);
     // Wait until we get the first module position readings before we do anything else.
     if (module_state.header.seq == 0) {
         if(time_cout%rate_int==0)
@@ -470,10 +475,9 @@ void InteractOperation::tick() {
             #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("OVER\n");
             #endif
-
             //todo write a smart evalutation function to know when to move to the next state
-            if (distance_to_reference_with_offset < 
-                    0.04 && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 50.0) {
+            if (distance_to_reference_with_offset <= 0.04 
+                        && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 10.0) {
                 if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{

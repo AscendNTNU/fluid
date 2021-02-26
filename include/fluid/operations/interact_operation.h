@@ -6,6 +6,7 @@
 #define INTERACT_OPERATION_H
 
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PointStamped.h>
 
 #include "operation.h"
 #include "operation_identifier.h"
@@ -39,6 +40,12 @@ class InteractOperation : public Operation {
     
     mavros_msgs::PositionTarget module_state;
     mavros_msgs::PositionTarget previous_module_state;
+    
+    /**
+     * @brief the pitch, roll and trigonometric angle of the mast
+     */
+    geometry_msgs::Vector3 mast_angle;
+    
     
     TransitionSetpointStruct transition_state;
     geometry_msgs::Point desired_offset;
