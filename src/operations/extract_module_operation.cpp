@@ -123,7 +123,10 @@ void ExtractModuleOperation::modulePoseCallback(
     module_state.velocity = estimateModuleVel();    
     module_state.acceleration_or_force = estimateModuleAccel();
     
-    mast_euler_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
+    const geometry_msgs::Vector3 mast_euler_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
+    mast_angle.x =  mast_euler_angle.y;
+    mast_angle.y = -mast_euler_angle.z;
+    mast_angle.z =  180.0/M_PI * atan2(mast_euler_angle.y,-mast_euler_angle.z);
 }
 
 #if SAVE_DATA
@@ -385,7 +388,7 @@ void ExtractModuleOperation::update_transition_state()
 
 void ExtractModuleOperation::tick() {
     time_cout++;
-    printf("mast pitch %f, roll %f, yaw %f\n", mast_euler_angle.x, mast_euler_angle.y, mast_euler_angle.z);
+    //printf("mast pitch %f, roll %f, angle %f\n", mast_angle.x, mast_angle.y, mast_angle.z);
     // Wait until we get the first module position readings before we do anything else.
     if (module_state.header.seq == 0) {
         if(time_cout%rate_int==0)
@@ -432,16 +435,13 @@ void ExtractModuleOperation::tick() {
             #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("OVER\n");
             #endif
-            if(abs(mast_euler_angle.x)<M_PI/3.0){
-                printf("yeaaaah!\n");
-            }
             //todo write a smart evalutation function to know when to move to the next state
             if (distance_to_reference_with_offset <= 0.04 
                         && std::abs(getCurrentYaw() - fixed_mast_yaw) < M_PI / 10.0) {
                 if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{
-                    if(abs(mast_euler_angle.x)<M_PI/3.0){
+                    if(abs(mast_angle.z)<M_PI/3.0){
                     //We want to the mast to be leaning forward
                         extraction_state = ExtractionState::EXTRACTING;
                         ROS_INFO_STREAM(ros::this_node::getName().c_str()

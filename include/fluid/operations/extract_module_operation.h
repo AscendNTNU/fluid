@@ -40,7 +40,12 @@ class ExtractModuleOperation : public Operation {
     
     mavros_msgs::PositionTarget module_state;
     mavros_msgs::PositionTarget previous_module_state;
-    geometry_msgs::Vector3 mast_euler_angle;
+    
+    /**
+     * @brief the pitch, roll and trigonometric angle of the mast
+     */
+    geometry_msgs::Vector3 mast_angle;
+    
     
     TransitionSetpointStruct transition_state;
     geometry_msgs::Point desired_offset;
