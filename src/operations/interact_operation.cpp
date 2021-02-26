@@ -17,7 +17,7 @@
 
 //A list of parameters for the user
 #define SAVE_DATA   true  //to put in launch
-#define SHOW_PRINTS true  //to put in launch
+#define SHOW_PRINTS false  //to put in launch
 #define SAVE_Z      true
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
@@ -37,8 +37,8 @@ const float K_LQR_X[2] = {POW*LQR_POS_GAIN, POW*LQR_VEL_GAIN};
 const float K_LQR_Y[2] = {RATION*POW*LQR_POS_GAIN, RATION*POW*LQR_VEL_GAIN};
 
 //smooth transition
-#define MAX_VEL     0.14
-#define MAX_ACCEL   0.07
+#define MAX_VEL     0.30
+#define MAX_ACCEL   0.23
 
 #define MAX_ANGLE   400 // in centi-degrees
 
@@ -466,7 +466,7 @@ void InteractOperation::tick() {
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": " << "Approaching -> Over");
                     //the offset is set in the frame of the mast:    
-                    desired_offset.x = 0.25;  //forward   //right //the distance from the drone to the FaceHugger
+                    desired_offset.x = 0.28;  //forward   //right //the distance from the drone to the FaceHugger
                     desired_offset.y = 0.0;   //left   //front
                     desired_offset.z = -0.45;  //up   //up
                     transition_state.cte_acc = MAX_ACCEL;
@@ -491,7 +491,7 @@ void InteractOperation::tick() {
                 interaction_state = InteractionState::INTERACT;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Over -> Interact");
-                desired_offset.x = 0.25;  //forward    //the distance from the drone to the FaceHugger
+                desired_offset.x = 0.28;  //forward    //the distance from the drone to the FaceHugger
                 desired_offset.y = 0.0;   //left      
                 desired_offset.z -= 0.2; //up        // going down by 20 cms
 
