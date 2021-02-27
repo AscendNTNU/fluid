@@ -13,6 +13,8 @@
 #include "mavros_msgs/PositionTarget.h"
 #include "mavros_msgs/AttitudeTarget.h"
 
+#include "mast.h"
+
 /**
  * @brief Represents the operation where the drone is interact with the mast.
  */
@@ -39,21 +41,11 @@ class InteractOperation : public Operation {
     bool GROUND_TRUTH;
 	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
-    float fixed_mast_yaw; //Should be given by perception and known before entering in InteractOperation
+    
     
     mavros_msgs::PositionTarget module_state;
     mavros_msgs::PositionTarget previous_module_state;
     
-    /**
-     * @brief the pitch, roll and trigonometric angle of the mast
-     */
-    geometry_msgs::Vector3 mast_angle;
-    
-    /**
-     * @brief Save of the mast pitch ovre the last 20sec at 5Hz
-     */
-    float* mast_pitches;
-    uint16_t mast_pitches_id;
     
     TransitionSetpointStruct transition_state;
     geometry_msgs::Point desired_offset;
@@ -69,6 +61,8 @@ class InteractOperation : public Operation {
     float K_LQR_Y[2];
     float MAX_ACCEL;
     float MAX_VEL;
+
+    Mast mast;
     
 
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
@@ -85,10 +79,6 @@ class InteractOperation : public Operation {
     geometry_msgs::Vector3 estimateModuleVel();
     geometry_msgs::Vector3 estimateModuleAccel();
 
-    void save_mast_pitch(int save_rate);
-    void estimate_mast_period(int save_rate);
-    int search_min_id_within(float* array, int begin, int end);
-    int search_max_id_within(float* array, int begin, int end);
     
     
     //functions in relation to the following of the mast
