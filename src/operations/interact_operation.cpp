@@ -99,6 +99,7 @@ void InteractOperation::initialize() {
     transition_state.max_vel = 3*MAX_VEL;
 
     completion_count =0;
+    faceHugger_is_set = false;
 
     #if SAVE_DATA
     //create a header for the datafiles.
@@ -127,9 +128,12 @@ void InteractOperation::modulePoseCallback(
 
 void InteractOperation::FaceHuggerCallback(const bool released){
     if (released){
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast!");
-        interaction_state =  InteractionState::EXTRACTED;
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now leave the mast");
+        interaction_state =  InteractionState::LEAVE;
+        faceHugger_is_set = true;
     }
+    else 
+        faceHugger_is_set = false;
 }
 
 #if SAVE_DATA
@@ -505,9 +509,10 @@ void InteractOperation::tick() {
             if(time_cout%(rate_int*2)==0) printf("INTERACT\n");
             #endif
 
-            //We assume that the FaceHugger is set, we don't want to take the risk to stay too long
-            // If the faceHugger is set, an interupt function will be called to change the state to LEAVE
-            if (transition_state.finished_bitmask & 0x7) {
+            // we don't want to take the risk to stay too long, 
+            // Whether the faceHugger is set or not, we have to leave.
+            // NB, when FH is set, an interupt function switches the state to LEAVE
+            if (transition_state.finished_bitmask & 0x7 == 0x7) {
                 interaction_state = InteractionState::LEAVE;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str() << "Leaving the mast for safety reasons, the FaceHugger could not be placed..."); 
 
@@ -524,18 +529,24 @@ void InteractOperation::tick() {
             break;
         }
         case InteractionState::LEAVE: {
+            // NB, when FH is set, an interupt function switches the state to LEAVE
             #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("LEAVE\n");
             #endif
             //This is a transition state before going back to approach and try again.
             if (distance_to_reference_with_offset < 0.2) {
-                interaction_state = InteractionState::APPROACHING;
-                desired_offset.x = 1.5;
-                desired_offset.y = 0.0;
-                desired_offset.z = -0.45;
-
-                // Avoid going to the next step before the transition is actuallized
-                transition_state.finished_bitmask = 0;
+                if (faceHugger_is_set){
+                    interaction_state = InteractionState::EXTRACTED;
+                    desired_offset.x = 2;
+                    desired_offset.y = 0.0;
+                    desired_offset.z = 3;
+                }
+                else {
+                    interaction_state = InteractionState::APPROACHING;
+                    desired_offset.x = 1.5;
+                    desired_offset.y = 0.0;
+                    desired_offset.z = -0.45;
+                }
             }
             break;
         }
@@ -549,7 +560,7 @@ void InteractOperation::tick() {
             if (distance_to_reference_with_offset < 0.2) {
                 desired_offset.x = 2;
                 desired_offset.y = 0.0;
-                desired_offset.z = 2;
+                desired_offset.z = 3;
             }
         }
 

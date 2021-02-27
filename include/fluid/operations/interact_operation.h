@@ -60,7 +60,8 @@ class InteractOperation : public Operation {
 
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
     void FaceHuggerCallback(const bool released);
-
+    bool faceHugger_is_set;
+    
     ros::ServiceClient backpropeller_client;
 
     bool called_backpropeller_service = false;
