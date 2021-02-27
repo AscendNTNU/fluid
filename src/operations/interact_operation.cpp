@@ -56,6 +56,17 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
     }
 
 void InteractOperation::initialize() {
+    //get parameters from the launch file.
+    const float* temp = Fluid::getInstance().configuration.LQR_gains;
+    for (uint8_t i=0 ; i<2 ; i++) { 
+        K_LQR_X[i] = temp[2*i];
+        K_LQR_Y[i] = temp[2*i+1];
+    }
+    SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
+    GROUND_TRUTH = Fluid::getInstance().configuration.interaction_ground_truth;
+    MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
+    MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
+
     if (GROUND_TRUTH){
         module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                      10, &InteractOperation::modulePoseCallback, this);
@@ -87,19 +98,7 @@ void InteractOperation::initialize() {
     transition_state.cte_acc = 3*MAX_ACCEL; 
     transition_state.max_vel = 3*MAX_VEL;
     completion_count =0;
-    faceHugger_is_set = false;
-
-    //get parameters from the launch file.
-    const float* temp = Fluid::getInstance().configuration.LQR_gains;
-    for (uint8_t i=0 ; i<2 ; i++) { 
-        K_LQR_X[i] = temp[2*i];
-        K_LQR_Y[i] = temp[2*i+1];
-    }
-    SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
-    GROUND_TRUTH = Fluid::getInstance().configuration.interaction_ground_truth;
-    MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
-    MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
-    
+    faceHugger_is_set = false;    
     
     #if SAVE_DATA
     //create a header for the datafiles.
