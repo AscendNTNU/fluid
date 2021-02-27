@@ -359,9 +359,9 @@ void InteractOperation::estimate_mast_period(int save_rate){
         } while (min_id >= interval_end-save_rate/2-1); // -1 because the last indice is not included in the previous search
     }
     float half_period = (float)abs(min_id - max_id)/(float)save_rate;
-    #if SHOW_PRINTS
-    printf("The mast period is %f\n\n", 2*half_period);
-    #endif
+    if (SHOW_PRINTS){
+        printf("The mast period is %f\n\n", 2*half_period);
+    }
 }
 
 
