@@ -101,6 +101,9 @@ void InteractOperation::initialize() {
     completion_count =0;
     faceHugger_is_set = false;
 
+    mast_pitches = (float*) calloc(5*20,sizeof(float));
+    mast_pitches_id=0;
+
     #if SAVE_DATA
     //create a header for the datafiles.
     initLog(reference_state_path); 
@@ -276,6 +279,20 @@ geometry_msgs::Vector3 InteractOperation::estimateModuleAccel(){
     return Accel;
 }
 
+void InteractOperation::save_mast_pitch(){
+    mast_pitches[mast_pitches_id] = mast_angle.x;
+    mast_pitches_id++;
+    if(mast_pitches_id==100){
+        mast_pitches_id=0;
+        estimate_mast_period();
+    }
+}
+
+void InteractOperation::estimate_mast_period(){
+
+}
+
+
 mavros_msgs::PositionTarget InteractOperation::rotate(mavros_msgs::PositionTarget setpoint, float yaw){
     mavros_msgs::PositionTarget rotated_setpoint;
     rotated_setpoint.position = rotate(setpoint.position);
@@ -446,6 +463,9 @@ void InteractOperation::tick() {
             printf("Waiting for callback\n");
         return;
     }
+
+    if(time_cout % rate_int/5)
+        save_mast_pitch();
     
     update_transition_state();
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
