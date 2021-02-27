@@ -10,13 +10,13 @@ Mast::Mast(float yaw){
     m_pitches_id=0;
 }
 
-void Mast::save_mast_pitch(int save_rate){
+void Mast::save_pitch(int save_rate){
     m_pitches[m_pitches_id] = m_angle.x;
     m_pitches_id++;
 //    printf("mast angle n°%d: %f\n",m_pitches_id,mast_angle.x);
     if(m_pitches_id==SAVE_PITCH_FREQ*SAVE_PITCH_TIME){
         m_pitches_id=0;
-        estimate_mast_period(save_rate);
+        estimate_period(save_rate);
     }
 }
 
@@ -40,7 +40,7 @@ int Mast::search_max_id_within(float* array, int begin, int end){
     return max_id;
 }
 
-void Mast::estimate_mast_period(int save_rate){
+void Mast::estimate_period(int save_rate){
     // perception should get it with the kalman filter, but nice to have it ourselves I guess
 
     // This first version consider that the newest values are the lowest indexes.

@@ -68,11 +68,43 @@ class Mast{
 
 
     public:
+    /**
+     * @brief Construct a new Mast object
+     * 
+     * @param yaw The fixed yaw angle of mast. 
+     * Should be calculated by perception and given by AI
+     */
     Mast(float yaw=0.0);
-    void save_mast_pitch(int save_rate);
-    void estimate_mast_period(int save_rate);
-    void update(geometry_msgs::Quaternion orientation);
 
+    /**
+     * @brief save the actual mast pitch into an arraw.
+     * It will later be used to estimate future orientation
+     * 
+     * @param save_rate The rate at which it is being saved
+     */
+    void save_pitch(int save_rate);
+
+    /**
+     * @brief Estimate the mast pitch oscillation period from
+     * the measurment saved with save_pitch
+     * 
+     * @param save_rate 
+     */
+    void estimate_period(int save_rate);
+
+    /**
+     * @brief Update mast euler angles
+     * 
+     * @param orientation quaternion mast or module orientation
+     */
+    void update(geometry_msgs::Quaternion orientation); //todo: this should also save the pitch automaticaly
+
+    
+    /**
+     * @brief Get the mast fixed yaw 
+     * 
+     * @return float mast fixed yaw
+     */
     float get_yaw();
 
 };

@@ -462,7 +462,7 @@ void InteractOperation::tick() {
     }
     //printf("time count %% 5 = %d\n", (int)(time_cout%5));
     if((int)time_cout % (rate_int/SAVE_PITCH_FREQ ) ==0){
-        mast.save_mast_pitch(rate_int/SAVE_PITCH_FREQ);
+        mast.save_pitch(rate_int/SAVE_PITCH_FREQ);
     }
     
     update_transition_state();
