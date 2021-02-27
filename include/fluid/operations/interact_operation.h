@@ -35,6 +35,8 @@ class InteractOperation : public Operation {
         uint8_t finished_bitmask;
     };
 
+    bool SHOW_PRINTS;
+    bool GROUND_TRUTH;
 	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
     float fixed_mast_yaw; //Should be given by perception and known before entering in InteractOperation
@@ -61,6 +63,12 @@ class InteractOperation : public Operation {
     ros::Publisher altitude_and_yaw_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;
     geometry_msgs::Vector3 accel_target;
+    
+    float LQR_gains[4];
+    float K_LQR_X[2];
+    float K_LQR_Y[2];
+    float MAX_ACCEL;
+    float MAX_VEL;
     
 
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
@@ -106,6 +114,7 @@ class InteractOperation : public Operation {
      * Choose initial offset, set up transitino and init data_files.
      */
     void initialize() override;
+
 
     /**
      * @brief //create a header for the logfile.

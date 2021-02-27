@@ -7,6 +7,17 @@
   <arg name="velocity_completion_threshold"           default="10"/>
   <arg name="default_height"                          default="2.0"/>
   <arg name="launch_rviz"/>
+  
+  <arg name="interaction_ground_truth_data"           default="true"/>
+  <arg name="interaction_show_prints"                 default="true"/>
+  
+  <arg name="Kpx"                                     default="0.4189"/>
+  <arg name="Kpy"                                     default="0.8368"/>
+  <arg name="Kvx"                                     default="1.1062"/>
+  <arg name="Kvy"                                     default="2.2124"/>
+  <arg name="interaction_max_vel"                     default="0.14"/>
+  <arg name="interaction_max_acc"                     default="0.07"/>
+  
 
   <node name="fluid" pkg="fluid" type="fluid" output="screen"> 
     <param name="refresh_rate"                        value="$(arg refresh_rate)"/>
@@ -15,6 +26,17 @@
     <param name="distance_completion_threshold"       value="$(arg distance_completion_threshold)"/>
     <param name="velocity_completion_threshold"       value="$(arg velocity_completion_threshold)"/>
     <param name="default_height"                      value="$(arg default_height)"/>
+
+    <param name="interaction_ground_truth_data"       value="$(arg interaction_ground_truth_data)"/>
+    <param name="interaction_show_prints"             value="$(arg interaction_show_prints)"/>
+
+    <param name="Kpx"                                 value="$(arg Kpx)"/>
+    <param name="Kpy"                                 value="$(arg Kpy)"/>
+    <param name="Kvx"                                 value="$(arg Kvx)"/>
+    <param name="Kvy"                                 value="$(arg Kvy)"/>
+    <param name="interaction_max_vel"                 value="$(arg interaction_max_vel)"/>
+    <param name="interaction_max_acc"                 value="$(arg interaction_max_acc)"/>
+
   </node>
 
   <node if="$(arg launch_rviz)" type="rviz" name="rviz" pkg="rviz" args="-d $(find fluid)/rviz_configs/fluid.rviz" />
