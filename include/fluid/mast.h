@@ -43,6 +43,12 @@ class Mast{
      */
     uint16_t m_pitches_id;
 
+    /**
+     * @brief keep track of when is the pitch is saved for mast period estimation
+     * 
+     */
+    ros::Time m_last_time_pitch_saved;
+
     
     /**
      * @brief Look for the indice of the minimum value in arraw 
@@ -79,18 +85,14 @@ class Mast{
     /**
      * @brief save the actual mast pitch into an arraw.
      * It will later be used to estimate future orientation
-     * 
-     * @param save_rate The rate at which it is being saved
      */
-    void save_pitch(int save_rate);
+    void save_pitch();
 
     /**
      * @brief Estimate the mast pitch oscillation period from
      * the measurment saved with save_pitch
-     * 
-     * @param save_rate 
      */
-    void estimate_period(int save_rate);
+    void estimate_period();
 
     /**
      * @brief Update mast euler angles
