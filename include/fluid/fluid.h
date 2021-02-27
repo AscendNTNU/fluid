@@ -63,6 +63,32 @@ struct FluidConfiguration {
      * @brief Height used when e.g. 0 was given for a setpoint.
      */
     const float default_height;
+
+    /**
+     * @brief Kpx, Kpy, Kvx, Kvy are the gains used by the LQR.
+     *        Respectively the gain in position for both axes and in velocity for both axes.
+     */
+    const float* LQR_gains; 
+
+    /**
+     * @brief Show some debugging prints during the interact operation
+     */
+    const bool interaction_show_prints;
+    
+    /**
+     * @brief Use ground_truth data for interact operation.
+     */
+    const bool interaction_ground_truth;  
+
+    /**
+     * @brief Show some debugging prints during the interact operation
+     */
+    const float interact_max_vel;
+    
+    /**
+     * @brief Use ground_truth data for interact operation.
+     */
+    const float interact_max_acc;  
 };
 
 /**
