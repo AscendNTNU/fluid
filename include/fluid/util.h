@@ -178,6 +178,27 @@ class Util {
     }
 
 
+    /**
+     * @brief Find the min and the max from a array of float
+     * would be nice to have this function independant to the type
+     * 
+     * @param array The array we want to search from
+     * @param length The length of the array
+     * @param min A pointer to the min value
+     * @param max A pointer to the max value
+     */
+    static void minMaxFromArray (const float* array, const int length, int& min_id, int& max_id) {
+        min_id = 0;
+        max_id = 0;
+        for (int i=1; i < length ; i++){
+            if(array[i] < array[min_id])
+                min_id = i;
+            else if (array[i] > array[max_id])
+                max_id = i;
+        }
+    }
+
+
 };
 
 #endif

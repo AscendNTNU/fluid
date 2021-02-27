@@ -51,7 +51,7 @@ class InteractOperation : public Operation {
      * @brief Save of the mast pitch ovre the last 20sec at 5Hz
      */
     float* mast_pitches;
-    uint8_t mast_pitches_id;
+    uint16_t mast_pitches_id;
     
     TransitionSetpointStruct transition_state;
     geometry_msgs::Point desired_offset;
@@ -77,8 +77,11 @@ class InteractOperation : public Operation {
     geometry_msgs::Vector3 estimateModuleVel();
     geometry_msgs::Vector3 estimateModuleAccel();
 
-    void save_mast_pitch();
-    void estimate_mast_period();
+    void save_mast_pitch(int save_rate);
+    void estimate_mast_period(int save_rate);
+    int search_min_id_within(float* array, int begin, int end);
+    int search_max_id_within(float* array, int begin, int end);
+    
     
     //functions in relation to the following of the mast
     //not sure if they should be public or private

@@ -43,6 +43,10 @@ const float K_LQR_Y[2] = {RATION*POW*LQR_POS_GAIN, RATION*POW*LQR_VEL_GAIN};
 #define MAX_ANGLE   400 // in centi-degrees
 
 
+//mast movement estimation
+#define SAVE_PITCH_TIME 15
+#define SAVE_PITCH_FREQ 4 //Todo, may not work with whatever frequency. 6Hz looks weird
+
 #if SAVE_DATA
 //files saved in home directory
 const std::string reference_state_path = std::string(get_current_dir_name()) + "/../reference_state.txt";
@@ -53,7 +57,7 @@ std::ofstream drone_pose_f;
 std::ofstream drone_setpoints_f; 
 #endif
 
-uint8_t time_cout = 0; //used not to do some stuffs at every tick
+uint16_t time_cout = 0; //used not to do some stuffs at every tick
 
 //function called when creating the operation
 InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& offset) : 
@@ -101,8 +105,10 @@ void InteractOperation::initialize() {
     completion_count =0;
     faceHugger_is_set = false;
 
-    mast_pitches = (float*) calloc(5*20,sizeof(float));
+    mast_pitches = (float*) calloc(SAVE_PITCH_FREQ*SAVE_PITCH_TIME,sizeof(float));
     mast_pitches_id=0;
+
+//    printf("\n\n save rate = %d\n\n",rate_int/SAVE_PITCH_FREQ);
 
     #if SAVE_DATA
     //create a header for the datafiles.
@@ -279,20 +285,94 @@ geometry_msgs::Vector3 InteractOperation::estimateModuleAccel(){
     return Accel;
 }
 
-void InteractOperation::save_mast_pitch(){
+void InteractOperation::save_mast_pitch(int save_rate){
     mast_pitches[mast_pitches_id] = mast_angle.x;
     mast_pitches_id++;
-    if(mast_pitches_id==100){
+//    printf("mast angle n°%d: %f\n",mast_pitches_id,mast_angle.x);
+    if(mast_pitches_id==SAVE_PITCH_FREQ*SAVE_PITCH_TIME){
         mast_pitches_id=0;
-        estimate_mast_period();
+        estimate_mast_period(save_rate);
     }
 }
 
-void InteractOperation::estimate_mast_period(){
+int InteractOperation::search_min_id_within(float* array, int begin, int end){
+    int min_id = begin;
+    for(int i = begin ; i < end ; i++)
+    {
+        if(array[i] <= array[min_id])
+            min_id = i;
+    }
+    return min_id;
+}
 
+int InteractOperation::search_max_id_within(float* array, int begin, int end){
+    int max_id = begin;
+    for(int i = begin ; i < end ; i++)
+    {
+        if(array[i] >= array[max_id])
+            max_id = i;
+    }
+    return max_id;
+}
+
+void InteractOperation::estimate_mast_period(int save_rate){
+    // perception should get it with the kalman filter, but nice to have it ourselves I guess
+
+    // This first version consider that the newest values are the lowest indexes.
+    // It also consider that we never get out of bounds
+
+    // We try to find the min and the max looking at successif short intervals
+    // By taking 2 seconds interval, we know that we won't have more than a full
+    // period, and therefore, we can't have two local extremum.
+    // If the indice of the extremum is the beginning indice or the end indice
+    // that means that we probably did not find it.
+    int min_id=0, max_id=0;
+    int interval_end;
+    //First, we estimate whether the pitches is increasing or decreasing
+    if(mast_pitches[0] > mast_pitches[5]) {
+        // pitches in decreasing, we first look for the min
+        do {
+            interval_end = min_id+3*save_rate;
+            min_id = search_min_id_within(mast_pitches,min_id,interval_end);
+        } while (min_id >= interval_end-save_rate/2-1); // -1 because the last indice is not included in the previous search
+        // let us look for the max now
+        max_id = min_id + 3*save_rate; //save some iterations
+        do {
+            interval_end = max_id+3*save_rate;
+            max_id = search_max_id_within(mast_pitches,max_id,interval_end);
+        } while (max_id >= interval_end-save_rate/2-1); // -1 because the last indice is not included in the previous search
+                                                    // -save_rate/2 to take some margin as the signal may be noisy
+        
+    }
+    else {
+        // pitches in decreasing, we first look for the min
+        do {
+            interval_end = max_id+3*save_rate;
+            max_id = search_max_id_within(mast_pitches,max_id,interval_end);
+        } while (max_id >= interval_end-save_rate/2-1); // -1 because the last indice is not included in the previous search
+        // let us look for the min now
+        min_id = max_id + 3*save_rate; //save some iterations
+        do {
+            interval_end = min_id+3*save_rate;
+            min_id = search_min_id_within(mast_pitches,min_id,interval_end);
+        } while (min_id >= interval_end-save_rate/2-1); // -1 because the last indice is not included in the previous search
+    }
+    float half_period = (float)abs(min_id - max_id)/(float)save_rate;
+    #if SHOW_PRINTS
+    printf("The mast period is %f\n\n", 2*half_period);
+    #endif
 }
 
 
+/*template<typename T>  T& rotate2 (T& pt, float yaw) {
+    T& rotated_point;
+    rotated_point.x = cos(fixed_mast_yaw) * pt.x - sin(fixed_mast_yaw) * pt.y;
+    rotated_point.y = cos(fixed_mast_yaw) * pt.y + sin(fixed_mast_yaw) * pt.x;
+    rotated_point.z = pt.z;
+
+    return rotated_point;
+}
+*/
 mavros_msgs::PositionTarget InteractOperation::rotate(mavros_msgs::PositionTarget setpoint, float yaw){
     mavros_msgs::PositionTarget rotated_setpoint;
     rotated_setpoint.position = rotate(setpoint.position);
@@ -463,9 +543,10 @@ void InteractOperation::tick() {
             printf("Waiting for callback\n");
         return;
     }
-
-    if(time_cout % rate_int/5)
-        save_mast_pitch();
+    //printf("time count %% 5 = %d\n", (int)(time_cout%5));
+    if((int)time_cout % (rate_int/SAVE_PITCH_FREQ ) ==0){
+        save_mast_pitch(rate_int/SAVE_PITCH_FREQ);
+    }
     
     update_transition_state();
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,fixed_mast_yaw);
