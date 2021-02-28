@@ -525,9 +525,9 @@ void InteractOperation::tick() {
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Approaching -> Over");
                 //the offset is set in the frame of the mast:    
-                desired_offset.x = 0.28;  //forward   //right //the distance from the drone to the FaceHugger
-                desired_offset.y = 0.0;   //left   //front
-                desired_offset.z = -0.45;  //up   //up
+                desired_offset.x = 0.28;  //forward
+                desired_offset.y = 0.0;   //left
+                desired_offset.z = -0.45; //up
                 transition_state.cte_acc = MAX_ACCEL;
                 transition_state.max_vel = MAX_VEL;
 
@@ -546,9 +546,9 @@ void InteractOperation::tick() {
                 interaction_state = InteractionState::INTERACT;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Over -> Interact");
-                desired_offset.x = 0.28;  //forward    //the distance from the drone to the FaceHugger
-                desired_offset.y = 0.0;   //left      
-                desired_offset.z -= 0.2; //up        // going down by 20 cms
+                desired_offset.x = 0.28;  //forward
+                desired_offset.y = 0.0;   //left
+                desired_offset.z -= 0.2;  //up
 
                 // Avoid going to the next step before the transition is actuallized
                 transition_state.finished_bitmask = 0;
@@ -572,16 +572,18 @@ void InteractOperation::tick() {
                 //we move backward to ensure there will be no colision
                 // We directly set the transition state as we want to move as fast as possible
                 // and we don't mind anymore about the relative position to the mast
-                transition_state.state.position.x = 4.70;  //forward   //right //the distance from the drone to the FaceHugger
-                transition_state.state.position.y = 0.0;   //left      //front
-                transition_state.state.position.z = -0.8;  //up        //up
-                desired_offset.x = 1.70;  //forward    //the distance from the drone to the FaceHugger
-                desired_offset.y = 0.0;   //left      
-                desired_offset.z = -0.8; //up        
+                transition_state.state.position.x = 2.70;  //further than the desired offset as a fix to make it faster
+                transition_state.state.position.y = 0.0;   
+                transition_state.state.position.z = -1;  
+                desired_offset.x = 1.70;   //forward
+                desired_offset.y = 0.0;    //left
+                desired_offset.z = -0.8;   //up
 
                 //todo: for some reason, the drone is slow to get there. 
                 // It would be nice to get it go back to a stable approach within 5 secs
                 // so that we can try to set the FaecHugger as soon as possible!
+                // It may be because of the LQR control which is tuned for accuracy and not fast movements.
+                // It can be overriden by setting far setpoints, but that's not clean, and may include risks
             }
             break;
         }
