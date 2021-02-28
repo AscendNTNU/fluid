@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
         ROS_FATAL("Did not get connection with Fluid's services, is Fluid running?");
         return 1;
     }
-
+    
     fluid::TakeOff take_off_service_handle;
     take_off_service_handle.request.height = 2.0f;
 

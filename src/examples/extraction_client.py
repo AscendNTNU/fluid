@@ -71,6 +71,14 @@ def main():
     while not gotConnectionWithServices(2) and not rospy.is_shutdown():
         rospy.logerr("Did not get connection with Fluid's services, is Fluid running?")
 
+
+    ros::Time test_time;
+    if(test_time.isValid())
+        ROS_INFO_STREAM("\nros time valid at init\n\n");
+    else
+        ROS_INFO_STREAM("\nros time NOT valid at init\n\n");
+
+
     # Perform a take off to 3 meters above ground
     take_off_response = take_off(2)
     is_executing_operation = True
