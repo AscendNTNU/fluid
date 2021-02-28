@@ -490,7 +490,10 @@ void InteractOperation::tick() {
                 if (completion_count < ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{
+                    //We consider that if the drone is ready at some point, it will 
+                    // remain ready until it is time to try
                     ready_to_interact = true;
+                    completion_count = 0;
                 }
 
             }
@@ -498,7 +501,7 @@ void InteractOperation::tick() {
                 completion_count = 0;
             if(ready_to_interact)
             {//The drone is ready, we just have to wait for the best moment to go!
-                if(abs(mast.time_to_max_pitch()-estimate_time_to_mast)<0.5)
+                if(abs(mast.time_to_max_pitch()-estimate_time_to_mast+0.5)<=0.5)
                 { //We are in the good window to set the faceHugger
                     interaction_state = InteractionState::OVER;
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
@@ -509,10 +512,10 @@ void InteractOperation::tick() {
                     desired_offset.z = -0.45;  //up   //up
                     transition_state.cte_acc = MAX_ACCEL;
                     transition_state.max_vel = MAX_VEL;
-                    completion_count= 0;
 
                     // Avoid going to the next step before the transition is actuallized
                     transition_state.finished_bitmask = 0;
+                    ready_to_interact = false;
                 }
             }
             break;
