@@ -458,6 +458,10 @@ void InteractOperation::tick() {
         return;
     }
 
+    if(SHOW_PRINTS)
+        if(time_cout%rate_int == 0)
+            ROS_INFO_STREAM("max pitch ETA: " << ros::Time::now() + ros::Duration(mast.time_to_max_pitch()));
+
     update_transition_state();
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
 

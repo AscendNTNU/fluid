@@ -157,7 +157,19 @@ int Mast::search_max_id_within(float* array, int begin, int end){
 }
 
 float Mast::time_to_max_pitch(){
-    return 0.0;
+    //check that we got both a min and a max
+    if(!m_time_last_max_pitch.isZero() && !m_time_last_min_pitch.isZero())
+    {
+        if(m_lookForMin){
+            //the mast is pitching backward:
+            return m_period/2.0 *(2.0 - (m_last_max_pitch-m_angle.x)/(m_last_max_pitch-m_last_min_pitch));
+        }
+        else{
+            //the mast is pitching frontward:
+            return m_period/2.0 *( 1.0 - (m_angle.x- m_last_min_pitch)/(m_last_max_pitch-m_last_min_pitch));
+        }
+    }
+    return -1;
 }
 
 //TODO: do a max pitch ETA to see if it seems constant
