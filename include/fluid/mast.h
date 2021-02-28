@@ -32,6 +32,12 @@ class Mast{
      * @brief the pitch, roll and trigonometric angle of the mast
      */
     geometry_msgs::Vector3 m_angle;
+
+    /**
+     * @brief The estimated period of the pitch of the mast.
+     * -1 if not estimated yet.
+     */
+    float m_period;
     
     /**
      * @brief Save of the mast pitch over the last 20sec at 5Hz
@@ -49,7 +55,37 @@ class Mast{
      */
     ros::Time m_last_time_pitch_saved;
 
+    /**
+     * @brief Define if the mast pitch is increasing or decreasing
+     * 
+     */
+    bool m_lookForMin;
+
+    /**
+     * @brief current extremum value being tested to replace the last one.
+     * 
+     */
+    float m_current_extremum;
     
+    /**
+     * @brief The minimum pitch the mast got during the last oscillation
+     * 
+     */
+    float m_last_min_pitch;
+
+    /**
+     * @brief The maximum pitch the mast got during the last oscillation
+     * 
+     */
+    float m_last_max_pitch;
+
+    /**
+     * @brief time at whitch the last minimum pitch has been found
+     * 
+     */
+    ros::Time m_time_last_min_pitch;
+    ros::Time m_time_last_max_pitch;
+
     /**
      * @brief Look for the indice of the minimum value in arraw 
      * within the given boudaries
@@ -72,16 +108,6 @@ class Mast{
      */
     int search_max_id_within(float* array, int begin, int end);
 
-
-    public:
-    /**
-     * @brief Construct a new Mast object
-     * 
-     * @param yaw The fixed yaw angle of mast. 
-     * Should be calculated by perception and given by AI
-     */
-    Mast(float yaw=0.0);
-
     /**
      * @brief save the actual mast pitch into an arraw.
      * It will later be used to estimate future orientation
@@ -94,6 +120,18 @@ class Mast{
      */
     void estimate_period();
 
+    
+    
+    
+    public:
+    /**
+     * @brief Construct a new Mast object
+     * 
+     * @param yaw The fixed yaw angle of mast. 
+     * Should be calculated by perception and given by AI
+     */
+    Mast(float yaw=0.0);
+
     /**
      * @brief Update mast euler angles
      * 
@@ -101,6 +139,24 @@ class Mast{
      */
     void update(geometry_msgs::Quaternion orientation); //todo: this should also save the pitch automaticaly
 
+    /**
+     * @brief Update mast euler angles.
+     *        Check if pitch were extremum.
+     *        Deduce period.
+     * 
+     * @param orientation quaternion mast or module orientation
+     */
+    void update2(geometry_msgs::Quaternion orientation); //todo: this should also save the pitch automaticaly
+
+    /**
+     * @brief Estimate the time the mast will take to reach its next 
+     *        most forward position = maximum pitch.
+     *        It considers that the current oscillation is exactly the 
+     *        same as the previous one
+     * 
+     * @return Time until the mast reaches its next maximum pitch
+     */
+    float time_to_max_pitch();
     
     /**
      * @brief Get the mast fixed yaw 
@@ -108,6 +164,13 @@ class Mast{
      * @return float mast fixed yaw
      */
     float get_yaw();
+
+    /**
+     * @brief Get the estimated period of the mast
+     * 
+     * @return -1 if not estimated yet, the estimated period otherwise
+     */
+    float get_period();
 
 };
 #endif // MAST_H

@@ -7,9 +7,49 @@
 
 Mast::Mast(float yaw){
     m_fixed_yaw = yaw;
+    m_period = 10;
     m_pitches = (float*) calloc(SAVE_PITCH_FREQ*SAVE_PITCH_TIME,sizeof(float));
     m_pitches_id=0;
     m_SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
+}
+
+void Mast::update2(geometry_msgs::Quaternion orientation){
+    const geometry_msgs::Vector3 mast_euler_angle = Util::quaternion_to_euler_angle(orientation);
+    m_angle.x =  mast_euler_angle.y;
+    m_angle.y = -mast_euler_angle.z;
+    m_angle.z =  180.0/M_PI * atan2(mast_euler_angle.y,-mast_euler_angle.z);
+
+    if(m_lookForMin)
+    {
+        if(m_angle.x < m_current_extremum){
+            m_current_extremum = m_angle.x;
+            m_time_last_min_pitch = ros::Time::now();
+        }
+        else if ( (ros::Time::now() - m_time_last_max_pitch) >= ros::Duration(m_period/3.0) ){ //todo: may cause some trouble at the init
+            if ((ros::Time::now() - m_time_last_min_pitch) >= ros::Duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
+                //We have not found a new minimum for 0.5sec. The last one found it the correct one.
+                m_last_min_pitch = m_current_extremum;
+                m_lookForMin = false;
+                m_period = (m_time_last_min_pitch - m_time_last_max_pitch).toSec();
+                ROS_INFO_STREAM("period from min = " << m_period);
+            }
+        }
+    }
+    else{ //If we do no look for a min, we look for a max
+        if (m_angle.x > m_current_extremum){
+            m_current_extremum = m_angle.x;
+            m_time_last_max_pitch = ros::Time::now();
+        }
+        else if ( (ros::Time::now() - m_time_last_min_pitch) >= ros::Duration(m_period/3.0) ){ //todo: may cause some trouble at the init
+            if ( (ros::Time::now() - m_time_last_max_pitch) >= ros::Duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
+                //We have not found a new maximum for 0.5sec. The last one found it the correct one.
+                m_last_max_pitch = m_current_extremum;
+                m_lookForMin = true;
+                m_period = (m_time_last_max_pitch - m_time_last_min_pitch).toSec();
+                ROS_INFO_STREAM("period from max = " << m_period);
+            }
+        }
+    }
 }
 
 void Mast::update(geometry_msgs::Quaternion orientation){
@@ -19,12 +59,12 @@ void Mast::update(geometry_msgs::Quaternion orientation){
     m_angle.y = -mast_euler_angle.z;
     m_angle.z =  180.0/M_PI * atan2(mast_euler_angle.y,-mast_euler_angle.z);
     
-    if((ros::Time::now()-m_last_time_pitch_saved).toSec() >= 2.0/(float)SAVE_PITCH_FREQ){
+    if(ros::Time::now()-m_last_time_pitch_saved >= ros::Duration(2.0/(float)SAVE_PITCH_FREQ)){
         // We are late on saving. We are just gonna restart from here.
         m_last_time_pitch_saved = ros::Time::now();
         m_pitches_id = 0;
     }
-    else if((ros::Time::now()-m_last_time_pitch_saved).toSec() >= 1.0/(float)SAVE_PITCH_FREQ){
+    else if(ros::Time::now()-m_last_time_pitch_saved >= ros::Duration(1.0/(float)SAVE_PITCH_FREQ)){
         m_last_time_pitch_saved.operator+=(ros::Duration(1.0/SAVE_PITCH_FREQ));
         save_pitch();
     }
@@ -82,10 +122,11 @@ void Mast::estimate_period(){
             min_id = search_min_id_within(m_pitches,min_id,interval_end);
         } while (min_id >= interval_end-SAVE_PITCH_FREQ/2-1); // -1 because the last indice is not included in the previous search
     }
-    float half_period = (float)abs(min_id - max_id)/(float)SAVE_PITCH_FREQ;
-    if (m_SHOW_PRINTS){
-        printf("The mast period is %f\n\n", 2*half_period);
-    }
+    m_period = 2.0 * (float)abs(min_id - max_id)/(float)SAVE_PITCH_FREQ;
+    
+    printf("The mast period is %f\n\n", m_period);
+
+    
 }
 
 int Mast::search_min_id_within(float* array, int begin, int end){
@@ -108,6 +149,16 @@ int Mast::search_max_id_within(float* array, int begin, int end){
     return max_id;
 }
 
+float Mast::time_to_max_pitch(){
+    return 0.0;
+}
+
+//TODO: do a max pitch ETA to see if it seems constant
+
 float Mast::get_yaw(){
     return m_fixed_yaw;
+}
+
+float Mast::get_period(){
+    return m_period;
 }

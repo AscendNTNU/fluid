@@ -177,19 +177,16 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
 
 
     while (ros::ok() && !takeoff) {
-        if (!takeoff) {
-            // Send request to arm every interval specified
-            if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
-                if(takeoff_cl.call(srv_takeoff)){
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": take_off OK!" << srv_takeoff.response.success);
-                    takeoff = true;
-                }
-                last_request = ros::Time::now();
+        // Send request to arm every interval specified
+        if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
+            if(takeoff_cl.call(srv_takeoff)){
+                ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": take_off OK!" << srv_takeoff.response.success);
+                takeoff = true;
             }
-
+            last_request = ros::Time::now();
         }
-        ros::spinOnce();
-        rate.sleep();
+    ros::spinOnce();
+    rate.sleep();
     }
 }
 
