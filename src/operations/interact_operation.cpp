@@ -105,7 +105,6 @@ void InteractOperation::initialize() {
     estimate_time_to_mast = (desired_offset.x - 0.28 - dist_acc_decc) / MAX_VEL //time during max vel
                             + 2 * MAX_VEL / MAX_ACCEL; //time during acceleration and decceleration
     ROS_INFO_STREAM("estimation of time to mast = " << estimate_time_to_mast);
-    ready_to_interact = false;
 
     #if SAVE_DATA
     //create a header for the datafiles.
@@ -486,42 +485,53 @@ void InteractOperation::tick() {
                     printf("distance to ref %f\n", distance_to_reference_with_offset);
                 }
             }
-            if (!ready_to_interact){
-                if ((transition_state.finished_bitmask & 0x7 == 0x7) && (distance_to_reference_with_offset < 0.07)) {
-                    if (completion_count < ceil(TIME_TO_COMPLETION*(float) rate_int) )
-                        completion_count++;
-                    else if(mast.time_to_max_pitch() !=-1){
-                        //We consider that if the drone is ready at some point, it will 
-                        // remain ready until it is time to try
-                        ready_to_interact = true;
-                        completion_count = 0;
-                        ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                                << ": Ready to set the FaceHugger. Waiting for the best opportunity");
-                    }
-                }
-                else
+            if ((transition_state.finished_bitmask & 0x7 == 0x7) && (distance_to_reference_with_offset < 0.07)) {
+                if (completion_count < ceil(TIME_TO_COMPLETION*(float) rate_int)-1 )
+                    completion_count++;
+                else if(mast.time_to_max_pitch() !=-1){
+                    //We consider that if the drone is ready at some point, it will 
+                    // remain ready until it is time to try
                     completion_count = 0;
-            }
-            else{
-            //The drone is ready, we just have to wait for the best moment to go!
-                if( abs(mast.time_to_max_pitch()-estimate_time_to_mast+TIME_WINDOW_INTERACTION/2.0)
-                                                                     <=TIME_WINDOW_INTERACTION/2.0)
-                { //We are in the good window to set the faceHugger
-                    interaction_state = InteractionState::OVER;
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                                << ": " << "Approaching -> Over");
-                    //the offset is set in the frame of the mast:    
-                    desired_offset.x = 0.28;  //forward   //right //the distance from the drone to the FaceHugger
-                    desired_offset.y = 0.0;   //left   //front
-                    desired_offset.z = -0.45;  //up   //up
-                    transition_state.cte_acc = MAX_ACCEL;
-                    transition_state.max_vel = MAX_VEL;
-
-                    // Avoid going to the next step before the transition is actuallized
-                    transition_state.finished_bitmask = 0;
-                    ready_to_interact = false;
+                    float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
+                    if(time_to_wait < TIME_WINDOW_INTERACTION)
+                        time_to_wait += mast.get_period();
+                    ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                            << ": Ready to set the FaceHugger. Waiting for the best opportunity"
+                            << "\nEstimated waiting time before go: "
+                            << time_to_wait);
+                    interaction_state = InteractionState::READY;
                 }
             }
+            else
+                completion_count = 0;
+            break;
+        }
+        case InteractionState::READY: {
+            //The drone is ready, we just have to wait for the best moment to go!
+            float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
+            if (SHOW_PRINTS){
+                if(time_cout%(rate_int/2)==0) {
+                    ROS_INFO_STREAM("READY; "
+                            << "Estimated waiting time before go: "
+                            << time_to_wait);
+                }
+            }
+            if( abs(time_to_wait+TIME_WINDOW_INTERACTION/2.0) <= TIME_WINDOW_INTERACTION/2.0)
+            { //We are in the good window to set the faceHugger
+                interaction_state = InteractionState::OVER;
+                ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                            << ": " << "Approaching -> Over");
+                //the offset is set in the frame of the mast:    
+                desired_offset.x = 0.28;  //forward   //right //the distance from the drone to the FaceHugger
+                desired_offset.y = 0.0;   //left   //front
+                desired_offset.z = -0.45;  //up   //up
+                transition_state.cte_acc = MAX_ACCEL;
+                transition_state.max_vel = MAX_VEL;
+
+                // Avoid going to the next step before the transition is actuallized
+                transition_state.finished_bitmask = 0;
+            }
+
             break;
         }
         case InteractionState::OVER: {

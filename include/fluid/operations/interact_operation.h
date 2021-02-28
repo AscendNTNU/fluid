@@ -23,11 +23,11 @@ class InteractOperation : public Operation {
 	
 	enum class InteractionState {
 		APPROACHING,
+        READY,
 		OVER,
-		BEHIND_WITH_HOOKS,
-	 	INTERACT,
-		EXTRACTED,
-        EXIT
+		INTERACT,
+        EXIT,
+		EXTRACTED
 	};
 
     struct TransitionSetpointStruct {
@@ -70,12 +70,6 @@ class InteractOperation : public Operation {
      */
     float estimate_time_to_mast;
     
-    /**
-     * @brief Determine if the drone is acurrate enough and ready to
-     *  try to set the FaceHugger
-     */
-    bool ready_to_interact;
-
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
     void FaceHuggerCallback(const bool released);
     bool faceHugger_is_set;
