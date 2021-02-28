@@ -488,7 +488,9 @@ void InteractOperation::tick() {
                     printf("distance to ref %f\n", distance_to_offset);
                 }
             }
-            if ( distance_to_offset < 0.07 ) {
+            float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
+            if ( distance_to_offset < 0.06 *time_out_gain ) { 
+                //Todo, we may want to judge the velocity in stead of having a time to completion
                 if (completion_count < ceil(TIME_TO_COMPLETION*(float) rate_int)-1 )
                     completion_count++;
                 else if(mast.time_to_max_pitch() !=-1){
@@ -574,7 +576,7 @@ void InteractOperation::tick() {
                 // and we don't mind anymore about the relative position to the mast
                 transition_state.state.position.x = 2.70;  //further than the desired offset as a fix to make it faster
                 transition_state.state.position.y = 0.0;   
-                transition_state.state.position.z = -1;  
+                transition_state.state.position.z = -1.0;  
                 desired_offset.x = 1.70;   //forward
                 desired_offset.y = 0.0;    //left
                 desired_offset.z = -0.8;   //up
@@ -603,6 +605,7 @@ void InteractOperation::tick() {
                     desired_offset.z = 3;
                 }
                 else {
+                    //we may want to reset startApproaching, but I don't think so
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Exit -> Approaching");
                     interaction_state = InteractionState::APPROACHING;
