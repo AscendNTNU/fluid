@@ -119,7 +119,7 @@ void InteractOperation::modulePoseCallback(
     module_state.velocity = estimateModuleVel();    
     module_state.acceleration_or_force = estimateModuleAccel();
     
-    mast.update(module_pose_ptr->pose.orientation);
+    mast.update2(module_pose_ptr->pose.orientation);
 }
 
 void InteractOperation::FaceHuggerCallback(const bool released){

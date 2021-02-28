@@ -11,6 +11,9 @@ Mast::Mast(float yaw){
     m_pitches = (float*) calloc(SAVE_PITCH_FREQ*SAVE_PITCH_TIME,sizeof(float));
     m_pitches_id=0;
     m_SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
+    m_time_last_min_pitch = ros::Time::now();
+    m_time_last_max_pitch = ros::Time::now();
+    m_current_extremum = 0;
 }
 
 void Mast::update2(geometry_msgs::Quaternion orientation){
@@ -30,7 +33,7 @@ void Mast::update2(geometry_msgs::Quaternion orientation){
                 //We have not found a new minimum for 0.5sec. The last one found it the correct one.
                 m_last_min_pitch = m_current_extremum;
                 m_lookForMin = false;
-                m_period = (m_time_last_min_pitch - m_time_last_max_pitch).toSec();
+                m_period = 2* (m_time_last_min_pitch - m_time_last_max_pitch).toSec();
                 ROS_INFO_STREAM("period from min = " << m_period);
             }
         }
@@ -45,7 +48,7 @@ void Mast::update2(geometry_msgs::Quaternion orientation){
                 //We have not found a new maximum for 0.5sec. The last one found it the correct one.
                 m_last_max_pitch = m_current_extremum;
                 m_lookForMin = true;
-                m_period = (m_time_last_max_pitch - m_time_last_min_pitch).toSec();
+                m_period = 2 * (m_time_last_max_pitch - m_time_last_min_pitch).toSec();
                 ROS_INFO_STREAM("period from max = " << m_period);
             }
         }
