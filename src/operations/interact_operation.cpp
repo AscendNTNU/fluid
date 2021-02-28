@@ -131,8 +131,8 @@ void InteractOperation::modulePoseCallback(
 
 void InteractOperation::FaceHuggerCallback(const bool released){
     if (released){
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now leave the mast");
-        interaction_state =  InteractionState::LEAVE;
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
+        interaction_state =  InteractionState::EXIT;
         faceHugger_is_set = true;
     }
     else 
@@ -548,11 +548,11 @@ void InteractOperation::tick() {
             }
 
             // we don't want to take the risk to stay too long, 
-            // Whether the faceHugger is set or not, we have to leave.
-            // NB, when FH is set, an interupt function switches the state to LEAVE
+            // Whether the faceHugger is set or not, we have to exit.
+            // NB, when FH is set, an interupt function switches the state to EXIT
             if (transition_state.finished_bitmask & 0x7 == 0x7) {
-                interaction_state = InteractionState::LEAVE;
-                ROS_INFO_STREAM(ros::this_node::getName().c_str() << "Leaving the mast for safety reasons, the FaceHugger could not be placed..."); 
+                interaction_state = InteractionState::EXIT;
+                ROS_INFO_STREAM(ros::this_node::getName().c_str() << "Exiting the mast for safety reasons, the FaceHugger could not be placed..."); 
 
                 //we move backward to ensure there will be no colision
                 // We directly set the transition state as we want to move as fast as possible
@@ -570,16 +570,16 @@ void InteractOperation::tick() {
             }
             break;
         }
-        case InteractionState::LEAVE: {
-            // NB, when FH is set, an interupt function switches the state to LEAVE
+        case InteractionState::EXIT: {
+            // NB, when FH is set, an interupt function switches the state to EXIT
             #if SHOW_PRINTS
-            if(time_cout%(rate_int*2)==0) printf("LEAVE\n");
+            if(time_cout%(rate_int*2)==0) printf("EXIT\n");
             #endif
             //This is a transition state before going back to approach and try again.
             if (distance_to_reference_with_offset < 0.2) {
                 if (faceHugger_is_set){
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "Leave -> Extracted");
+                            << ": " << "Exit -> Extracted");
                     interaction_state = InteractionState::EXTRACTED;
                     desired_offset.x = 2;
                     desired_offset.y = 0.0;
@@ -587,7 +587,7 @@ void InteractOperation::tick() {
                 }
                 else {
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "Leave -> Approaching");
+                            << ": " << "Exit -> Approaching");
                     interaction_state = InteractionState::APPROACHING;
                     desired_offset.x = 1.5;
                     desired_offset.y = 0.0;
@@ -598,7 +598,7 @@ void InteractOperation::tick() {
         }
         case InteractionState::EXTRACTED: {
             #if SHOW_PRINTS
-            if(time_cout%(rate_int*2)==0) printf("LEAVE\n");
+            if(time_cout%(rate_int*2)==0) printf("EXIT\n");
             #endif
             // This is also a transition state before AI takes the lead back and travel back to the starting point
             std_srvs::SetBool request;

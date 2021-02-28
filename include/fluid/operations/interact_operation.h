@@ -27,7 +27,7 @@ class InteractOperation : public Operation {
 		BEHIND_WITH_HOOKS,
 	 	INTERACT,
 		EXTRACTED,
-        LEAVE
+        EXIT
 	};
 
     struct TransitionSetpointStruct {
