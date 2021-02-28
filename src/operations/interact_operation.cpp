@@ -22,7 +22,7 @@
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 
 #define TIME_TO_COMPLETION 0.5 //time in second during which we want the drone to succeed a state before moving to the other.
-
+#define APPROACH_ACCURACY 0.06 //Accuracy needed by the drone to go to the next state
 
 // Feedforward tuning
 #define ACCEL_FEEDFORWARD_X 0.0
@@ -489,9 +489,9 @@ void InteractOperation::tick() {
                 }
             }
             float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
-            if ( distance_to_offset < 0.06 *time_out_gain ) { 
+            if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
                 //Todo, we may want to judge the velocity in stead of having a time to completion
-                if (completion_count < ceil(TIME_TO_COMPLETION*(float) rate_int)-1 )
+                if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int)-1 )
                     completion_count++;
                 else if(mast.time_to_max_pitch() !=-1){
                     //We consider that if the drone is ready at some point, it will 
