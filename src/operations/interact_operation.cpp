@@ -126,7 +126,7 @@ void InteractOperation::modulePoseCallback(
     module_state.velocity = estimateModuleVel();    
     module_state.acceleration_or_force = estimateModuleAccel();
     
-    mast.update2(module_pose_ptr->pose.orientation);
+    mast.update(module_pose_ptr->pose.orientation);
 }
 
 void InteractOperation::FaceHuggerCallback(const bool released){
@@ -489,7 +489,7 @@ void InteractOperation::tick() {
             if ((transition_state.finished_bitmask & 0x7 == 0x7) && (distance_to_reference_with_offset < 0.07)) {
                 if (completion_count < ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
-                else{
+                else if(mast.time_to_max_pitch() !=-1){
                     //We consider that if the drone is ready at some point, it will 
                     // remain ready until it is time to try
                     ready_to_interact = true;
