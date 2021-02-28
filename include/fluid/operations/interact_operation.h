@@ -37,6 +37,11 @@ class InteractOperation : public Operation {
         uint8_t finished_bitmask;
     };
 
+    /**
+     * @brief Determine when we enter the state APPROACHING
+     */
+    ros::Time startApproaching;
+
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
 	InteractionState interaction_state = InteractionState::APPROACHING;
