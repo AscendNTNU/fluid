@@ -486,20 +486,24 @@ void InteractOperation::tick() {
                     printf("distance to ref %f\n", distance_to_reference_with_offset);
                 }
             }
-            if ((transition_state.finished_bitmask & 0x7 == 0x7) && (distance_to_reference_with_offset < 0.07)) {
-                if (completion_count < ceil(TIME_TO_COMPLETION*(float) rate_int) )
-                    completion_count++;
-                else if(mast.time_to_max_pitch() !=-1){
-                    //We consider that if the drone is ready at some point, it will 
-                    // remain ready until it is time to try
-                    ready_to_interact = true;
-                    completion_count = 0;
+            if (!ready_to_interact){
+                if ((transition_state.finished_bitmask & 0x7 == 0x7) && (distance_to_reference_with_offset < 0.07)) {
+                    if (completion_count < ceil(TIME_TO_COMPLETION*(float) rate_int) )
+                        completion_count++;
+                    else if(mast.time_to_max_pitch() !=-1){
+                        //We consider that if the drone is ready at some point, it will 
+                        // remain ready until it is time to try
+                        ready_to_interact = true;
+                        completion_count = 0;
+                        ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                                << ": Ready to set the FaceHugger. Waiting for the best opportunity");
+                    }
                 }
+                else
+                    completion_count = 0;
             }
-            else
-                completion_count = 0;
-            if(ready_to_interact)
-            {//The drone is ready, we just have to wait for the best moment to go!
+            else{
+            //The drone is ready, we just have to wait for the best moment to go!
                 if( abs(mast.time_to_max_pitch()-estimate_time_to_mast+TIME_WINDOW_INTERACTION/2.0)
                                                                      <=TIME_WINDOW_INTERACTION/2.0)
                 { //We are in the good window to set the faceHugger
@@ -559,6 +563,10 @@ void InteractOperation::tick() {
                 desired_offset.x = 1.70;  //forward    //the distance from the drone to the FaceHugger
                 desired_offset.y = 0.0;   //left      
                 desired_offset.z = -0.8; //up        // going down by 20 cms
+
+                //todo: for some reason, the drone is slow to get there. 
+                // It would be nice to get it go back to a stable approach within 5 secs
+                // so that we can try to set the FaecHugger as soon as possible!
             }
             break;
         }
@@ -570,12 +578,16 @@ void InteractOperation::tick() {
             //This is a transition state before going back to approach and try again.
             if (distance_to_reference_with_offset < 0.2) {
                 if (faceHugger_is_set){
+                    ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                            << ": " << "Leave -> Extracted");
                     interaction_state = InteractionState::EXTRACTED;
                     desired_offset.x = 2;
                     desired_offset.y = 0.0;
                     desired_offset.z = 3;
                 }
                 else {
+                    ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                            << ": " << "Leave -> Approaching");
                     interaction_state = InteractionState::APPROACHING;
                     desired_offset.x = 1.5;
                     desired_offset.y = 0.0;
