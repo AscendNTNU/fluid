@@ -103,12 +103,22 @@ class Mast{
      * @brief Estimate the time the mast will take to reach its next 
      *        most forward position = maximum pitch.
      *        It considers that the current oscillation is exactly the 
-     *        same as the previous one
+     *        same as the previous one and that the pitch is a triangular function
      * 
      * @return -1 if not defined. Else, time until the mast reaches its next maximum pitch
      */
     float time_to_max_pitch();
     
+    /**
+     * @brief Estimate the time the mast will take to reach its next 
+     *        most forward position = maximum pitch, using arcsin.
+     *        It considers that the current oscillation is exactly the 
+     *        same as the previous one.
+     * 
+     * @return -1 if not defined. Else, time until the mast reaches its next maximum pitch
+     */
+    float time_to_max_pitch_accurate();
+
     /**
      * @brief Get the mast fixed yaw 
      * 

@@ -60,7 +60,8 @@ void Mast::update(geometry_msgs::Quaternion orientation){
 float Mast::time_to_max_pitch(){
     // This function assume a triangulare movement of the pitch instead of sinuzoïdal.
     // It works well enough in our case.
-    //Todo: could try using arcsin though.
+    //Todo: could try using arcsin(m_angle.x/m_last_min_pitch), but it creates nan numbers and exceptions.
+    // probably not worth the complexity.       
     
     //check that we got both a min and a max
     if(!m_time_last_max_pitch.isZero() && !m_time_last_min_pitch.isZero())
@@ -77,7 +78,6 @@ float Mast::time_to_max_pitch(){
     return -1;
 }
 
-//TODO: do a max pitch ETA to see if it seems constant
 
 float Mast::get_yaw(){
     return m_fixed_yaw;
