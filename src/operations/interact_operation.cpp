@@ -495,13 +495,13 @@ void InteractOperation::tick() {
                     ready_to_interact = true;
                     completion_count = 0;
                 }
-
             }
             else
                 completion_count = 0;
             if(ready_to_interact)
             {//The drone is ready, we just have to wait for the best moment to go!
-                if(abs(mast.time_to_max_pitch()-estimate_time_to_mast+0.5)<=0.5)
+                if( abs(mast.time_to_max_pitch()-estimate_time_to_mast+TIME_WINDOW_INTERACTION/2.0)
+                                                                     <=TIME_WINDOW_INTERACTION/2.0)
                 { //We are in the good window to set the faceHugger
                     interaction_state = InteractionState::OVER;
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
