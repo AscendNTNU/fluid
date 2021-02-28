@@ -64,6 +64,17 @@ class InteractOperation : public Operation {
 
     Mast mast;
     
+    /**
+     * @brief Estimation of the time the drone will take to got from
+     * the Approach state to the interact state
+     */
+    float estimate_time_to_mast;
+    
+    /**
+     * @brief Determine if the drone is acurrate enough and ready to
+     *  try to set the FaceHugger
+     */
+    bool ready_to_interact;
 
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
     void FaceHuggerCallback(const bool released);

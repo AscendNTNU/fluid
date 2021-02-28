@@ -99,7 +99,14 @@ void InteractOperation::initialize() {
     transition_state.max_vel = 3*MAX_VEL;
     completion_count =0;
     faceHugger_is_set = false;    
-    
+
+    //estimation of the time it takes to go from approch state to interact state
+    float dist_acc_decc = MAX_VEL*MAX_VEL/MAX_ACCEL;
+    estimate_time_to_mast = (desired_offset.x - 0.28 - dist_acc_decc) / MAX_VEL //time during max vel
+                            + 2 * MAX_VEL / MAX_ACCEL; //time during acceleration and decceleration
+    ROS_INFO_STREAM("estimation of time to mast = " << estimate_time_to_mast);
+    ready_to_interact = false;
+
     #if SAVE_DATA
     //create a header for the datafiles.
     initLog(reference_state_path); 
@@ -480,9 +487,19 @@ void InteractOperation::tick() {
                 }
             }
             if ((transition_state.finished_bitmask & 0x7 == 0x7) && (distance_to_reference_with_offset < 0.07)) {
-                if (completion_count <= ceil(TIME_TO_COMPLETION*(float) rate_int) )
+                if (completion_count < ceil(TIME_TO_COMPLETION*(float) rate_int) )
                     completion_count++;
                 else{
+                    ready_to_interact = true;
+                }
+
+            }
+            else
+                completion_count = 0;
+            if(ready_to_interact)
+            {//The drone is ready, we just have to wait for the best moment to go!
+                if(abs(mast.time_to_max_pitch()-estimate_time_to_mast)<0.5)
+                { //We are in the good window to set the faceHugger
                     interaction_state = InteractionState::OVER;
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": " << "Approaching -> Over");
@@ -496,11 +513,8 @@ void InteractOperation::tick() {
 
                     // Avoid going to the next step before the transition is actuallized
                     transition_state.finished_bitmask = 0;
-
                 }
             }
-            else
-                completion_count = 0;
             break;
         }
         case InteractionState::OVER: {
