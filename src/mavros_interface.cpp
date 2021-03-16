@@ -91,6 +91,9 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
                     if (arming_client.call(arm_command) && arm_command.response.success) {
                         armed = true;
                     }
+                    else{
+                        setParam("ANGLE_MAX", 4000);
+                    }
                 }
             } else {
                 armed = true;
@@ -174,19 +177,16 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
 
 
     while (ros::ok() && !takeoff) {
-        if (!takeoff) {
-            // Send request to arm every interval specified
-            if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
-                if(takeoff_cl.call(srv_takeoff)){
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": take_off OK!" << srv_takeoff.response.success);
-                    takeoff = true;
-                }
-                last_request = ros::Time::now();
+        // Send request to arm every interval specified
+        if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
+            if(takeoff_cl.call(srv_takeoff)){
+                ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": take_off OK!" << srv_takeoff.response.success);
+                takeoff = true;
             }
-
+            last_request = ros::Time::now();
         }
-        ros::spinOnce();
-        rate.sleep();
+    ros::spinOnce();
+    rate.sleep();
     }
 }
 
@@ -206,7 +206,7 @@ void MavrosInterface::setParam(const std::string& parameter, const float& value)
     while (!param_set_service_client.call(param_set_service) && ros::ok()) {
         if (!failed_setting) {
             ROS_FATAL_STREAM(ros::this_node::getName().c_str()
-                             << "Failed to set param " << parameter.c_str() << " for ArduPilot. Retrying...");
+                             << " Failed to set param " << parameter.c_str() << " for ArduPilot. Retrying...");
             failed_setting = true;
         }
 

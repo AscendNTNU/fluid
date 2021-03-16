@@ -18,7 +18,7 @@ MoveOperation::MoveOperation(const OperationIdentifier& operation_identifier,
                              const std::vector<geometry_msgs::Point>& path, const double& speed,
                              const double& position_threshold, const double& velocity_threshold,
                              const double& max_angle = 45)
-    : Operation(operation_identifier, false),
+    : Operation(operation_identifier, false, true),
       path(path),
       speed(speed*100),
       position_threshold(position_threshold),

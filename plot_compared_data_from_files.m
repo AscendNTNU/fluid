@@ -8,10 +8,11 @@
 
 clear();
 files_to_compare = [ % put the files you want to compare h
-%     "module_position.txt"
-%     "drone_position.txt"
-    "log_drone_pos_and_velocity_long.txt"
-    "log_module_position_long.txt"
+     "reference_state.txt"
+     "drone_state.txt"
+     "drone_setpoints.txt"
+%     "log_drone_pos_and_velocity_long.txt"
+%     "log_module_position_long.txt"
     ]';
 
 nb_file = length(files_to_compare);
@@ -124,13 +125,16 @@ if size(plotSize)==[1 1]
 end
 
 %% display results
+% we go through all the titles in merge_titles. We check if a log file has
+% the corresponding data, and if yes, we subplot it.
 colors = lines(nb_file);
 figure
 L = length(merge_titles);
-for i = 2*titleInColumn(1):titleInColumn(1):L %i is the variable we are gonna display
+for i = 2*titleInColumn(1):titleInColumn(1):L %i is the indice of the title we display on merge_titles
     subplot(plotSize(1),plotSize(2),i/titleInColumn(1));   %,'replace')
     for file_ind=1:nb_file
-        if sum(merge_titles.contains(titles(file_ind,i))) && not(titles(file_ind,i)=="") % a log has data if it has the required title
+        %looking for where is the corresponding data store
+        if find(titles(file_ind,:)==merge_titles(i))  % a log has data if it has the required title
             plot(shiftdim(results(file_ind,titleInColumn(1),1:nb_lines(file_ind)),1),shiftdim(results(file_ind,i,1:nb_lines(file_ind)),1),'color',colors(file_ind,:));
             hold on
         end
@@ -140,7 +144,7 @@ for i = 2*titleInColumn(1):titleInColumn(1):L %i is the variable we are gonna di
     hold off
 end
 
-% we also want to print y against x to see the position of the robot
+% we also want to print y against x to see the position of the robot/drone
 subplot(plotSize(1),plotSize(2),1)
 for file_ind=1:nb_file
     plot(shiftdim(results(file_ind,2*titleInColumn(1),1:nb_lines(file_ind)),1),shiftdim(results(file_ind,3*titleInColumn(1),1:nb_lines(file_ind)),1),'color',colors(file_ind,:));
@@ -150,7 +154,11 @@ xlabel(merge_titles(2));
 ylabel(merge_titles(3));
 hold off
 
-%% Other fewer display to get them bigger
+
+%% Other fewer displays to get them bigger
+% Here we print only the first and second variable from merge_titles
+% assuming that it is pos_x and pos_y.
+% We still check that each log file has the corresponding data.
 figure
 subplot(1,3,1)
 for file_ind=1:nb_file
@@ -158,12 +166,19 @@ for file_ind=1:nb_file
     hold on
 end
 hold off
+ploted_files = [1]; %we want to know which files have been ploted to set the legend
 xlabel(merge_titles(2));
 ylabel(merge_titles(3));
 for i = 2*titleInColumn(1):titleInColumn(1):3*titleInColumn(1)
     subplot(1,3,i/titleInColumn(1));   %,'replace')
     for file_ind=1:nb_file
-        if sum(merge_titles.contains(titles(file_ind,i))) %here i is the variable we show 
+        if find(titles(file_ind,:)==merge_titles(i))
+            % a log has data if it has the required title
+            if find(ploted_files ==file_ind) 
+                %function not does not work here
+            else
+                ploted_files(end+1) = file_ind;
+            end
             plot(shiftdim(results(file_ind,titleInColumn(1),1:nb_lines(file_ind)),1),shiftdim(results(file_ind,i,1:nb_lines(file_ind)),1),'color',colors(file_ind,:));
         end
         hold on
@@ -172,7 +187,35 @@ for i = 2*titleInColumn(1):titleInColumn(1):3*titleInColumn(1)
     xlabel(merge_titles(1));
     hold off
 end
-legend(files_to_compare);
+
+%% Last few displays to get them bigger
+% Here we print only the 5th and 6th variable from merge_titles
+% assuming that it is accel_x and accel_y.
+% We still check that each log file has the corresponding data.
+figure
+subplot(1,3,1)
+ploted_files = [1]; %we want to know which files have been ploted to set the legend
+xlabel(merge_titles(5));
+ylabel(merge_titles(6));
+for i = 2*titleInColumn(1):2*titleInColumn(1):6*titleInColumn(1)
+    subplot(1,3,i/titleInColumn(1)/2);   %,'replace')
+    for file_ind=1:nb_file
+        if find(titles(file_ind,:)==merge_titles(i))
+            % a log has data if it has the required title
+            if find(ploted_files ==file_ind) 
+                %function not does not work here
+            else
+                ploted_files(end+1) = file_ind;
+            end
+            plot(shiftdim(results(file_ind,titleInColumn(1),1:nb_lines(file_ind)),1),shiftdim(results(file_ind,i,1:nb_lines(file_ind)),1),'color',colors(file_ind,:));
+        end
+        hold on
+    end
+    ylabel(merge_titles(i/titleInColumn(1)));
+    xlabel(merge_titles(1));
+    hold off
+end
+legend(files_to_compare(ploted_files));
 
 
 measurementx = reshape(results(2,1:2,:),2,[]);
@@ -180,7 +223,7 @@ measurementy = reshape(results(2,[1 3],:),2,[]);
 referencex = reshape(results(1,1:2,:),2,[]);
 referencey = reshape(results(1,[1 3],:),2,[]);
 
-fprintf("An analysis has been made over a time of %dsec\n",results(1,1,min(nb_lines)));
+%fprintf("An analysis has been made over a time of %dsec\n",results(1,1,min(nb_lines)));
 try 
     fprintf("Error projected along the X axis:\n");
     time_and_distance_error_f(referencex,measurementx);

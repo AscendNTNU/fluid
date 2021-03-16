@@ -56,11 +56,11 @@ class Operation {
      */
     void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
 
+    
     /**
-     * @brief Publishes setpoints.
-     *
+     * @brief Current acceleration.
      */
-    ros::Publisher setpoint_publisher;
+    geometry_msgs::Vector3 current_accel;
 
     /**
      * @brief Determines whether this operation is a operation we can be at for longer periods of time. E.g. hold or
@@ -68,7 +68,26 @@ class Operation {
      */
     const bool steady;
 
+    
+    /**
+     * @brief Allow publishing positionTarget setpoints.
+     */
+    bool autoPublish;
+
    protected:
+
+    /**
+     * @brief Rate at which the operation is run
+     *
+     */
+    int rate_int;
+
+    /**
+     * @brief Publishes setpoints.
+     *
+     */
+    ros::Publisher setpoint_publisher;
+
     /**
      * @brief Used to construct the subscribers.
      */
@@ -110,9 +129,24 @@ class Operation {
     geometry_msgs::TwistStamped getCurrentTwist() const;
 
     /**
+     * @return The current twist.
+     */
+    geometry_msgs::Vector3 getCurrentAccel() const;
+
+    /**
      * @return The current yaw.
      */
     float getCurrentYaw() const;
+
+
+    /**
+     * @brief Estimate the acceleration of the drone from its orientation.
+     * 
+     * @param orientation The orientation of the drone as from poseCallback.
+     * 
+     * @return The estimation of the drone acceleration.
+     */
+    geometry_msgs::Vector3 orientation_to_acceleration(geometry_msgs::Quaternion orientation);
 
    public:
     /**
@@ -126,8 +160,9 @@ class Operation {
      * @param identifier The identifier of the operation.
      * @param steady Whether the operation is steady, it can be executed for longer periods of time without
      * consequences.
+     * @param should_publish_setpoints Allow to prevent the operation publishing position setpoins
      */
-    Operation(const OperationIdentifier& identifier, const bool& steady);
+    Operation(const OperationIdentifier& identifier, const bool& steady, const bool& autoPublish);
 
     /**
      * @brief Performs the loop for executing logic within this operation.

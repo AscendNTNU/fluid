@@ -9,7 +9,7 @@
 #include "util.h"
 
 TakeOffOperation::TakeOffOperation(float height_setpoint)
-    : Operation(OperationIdentifier::TAKE_OFF, false), height_setpoint(height_setpoint) {}
+    : Operation(OperationIdentifier::TAKE_OFF, false, true), height_setpoint(height_setpoint) {}
 
 bool TakeOffOperation::hasFinishedExecution() const {
     const float distance_threshold = Fluid::getInstance().configuration.distance_completion_threshold;
@@ -23,6 +23,7 @@ bool TakeOffOperation::hasFinishedExecution() const {
 void TakeOffOperation::initialize() {
 
     MavrosInterface mavros_interface;
+        
     mavros_interface.establishContactToArduPilot();
     Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_px4 = 1;
 

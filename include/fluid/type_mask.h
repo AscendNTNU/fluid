@@ -8,7 +8,7 @@
 #include <cstdint>
 
 /**
- * @brief Represents bitmasks for different kind of control within PX4 when setting a setpoint.
+ * @brief Represents bitmasks for different kind of control within both Ardupilot or PX4 when setting a setpoint.
  */
 class TypeMask {
    public:
@@ -26,20 +26,27 @@ class TypeMask {
     static constexpr uint16_t IGNORE_YAW_RATE = (1 << 11);
     static constexpr uint16_t IDLE = 0x4000;
 
-    static constexpr uint16_t POSITION =
+    static constexpr uint16_t POSITION = //2552U
         IGNORE_VX | IGNORE_VY | IGNORE_VZ | IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ | IGNORE_YAW_RATE;
 
-    static constexpr uint16_t VELOCITY =
+    static constexpr uint16_t VELOCITY = //2503U
         IGNORE_PX | IGNORE_PY | IGNORE_PZ | IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ | IGNORE_YAW_RATE;
 
-    static constexpr uint16_t POSITION_AND_VELOCITY =
+    static constexpr uint16_t POSITION_AND_VELOCITY = //2496U
         IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ | IGNORE_YAW_RATE;
     
-    static constexpr uint16_t ACCELERATION =
+    static constexpr uint16_t ACCELERATION = //2111U
         IGNORE_PX | IGNORE_PY | IGNORE_PZ | IGNORE_VX | IGNORE_VY | IGNORE_VZ | IGNORE_YAW_RATE;
 
-    static constexpr uint16_t POSITION_AND_ACCELERATION =
+    static constexpr uint16_t ACCELERATION_XY = //2367U
+        IGNORE_PX | IGNORE_PY | IGNORE_PZ | IGNORE_VX | IGNORE_VY | IGNORE_VZ | IGNORE_AFZ | IGNORE_YAW_RATE;
+
+    static constexpr uint16_t POSITION_AND_ACCELERATION = //2104U
         IGNORE_VX | IGNORE_VY | IGNORE_VZ | IGNORE_YAW_RATE;
+    
+    static constexpr uint16_t IGNORE_ALL = //2104U
+        IGNORE_PX | IGNORE_PY | IGNORE_PZ | IGNORE_VX | IGNORE_VY | IGNORE_VZ | IGNORE_AFX | IGNORE_AFY | IGNORE_AFZ | IGNORE_YAW_RATE;
+    
 };
 
 #endif

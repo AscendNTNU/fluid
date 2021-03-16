@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import rospy
+from math import pi, cos, sin
 from std_msgs.msg import String
-from geometry_msgs.msg import PoseStamped, Point
+from geometry_msgs.msg import PoseStamped, Point, Quaternion
 from mavros_msgs.msg import State
 from mavros_msgs.srv import SetMode, CommandBool, CommandTOL
 import sys
@@ -35,10 +36,9 @@ def takeoff(height):
     pose_stamped = PoseStamped()
     pose_stamped.pose.position.z = 0.0
     pose_stamped.header.frame_id = "map"
-
-    for _ in range(100):
+    
+    for _ in range(20):
         pose_stamped.header.stamp = rospy.Time.now()
-
         local_pose_publisher.publish(pose_stamped)
         rate.sleep()
 
@@ -59,6 +59,7 @@ def takeoff(height):
             last_request = rospy.Time.now()
         else:
             if not current_state.armed and current_state.mode == "GUIDED" and (rospy.Time.now() - last_request) > rospy.Duration(2.0):
+                last_request = rospy.Time.now()
                 response = arming_client.call(True)
                 if (response.success):
                     rospy.loginfo("Vehicle armed")
@@ -87,6 +88,22 @@ def takeoff(height):
 
         rate.sleep()
 
+def euler_to_quaternion(yaw, pitch, roll):
+    #from euler angle to quaternions:
+    cy = cos(yaw * 0.5)
+    sy = sin(yaw * 0.5)
+    cp = cos(pitch * 0.5)
+    sp = sin(pitch * 0.5)
+    cr = cos(roll * 0.5)
+    sr = sin(roll * 0.5)
+
+    q = Quaternion()
+    q.w = cr * cp * cy + sr * sp * sy
+    q.x = sr * cp * cy - cr * sp * sy
+    q.y = cr * sp * cy + sr * cp * sy
+    q.z = cr * cp * sy - sr * sp * cy
+    return q
+
 
 def move(x,y,z):
     rate = rospy.Rate(30)
@@ -112,7 +129,7 @@ def main():
     takeoff(height)
     
     #waiting for takeoff to be finished
-    while drone_position.z < height /2 and not rospy.is_shutdown():
+    while drone_position.z < height -0.1 and not rospy.is_shutdown():
         rate.sleep()
     rospy.loginfo("Take off finished")
 

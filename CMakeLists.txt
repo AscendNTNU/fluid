@@ -19,7 +19,7 @@ add_service_files(
         FILES
         OperationCompletion.srv
         Explore.srv
-        ExtractModule.srv
+        Interact.srv
         Land.srv
         TakeOff.srv
         Travel.srv
@@ -50,13 +50,10 @@ file(GLOB fluid_operations_SRC "src/operations/*.cpp")
 #########################################################################################
 
 add_executable(fluid              src/nodes/main.cpp                            ${fluid_SRC} ${fluid_operations_SRC})
-add_executable(publisher          src/nodes/publisher_node.cpp                  ${fluid_SRC} ${fluid_operations_SRC})
 add_executable(example_client     src/examples/example_client.cpp               ${fluid_SRC} ${fluid_operations_SRC})
 
 add_dependencies(fluid                   ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(publisher               ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(example_client          ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(fluid              ${catkin_LIBRARIES})
-target_link_libraries(publisher          ${catkin_LIBRARIES})
 target_link_libraries(example_client     ${catkin_LIBRARIES})

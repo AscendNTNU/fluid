@@ -12,7 +12,7 @@ take_off = rospy.ServiceProxy('fluid/take_off', TakeOff)
 explore = rospy.ServiceProxy('fluid/explore', Explore)
 travel = rospy.ServiceProxy('fluid/travel', Travel)
 land = rospy.ServiceProxy('fluid/land', Land)
-extract_module = rospy.ServiceProxy('fluid/extract_module', ExtractModule)
+Interact = rospy.ServiceProxy('fluid/interact', Interact)
 
 finished_operation = ""
 is_executing_operation = False
@@ -54,7 +54,7 @@ def gotConnectionWithServices(timeout):
         rospy.wait_for_service('fluid/explore', timeout=timeout)
         rospy.wait_for_service('fluid/travel', timeout=timeout)
         rospy.wait_for_service('fluid/land', timeout=timeout)
-        rospy.wait_for_service('fluid/extract_module', timeout=timeout)
+        rospy.wait_for_service('fluid/interact', timeout=timeout)
         return True
     except rospy.ROSException:
         return False
@@ -70,6 +70,14 @@ def main():
     # Wait until we get connection with the services
     while not gotConnectionWithServices(2) and not rospy.is_shutdown():
         rospy.logerr("Did not get connection with Fluid's services, is Fluid running?")
+
+
+    ros::Time test_time;
+    if(test_time.isValid())
+        ROS_INFO_STREAM("\nros time valid at init\n\n");
+    else
+        ROS_INFO_STREAM("\nros time NOT valid at init\n\n");
+
 
     # Perform a take off to 3 meters above ground
     take_off_response = take_off(2)
@@ -90,7 +98,7 @@ def main():
         # is executing should probably be implemented differently
         if not is_executing_operation:
             if finished_operation == "TAKE_OFF":
-                response = extract_module()
+                response = Interact()
                 if (not response.success):
                     rospy.logerr(response.message)
                 else:

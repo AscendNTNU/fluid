@@ -52,11 +52,19 @@ crossing_reference_indexes = zci(reference(2,:));
 if crossing_reference_indexes(2) - crossing_reference_indexes(1) == 1 %here we have zeros in the ref and so zci returns each crossing zero twice
     crossing_reference_indexes = crossing_reference_indexes(1:2:end);
 end
-sample_per_sin = 2*(circshift(crossing_reference_indexes,[-1 0]) - crossing_reference_indexes);
-sample_per_sin = mean(sample_per_sin(2:end-2));
+if length(crossing_reference_indexes)<=1
+    fprintf('/!\\ The sample is not long enough to estimate errors! /!\\ \n'); %todo, try to write it in red
+    return
+end
+sample_per_sin = 2*(crossing_reference_indexes(2) - crossing_reference_indexes(1));
+if sample_per_sin ~= 300
+    fprintf("/!\\ The periode is no longer 300 samples, is it normal? /!\\ \n");
+end
+%sample_per_sin = mean(sample_per_sin(2:end-2));
 period = sample_per_sin/Fs;
-start = round(sample_per_sin/2);
-fprintf("%2.3fsec will be omited for calulculation, which correspond to the %i/%i element\n",period/2,start,length(reference));
+start = round(3*sample_per_sin/4);
+%fprintf("%2.3fsec will be omited for calulculation, which correspond" + ...
+%                "to the %i/%i element\n",period/2,start,length(reference));
 
 
 %% Error calculation
@@ -70,13 +78,20 @@ error(2,:) = measurement(2,start:end) - reference(2,start:end);
 % for each measurement point, I look for the first point in the past
 % (within some boundaries I guess) that has about the same value.
 delay = finddelay(reference(2,start:end),measurement(2,start:end)) /Fs ;
+time_step = (reference(1,end)-reference(1,1))/length(reference);
+delay2 = finddelay(reference(2,:),measurement(2,:)) * time_step;
 
 %% Average maximum error calculation
 % The maximum error of each half period will be calculated and averaged
 
-first_zero_ind = crossing_reference_indexes(2);
+i = 2;
+while start>= crossing_reference_indexes(i)
+    i = i+1;
+end
+first_zero_ind = crossing_reference_indexes(i);
+
 round_half_sample_periode = round(sample_per_sin/2);
-last_zero_ind =  first_zero_ind+floor((length(measurement)-first_zero_ind+1)/round_half_sample_periode)*round_half_sample_periode
+last_zero_ind =  first_zero_ind+floor((length(measurement)-first_zero_ind+1)/round_half_sample_periode)*round_half_sample_periode;
 samples = reshape(error(2,first_zero_ind-start:last_zero_ind-start-1),round_half_sample_periode,[]);
 
 %% Angle of the maximum error calculation

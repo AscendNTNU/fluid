@@ -1,5 +1,5 @@
 #include <fluid/Explore.h>
-#include <fluid/ExtractModule.h>
+#include <fluid/Interact.h>
 #include <fluid/Land.h>
 #include <fluid/OperationCompletion.h>
 #include <fluid/TakeOff.h>
@@ -57,7 +57,7 @@ bool gotConnectionWithServices(const unsigned int& timeout) {
         return false;
     }
 
-    if (!ros::service::waitForService("fluid/extract_module", timeout)) {
+    if (!ros::service::waitForService("fluid/interact", timeout)) {
         return false;
     }
 
@@ -77,13 +77,13 @@ int main(int argc, char** argv) {
     ros::ServiceClient explore = node_handle.serviceClient<fluid::Explore>("fluid/explore");
     ros::ServiceClient travel = node_handle.serviceClient<fluid::Travel>("fluid/travel");
     ros::ServiceClient land = node_handle.serviceClient<fluid::Land>("fluid/land");
-    ros::ServiceClient extract_module = node_handle.serviceClient<fluid::ExtractModule>("fluid/extract_module");
+    ros::ServiceClient Interact = node_handle.serviceClient<fluid::Interact>("fluid/interact");
 
     if (!gotConnectionWithServices(2)) {
         ROS_FATAL("Did not get connection with Fluid's services, is Fluid running?");
         return 1;
     }
-
+    
     fluid::TakeOff take_off_service_handle;
     take_off_service_handle.request.height = 2.0f;
 
@@ -132,7 +132,26 @@ int main(int argc, char** argv) {
                 }
 
             } else if (finished_operation == "EXPLORE") {
-                ROS_INFO_STREAM("[example_client]: Exploring finished, go Traveling");
+                ROS_INFO_STREAM("[example_client]: Exploring finished, go interact with the mast");
+                float mast_yaw = M_PI/20.0;
+                printf("send yaw mast of %f\n",mast_yaw);
+                fluid::Interact interact_service_handle;
+                interact_service_handle.request.fixed_mast_yaw = mast_yaw;
+                interact_service_handle.request.offset = 1.5;
+                
+                if (Interact.call(interact_service_handle)) {
+                    if (!interact_service_handle.response.success) {
+                        ROS_FATAL_STREAM(interact_service_handle.response.message);
+                        return 1;
+                    } else {
+                        is_executing_operation = true;
+                    }
+                } else {
+                    ROS_FATAL("Failed to call interact service.");
+                    return 1;
+                }
+            } else if (finished_operation == "INTERACT") {
+                ROS_INFO_STREAM("[example_client]: interaction finished, go travel");
                 geometry_msgs::Point point;
                 point.x = 100;
                 fluid::Travel travel_service_handle;

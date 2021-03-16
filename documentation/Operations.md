@@ -5,7 +5,7 @@ Fluid is based around operations. The way to interact with them are by ROS servi
 * fluid/TakeOff
 * fluid/Explore
 * fluid/Travel
-* fluid/ExtractModule
+* fluid/Interact
 * fluid/Land
 
 Each of these operations take in their own argument, look them up in the `srv` folder or call `rosservice info [service]`.
