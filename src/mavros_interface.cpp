@@ -206,7 +206,7 @@ void MavrosInterface::setParam(const std::string& parameter, const float& value)
     while (!param_set_service_client.call(param_set_service) && ros::ok()) {
         if (!failed_setting) {
             ROS_FATAL_STREAM(ros::this_node::getName().c_str()
-                             << "Failed to set param " << parameter.c_str() << " for ArduPilot. Retrying...");
+                             << " Failed to set param " << parameter.c_str() << " for ArduPilot. Retrying...");
             failed_setting = true;
         }
 
