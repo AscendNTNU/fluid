@@ -36,13 +36,17 @@ real_state(:,4) = Ar_gt * 2*pi*f_wave_gt * cos(f_wave_gt*2*pi*t+phase_gt);
 real_state(:,5) = f_wave_gt*2*pi;
 real_state(:,6) = L_mast_gt;
 
+module_pos_gt = zeros(timespan*fs, 3); %x, y, z
+module_pos_gt(:,1) = L_mast_gt*sin(real_state(:,1));
+module_pos_gt(:,2) = L_mast_gt*sin(real_state(:,2));
+module_pos_gt(:,3) = L_mast_gt*cos(real_state(:,1)).*cos(real_state(:,2));
+
 % Creation of potential measurement from perception
 measurement = zeros(timespan * fs, 4);   %[x ; y ; z ; pitch]
-measurement(:,1)= L_mast_gt * sin(real_state(:,1)) + noise_std(1)*randn(timespan*fs, 1);
-measurement(:,2)= L_mast_gt * sin(real_state(:,2)) + noise_std(2)*randn(timespan*fs, 1);
-measurement(:,3)= L_mast_gt * cos(real_state(:,1)).*cos(real_state(:,2))...
-                                    + noise_std(3)*randn(timespan*fs, 1);
-measurement(:,4) = real_state(:,1) + noise_std(4)*randn(timespan*fs, 1);
+measurement(:,1) = module_pos_gt(:,1) + noise_std(1)*randn(timespan*fs, 1);
+measurement(:,2) = module_pos_gt(:,2) + noise_std(2)*randn(timespan*fs, 1);
+measurement(:,3) = module_pos_gt(:,3) + noise_std(3)*randn(timespan*fs, 1);
+measurement(:,4) = real_state(:,1)    + noise_std(4)*randn(timespan*fs, 1);
 
 %% Initialisation of the Kalman filter
 % ekf functions
@@ -89,17 +93,37 @@ for run = 2 : timespan*fs
     Xp_save(run,:) = Xp(:);
 end
 
+module_pos_estimate = zeros(timespan*fs,3);
+module_pos_estimate(:,1) = L_mast_gt*sin(X_save(:,1));
+module_pos_estimate(:,2) = L_mast_gt*sin(X_save(:,2));
+module_pos_estimate(:,3) = L_mast_gt*cos(X_save(:,1)).*cos(X_save(:,2));
+
 %% Plotting
 t=(0:1/fs:timespan-1/fs);
+labels = ["x","y","z","pitch"];
 figure_handle=figure(1);clf;
-hold on;
-plot(t,measurement(:,4),'r+');
-plot(t,real_state(:,1),'k');
-plot(t,X_save(:,1),'g');
-%plot(t,Xp_save(:,1),'b.');
-legend('measurement','real angle','estimation');%,'prediction');
+for i = 1:3
+    subplot(1,3,i);
+    hold on;
+    plot(t,measurement(:,i),'r+');
+    plot(t,module_pos_gt(:,i),'k');
+    plot(t,module_pos_estimate(:,i),'g');
+    %plot(t,Xp_save(:,i),'b.');
+    xlabel('time');ylabel(labels(i));
+end
+hold off;
+legend('measurement','real postition','estimation');%,'prediction');
 %axis square;
-xlabel('time');ylabel('pitch angle');
+
+figure_handle=figure(2);
+hold on;
+plot(measurement(:,1),measurement(:,2),'r+');
+plot(module_pos_gt(:,1),module_pos_gt(:,2),'k');
+plot(module_pos_estimate(:,1),module_pos_estimate(:,2),'g');
+legend('measurement','real postition','estimation');%,'prediction');
+axis square;
+
+
 
 
 %% KF functions definition
