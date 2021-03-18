@@ -13,6 +13,7 @@ N_STATE = 6;
 fs = 30.0;        % sample frequency in Hz
 timespan = 10.0;  % simulation time in sec
 t=(0:1/fs:timespan-1/fs);
+prediction = false; %stop using the measurement after 75% of the simulation
 
 % Oscillations:
 Ap_gt = deg2rad(15.0); %pitch aplitude in degrees
@@ -80,17 +81,21 @@ P = zeros(N_STATE,N_STATE);
 %% Kalman in action
 for run = 2 : timespan*fs
     % Prediction
-    %Xp = f(real_state(run-1,:));
     Xp = f(X);    
     Pp = del_f(X)*P*del_f(X)'+Q;
     
-    % Update
-    K = Pp*del_h(X)'*inv(R+del_h(X)*Pp*del_h(X)');
-    P = Pp - K*del_h(X)*Pp;
-    X = Xp + K*(measurement(run, :)'-h(Xp));
-    
+    if run<timespan*fs*3/4 || not(prediction)
+        % Update
+        K = Pp*del_h(X)'/(R+del_h(X)*Pp*del_h(X)');
+        P = Pp - K*del_h(X)*Pp;
+        X = Xp + K*(measurement(run, :)'-h(Xp));
+    else
+        X = Xp;
+        P = Pp;
+    end
     X_save(run,:) = X(:);
     Xp_save(run,:) = Xp(:);
+
 end
 
 module_pos_estimate = zeros(timespan*fs,3);
@@ -101,21 +106,22 @@ module_pos_estimate(:,3) = L_mast_gt*cos(X_save(:,1)).*cos(X_save(:,2));
 %% Plotting
 t=(0:1/fs:timespan-1/fs);
 labels = ["x","y","z","pitch"];
-figure_handle=figure(1);clf;
+%plotting x, y and z position of the module on different graphs
 for i = 1:3
     subplot(1,3,i);
     hold on;
-    plot(t,measurement(:,i),'r+');
-    plot(t,module_pos_gt(:,i),'k');
-    plot(t,module_pos_estimate(:,i),'g');
+    plot(t/fs,measurement(:,i),'r+');
+    plot(t/fs,module_pos_gt(:,i),'k');
+    plot(t/fs,module_pos_estimate(:,i),'g');
     %plot(t,Xp_save(:,i),'b.');
+    %xline(timespan*3/4);
     xlabel('time');ylabel(labels(i));
 end
 hold off;
 legend('measurement','real postition','estimation');%,'prediction');
-%axis square;
 
-figure_handle=figure(2);
+%x,y plot
+figure;
 hold on;
 plot(measurement(:,1),measurement(:,2),'r+');
 plot(module_pos_gt(:,1),module_pos_gt(:,2),'k');
