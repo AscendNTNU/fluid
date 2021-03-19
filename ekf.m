@@ -6,7 +6,7 @@
 
 % In this simulation, we have x pointing foward, y pointing to the right
 % and z upward
-clear all;
+
 %% some simulation settings:
 global fs N_STATE
 N_STATE = 6;
@@ -26,7 +26,7 @@ L_mast_gt = 2.0;     %Length of the mast in meters
 noise_std = [0.0707
              0.0707
              0.0707
-             0.022361];
+             0.022361]*4;
          
 % Example of a potential real state vector
 real_state = zeros(timespan*fs, N_STATE); % [pitch ; roll]
@@ -34,8 +34,8 @@ real_state(:,1) = Ap_gt * sin(f_wave_gt*2*pi*t);
 real_state(:,2) = Ar_gt * sin(f_wave_gt*2*pi*t+phase_gt);
 real_state(:,3) = Ap_gt * 2*pi*f_wave_gt * cos(f_wave_gt*2*pi*t);
 real_state(:,4) = Ar_gt * 2*pi*f_wave_gt * cos(f_wave_gt*2*pi*t+phase_gt);
-real_state(:,5) = f_wave_gt*2*pi;
-real_state(:,6) = L_mast_gt;
+real_state(:,5) = f_wave_gt*2*pi*ones(1,timespan*fs);
+real_state(:,6) = L_mast_gt*ones(1,timespan*fs);
 
 module_pos_gt = zeros(timespan*fs, 3); %x, y, z
 module_pos_gt(:,1) = L_mast_gt*sin(real_state(:,1));
@@ -65,6 +65,9 @@ R = R*10;
 %Q = 0.01*eye(N_STATE);
 
 X = zeros(N_STATE,1); %pitch, roll, pitch', roll', omega, L_mast
+%X(1:4) = measurement(1,1:4);
+%X(5) = 1;
+%X(6) = 1.5;
 X(:) = real_state(1,:);
 
 % Save of X for plotting
@@ -107,6 +110,7 @@ module_pos_estimate(:,3) = L_mast_gt*cos(X_save(:,1)).*cos(X_save(:,2));
 t=(0:1/fs:timespan-1/fs);
 labels = ["x","y","z","pitch"];
 %plotting x, y and z position of the module on different graphs
+figure;
 for i = 1:3
     subplot(1,3,i);
     hold on;
@@ -121,13 +125,29 @@ hold off;
 legend('measurement','real postition','estimation');%,'prediction');
 
 %x,y plot
+
+% figure;
+% hold on;
+% plot(measurement(:,1),measurement(:,2),'r+');
+% plot(module_pos_gt(:,1),module_pos_gt(:,2),'k');
+% plot(module_pos_estimate(:,1),module_pos_estimate(:,2),'g');
+% legend('measurement','real postition','estimation');%,'prediction');
+% axis square;
+
+
+% plot the frequency of the waves and the estimation
 figure;
-hold on;
-plot(measurement(:,1),measurement(:,2),'r+');
-plot(module_pos_gt(:,1),module_pos_gt(:,2),'k');
-plot(module_pos_estimate(:,1),module_pos_estimate(:,2),'g');
-legend('measurement','real postition','estimation');%,'prediction');
-axis square;
+labels2 = ["wave frequency","mast length"];
+X_save(:,5) = X_save(:,5)/2/pi;
+real_state(:,5) = real_state(:,5)/2/pi;
+for i = 5:6
+    subplot(1,2,i-4);
+    hold on;
+    plot(t,real_state(:,i),'k');
+    plot(t,X_save(:,i),'g');
+    xlabel('time');ylabel(labels2(i-4));
+end
+legend('real', 'estimated');
 
 
 
