@@ -492,29 +492,29 @@ void InteractOperation::tick() {
                 }
             }
             float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
-            if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
-                //Todo, we may want to judge the velocity in stead of having a time to completion
-                if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int)-1 )
-                    completion_count++;
-                else if(mast.time_to_max_pitch() !=-1){
-                    //We consider that if the drone is ready at some point, it will 
-                    // remain ready until it is time to try
-                    completion_count = 0;
-                    float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
-                    if(time_to_wait < TIME_WINDOW_INTERACTION)
-                        time_to_wait += mast.get_period();
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                            << ": Ready to set the FaceHugger. Waiting for the best opportunity"
-                            << "\nEstimated waiting time before go: "
-                            << time_to_wait);
-                    
-                    if(MAST_INTERACT) 
+            if(MAST_INTERACT) {
                 //allow to block the FSM if we don't want the drone to properly crash into the mast
-                        interaction_state = InteractionState::READY;
+                if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
+                    //Todo, we may want to judge the velocity in stead of having a time to completion
+                    if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int)-1 )
+                        completion_count++;
+                    else if(mast.time_to_max_pitch() !=-1){
+                        //We consider that if the drone is ready at some point, it will 
+                        // remain ready until it is time to try
+                        completion_count = 0;
+                        float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
+                        if(time_to_wait < TIME_WINDOW_INTERACTION)
+                            time_to_wait += mast.get_period();
+                        ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                                << ": Ready to set the FaceHugger. Waiting for the best opportunity"
+                                << "\nEstimated waiting time before go: "
+                                << time_to_wait);
+                        interaction_state = InteractionState::READY;                
+                    }
                 }
+                else
+                    completion_count = 0;
             }
-            else
-                completion_count = 0;
             break;
         }
         case InteractionState::READY: {
