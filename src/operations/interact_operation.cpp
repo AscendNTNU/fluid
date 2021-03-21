@@ -16,6 +16,9 @@
 #include <unistd.h> //to get the current directory
 
 //A list of parameters for the user
+
+#define MAST_INTERACT false
+
 #define SAVE_DATA   true
 #define SAVE_Z      false
 #define USE_SQRT    false
@@ -504,7 +507,10 @@ void InteractOperation::tick() {
                             << ": Ready to set the FaceHugger. Waiting for the best opportunity"
                             << "\nEstimated waiting time before go: "
                             << time_to_wait);
-                    interaction_state = InteractionState::READY;
+                    
+                    if(MAST_INTERACT) 
+                //allow to block the FSM if we don't want the drone to properly crash into the mast
+                        interaction_state = InteractionState::READY;
                 }
             }
             else
