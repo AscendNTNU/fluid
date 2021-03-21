@@ -25,13 +25,13 @@ void TakeOffOperation::initialize() {
     MavrosInterface mavros_interface;
         
     mavros_interface.establishContactToArduPilot();
-    Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_px4 = 1;
+    Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_ardupilot = 1;
 
     mavros_interface.requestArm(Fluid::getInstance().configuration.should_auto_arm);
-    Fluid::getInstance().getStatusPublisherPtr()->status.armed = 1;
+    Fluid::getInstance().getStatusPublisherPtr()->status.armed = Fluid::getInstance().configuration.should_auto_arm;
 
     mavros_interface.requestOffboard(Fluid::getInstance().configuration.should_auto_offboard);
-    Fluid::getInstance().getStatusPublisherPtr()->status.px4_mode = PX4_MODE_OFFBOARD;
+    Fluid::getInstance().getStatusPublisherPtr()->status.ardupilot_mode = ARDUPILOT_MODE_GUIDED;
 
     //send take off command
     setpoint.position.z = 2;
