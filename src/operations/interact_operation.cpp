@@ -18,6 +18,7 @@
 //A list of parameters for the user
 
 #define MAST_INTERACT false
+    //false blocks the FSM and the drone will NOT properly crash into the mast
 
 #define SAVE_DATA   true
 #define SAVE_Z      false
@@ -493,7 +494,6 @@ void InteractOperation::tick() {
             }
             float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
             if(MAST_INTERACT) {
-                //allow to block the FSM if we don't want the drone to properly crash into the mast
                 if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
                     //Todo, we may want to judge the velocity in stead of having a time to completion
                     if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int)-1 )
