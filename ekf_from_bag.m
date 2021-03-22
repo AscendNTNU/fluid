@@ -10,7 +10,7 @@
 %% some simulation settings:
 global fs N_STATE
 N_STATE = 6;
-fs = 10.0;        % sample frequency in Hz
+fs = 25.0;        % sample frequency in Hz
 timespan = 100.0;  % simulation time in sec
 t=(0:1/fs:timespan-1/fs);
 prediction = false; %stop using the measurement after 75% of the simulation
@@ -31,27 +31,48 @@ noise_std = [0.0707
              0.0707
              0.0707
              0.022361];
-         
-% Example of a potential real state vector
-real_state = zeros(timespan*fs, N_STATE); % [pitch ; roll]
-real_state(:,1) = Ap_gt .* sin(f_wave_gt*2*pi.*t);
-real_state(:,2) = Ar_gt .* sin(f_wave_gt*2*pi.*t+phase_gt);
-real_state(:,3) = Ap_gt .* 2*pi.*f_wave_gt .* cos(f_wave_gt*2*pi.*t);
-real_state(:,4) = Ar_gt .* 2*pi.*f_wave_gt .* cos(f_wave_gt*2*pi.*t+phase_gt);
-real_state(:,5) = f_wave_gt*2*pi;
-real_state(:,6) = L_mast_gt*ones(1,timespan*fs);
 
-module_pos_gt = zeros(timespan*fs, 3); %x, y, z
-module_pos_gt(:,1) = L_mast_gt*sin(real_state(:,1));
-module_pos_gt(:,2) = L_mast_gt*sin(real_state(:,2));
-module_pos_gt(:,3) = L_mast_gt*cos(real_state(:,1)).*cos(real_state(:,2));
 
-% Creation of potential measurement from perception
-measurement = zeros(timespan * fs, 4);   %[x ; y ; z ; pitch]
-measurement(:,1) = module_pos_gt(:,1) + noise_std(1)*randn(timespan*fs, 1);
-measurement(:,2) = module_pos_gt(:,2) + noise_std(2)*randn(timespan*fs, 1);
-measurement(:,3) = module_pos_gt(:,3) + noise_std(3)*randn(timespan*fs, 1);
-measurement(:,4) = real_state(:,1)    + noise_std(4)*randn(timespan*fs, 1);
+%% Getting data from rosbag
+bag_name = "2021-03-22-16-22-45.bag";    
+bag = rosbag(bag_name);
+gt_bag_topic = select(bag,'Topic','/simulator/module/ground_truth/pose');
+noisy_bag_topic = select(bag,'Topic','/simulator/module/noisy/pose');
+gt_msgStructs = readMessages(gt_bag_topic,'DataFormat','struct');
+noisy_msgStructs = readMessages(noisy_bag_topic,'DataFormat','struct');
+
+len = size(gt_msgStructs);
+len1 = len(1);
+real_pose = zeros(len1, 4);   %[x ; y ; z ; pitch]
+real_pose(:,1)= cellfun(@(m) double(m.Pose.Position.X),gt_msgStructs) -0.2;
+real_pose(:,2)= cellfun(@(m) double(m.Pose.Position.Y),gt_msgStructs) +10;
+real_pose(:,3)= cellfun(@(m) double(m.Pose.Position.Z),gt_msgStructs) -2;
+
+quat = zeros(len1, 4);   %[x ; y ; z ; w]
+quat(:,1)= cellfun(@(m) double(m.Pose.Orientation.X),gt_msgStructs);
+quat(:,2)= cellfun(@(m) double(m.Pose.Orientation.Y),gt_msgStructs);
+quat(:,3)= cellfun(@(m) double(m.Pose.Orientation.Z),gt_msgStructs);
+quat(:,4)= cellfun(@(m) double(m.Pose.Orientation.W),gt_msgStructs);
+eul = quat2eul(quat(:,:)); %default z,y,x
+real_pose(:,4)=eul(:,3);
+
+
+len = size(noisy_msgStructs);
+len2 = len(1);
+measurement = zeros(len2, 4);   %[x ; y ; z ; pitch]
+measurement(:,1)= cellfun(@(m) double(m.Pose.Position.X),noisy_msgStructs)-0.2;
+measurement(:,2)= cellfun(@(m) double(m.Pose.Position.Y),noisy_msgStructs)+10;
+measurement(:,3)= cellfun(@(m) double(m.Pose.Position.Z),noisy_msgStructs)-2;
+
+quat = zeros(len2, 4);   %[x ; y ; z ; w]
+quat(:,1)= cellfun(@(m) double(m.Pose.Orientation.X),noisy_msgStructs);
+quat(:,2)= cellfun(@(m) double(m.Pose.Orientation.Y),noisy_msgStructs);
+quat(:,3)= cellfun(@(m) double(m.Pose.Orientation.Z),noisy_msgStructs);
+quat(:,4)= cellfun(@(m) double(m.Pose.Orientation.W),noisy_msgStructs);
+eul = quat2eul(quat(:,:)); %default z,y,x
+measurement(:,4) = eul(:,3);
+
+len = min(len1, len2);
 
 %% Initialisation of the Kalman filter
 % ekf functions
@@ -76,25 +97,25 @@ X(6) = 1.9;
 %X(:) = real_state(1,:);
 
 % Save of X for plotting
-X_save = zeros(timespan * fs, N_STATE);
+X_save = zeros(len, N_STATE);
 X_save(1,:) = X(:);
-Xp_save = zeros(timespan * fs, N_STATE);
+Xp_save = zeros(len, N_STATE);
 Xp_save(1,:) = X(:);
 
 % The error covariance
 P = Q;
 P(5,5) = 0.1;
 P(6,6) = 0.1;
-P_save = zeros(timespan * fs, N_STATE);
+P_save = zeros(len, N_STATE);
 
 
 %% Kalman in action
-for run = 2 : timespan*fs
+for run = 2 : len
     % Prediction
     Xp = f(X);    
     Pp = del_f(X)*P*del_f(X)'+Q;
     
-    if run<timespan*fs*3/4 || not(prediction)
+    if run<len*3/4 || not(prediction)
         % Update
         K = Pp*del_h(X)'/(R+del_h(X)*Pp*del_h(X)');
         P = Pp - K*del_h(X)*Pp;
@@ -109,21 +130,22 @@ for run = 2 : timespan*fs
 
 end
 
-module_pos_estimate = zeros(timespan*fs,3);
-module_pos_estimate(:,1) = L_mast_gt*sin(X_save(:,1));
-module_pos_estimate(:,2) = L_mast_gt*sin(X_save(:,2));
-module_pos_estimate(:,3) = L_mast_gt*cos(X_save(:,1)).*cos(X_save(:,2));
+module_pos_estimate = zeros(len,4);
+module_pos_estimate(:,1) = X_save(:,6).*sin(X_save(:,1));
+module_pos_estimate(:,2) = X_save(:,6).*sin(X_save(:,2));
+module_pos_estimate(:,3) = X_save(:,6).*cos(X_save(:,1)).*cos(X_save(:,2));
+module_pos_estimate(:,4) = X_save(:,4);
 
 %% Plotting
-t=(0:1/fs:timespan-1/fs);
+t=(0:len-1);
 labels = ["x","y","z","pitch"];
 %plotting x, y and z position of the module on different graphs
 figure;
-for i = 1:3
-    subplot(1,3,i);
+for i = 1:4
+    subplot(2,2,i);
     hold on;
-    plot(t,measurement(:,i),'r+');
-    plot(t,module_pos_gt(:,i),'k');
+    plot(t,measurement(1:len,i),'r+');
+    plot(t,real_pose(1:len,i),'k');
     plot(t,module_pos_estimate(:,i),'g');
     %plot(t,Xp_save(:,i),'b.');
     %xline(timespan*3/4);
@@ -144,28 +166,29 @@ legend('measurement','real postition','estimation');%,'prediction');
 
 
 % plot the frequency of the waves and the estimation
+% /!\ can't be ploted anymore as I don't know the sim specs
 figure;
-labels2 = ["wave frequency","mast length"];
-X_save(:,5) = X_save(:,5)/2/pi;
-real_state(:,5) = real_state(:,5)/2/pi;
-for i = 5:6
-    subplot(1,3,i-4);
-    hold on;
-    plot(t,real_state(:,i),'k');
-    plot(t,X_save(:,i),'g');
-    xlabel('time');ylabel(labels2(i-4));
-end
-legend('real', 'estimated');
+% labels2 = ["wave frequency","mast length"];
+% X_save(:,5) = X_save(:,5)/2/pi;
+% real_state(:,5) = real_state(:,5)/2/pi;
+% for i = 5:6
+%     subplot(1,3,i-4);
+%     hold on;
+%     plot(t,real_state(1:len,i),'k');
+%     plot(t,X_save(:,i),'g');
+%     xlabel('time');ylabel(labels2(i-4));
+% end
+% legend('real', 'estimated');
 
-Ptrace = zeros(fs*timespan);
-for i = 1:fs*timespan
+Ptrace = zeros(len);
+for i = 1:len
     Ptrace(i) = sum(P_save(i,:));
 end
-subplot(1,3,3);
+%subplot(1,3,3);
 hold on;
 % plot(t,Ptrace);
-plot(t,P_save(:,5));
-plot(t,P_save(:,6));
+plot(t,P_save(1:len,5));
+plot(t,P_save(1:len,6));
 xlabel('time');ylabel("covariance");
 legend('wave frequency','mast length');
 % legend('trace', 'wave frequency','mast length');
