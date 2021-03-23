@@ -10,8 +10,8 @@
 %% some simulation settings:
 global fs N_STATE
 N_STATE = 6;
-fs = 10.0;        % sample frequency in Hz
-timespan = 100.0;  % simulation time in sec
+fs = 25.0;        % sample frequency in Hz
+timespan = 30.0;  % simulation time in sec
 t=(0:1/fs:timespan-1/fs);
 prediction = false; %stop using the measurement after 75% of the simulation
 
@@ -41,10 +41,11 @@ real_state(:,4) = Ar_gt .* 2*pi.*f_wave_gt .* cos(f_wave_gt*2*pi.*t+phase_gt);
 real_state(:,5) = f_wave_gt*2*pi;
 real_state(:,6) = L_mast_gt*ones(1,timespan*fs);
 
-module_pos_gt = zeros(timespan*fs, 3); %x, y, z
+module_pos_gt = zeros(timespan*fs, 4); %x, y, z
 module_pos_gt(:,1) = L_mast_gt*sin(real_state(:,1));
 module_pos_gt(:,2) = L_mast_gt*sin(real_state(:,2));
 module_pos_gt(:,3) = L_mast_gt*cos(real_state(:,1)).*cos(real_state(:,2));
+module_pos_gt(:,4) = real_state(:,1);
 
 % Creation of potential measurement from perception
 measurement = zeros(timespan * fs, 4);   %[x ; y ; z ; pitch]
@@ -109,18 +110,19 @@ for run = 2 : timespan*fs
 
 end
 
-module_pos_estimate = zeros(timespan*fs,3);
+module_pos_estimate = zeros(timespan*fs,4);
 module_pos_estimate(:,1) = L_mast_gt*sin(X_save(:,1));
 module_pos_estimate(:,2) = L_mast_gt*sin(X_save(:,2));
 module_pos_estimate(:,3) = L_mast_gt*cos(X_save(:,1)).*cos(X_save(:,2));
+module_pos_estimate(:,4) = X_save(:,1);
 
 %% Plotting
 t=(0:1/fs:timespan-1/fs);
 labels = ["x","y","z","pitch"];
 %plotting x, y and z position of the module on different graphs
 figure;
-for i = 1:3
-    subplot(1,3,i);
+for i = 1:4
+    subplot(2,2,i);
     hold on;
     plot(t,measurement(:,i),'r+');
     plot(t,module_pos_gt(:,i),'k');

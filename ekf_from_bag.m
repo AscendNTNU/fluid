@@ -41,28 +41,12 @@ noisy_bag_topic = select(bag,'Topic','/simulator/module/noisy/pose');
 gt_msgStructs = readMessages(gt_bag_topic,'DataFormat','struct');
 noisy_msgStructs = readMessages(noisy_bag_topic,'DataFormat','struct');
 
-len = size(gt_msgStructs);
-len1 = len(1);
-real_pose = zeros(len1, 4);   %[x ; y ; z ; pitch]
-real_pose(:,1)= cellfun(@(m) double(m.Pose.Position.X),gt_msgStructs) -0.2;
-real_pose(:,2)= cellfun(@(m) double(m.Pose.Position.Y),gt_msgStructs) +10;
-real_pose(:,3)= cellfun(@(m) double(m.Pose.Position.Z),gt_msgStructs) -2;
-
-quat = zeros(len1, 4);   %[x ; y ; z ; w]
-quat(:,1)= cellfun(@(m) double(m.Pose.Orientation.X),gt_msgStructs);
-quat(:,2)= cellfun(@(m) double(m.Pose.Orientation.Y),gt_msgStructs);
-quat(:,3)= cellfun(@(m) double(m.Pose.Orientation.Z),gt_msgStructs);
-quat(:,4)= cellfun(@(m) double(m.Pose.Orientation.W),gt_msgStructs);
-eul = quat2eul(quat(:,:)); %default z,y,x
-real_pose(:,4)=eul(:,3);
-
-
 len = size(noisy_msgStructs);
 len2 = len(1);
 measurement = zeros(len2, 4);   %[x ; y ; z ; pitch]
 measurement(:,1)= cellfun(@(m) double(m.Pose.Position.X),noisy_msgStructs)-0.2;
 measurement(:,2)= cellfun(@(m) double(m.Pose.Position.Y),noisy_msgStructs)+10;
-measurement(:,3)= cellfun(@(m) double(m.Pose.Position.Z),noisy_msgStructs)-2;
+measurement(:,3)= cellfun(@(m) double(m.Pose.Position.Z),noisy_msgStructs);
 
 quat = zeros(len2, 4);   %[x ; y ; z ; w]
 quat(:,1)= cellfun(@(m) double(m.Pose.Orientation.X),noisy_msgStructs);
@@ -70,9 +54,45 @@ quat(:,2)= cellfun(@(m) double(m.Pose.Orientation.Y),noisy_msgStructs);
 quat(:,3)= cellfun(@(m) double(m.Pose.Orientation.Z),noisy_msgStructs);
 quat(:,4)= cellfun(@(m) double(m.Pose.Orientation.W),noisy_msgStructs);
 eul = quat2eul(quat(:,:)); %default z,y,x
-measurement(:,4) = eul(:,3);
+measurement(:,4) = -eul(:,2);
+
+
+len = size(gt_msgStructs);
+len1 = len(1);
+real_pose = zeros(len1, 4);   %[x ; y ; z ; pitch]
+real_pose(:,1)= cellfun(@(m) double(m.Pose.Position.X),gt_msgStructs) -0.2;
+real_pose(:,2)= cellfun(@(m) double(m.Pose.Position.Y),gt_msgStructs) +10;
+real_pose(:,3)= cellfun(@(m) double(m.Pose.Position.Z),gt_msgStructs);
+
+quat = zeros(len1, 4);   %[x ; y ; z ; w]
+quat(:,1)= cellfun(@(m) double(m.Pose.Orientation.X),gt_msgStructs);
+quat(:,2)= cellfun(@(m) double(m.Pose.Orientation.Y),gt_msgStructs);
+quat(:,3)= cellfun(@(m) double(m.Pose.Orientation.Z),gt_msgStructs);
+quat(:,4)= cellfun(@(m) double(m.Pose.Orientation.W),gt_msgStructs);
+eul = quat2eul(quat(:,:)); %default z,y,x
+real_pose(:,4)=-eul(:,2);
 
 len = min(len1, len2);
+
+real_state = zeros(len, 6);
+real_state(:,1) = -eul(1:len,2);
+real_state(:,2) =  eul(1:len,3);
+real_state(:,3) = -(real_state(:,1)-circshift(real_state(:,1), [-1 0]))*fs;
+real_state(:,4) = -(real_state(:,2)-circshift(real_state(:,2), [-1 0]))*fs;
+
+real_state(:,5) = 0.1;
+real_state(:,6) = 2;
+
+%% testing if extraction worked
+% module_pos_gt = zeros(len, 3); %x, y, z
+% module_pos_gt(:,1) = L_mast_gt*sin(-real_state(:,2));
+% module_pos_gt(:,2) = L_mast_gt*sin(real_state(:,1));
+% module_pos_gt(:,3) = L_mast_gt*cos(real_state(:,1)).*cos(real_state(:,2));
+% 
+% figure;
+% hold on;
+% plot(module_pos_gt(:,3),'b-');
+% plot(measurement(:,3),'r+');
 
 %% Initialisation of the Kalman filter
 % ekf functions
@@ -81,7 +101,7 @@ h = @h_kf;
 del_f = @delta_f_kf;
 del_h = @delta_h_kf;
 R = diag(noise_std.^2)/3; % sensor noise
-Q = diag([0.005, 0.005, 0.04, 0.04, ... %pitch, roll, pitch', roll'
+Q = diag([0.02, 0.02, 0.04, 0.04, ... %pitch, roll, pitch', roll'
           0.001, 0.0005]); % model error , omega, L_mast
      
 
@@ -112,7 +132,8 @@ P_save = zeros(len, N_STATE);
 %% Kalman in action
 for run = 2 : len
     % Prediction
-    Xp = f(X);    
+    %Xp = f(real_state(run,:));    
+    Xp = f(X);
     Pp = del_f(X)*P*del_f(X)'+Q;
     
     if run<len*3/4 || not(prediction)
@@ -147,10 +168,11 @@ for i = 1:4
     plot(t,measurement(1:len,i),'r+');
     plot(t,real_pose(1:len,i),'k');
     plot(t,module_pos_estimate(:,i),'g');
-    %plot(t,Xp_save(:,i),'b.');
+    plot(t,Xp_save(:,i),'b.');
     %xline(timespan*3/4);
     xlabel('time');ylabel(labels(i));
 end
+%plot(t,X_save(:,3),'b.');
 hold off;
 legend('measurement','real postition','estimation');%,'prediction');
 
@@ -167,7 +189,7 @@ legend('measurement','real postition','estimation');%,'prediction');
 
 % plot the frequency of the waves and the estimation
 % /!\ can't be ploted anymore as I don't know the sim specs
-figure;
+% figure;
 % labels2 = ["wave frequency","mast length"];
 % X_save(:,5) = X_save(:,5)/2/pi;
 % real_state(:,5) = real_state(:,5)/2/pi;
@@ -179,19 +201,19 @@ figure;
 %     xlabel('time');ylabel(labels2(i-4));
 % end
 % legend('real', 'estimated');
-
-Ptrace = zeros(len);
-for i = 1:len
-    Ptrace(i) = sum(P_save(i,:));
-end
-%subplot(1,3,3);
-hold on;
-% plot(t,Ptrace);
-plot(t,P_save(1:len,5));
-plot(t,P_save(1:len,6));
-xlabel('time');ylabel("covariance");
-legend('wave frequency','mast length');
-% legend('trace', 'wave frequency','mast length');
+% 
+% Ptrace = zeros(len);
+% for i = 1:len
+%     Ptrace(i) = sum(P_save(i,:));
+% end
+% %subplot(1,3,3);
+% hold on;
+% % plot(t,Ptrace);
+% plot(t,P_save(1:len,5));
+% plot(t,P_save(1:len,6));
+% xlabel('time');ylabel("covariance");
+% legend('wave frequency','mast length');
+% % legend('trace', 'wave frequency','mast length');
 
 
 
