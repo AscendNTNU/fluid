@@ -23,6 +23,8 @@ bool TakeOffOperation::hasFinishedExecution() const {
 void TakeOffOperation::initialize() {
 
     MavrosInterface mavros_interface;
+
+    ros::Rate rate(5);
         
     mavros_interface.establishContactToArduPilot();
     Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_ardupilot = 1;
@@ -42,5 +44,6 @@ void TakeOffOperation::initialize() {
         ROS_INFO_STREAM(ros::this_node::getName().c_str() << "publish setPoint for takeoff\n");
         publishSetpoint();
         ros::spinOnce();
+        rate.sleep();
     }
 }
