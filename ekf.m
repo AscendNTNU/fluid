@@ -95,15 +95,12 @@ for run = 2 : timespan*fs
     Xp = f(X);    
     Pp = del_f(X)*P*del_f(X)'+Q;
     
-    if run<timespan*fs*3/4 || not(prediction)
-        % Update
-        K = Pp*del_h(X)'/(R+del_h(X)*Pp*del_h(X)');
-        P = Pp - K*del_h(X)*Pp;
-        X = Xp + K*(measurement(run, :)'-h(Xp));
-    else
-        X = Xp;
-        P = Pp;
-    end
+    % Update
+    K = Pp*del_h(X)'/(R+del_h(X)*Pp*del_h(X)');
+    P = Pp - K*del_h(X)*Pp;
+    X = Xp + K*(measurement(run, :)'-h(Xp));
+    
+    %saving data
     X_save(run,:) = X(:);
     Xp_save(run,:) = Xp(:);
     P_save(run,:) = diag(P);
@@ -111,9 +108,9 @@ for run = 2 : timespan*fs
 end
 
 module_pos_estimate = zeros(timespan*fs,4);
-module_pos_estimate(:,1) = L_mast_gt*sin(X_save(:,1));
-module_pos_estimate(:,2) = L_mast_gt*sin(X_save(:,2));
-module_pos_estimate(:,3) = L_mast_gt*cos(X_save(:,1)).*cos(X_save(:,2));
+module_pos_estimate(:,1) = X_save(:,6).*sin(X_save(:,1));
+module_pos_estimate(:,2) = X_save(:,6).*sin(X_save(:,2));
+module_pos_estimate(:,3) = X_save(:,6).*cos(X_save(:,1)).*cos(X_save(:,2));
 module_pos_estimate(:,4) = X_save(:,1);
 
 %% Plotting
@@ -131,8 +128,9 @@ for i = 1:4
     %xline(timespan*3/4);
     xlabel('time');ylabel(labels(i));
 end
+plot(t,Xp_save(:,1),'b.');
 hold off;
-legend('measurement','real postition','estimation');%,'prediction');
+legend('measurement','real postition','estimation','prediction', 'location', 'best');
 
 %x,y plot
 

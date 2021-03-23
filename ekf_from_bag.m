@@ -151,11 +151,11 @@ for run = 2 : len
 
 end
 
-module_pos_estimate = zeros(len,4);
+module_pos_estimate = zeros(len,4); %[x, y, z, pitch]
 module_pos_estimate(:,1) = X_save(:,6).*sin(X_save(:,1));
 module_pos_estimate(:,2) = X_save(:,6).*sin(X_save(:,2));
 module_pos_estimate(:,3) = X_save(:,6).*cos(X_save(:,1)).*cos(X_save(:,2));
-module_pos_estimate(:,4) = X_save(:,4);
+module_pos_estimate(:,4) = X_save(:,1);
 
 %% Plotting
 t=(0:len-1);
@@ -167,14 +167,16 @@ for i = 1:4
     hold on;
     plot(t,measurement(1:len,i),'r+');
     plot(t,real_pose(1:len,i),'k');
+    if i==4
+        plot(t,Xp_save(:,1),'b.');
+    end
     plot(t,module_pos_estimate(:,i),'g');
-    plot(t,Xp_save(:,i),'b.');
+    
     %xline(timespan*3/4);
     xlabel('time');ylabel(labels(i));
 end
-%plot(t,X_save(:,3),'b.');
 hold off;
-legend('measurement','real postition','estimation');%,'prediction');
+legend('measurement','real postition','estimation','prediction', 'location', 'best');
 
 %x,y plot
 
