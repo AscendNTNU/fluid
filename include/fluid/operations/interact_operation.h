@@ -68,12 +68,17 @@ class InteractOperation : public Operation {
     float MAX_VEL;
 
     Mast mast;
-    
+
     /**
      * @brief Estimation of the time the drone will take to got from
      * the Approach state to the interact state
      */
     float estimate_time_to_mast;
+
+    /**
+     * @brief state whether close tracking is activated or not
+     */
+    bool close_tracking;
     
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
     void FaceHuggerCallback(const bool released);

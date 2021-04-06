@@ -18,6 +18,7 @@
 //A list of parameters for the user
 
 #define MAST_INTERACT false
+#define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
     //false blocks the FSM and the drone will NOT properly crash into the mast
 
 #define SAVE_DATA   true
@@ -102,7 +103,9 @@ void InteractOperation::initialize() {
     transition_state.cte_acc = 3*MAX_ACCEL; 
     transition_state.max_vel = 3*MAX_VEL;
     completion_count =0;
+    
     faceHugger_is_set = false;    
+    close_tracking = false;
 
     //estimation of the time it takes to go from approch state to interact state
     float dist_acc_decc = MAX_VEL*MAX_VEL/MAX_ACCEL;
@@ -549,6 +552,17 @@ void InteractOperation::tick() {
             if (SHOW_PRINTS){
                 if(time_cout%(rate_int*2)==0) printf("OVER\n");
             }
+            if(transition_state.state.position.x < MAX_DIST_FOR_CLOSE_TRACKING && !close_tracking){
+            // send a message to perception to switch close tracking on.
+                //ros::ServiceClient switch_close_tracking = node_handle.serviceClient<fluid::CloseTracking>("perception_main/switch_to_close_tracking");
+                //perception::CloseTracking switch_to_close_tracking_handle;
+                //switch_to_close_tracking_handle.request.timeout = 0.1;
+
+                //TODO: call the perception_main/switch_to_close_tracking service.
+                close_tracking = true;
+                ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                            << ": " << "switch close tracking on");
+            }
             //We assume that the accuracy is fine, we don't want to take the risk to stay too long
             if (transition_state.finished_bitmask & 0x7 == 0x7) {
                 interaction_state = InteractionState::INTERACT;
@@ -600,6 +614,19 @@ void InteractOperation::tick() {
             #if SHOW_PRINTS
             if(time_cout%(rate_int*2)==0) printf("EXIT\n");
             #endif
+            
+            if(transition_state.state.position.x > MAX_DIST_FOR_CLOSE_TRACKING && close_tracking){
+            // send a message to AI to switch close tracking off.
+                //ros::ServiceClient switch_close_tracking = node_handle.serviceClient<fluid::CloseTracking>("perception_main/switch_to_close_tracking");
+                //perception::CloseTracking switch_to_close_tracking_handle;
+                //switch_to_close_tracking_handle.request.timeout = 0.1;
+
+                //TODO: call the perception_main/switch_to_close_tracking service.
+                close_tracking = false;
+                ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                            << ": " << "switch close tracking on");
+            }
+
             //This is a transition state before going back to approach and try again.
             if ( distance_to_offset < 0.6 ) {
                 if (faceHugger_is_set){
