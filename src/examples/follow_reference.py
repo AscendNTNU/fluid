@@ -42,16 +42,20 @@ CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't 
 #General parameters
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
-control_type = CONTROL_POSITION_AND_VELOCITY #CONTROL_LQR_ATTITUDE
-USE_SQRT = False
+control_type = CONTROL_LQR_ATTITUDE #CONTROL_LQR_ATTITUDE
+USE_SQRT = True
+USE_SQ   = False
+
 #K_lqr = [0.4189, 1.1062] #matrix from bryon's rule with diameter as max distance
-a = 1.0
+
+a = 0.5
 b = 2.0*a
 K_lqr_x = [a*0.4189, a*1.1062]
 K_lqr_y = [b*0.4189, b*1.1062]
-
 accel_feedforward_x = 0.0
 accel_feedforward_y = 0.0
+
+
 
 MAX_ACCEL_X = 0.15
 MAX_ACCEL_Y = 0.30
@@ -80,6 +84,7 @@ drone_quaternion = Quaternion()
 current_state = State()
 
 target = PositionTarget()
+
 
 
 class TransitionStruct():
@@ -124,6 +129,8 @@ def modulePosition():
     module_pos.x = center[0] - pitch_radius * cos(rospy.Time.now().to_time()*omega)
     module_pos.y = center[1] - roll_radius  * sin(rospy.Time.now().to_time()*omega)
     module_pos.z = sqrt(3.0**2 - module_pos.x **2 - module_pos.y **2) - 1.5 #weird formula to have the drone at 1.5m high in stead of 3. Easier to see in the sim.
+    #global start_time
+    #module_pos.z = 1.5 + 0.1 * (rospy.Time.now().to_time() - start_time)
     return module_pos
 
 def moduleVelocity(latency=None):
@@ -158,29 +165,44 @@ def calculate_acc_input(target_pos, trans_offset, use_sqrt=False):
     ref_acc = addPoints(target_pos[2], trans_offset.acc)
     accel_target = Point()
     accel_target.z = 0.0
-    if not USE_SQRT:
-        accel_target.x =  K_lqr_x[0] * (ref_pos.x - drone_position.x) \
-                        + K_lqr_x[1] * (ref_vel.x - drone_velocity.x) \
-                        + accel_feedforward_x * ref_acc.x 
-        accel_target.y =  K_lqr_y[0] * (ref_pos.y - drone_position.y) \
-                        + K_lqr_y[1] * (ref_vel.y - drone_velocity.y) \
-                        + accel_feedforward_y * ref_acc.y 
-    else:
-        accel_target.x =  K_lqr_x[0] * signed_sqrt(ref_pos.x - drone_position.y) \
+    
+    if USE_SQRT:
+        accel_target.x =  K_lqr_x[0] * signed_sqrt(ref_pos.x - drone_position.x) \
                         + K_lqr_x[1] * signed_sqrt(ref_vel.x - drone_velocity.x) \
                         + accel_feedforward_x * ref_acc.x 
         accel_target.y =  K_lqr_y[0] * signed_sqrt(ref_pos.y - drone_position.y) \
                         + K_lqr_y[1] * signed_sqrt(ref_vel.y - drone_velocity.y) \
                         + accel_feedforward_y * ref_acc.y 
 
+    elif USE_SQ:
+        accel_target.x =  K_lqr_x[0] * signed_sq(ref_pos.x - drone_position.x) \
+                        + K_lqr_x[1] * signed_sq(ref_vel.x - drone_velocity.x) \
+                        + accel_feedforward_x * ref_acc.x 
+        accel_target.y =  K_lqr_y[0] * signed_sq(ref_pos.y - drone_position.y) \
+                        + K_lqr_y[1] * signed_sq(ref_vel.y - drone_velocity.y) \
+                        + accel_feedforward_y * ref_acc.y 
+
+    else:
+        accel_target.x =  K_lqr_x[0] * (ref_pos.x - drone_position.x) \
+                        + K_lqr_x[1] * (ref_vel.x - drone_velocity.x) \
+                        + accel_feedforward_x * ref_acc.x 
+        accel_target.y =  K_lqr_y[0] * (ref_pos.y - drone_position.y) \
+                        + K_lqr_y[1] * (ref_vel.y - drone_velocity.y) \
+                        + accel_feedforward_y * ref_acc.y 
+
     return accel_target
+
+def signed_sq(nb):
+    if nb<0:
+        return - nb**2
+    else:
+        return nb**2
 
 def signed_sqrt(nb):
     if nb<0:
         return - sqrt(-nb)
     else:
         return sqrt(nb)
-
 
 def update_transition_state(transition_state, drone_distance_from_mast):
     #try to make a smooth transition when the relative targeted position between the drone
@@ -551,6 +573,10 @@ def main():
     set_yaw(FIXED_MAST_YAW)
 
     rospy.loginfo("start to follow the module")
+    global start_time
+    start_time = rospy.Time.now().to_time()
+    
+    
     last_module_pose   = Point()
     actual_module_pose = Point()
     actual_module_vel = Point()
@@ -559,10 +585,9 @@ def main():
     module_state_P = Polygon()
     module_state = module_state_P.points
     count =0
-    start_time = rospy.Time.now().to_time()
     elapsed_time = 0.0
-
-    transition_state = TransitionStruct(0.05, 0.03) # max_vel and cte_acc #first tried with 0.05 and 0.03 as these are usual values on the folowing of the mast.
+    
+    transition_state = TransitionStruct(0.5, 0.15) # max_vel and cte_acc #Best seems to be 0.5 ; 0.15
     transition_state.pose = Point(0.0, 0.0, 0.0)
     drone_distance_from_mast = Point(0.0, 0.0, 0.0) # distance offset from the mast.
 
@@ -625,7 +650,7 @@ def main():
                     print("%.1fsec elapsed, simulation is over!" % elapsed_time)
                     return
 #            if elapsed_time >= 13.0 and elapsed_time <14.0:
-#                drone_distance_from_mast = Point(0.5, 0.0, 0.0)
+#                drone_distance_from_mast = Point(1.5, 0.0, 0.0)
 #                print("offset distance from the mast has been updated!")
 
         
