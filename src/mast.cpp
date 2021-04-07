@@ -12,8 +12,15 @@ Mast::Mast(float yaw){
     m_current_extremum = 0;
 }
 
-void Mast::update(geometry_msgs::Quaternion orientation){
-    const geometry_msgs::Vector3 mast_euler_angle = Util::quaternion_to_euler_angle(orientation);
+void Mast::update(geometry_msgs::PoseStampedConstPtr module_pose_ptr){
+    const geometry_msgs::Vector3 mast_euler_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
+    previous_interaction_point_state = interaction_point_state;
+    interaction_point_state.header = module_pose_ptr->header;
+    interaction_point_state.position = module_pose_ptr->pose.position;
+    estimateInteractionPointVel();    
+    estimateInteractionPointAccel(); //this takes into account the updated velocity.
+    
+
     m_angle.x =  mast_euler_angle.y;
     m_angle.y = -mast_euler_angle.z;
     m_angle.z =  180.0/M_PI * atan2(mast_euler_angle.y,-mast_euler_angle.z);
@@ -55,7 +62,27 @@ void Mast::update(geometry_msgs::Quaternion orientation){
             }
         }
     }
+    
 }
+
+void Mast::estimateInteractionPointVel(){
+    // estimate the velocity of the interaction_point by a simple derivation of the position.
+    // In the long run, I expect to receive a nicer estimate by perception or to create a KF myself.
+    double dt = (interaction_point_state.header.stamp - previous_interaction_point_state.header.stamp).nsec/1000000000.0;
+    interaction_point_state.velocity.x = (interaction_point_state.position.x - previous_interaction_point_state.position.x)/dt;
+    interaction_point_state.velocity.y = (interaction_point_state.position.y - previous_interaction_point_state.position.y)/dt;
+    interaction_point_state.velocity.z = (interaction_point_state.position.z - previous_interaction_point_state.position.z)/dt;
+}
+
+void Mast::estimateInteractionPointAccel(){
+    // estimate the acceleration of the interaction_point by simply derivating the velocity.
+    // In the long run, I expect to receive a nicer estimate by perception or to createa KF myself.
+    double dt = (interaction_point_state.header.stamp - previous_interaction_point_state.header.stamp).nsec/1000000000.0;
+    interaction_point_state.acceleration_or_force.x = (interaction_point_state.velocity.x - previous_interaction_point_state.velocity.x)/dt;
+    interaction_point_state.acceleration_or_force.y = (interaction_point_state.velocity.y - previous_interaction_point_state.velocity.y)/dt;
+    interaction_point_state.acceleration_or_force.z = (interaction_point_state.velocity.z - previous_interaction_point_state.velocity.z)/dt;
+}
+
 
 float Mast::time_to_max_pitch(){
     // This function assume a triangulare movement of the pitch instead of sinuzoïdal.
@@ -85,4 +112,8 @@ float Mast::get_yaw(){
 
 float Mast::get_period(){
     return m_period;
+}
+
+mavros_msgs::PositionTarget Mast::get_interaction_point_state(){
+    return interaction_point_state;
 }

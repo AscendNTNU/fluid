@@ -75,6 +75,9 @@ void InteractOperation::initialize() {
     if (GROUND_TRUTH){
         module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                      10, &InteractOperation::modulePoseCallback, this);
+        module_pose_subscriber2 = node_handle.subscribe("/simulator/module_pose",
+                                     10, &InteractOperation::modulePoseCallback, this);
+                                 
     }
     else{
         module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
@@ -127,14 +130,8 @@ bool InteractOperation::hasFinishedExecution() const { return interaction_state 
 
 void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
-    previous_module_state = module_state;
 
-    module_state.header = module_pose_ptr->header;
-    module_state.position = module_pose_ptr->pose.position;
-    module_state.velocity = estimateModuleVel();    
-    module_state.acceleration_or_force = estimateModuleAccel();
-    
-    mast.update(module_pose_ptr->pose.orientation);
+    mast.update(module_pose_ptr);
 }
 
 void InteractOperation::FaceHuggerCallback(const bool released){
@@ -266,28 +263,6 @@ void InteractOperation::saveLog(const std::string file_name, const mavros_msgs::
 }
 #endif
 
-geometry_msgs::Vector3 InteractOperation::estimateModuleVel(){
-    // estimate the velocity of the module by a simple derivation of the position.
-    // In the long run, I expect to receive a nicer estimate by perception or to create a KF myself.
-    geometry_msgs::Vector3 vel;
-    double dt = (module_state.header.stamp - previous_module_state.header.stamp).nsec/1000000000.0;
-    vel.x = (module_state.position.x - previous_module_state.position.x)/dt;
-    vel.y = (module_state.position.y - previous_module_state.position.y)/dt;
-    vel.z = (module_state.position.z - previous_module_state.position.z)/dt;
-    return vel;
-}
-
-geometry_msgs::Vector3 InteractOperation::estimateModuleAccel(){
-    // estimate the acceleration of the module by simply derivating the velocity.
-    // In the long run, I expect to receive a nicer estimate by perception or to createa KF myself.
-    geometry_msgs::Vector3 Accel;
-    double dt = (module_state.header.stamp - previous_module_state.header.stamp).nsec/1000000000.0;
-    Accel.x = (module_state.velocity.x - previous_module_state.velocity.x)/dt;
-    Accel.y = (module_state.velocity.y - previous_module_state.velocity.y)/dt;
-    Accel.z = (module_state.velocity.z - previous_module_state.velocity.z)/dt;
-    return Accel;
-}
-
 /*template<typename T>  T& rotate2 (T& pt, float yaw) {
     T& rotated_point;
     rotated_point.x = cos(mast.get_yaw()) * pt.x - sin(mast.get_yaw()) * pt.y;
@@ -355,7 +330,7 @@ geometry_msgs::Quaternion InteractOperation::accel_to_orientation(geometry_msgs:
 }
 
 void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget offset){
-    mavros_msgs::PositionTarget ref = Util::addPositionTarget(module_state, offset);
+    mavros_msgs::PositionTarget ref = Util::addPositionTarget(mast.get_interaction_point_state(), offset);
 
     attitude_setpoint.header.stamp = ros::Time::now();
     attitude_setpoint.thrust = 0.5; //this is the thrust that allow a constant altitude no matter what
@@ -465,9 +440,10 @@ void InteractOperation::update_transition_state()
 
 void InteractOperation::tick() {
     time_cout++;
+    mavros_msgs::PositionTarget interact_pt_state = mast.get_interaction_point_state();
     //printf("mast pitch %f, roll %f, angle %f\n", mast_angle.x, mast_angle.y, mast_angle.z);
     // Wait until we get the first module position readings before we do anything else.
-    if (module_state.header.seq == 0) {
+    if (interact_pt_state.header.seq == 0) {
         if(time_cout%rate_int==0)
             printf("Waiting for callback\n");
         startApproaching = ros::Time::now();
@@ -481,9 +457,9 @@ void InteractOperation::tick() {
     update_transition_state();
     geometry_msgs::Point rotated_offset = rotate(desired_offset,mast.get_yaw());
 
-    const double dx = module_state.position.x + rotated_offset.x - getCurrentPose().pose.position.x;
-    const double dy = module_state.position.y + rotated_offset.y - getCurrentPose().pose.position.y;
-    const double dz = module_state.position.z + rotated_offset.z - getCurrentPose().pose.position.z;
+    const double dx = interact_pt_state.position.x + rotated_offset.x - getCurrentPose().pose.position.x;
+    const double dy = interact_pt_state.position.y + rotated_offset.y - getCurrentPose().pose.position.y;
+    const double dz = interact_pt_state.position.z + rotated_offset.z - getCurrentPose().pose.position.z;
     const double distance_to_offset = sqrt(Util::sq(dx) + Util::sq(dy) + Util::sq(dz));
     
 
@@ -506,8 +482,23 @@ void InteractOperation::tick() {
                         // remain ready until it is time to try
                         completion_count = 0;
                         float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
-                        if(time_to_wait < TIME_WINDOW_INTERACTION)
-                            time_to_wait += mast.get_period();
+                        /*
+                        if(time_to_wait < TIME_WINDOW_INTERACTION){
+                            // the following lines should only be useful if it actually takes time to go through the READY state when the drone is already ready.
+                            interaction_state = InteractionState::OVER;
+                            ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                                        << ": " << "Approaching -> Over");
+                            //the offset is set in the frame of the mast:    
+                            desired_offset.x = 0.28;  //forward
+                            desired_offset.y = 0.0;   //left
+                            desired_offset.z = -0.45; //up
+                            transition_state.cte_acc = MAX_ACCEL;
+                            transition_state.max_vel = MAX_VEL;
+
+                            // Avoid going to the next step before the transition is actuallized
+                            transition_state.finished_bitmask = 0;
+                        }
+                        */
                         ROS_INFO_STREAM(ros::this_node::getName().c_str() 
                                 << ": Ready to set the FaceHugger. Waiting for the best opportunity"
                                 << "\nEstimated waiting time before go: "
@@ -530,8 +521,9 @@ void InteractOperation::tick() {
                             << time_to_wait);
                 }
             }
-            if( abs(time_to_wait+TIME_WINDOW_INTERACTION/2.0) <= TIME_WINDOW_INTERACTION/2.0)
+            if( abs(time_to_wait) <= TIME_WINDOW_INTERACTION)
             { //We are in the good window to set the faceHugger
+              // Notice that once the drone is over, the FH is not set yet.
                 interaction_state = InteractionState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Approaching -> Over");
@@ -694,12 +686,12 @@ void InteractOperation::tick() {
         // todo: it may be possible to publish more often without any trouble.
         setpoint.header.stamp = ros::Time::now();
         setpoint.yaw = mast.get_yaw()+M_PI;
-        setpoint.position.x = module_state.position.x + smooth_rotated_offset.position.x;
-        setpoint.position.y = module_state.position.y + smooth_rotated_offset.position.y;
-        setpoint.position.z = module_state.position.z + smooth_rotated_offset.position.z;
-        setpoint.velocity.x = module_state.velocity.x + smooth_rotated_offset.velocity.x;
-        setpoint.velocity.y = module_state.velocity.y + smooth_rotated_offset.velocity.y;
-        setpoint.velocity.z = module_state.velocity.z + smooth_rotated_offset.velocity.z;
+        setpoint.position.x = interact_pt_state.position.x + smooth_rotated_offset.position.x;
+        setpoint.position.y = interact_pt_state.position.y + smooth_rotated_offset.position.y;
+        setpoint.position.z = interact_pt_state.position.z + smooth_rotated_offset.position.z;
+        setpoint.velocity.x = interact_pt_state.velocity.x + smooth_rotated_offset.velocity.x;
+        setpoint.velocity.y = interact_pt_state.velocity.y + smooth_rotated_offset.velocity.y;
+        setpoint.velocity.z = interact_pt_state.velocity.z + smooth_rotated_offset.velocity.z;
 
         altitude_and_yaw_pub.publish(setpoint);
 
@@ -709,7 +701,7 @@ void InteractOperation::tick() {
 
     #if SAVE_DATA
     //save the control data into files
-    saveLog(reference_state_path,Util::addPositionTarget(module_state, smooth_rotated_offset));
+    saveLog(reference_state_path,Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
     saveLog(drone_pose_path, getCurrentPose(),getCurrentTwist(),getCurrentAccel());
     saveSetpointLog(drone_setpoints_path,accel_target);
     #endif

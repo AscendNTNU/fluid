@@ -48,14 +48,11 @@ class InteractOperation : public Operation {
     uint8_t completion_count; //count the number of ticks since we completeted the current state
     
     
-    mavros_msgs::PositionTarget module_state;
-    mavros_msgs::PositionTarget previous_module_state;
-    
-    
     TransitionSetpointStruct transition_state;
     geometry_msgs::Point desired_offset;
     
     ros::Subscriber module_pose_subscriber;
+    ros::Subscriber module_pose_subscriber2;
     ros::Publisher attitude_pub;
     ros::Publisher altitude_and_yaw_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;
