@@ -66,11 +66,14 @@ class InteractOperation : public Operation {
 
     Mast mast;
 
+    
     /**
-     * @brief Estimation of the time the drone will take to got from
-     * the Approach state to the interact state
+     * @brief Estimate the travel time from current position to OVER state
+     * 
+     * @return estimated mast to travel to the mast
      */
-    float estimate_time_to_mast;
+    float estimate_time_to_mast();
+
 
     /**
      * @brief state whether close tracking is activated or not

@@ -16,10 +16,13 @@
 #include <unistd.h> //to get the current directory
 
 //A list of parameters for the user
-
-#define MAST_INTERACT false
+#define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
     //false blocks the FSM and the drone will NOT properly crash into the mast
+
+// Important distances
+#define DIST_FH_DRONE_CENTRE    0.28
+
 
 #define SAVE_DATA   true
 #define SAVE_Z      false
@@ -109,12 +112,6 @@ void InteractOperation::initialize() {
     
     faceHugger_is_set = false;    
     close_tracking = false;
-
-    //estimation of the time it takes to go from approch state to interact state
-    float dist_acc_decc = MAX_VEL*MAX_VEL/MAX_ACCEL;
-    estimate_time_to_mast = (desired_offset.x - 0.28 - dist_acc_decc) / MAX_VEL //time during max vel
-                            + 2 * MAX_VEL / MAX_ACCEL; //time during acceleration and decceleration
-    ROS_INFO_STREAM("estimation of time to mast = " << estimate_time_to_mast);
 
     #if SAVE_DATA
     //create a header for the datafiles.
@@ -438,6 +435,19 @@ void InteractOperation::update_transition_state()
     }
 }
 
+
+float InteractOperation::estimate_time_to_mast()
+{
+    // Estimation of the time it takes to go from current position to interaction point
+    float dist = transition_state.state.position.x - DIST_FH_DRONE_CENTRE; //assuming that the drone is always accurate
+    float dist_acc_decc = MAX_VEL*MAX_VEL/MAX_ACCEL;
+    if (dist < dist_acc_decc)
+        return 2.0 * sqrt(2.0*dist/MAX_ACCEL);
+    else
+        return (dist - dist_acc_decc) / MAX_VEL //time during max vel
+                            + 2 * MAX_VEL / MAX_ACCEL; //time during acceleration and decceleration
+}
+
 void InteractOperation::tick() {
     time_cout++;
     mavros_msgs::PositionTarget interact_pt_state = mast.get_interaction_point_state();
@@ -455,8 +465,8 @@ void InteractOperation::tick() {
             ROS_INFO_STREAM("max pitch ETA: " << ros::Time::now() + ros::Duration(mast.time_to_max_pitch()));
 
     update_transition_state();
-    geometry_msgs::Point rotated_offset = rotate(desired_offset,mast.get_yaw());
 
+    geometry_msgs::Point rotated_offset = rotate(desired_offset,mast.get_yaw());
     const double dx = interact_pt_state.position.x + rotated_offset.x - getCurrentPose().pose.position.x;
     const double dy = interact_pt_state.position.y + rotated_offset.y - getCurrentPose().pose.position.y;
     const double dz = interact_pt_state.position.z + rotated_offset.z - getCurrentPose().pose.position.z;
@@ -481,7 +491,7 @@ void InteractOperation::tick() {
                         //We consider that if the drone is ready at some point, it will 
                         // remain ready until it is time to try
                         completion_count = 0;
-                        float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
+                        float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
                         /*
                         if(time_to_wait < TIME_WINDOW_INTERACTION){
                             // the following lines should only be useful if it actually takes time to go through the READY state when the drone is already ready.
@@ -489,7 +499,7 @@ void InteractOperation::tick() {
                             ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                         << ": " << "Approaching -> Over");
                             //the offset is set in the frame of the mast:    
-                            desired_offset.x = 0.28;  //forward
+                            desired_offset.x = DIST_FH_DRONE_CENTRE;  //forward
                             desired_offset.y = 0.0;   //left
                             desired_offset.z = -0.45; //up
                             transition_state.cte_acc = MAX_ACCEL;
@@ -513,7 +523,7 @@ void InteractOperation::tick() {
         }
         case InteractionState::READY: {
             //The drone is ready, we just have to wait for the best moment to go!
-            float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
+            float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
             if (SHOW_PRINTS){
                 if(time_cout%(rate_int/2)==0) {
                     ROS_INFO_STREAM("READY; "
@@ -528,7 +538,7 @@ void InteractOperation::tick() {
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Approaching -> Over");
                 //the offset is set in the frame of the mast:    
-                desired_offset.x = 0.28;  //forward
+                desired_offset.x = DIST_FH_DRONE_CENTRE;  //forward
                 desired_offset.y = 0.0;   //left
                 desired_offset.z = -0.45; //up
                 transition_state.cte_acc = MAX_ACCEL;
@@ -560,7 +570,7 @@ void InteractOperation::tick() {
                 interaction_state = InteractionState::INTERACT;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Over -> Interact");
-                desired_offset.x = 0.28;  //forward
+                desired_offset.x = DIST_FH_DRONE_CENTRE;  //forward
                 desired_offset.y = 0.0;   //left
                 desired_offset.z -= 0.2;  //up
 
@@ -619,7 +629,7 @@ void InteractOperation::tick() {
                             << ": " << "switch close tracking on");
             }
 
-            //This is a transition state before going back to approach and try again.
+            //This is a transition state before going back to approach and come back the the base or try again.
             if ( distance_to_offset < 0.6 ) {
                 if (faceHugger_is_set){
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
