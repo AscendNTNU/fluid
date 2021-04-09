@@ -5,7 +5,6 @@
 
 % If the function time_and_distance_error_f can't be found even though it
 % is in your folder, just start it once for nothing. It should fix it.
-
 clear();
 files_to_compare = [ % put the files you want to compare h
      "reference_state.txt"
@@ -130,6 +129,7 @@ end
 colors = lines(nb_file);
 figure
 L = length(merge_titles);
+ploted_files = [1]; %we want to know which files have been ploted to set the legend
 for i = 2*titleInColumn(1):titleInColumn(1):L %i is the indice of the title we display on merge_titles
     subplot(plotSize(1),plotSize(2),i/titleInColumn(1));   %,'replace')
     for file_ind=1:nb_file
@@ -137,6 +137,12 @@ for i = 2*titleInColumn(1):titleInColumn(1):L %i is the indice of the title we d
         if find(titles(file_ind,:)==merge_titles(i))  % a log has data if it has the required title
             plot(shiftdim(results(file_ind,titleInColumn(1),1:nb_lines(file_ind)),1),shiftdim(results(file_ind,i,1:nb_lines(file_ind)),1),'color',colors(file_ind,:));
             hold on
+                    if find(ploted_files ==file_ind) 
+                %function not does not work here
+            else
+                ploted_files(end+1) = file_ind;
+            end
+
         end
     end
     ylabel(merge_titles(i/titleInColumn(1)));
@@ -152,6 +158,10 @@ for file_ind=1:nb_file
 end
 xlabel(merge_titles(2));
 ylabel(merge_titles(3));
+hSub = subplot(plotSize(1),plotSize(2),L+1); 
+plot(1, nan, 1, nan,1,nan); 
+set(hSub, 'Visible', 'off');
+legend(hSub,files_to_compare(ploted_files));
 hold off
 
 
@@ -187,6 +197,7 @@ for i = 2*titleInColumn(1):titleInColumn(1):3*titleInColumn(1)
     xlabel(merge_titles(1));
     hold off
 end
+legend(files_to_compare(ploted_files));
 
 %% Last few displays to get them bigger
 % Here we print only the 5th and 6th variable from merge_titles
@@ -217,6 +228,31 @@ for i = 2*titleInColumn(1):2*titleInColumn(1):6*titleInColumn(1)
 end
 legend(files_to_compare(ploted_files));
 
+
+%% Always more displays
+% Here we print only the 5th and 6th variable from merge_titles
+% assuming that it is accel_x and accel_y.
+% We still check that each log file has the corresponding data.
+colors = lines(5);
+figure;
+%ref pos
+plot(shiftdim(results(1,1,1:nb_lines(1)),1),shiftdim(results(1,2,1:nb_lines(1)),1),'color',colors(1,:));
+hold on
+%drone pos
+plot(shiftdim(results(2,1,1:nb_lines(2)),1),shiftdim(results(2,2,1:nb_lines(2)),1),'color',colors(2,:));
+hold on;
+%drone vel
+plot(shiftdim(results(2,1,1:nb_lines(2)),1),shiftdim(results(2,4,1:nb_lines(2)),1),'color',colors(3,:));
+hold on;
+%ref acc
+plot(shiftdim(results(1,1,1:nb_lines(1)),1),shiftdim(results(1,6,1:nb_lines(1)),1),'color',colors(4,:));
+hold on;
+%LQR acc
+plot(shiftdim(results(3,1,1:nb_lines(3)),1),shiftdim(results(3,6,1:nb_lines(3)),1),'color',colors(5,:));
+hold on;
+
+
+legend('ref pos', 'drone pos', 'drone vel', 'ref acc', 'LQR acc');
 
 measurementx = reshape(results(2,1:2,:),2,[]);
 measurementy = reshape(results(2,[1 3],:),2,[]);
