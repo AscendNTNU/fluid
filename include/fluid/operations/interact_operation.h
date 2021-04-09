@@ -7,6 +7,7 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
+#include <mavros_msgs/DebugValue.h>
 
 #include "operation.h"
 #include "operation_identifier.h"
@@ -42,6 +43,7 @@ class InteractOperation : public Operation {
      */
     ros::Time startApproaching;
 
+    bool EKF;
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
 	InteractionState interaction_state = InteractionState::APPROACHING;
@@ -51,8 +53,9 @@ class InteractOperation : public Operation {
     TransitionSetpointStruct transition_state;
     geometry_msgs::Point desired_offset;
     
+    ros::Subscriber ekf_module_pose_subscriber;
+    ros::Subscriber ekf_state_vector_subscriber;
     ros::Subscriber module_pose_subscriber;
-    ros::Subscriber module_pose_subscriber2;
     ros::Publisher attitude_pub;
     ros::Publisher altitude_and_yaw_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;
@@ -80,6 +83,8 @@ class InteractOperation : public Operation {
      */
     bool close_tracking;
     
+    void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
+    void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
     void FaceHuggerCallback(const bool released);
     bool faceHugger_is_set;

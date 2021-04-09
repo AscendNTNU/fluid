@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
                 ROS_INFO_STREAM("[example_client]: Take_off finished, go exploring");
                 // Perform an explore with a (list of) point(s)
                 geometry_msgs::Point point, POI;
-                point.x = 5;
+                point.x = -5;
                 point.y = 4;
                 POI.y = 2;
                 fluid::Explore explore_service_handle;

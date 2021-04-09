@@ -74,13 +74,17 @@ void InteractOperation::initialize() {
     GROUND_TRUTH = Fluid::getInstance().configuration.interaction_ground_truth;
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
+    EKF = Fluid::getInstance().configuration.ekf;
 
-    if (GROUND_TRUTH){
+    if(EKF){
+        ekf_module_pose_subscriber = node_handle.subscribe("/ekf/module/state",
+                                     10, &InteractOperation::ekfModulePoseCallback, this);
+        ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
+                                     10, &InteractOperation::ekfStateVectorCallback, this);
+    }
+    else if (GROUND_TRUTH){
         module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                      10, &InteractOperation::modulePoseCallback, this);
-        module_pose_subscriber2 = node_handle.subscribe("/simulator/module_pose",
-                                     10, &InteractOperation::modulePoseCallback, this);
-                                 
     }
     else{
         module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
@@ -125,10 +129,24 @@ void InteractOperation::initialize() {
 
 bool InteractOperation::hasFinishedExecution() const { return interaction_state == InteractionState::EXTRACTED; }
 
+void InteractOperation::ekfModulePoseCallback(
+    const mavros_msgs::PositionTarget module_state) {
+
+    mast.updateFromEkf(module_state);
+}
+
+void InteractOperation::ekfStateVectorCallback(
+    const mavros_msgs::DebugValue ekf_state) {
+
+    mast.search_period(ekf_state.data[3]);
+}
+
 void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
-
+    const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
     mast.update(module_pose_ptr);
+    mast.search_period(received_eul_angle.y); //pitch is y euler angle because of different frame
+
 }
 
 void InteractOperation::FaceHuggerCallback(const bool released){
