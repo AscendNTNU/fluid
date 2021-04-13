@@ -10,16 +10,14 @@
 
 #include <std_srvs/SetBool.h>
 
+#include <std_msgs/Bool.h> //LAEiv
+
 //includes to write in a file
 #include <iostream>
 #include <fstream>
 #include <unistd.h> //to get the current directory
 
 //A list of parameters for the user
-
-#define MAST_INTERACT false
-    //false blocks the FSM and the drone will NOT properly crash into the mast
-
 #define SAVE_DATA   true
 #define SAVE_Z      false
 #define USE_SQRT    false
@@ -59,6 +57,22 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
 
     }
 
+
+//LAEiv
+/*
+#include "std_msgs/String.h"
+
+void FHCallbackCaller(const std_msgs::String::ConstPtr& msg)
+{
+    if (*msg.get() == )
+    {
+
+    }
+}
+*/
+//E-LAEiv
+
+
 void InteractOperation::initialize() {
     //get parameters from the launch file.
     const float* temp = Fluid::getInstance().configuration.LQR_gains;
@@ -70,6 +84,8 @@ void InteractOperation::initialize() {
     GROUND_TRUTH = Fluid::getInstance().configuration.interaction_ground_truth;
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
+
+    fh_state_subscriber = node_handle.subscribe("/fh_sim_release/fh_state", 10, &InteractOperation::FaceHuggerCallback, this); //LAEiv
 
     if (GROUND_TRUTH){
         module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
@@ -102,6 +118,7 @@ void InteractOperation::initialize() {
     transition_state.cte_acc = 3*MAX_ACCEL; 
     transition_state.max_vel = 3*MAX_VEL;
     completion_count =0;
+    facehugger_released = false;
     faceHugger_is_set = false;    
 
     //estimation of the time it takes to go from approch state to interact state
@@ -134,14 +151,27 @@ void InteractOperation::modulePoseCallback(
     mast.update(module_pose_ptr->pose.orientation);
 }
 
-void InteractOperation::FaceHuggerCallback(const bool released){
-    if (released){
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
-        interaction_state =  InteractionState::EXIT;
-        faceHugger_is_set = true;
+//LAEiv changed data type from bool to std_msgs::Bool and removed "else facehugger_is_set = false;"
+void InteractOperation::FaceHuggerCallback(const std_msgs::Bool released){
+    if (released.data && !facehugger_released)
+    {
+        facehugger_released = true;
     }
-    else 
-        faceHugger_is_set = false;
+    
+    //if (released.data && !faceHugger_is_set){
+    //    ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
+    //    //interaction_state =  InteractionState::EXIT;         Moved to state-switch
+    //    faceHugger_is_set = true;
+    //}
+    //else 
+    //    faceHugger_is_set = false;
+}
+
+void InteractOperation::finishInteraction()
+{
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
+    interaction_state =  InteractionState::EXIT;
+    faceHugger_is_set = true;
 }
 
 #if SAVE_DATA
@@ -493,28 +523,26 @@ void InteractOperation::tick() {
                 }
             }
             float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
-            if(MAST_INTERACT) {
-                if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
-                    //Todo, we may want to judge the velocity in stead of having a time to completion
-                    if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int)-1 )
-                        completion_count++;
-                    else if(mast.time_to_max_pitch() !=-1){
-                        //We consider that if the drone is ready at some point, it will 
-                        // remain ready until it is time to try
-                        completion_count = 0;
-                        float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
-                        if(time_to_wait < TIME_WINDOW_INTERACTION)
-                            time_to_wait += mast.get_period();
-                        ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                                << ": Ready to set the FaceHugger. Waiting for the best opportunity"
-                                << "\nEstimated waiting time before go: "
-                                << time_to_wait);
-                        interaction_state = InteractionState::READY;                
-                    }
-                }
-                else
+            if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
+                //Todo, we may want to judge the velocity in stead of having a time to completion
+                if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int)-1 )
+                    completion_count++;
+                else if(mast.time_to_max_pitch() !=-1){
+                    //We consider that if the drone is ready at some point, it will 
+                    // remain ready until it is time to try
                     completion_count = 0;
+                    float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
+                    if(time_to_wait < TIME_WINDOW_INTERACTION)
+                        time_to_wait += mast.get_period();
+                    ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                            << ": Ready to set the FaceHugger. Waiting for the best opportunity"
+                            << "\nEstimated waiting time before go: "
+                            << time_to_wait);
+                    interaction_state = InteractionState::READY;
+                }
             }
+            else
+                completion_count = 0;
             break;
         }
         case InteractionState::READY: {
@@ -567,6 +595,18 @@ void InteractOperation::tick() {
             if (SHOW_PRINTS){
                 if(time_cout%(rate_int*2)==0) printf("INTERACT\n");
             }
+
+            //std_msgs::Bool b;
+            //b.data = true;
+            //FaceHuggerCallback(b); //LAEiv
+
+            if (facehugger_released) //LAEiv
+            {
+                finishInteraction();
+            }
+
+            // Make something that subscribes to facehugger-status-topic
+            // and sets state to Exit if FH gone
 
             // we don't want to take the risk to stay too long, 
             // Whether the faceHugger is set or not, we have to exit.

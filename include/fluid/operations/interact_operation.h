@@ -12,6 +12,7 @@
 #include "operation_identifier.h"
 #include "mavros_msgs/PositionTarget.h"
 #include "mavros_msgs/AttitudeTarget.h"
+#include "std_msgs/Bool.h" //LAEiv
 
 #include "mast.h"
 
@@ -56,6 +57,7 @@ class InteractOperation : public Operation {
     geometry_msgs::Point desired_offset;
     
     ros::Subscriber module_pose_subscriber;
+    ros::Subscriber fh_state_subscriber; //LAEiv
     ros::Publisher attitude_pub;
     ros::Publisher altitude_and_yaw_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;
@@ -76,8 +78,10 @@ class InteractOperation : public Operation {
     float estimate_time_to_mast;
     
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
-    void FaceHuggerCallback(const bool released);
-    bool faceHugger_is_set;
+    void FaceHuggerCallback(const std_msgs::Bool released);
+    void finishInteraction();
+    bool facehugger_released;   // true as soon av facehugger is released from drone
+    bool faceHugger_is_set;     // true after facehugger released and interact-cycle completed
     
     ros::ServiceClient backpropeller_client;
 
