@@ -6,6 +6,7 @@
 #include "mavros_interface.h"
 
 #include <limits>
+#include <std_srvs/Trigger.h>
 
 #include "util.h"
 
@@ -23,6 +24,11 @@ void ExploreOperation::initialize() {
     }
 
     MoveOperation::initialize();
+
+    ros::ServiceClient fh_extend = node_handle.serviceClient<std_srvs::Trigger>("/simulator/trigger/facehugger_detach"); //Service to be changed
+    std_srvs::Trigger fh_extend_handle;
+    if (fh_extend.call(fh_extend_handle))   ROS_INFO("Facehugger extend called");
+    else                                    ROS_INFO("Facehugger extend-call failed");
 
     original_path = path;
     original_path_set = true;
