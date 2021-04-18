@@ -28,7 +28,7 @@ from pathlib import Path
 # common convention for Ascend is z axis upward, y axis is pointing forward and x axis to the right
 
 
-SAVE_Z = False
+SAVE_Z = True
 
 #type of control
 CONTROL_POSITION = 2552
@@ -43,7 +43,7 @@ CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't 
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
 control_type = CONTROL_LQR_ATTITUDE #CONTROL_LQR_ATTITUDE
-USE_SQRT = True
+USE_SQRT = False
 USE_SQ   = False
 
 #K_lqr = [0.4189, 1.1062] #matrix from bryon's rule with diameter as max distance
@@ -632,7 +632,6 @@ def main():
         log.write(f"\t{acceleration_setpoint.x:.3f}\t{acceleration_setpoint.y:.3f}\n")
         log.close()
 
-        rate.sleep()
 
         count = count +1
 
@@ -655,6 +654,7 @@ def main():
 
         
 #        rospy.loginfo("asked to pose %f,%f",x,y)
+        rate.sleep()
     
 
 
