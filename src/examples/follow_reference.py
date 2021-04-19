@@ -73,9 +73,9 @@ omega = 2.0 * pi / 10.0
 z = takeoff_height
 
 #parameters for data files
-reference_pose_path = str(Path.home())+"/reference_state"+ str(datetime.now().time())+".txt"
-drone_pose_path  = str(Path.home())+"/drone_state"+ str(datetime.now().time())+".txt"     #file saved in home
-drone_setpoints_path=str(Path.home())+"/drone_setpoints"+ str(datetime.now().time())+".txt"     #file saved in home
+reference_pose_path = str(Path.home())+"/reference_state_"+ str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"
+drone_pose_path     = str(Path.home())+"/drone_state_"    + str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"     #file saved in home
+drone_setpoints_path= str(Path.home())+"/drone_setpoints_"+ str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"     #file saved in home
 
 #reference_pose_path = str(Path.home())+"/reference_state" #file saved in home
 #drone_pose_path  = str(Path.home())+"/drone_state"        #file saved in home
