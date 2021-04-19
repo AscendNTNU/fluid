@@ -8,6 +8,8 @@ from mavros_msgs.srv import SetMode, CommandBool, CommandTOL
 import sys
 from pathlib import Path
 
+from datetime import datetime
+
 # This file contains many different control opportunities.
 # One can chose how to control the drone by setting control_type to the appropriate CONTROL_***, for exemple CONTROL_LQR_ATTITUDE
 # If LQR is used, the gains can be chosen with the variables K_lqr_x and K_lqr_y.
@@ -71,10 +73,13 @@ omega = 2.0 * pi / 10.0
 z = takeoff_height
 
 #parameters for data files
-reference_pose_path = str(Path.home())+"/reference_state.txt"    #file saved in home
-drone_pose_path  = str(Path.home())+"/drone_state.txt"     #file saved in home
-drone_setpoints_path=str(Path.home())+"/drone_setpoints.txt"     #file saved in home
+reference_pose_path = str(Path.home())+"/reference_state"+ str(datetime.now().time())+".txt"
+drone_pose_path  = str(Path.home())+"/drone_state"+ str(datetime.now().time())+".txt"     #file saved in home
+drone_setpoints_path=str(Path.home())+"/drone_setpoints"+ str(datetime.now().time())+".txt"     #file saved in home
 
+#reference_pose_path = str(Path.home())+"/reference_state" #file saved in home
+#drone_pose_path  = str(Path.home())+"/drone_state"        #file saved in home
+#drone_setpoints_path=str(Path.home())+"/drone_setpoints"  #file saved in home
 
 # Callback for subscriber of drone position
 drone_position = Point()
@@ -565,7 +570,7 @@ def main():
     #waiting for takeoff to be finished
     #ugly, need to be done properly perhaps?
     
-    while drone_position.z < takeoff_height - 0.1 :
+    while drone_position.z < takeoff_height - 0.1 and not(rospy.is_shutdown()):
         #print("drone altitude: ",drone_position.z)
         rate.sleep()
     rospy.loginfo("Take off finished")
