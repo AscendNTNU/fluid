@@ -42,7 +42,7 @@ CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't 
 #General parameters
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 1.5
-control_type = CONTROL_LQR_ATTITUDE #CONTROL_LQR_ATTITUDE
+control_type = CONTROL_POSITION_AND_VELOCITY #CONTROL_LQR_ATTITUDE
 USE_SQRT = False
 USE_SQ   = False
 
