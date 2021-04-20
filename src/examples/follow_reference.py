@@ -29,7 +29,7 @@ from datetime import datetime
 
 # common convention for Ascend is z axis upward, y axis is pointing forward and x axis to the right
 
-
+AUTO_ARM = False
 SAVE_Z = True
 
 #type of control
@@ -369,30 +369,42 @@ def takeoff(height):
         rate.sleep()
 
     # Set guided and arm
-    last_request = rospy.Time.now()
+    if not AUTO_ARM:
+        rospy.loginfo("Waiting for Guided mode")
+        while not rospy.is_shutdown() and current_state.mode != 'GUIDED':
+            rate.sleep()
 
-    set_mode_client = rospy.ServiceProxy("/mavros/set_mode", SetMode)
-    guided_set_mode = SetMode()
-    guided_set_mode.custom_mode = "GUIDED"
+        rospy.loginfo("Set to GUIDED")
+        rospy.loginfo("Waiting for Arming")
+        while not rospy.is_shutdown() and not current_state.armed:
+            rate.sleep()
 
-    arming_client = rospy.ServiceProxy("/mavros/cmd/arming", CommandBool)
+        rospy.loginfo("Vehicle Armed. Taking off!")
+    else:    
+        last_request = rospy.Time.now()    
+        set_mode_client = rospy.ServiceProxy("/mavros/set_mode", SetMode)
+        guided_set_mode = SetMode()
+        guided_set_mode.custom_mode = "GUIDED"
 
-    while not rospy.is_shutdown() and not current_state.armed:
+        arming_client = rospy.ServiceProxy("/mavros/cmd/arming", CommandBool)
 
-        if current_state.mode != "GUIDED" and (rospy.Time.now() - last_request) > rospy.Duration(2.0):
-            if (set_mode_client.call(0, "GUIDED")):
-                rospy.loginfo("Guided enabled!")
-            last_request = rospy.Time.now()
-        else:
-            if not current_state.armed and current_state.mode == "GUIDED" and (rospy.Time.now() - last_request) > rospy.Duration(2.0):
+        while not rospy.is_shutdown() and not current_state.armed:
+
+            if current_state.mode != "GUIDED" and (rospy.Time.now() - last_request) > rospy.Duration(2.0):
+                if (set_mode_client.call(0, "GUIDED")):
+                    rospy.loginfo("Guided enabled!")
                 last_request = rospy.Time.now()
-                response = arming_client.call(True)
-                if (response.success):
-                    rospy.loginfo("Vehicle armed")
+            else:
+                if not current_state.armed and current_state.mode == "GUIDED" and (rospy.Time.now() - last_request) > rospy.Duration(2.0):
+                    last_request = rospy.Time.now()
+                    response = arming_client.call(True)
+                    if (response.success):
+                        rospy.loginfo("Vehicle armed")
 
-        target.header.stamp = rospy.Time.now()
-        local_pose_publisher.publish(target)
-        rate.sleep()
+
+    target.header.stamp = rospy.Time.now()
+    local_pose_publisher.publish(target)
+    rate.sleep()
 
     # Send take off command: http://docs.ros.org/en/noetic/api/mavros_msgs/html/srv/CommandTOL.html
     takeoff_client = rospy.ServiceProxy("/mavros/cmd/takeoff", CommandTOL) 
