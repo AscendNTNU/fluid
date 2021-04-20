@@ -73,9 +73,11 @@ omega = 2.0 * pi / 10.0
 z = takeoff_height
 
 #parameters for data files
-reference_pose_path = str(Path.home())+"/reference_state_"+ str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"
-drone_pose_path     = str(Path.home())+"/drone_state_"    + str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"     #file saved in home
-drone_setpoints_path= str(Path.home())+"/drone_setpoints_"+ str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"     #file saved in home
+from os.path import expanduser
+home = expanduser("~")
+reference_pose_path = str(home)+"/reference_state_"+ str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"
+drone_pose_path     = str(home)+"/drone_state_"    + str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"     #file saved in home
+drone_setpoints_path= str(home)+"/drone_setpoints_"+ str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"     #file saved in home
 
 #reference_pose_path = str(Path.home())+"/reference_state" #file saved in home
 #drone_pose_path  = str(Path.home())+"/drone_state"        #file saved in home
@@ -332,18 +334,18 @@ def initLog(file_name):
 
 def saveLog(file_name,position,velocity=None,accel=None):
     log = open(file_name,'a')
-    log.write(f"{rospy.get_rostime().secs + rospy.get_rostime().nsecs/1000000000.0:.3f}")
-    log.write(f"\t{position.x:.3f}\t{position.y:.3f}")
+    log.write("{}".format(rospy.get_rostime().secs + rospy.get_rostime().nsecs/1000000000.0))
+    log.write("\t{}\t{}}".format(float(position.x),float(position.y)))
     if SAVE_Z:
-        log.write(f"\t{position.z:.3f}")
+        log.write("\t{}".format(position.z))
     if velocity:
-        log.write(f"\t{velocity.x:.3f}\t{velocity.y:.3f}")
+        log.write("\t{}\t{}}".format(float(velocity.x),float(velocity.y)))
         if SAVE_Z:
-            log.write(f"\t{velocity.z:.3f}")
+            log.write("\t{}".format(velocity.z))
     if accel:
-        log.write(f"\t{accel.x:.3f}\t{accel.y:.3f}")
+        log.write("\t{}\t{}}".format(float(position.x),float(position.y)))
         if SAVE_Z:
-            log.write(f"\t{accel.z:.3f}")
+            log.write("\t{}".format(accel.z))
 
     log.write("\n")
     log.close()
@@ -645,8 +647,8 @@ def main():
 
         #save log for acceleration setpoints. Not the same way as the rest because much shorter
         log = open(drone_setpoints_path,'a')
-        log.write(f"{rospy.get_rostime().secs + rospy.get_rostime().nsecs/1000000000.0:.3f}")
-        log.write(f"\t{acceleration_setpoint.x:.3f}\t{acceleration_setpoint.y:.3f}\n")
+        log.write("{}".format(rospy.get_rostime().secs + rospy.get_rostime().nsecs/1000000000.0))
+        log.write("\t{}\t{}\n".format(acceleration_setpoint.x,acceleration_setpoint.y))
         log.close()
 
 
