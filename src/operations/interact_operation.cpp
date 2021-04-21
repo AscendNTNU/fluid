@@ -78,7 +78,6 @@ void InteractOperation::initialize() {
     EKF = Fluid::getInstance().configuration.ekf;
 
     if(EKF){
-        printf("EKF is true\n");
         ekf_module_pose_subscriber = node_handle.subscribe("/ekf/module/state",
                                      10, &InteractOperation::ekfModulePoseCallback, this);
         ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
@@ -88,13 +87,10 @@ void InteractOperation::initialize() {
 
     }
     else if (GROUND_TRUTH){
-        printf("EKF is false\n");
         module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                      10, &InteractOperation::modulePoseCallback, this);
     }
     else{
-        printf("EKF is false\n");
-        
         module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
                                      10, &InteractOperation::modulePoseCallback, this);
     }
@@ -157,7 +153,6 @@ void InteractOperation::ekfStateVectorCallback(
 void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
     if(Fluid::getInstance().configuration.ekf){
-        printf("hello from ekf side\n");
         geometry_msgs::Vector3 vec;
         vec.x = module_pose_ptr->pose.position.x;
         vec.y = module_pose_ptr->pose.position.y;
@@ -165,7 +160,6 @@ void InteractOperation::modulePoseCallback(
         saveSetpointLog(gt_reference_path,vec);
     }
     else{
-        printf("hello from dark  side\n");
         const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
         mast.update(module_pose_ptr);
         mast.search_period(received_eul_angle.y); //pitch is y euler angle because of different frame
@@ -526,6 +520,9 @@ void InteractOperation::tick() {
                 }
             }
             float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
+            
+            }
+            
             if(MAST_INTERACT) {
                 if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
                     //Todo, we may want to judge the velocity in stead of having a time to completion
@@ -535,26 +532,20 @@ void InteractOperation::tick() {
                         //We consider that if the drone is ready at some point, it will 
                         // remain ready until it is time to try
                         completion_count = 0;
-                        float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
-                        /*
-                        if(time_to_wait < TIME_WINDOW_INTERACTION){
-                            // the following lines should only be useful if it actually takes time to go through the READY state when the drone is already ready.
-                            interaction_state = InteractionState::OVER;
-                            ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                                        << ": " << "Approaching -> Over");
-                            //the offset is set in the frame of the mast:    
-                            desired_offset.x = DIST_FH_DRONE_CENTRE;  //forward
-                            desired_offset.y = 0.0;   //left
-                            desired_offset.z = -0.45; //up
-                            transition_state.cte_acc = MAX_ACCEL;
-                            transition_state.max_vel = MAX_VEL;
 
-                            // Avoid going to the next step before the transition is actuallized
-                            transition_state.finished_bitmask = 0;
-                        }
-                        */
                         ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                                << ": Ready to set the FaceHugger. Waiting for the best opportunity"
+                                << ": Turning on close tracking");
+                        //Assuming that the approching state is close enough for close tracking.
+                        // send a message to perception to switch close tracking on.
+                        //ros::ServiceClient switch_close_tracking = node_handle.serviceClient<fluid::CloseTracking>("perception_main/switch_to_close_tracking");
+                        //perception::CloseTracking switch_to_close_tracking_handle;
+                        //switch_to_close_tracking_handle.request.timeout = 0.1;
+
+                        //TODO: call the perception_main/switch_to_close_tracking service.
+                    
+                        float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
+                        ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                                << ": Control ready to set the FaceHugger. Waiting for the best opportunity"
                                 << "\nEstimated waiting time before go: "
                                 << time_to_wait);
                         interaction_state = InteractionState::READY;                
@@ -575,7 +566,10 @@ void InteractOperation::tick() {
                             << time_to_wait);
                 }
             }
-            if( abs(time_to_wait) <= TIME_WINDOW_INTERACTION)
+            close_tracking = true;
+            //todo: check the good topic instead
+            
+            if( abs(time_to_wait) <= TIME_WINDOW_INTERACTION and close_tracking)
             { //We are in the good window to set the faceHugger
               // Notice that once the drone is over, the FH is not set yet.
                 interaction_state = InteractionState::OVER;
@@ -597,17 +591,6 @@ void InteractOperation::tick() {
         case InteractionState::OVER: {
             if (SHOW_PRINTS){
                 if(time_cout%(rate_int*2)==0) printf("OVER\n");
-            }
-            if(transition_state.state.position.x < MAX_DIST_FOR_CLOSE_TRACKING && !close_tracking){
-            // send a message to perception to switch close tracking on.
-                //ros::ServiceClient switch_close_tracking = node_handle.serviceClient<fluid::CloseTracking>("perception_main/switch_to_close_tracking");
-                //perception::CloseTracking switch_to_close_tracking_handle;
-                //switch_to_close_tracking_handle.request.timeout = 0.1;
-
-                //TODO: call the perception_main/switch_to_close_tracking service.
-                close_tracking = true;
-                ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "switch close tracking on");
             }
             //We assume that the accuracy is fine, we don't want to take the risk to stay too long
             if (transition_state.finished_bitmask & 0x7 == 0x7) {
