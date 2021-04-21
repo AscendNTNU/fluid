@@ -75,13 +75,30 @@ void InteractOperation::initialize() {
     GROUND_TRUTH = Fluid::getInstance().configuration.interaction_ground_truth;
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
+    EKF = Fluid::getInstance().configuration.ekf;
 
-    ekf_module_pose_subscriber = node_handle.subscribe("/ekf/module/state",
-                                    10, &InteractOperation::ekfModulePoseCallback, this);
-    ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
-                                    10, &InteractOperation::ekfStateVectorCallback, this);
-    gt_module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
-                                    10, &InteractOperation::modulePoseCallback, this);
+    if(EKF){
+        printf("EKF is true\n");
+        ekf_module_pose_subscriber = node_handle.subscribe("/ekf/module/state",
+                                     10, &InteractOperation::ekfModulePoseCallback, this);
+        ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
+                                     10, &InteractOperation::ekfStateVectorCallback, this);
+        gt_module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+                                     10, &InteractOperation::modulePoseCallback, this);
+
+    }
+    else if (GROUND_TRUTH){
+        printf("EKF is false\n");
+        module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+                                     10, &InteractOperation::modulePoseCallback, this);
+    }
+    else{
+        printf("EKF is false\n");
+        
+        module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
+                                     10, &InteractOperation::modulePoseCallback, this);
+    }
+    // backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
 
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
     //creating own publisher to choose exactly when we send messages

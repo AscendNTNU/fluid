@@ -43,6 +43,7 @@ class InteractOperation : public Operation {
      */
     ros::Time startApproaching;
 
+    bool EKF;
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
 	InteractionState interaction_state = InteractionState::APPROACHING;
