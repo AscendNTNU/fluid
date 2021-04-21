@@ -21,6 +21,7 @@ bool TakeOffOperation::hasFinishedExecution() const {
 }
 
 void TakeOffOperation::initialize() {
+    ros::Rate rate(rate_int);
 
     MavrosInterface mavros_interface;
         

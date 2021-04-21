@@ -10,11 +10,6 @@
 
 #include <std_srvs/SetBool.h>
 
-//includes to write in a file
-#include <iostream>
-#include <fstream>
-#include <unistd.h> //to get the current directory
-
 //A list of parameters for the user
 #define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
@@ -39,32 +34,13 @@
 #define MAX_ANGLE   400 // in centi-degrees
 
 
-#if SAVE_DATA
-//files saved in home directory
-const std::string reference_state_path = std::string(get_current_dir_name()) + "/../reference_state.txt";
-const std::string drone_pose_path      = std::string(get_current_dir_name()) + "/../drone_state.txt";    
-const std::string drone_setpoints_path = std::string(get_current_dir_name()) + "/../drone_setpoints.txt";
-const std::string gt_reference_path    = std::string(get_current_dir_name()) + "/../gt_reference_state.txt";
-std::ofstream reference_state_f; 
-std::ofstream drone_pose_f; 
-std::ofstream drone_setpoints_f; 
-#endif
-
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
 
 //function called when creating the operation
 InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& offset) : 
             Operation(OperationIdentifier::INTERACT, false, false) { 
-        mast = Mast(fixed_mast_yaw);
-        //Choose an initial offset. It is the offset for the approaching state.
-        //the offset is set in the frame of the mast:    
-        desired_offset.x = offset;     //forward
-        desired_offset.y = 0.0;     //left
-        desired_offset.z = -0.45;    //up
-
-    }
-
-void InteractOperation::initialize() {
+    mast = Mast(fixed_mast_yaw);
+    
     //get parameters from the launch file.
     const float* temp = Fluid::getInstance().configuration.LQR_gains;
     for (uint8_t i=0 ; i<2 ; i++) { 
@@ -72,10 +48,19 @@ void InteractOperation::initialize() {
         K_LQR_Y[i] = temp[2*i+1];
     }
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
-    GROUND_TRUTH = Fluid::getInstance().configuration.interaction_ground_truth;
+    EKF = Fluid::getInstance().configuration.ekf;
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
-    EKF = Fluid::getInstance().configuration.ekf;
+
+    //Choose an initial offset. It is the offset for the approaching state.
+    //the offset is set in the frame of the mast:    
+    desired_offset.x = offset;     //forward
+    desired_offset.y = 0.0;     //left
+    desired_offset.z = -0.45;    //up
+
+    }
+
+void InteractOperation::initialize() {   
 
     if(EKF){
         ekf_module_pose_subscriber = node_handle.subscribe("/ekf/module/state",
@@ -84,18 +69,11 @@ void InteractOperation::initialize() {
                                      10, &InteractOperation::ekfStateVectorCallback, this);
         gt_module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                      10, &InteractOperation::modulePoseCallback, this);
-
-    }
-    else if (GROUND_TRUTH){
-        module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
-                                     10, &InteractOperation::modulePoseCallback, this);
     }
     else{
-        module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
-                                     10, &InteractOperation::modulePoseCallback, this);
+    module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+                                    10, &InteractOperation::modulePoseCallback, this);
     }
-    // backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
-
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
     //creating own publisher to choose exactly when we send messages
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
@@ -107,47 +85,41 @@ void InteractOperation::initialize() {
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << MAX_ANGLE/100.0 << " deg.");
 
-    // The desired offset and the transition state are mesured in the mast frame
+    // The transition state is mesured in the mast frame
     transition_state.state.position = desired_offset;
-    //transition_state.state.position.y = desired_offset.y;
-    //transition_state.state.position.z = desired_offset.z;
-
-    //At the beginning we are far from the mast, we can safely so do a fast transion.
-    //But transition state is also the offset, so it should be useless.
-    transition_state.cte_acc = 3*MAX_ACCEL; 
-    transition_state.max_vel = 3*MAX_VEL;
-    completion_count =0;
+    transition_state.cte_acc = MAX_ACCEL; 
+    transition_state.max_vel = MAX_VEL;
     
     faceHugger_is_set = false;    
     close_tracking = false;
 
     #if SAVE_DATA
+    reference_state = DataFile("reference_state.txt");
+    drone_pose = DataFile("drone_pose.txt");
+    gt_reference = DataFile("gt_reference.txt");
+
+    reference_state.initStateLog();
+    drone_pose.initStateLog();    
+    gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
     //create a header for the datafiles.
-    initLog(reference_state_path); 
-    initLog(drone_pose_path); 
-    #if SAVE_Z
-    initSetpointLog(gt_reference_path,"Time\tpose.x\tpose.y\tpose.z");
-    #else
-    initSetpointLog(gt_reference_path,"Time\tpose.x\tpose.y");
-    #endif
-    initSetpointLog(drone_setpoints_path, "Time\tAccel.x\tAccel.y"); 
     #endif
 
     startApproaching = ros::Time::now();
+    completion_count =0;
 }
 
-bool InteractOperation::hasFinishedExecution() const { return interaction_state == InteractionState::EXTRACTED; }
+bool InteractOperation::hasFinishedExecution() const {
+    return interaction_state == InteractionState::EXTRACTED; 
+}
 
 void InteractOperation::ekfModulePoseCallback(
-    const mavros_msgs::PositionTarget module_state) {
-
+                const mavros_msgs::PositionTarget module_state) {
     mast.updateFromEkf(module_state);
 }
 
 void InteractOperation::ekfStateVectorCallback(
-    const mavros_msgs::DebugValue ekf_state) {
-
-    mast.search_period(ekf_state.data[3]);
+                const mavros_msgs::DebugValue ekf_state) {
+    mast.search_period(ekf_state.data[0]); //the first element is the pitch
 }
 
 void InteractOperation::modulePoseCallback(
@@ -157,7 +129,9 @@ void InteractOperation::modulePoseCallback(
         vec.x = module_pose_ptr->pose.position.x;
         vec.y = module_pose_ptr->pose.position.y;
         vec.z = module_pose_ptr->pose.position.z;
-        saveSetpointLog(gt_reference_path,vec);
+        #if SAVE_DATA
+            gt_reference.saveVector3(vec);
+        #endif
     }
     else{
         const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
@@ -176,127 +150,6 @@ void InteractOperation::FaceHuggerCallback(const bool released){
         faceHugger_is_set = false;
 }
 
-#if SAVE_DATA
-void InteractOperation::initSetpointLog(const std::string file_name, std::string title)
-{ //create a header for the logfile.
-    std::ofstream save_file_f;
-     save_file_f.open(file_name);
-    if(save_file_f.is_open())
-    {
-//        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
-        save_file_f << title << "\n";
-        save_file_f.close();
-    }
-    else
-    {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
-    }
-}
-
-void InteractOperation::saveSetpointLog(const std::string file_name, const geometry_msgs::Vector3 vec)
-{
-    std::ofstream save_file_f;
-    save_file_f.open (file_name, std::ios::app);
-    if(save_file_f.is_open())
-    {
-        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
-                        << ros::Time::now() << "\t"
-                        << vec.x << "\t"
-                        << vec.y 
-                        #if SAVE_Z        
-                        << "\t" << vec.z
-                        #endif
-                        << "\n";
-        save_file_f.close();
-    }
-}
-
-
-void InteractOperation::initLog(const std::string file_name)
-{ //create a header for the logfile.
-    std::ofstream save_file_f;
-     save_file_f.open(file_name);
-    if(save_file_f.is_open())
-    {
-//        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
-        save_file_f << "Time\tpose.x\tpose.y"
-            #if SAVE_Z        
-            << "\tpose.z"
-            #endif
-            << "\tVel.x\tVel.y"
-            #if SAVE_Z        
-            << "\tVel.z"
-            #endif
-            << "\tAccel.x\tAccel.y"
-            #if SAVE_Z        
-            << "\tAccel.z";
-            #endif
-            << "\n";
-        save_file_f.close();
-    }
-    else
-    {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
-    }
-}
-
-
-void InteractOperation::saveLog(const std::string file_name, const geometry_msgs::PoseStamped pose, const geometry_msgs::TwistStamped vel, const geometry_msgs::Vector3 accel)
-{
-    std::ofstream save_file_f;
-    save_file_f.open (file_name, std::ios::app);
-    if(save_file_f.is_open())
-    {
-        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
-                        << ros::Time::now() << "\t"
-                        << pose.pose.position.x << "\t"
-                        << pose.pose.position.y << "\t"
-                        #if SAVE_Z
-                        << pose.pose.position.z << "\t"
-                        #endif
-                        << vel.twist.linear.x << "\t"
-                        << vel.twist.linear.y << "\t"
-                        #if SAVE_Z
-                        << vel.twist.linear.z << "\t"
-                        #endif
-                        << accel.x << "\t"
-                        << accel.y 
-                        #if SAVE_Z
-                        << "\t" << accel.z
-                        #endif
-                        << "\n";
-        save_file_f.close();
-    }
-}
-
-void InteractOperation::saveLog(const std::string file_name, const mavros_msgs::PositionTarget data)
-{
-    std::ofstream save_file_f;
-    save_file_f.open (file_name, std::ios::app);
-    if(save_file_f.is_open())
-    {
-        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
-                        << ros::Time::now() << "\t"
-                        << data.position.x << "\t"
-                        << data.position.y << "\t"
-                        #if SAVE_Z
-                        << data.position.z << "\t"
-                        #endif
-                        << data.velocity.x << "\t"
-                        << data.velocity.y << "\t"
-                        #if SAVE_Z
-                        << data.velocity.z << "\t"
-                        #endif
-                        << data.acceleration_or_force.x << "\t"
-                        << data.acceleration_or_force.y 
-                        #if SAVE_Z
-                        << "\t" << data.acceleration_or_force.z
-                        #endif
-                        << "\n";
-        save_file_f.close();
-    }
-}
-#endif
 
 /*template<typename T>  T& rotate2 (T& pt, float yaw) {
     T& rotated_point;
@@ -521,7 +374,6 @@ void InteractOperation::tick() {
             }
             float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
             
-            }
             
             if(MAST_INTERACT) {
                 if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
@@ -738,9 +590,8 @@ void InteractOperation::tick() {
 
     #if SAVE_DATA
     //save the control data into files
-    saveLog(reference_state_path,Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
-    saveLog(drone_pose_path, getCurrentPose(),getCurrentTwist(),getCurrentAccel());
-    saveSetpointLog(drone_setpoints_path,accel_target);
+    reference_state.saveStateLog(Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
+    drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,getCurrentAccel());
     #endif
 
 }

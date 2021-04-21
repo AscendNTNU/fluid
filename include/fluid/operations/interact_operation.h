@@ -15,6 +15,7 @@
 #include "mavros_msgs/AttitudeTarget.h"
 
 #include "mast.h"
+#include "data_file.h"
 
 /**
  * @brief Represents the operation where the drone is interact with the mast.
@@ -43,9 +44,9 @@ class InteractOperation : public Operation {
      */
     ros::Time startApproaching;
 
-    bool EKF;
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
+    bool EKF;
 	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
     
@@ -69,6 +70,12 @@ class InteractOperation : public Operation {
     float MAX_VEL;
 
     Mast mast;
+
+    DataFile reference_state;
+    DataFile drone_pose;
+    DataFile gt_reference;
+
+
 
     
     /**
