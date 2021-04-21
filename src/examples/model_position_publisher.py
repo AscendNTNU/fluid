@@ -31,7 +31,7 @@ def coordinatesToPoseWithCovariance(coordinates):
 
 def initLog(file_name):
     log = open(file_name,"w")
-    log.write("Time\tPos.x\tPos.y\tPos.z\n")
+    log.write("Time\tpose.x\tpose.y\tpose.z\n")
     log.close()
 
 def saveLog(file_name,x,y,z):

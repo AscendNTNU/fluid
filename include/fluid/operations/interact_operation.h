@@ -43,7 +43,6 @@ class InteractOperation : public Operation {
      */
     ros::Time startApproaching;
 
-    bool EKF;
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
 	InteractionState interaction_state = InteractionState::APPROACHING;
@@ -56,6 +55,7 @@ class InteractOperation : public Operation {
     ros::Subscriber ekf_module_pose_subscriber;
     ros::Subscriber ekf_state_vector_subscriber;
     ros::Subscriber module_pose_subscriber;
+    ros::Subscriber gt_module_pose_subscriber;
     ros::Publisher attitude_pub;
     ros::Publisher altitude_and_yaw_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;
@@ -145,7 +145,7 @@ class InteractOperation : public Operation {
      * @brief //create a header for the setpoint logfile. 
      *          It only includes acceleration setpoints
      */
-    void initSetpointLog(const std::string file_name);
+    void initSetpointLog(const std::string file_name, std::string title);
 
     /**
      * @brief //Add a new line to the logfile with acceleration setpoint

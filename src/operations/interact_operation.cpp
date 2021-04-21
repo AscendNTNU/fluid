@@ -44,6 +44,7 @@
 const std::string reference_state_path = std::string(get_current_dir_name()) + "/../reference_state.txt";
 const std::string drone_pose_path      = std::string(get_current_dir_name()) + "/../drone_state.txt";    
 const std::string drone_setpoints_path = std::string(get_current_dir_name()) + "/../drone_setpoints.txt";
+const std::string gt_reference_path    = std::string(get_current_dir_name()) + "/../gt_reference_state.txt";
 std::ofstream reference_state_f; 
 std::ofstream drone_pose_f; 
 std::ofstream drone_setpoints_f; 
@@ -74,23 +75,13 @@ void InteractOperation::initialize() {
     GROUND_TRUTH = Fluid::getInstance().configuration.interaction_ground_truth;
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
-    EKF = Fluid::getInstance().configuration.ekf;
 
-    if(EKF){
-        ekf_module_pose_subscriber = node_handle.subscribe("/ekf/module/state",
-                                     10, &InteractOperation::ekfModulePoseCallback, this);
-        ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
-                                     10, &InteractOperation::ekfStateVectorCallback, this);
-    }
-    else if (GROUND_TRUTH){
-        module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
-                                     10, &InteractOperation::modulePoseCallback, this);
-    }
-    else{
-        module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
-                                     10, &InteractOperation::modulePoseCallback, this);
-    }
-    // backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
+    ekf_module_pose_subscriber = node_handle.subscribe("/ekf/module/state",
+                                    10, &InteractOperation::ekfModulePoseCallback, this);
+    ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
+                                    10, &InteractOperation::ekfStateVectorCallback, this);
+    gt_module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+                                    10, &InteractOperation::modulePoseCallback, this);
 
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
     //creating own publisher to choose exactly when we send messages
@@ -121,7 +112,12 @@ void InteractOperation::initialize() {
     //create a header for the datafiles.
     initLog(reference_state_path); 
     initLog(drone_pose_path); 
-    initSetpointLog(drone_setpoints_path); 
+    #if SAVE_Z
+    initSetpointLog(gt_reference_path,"Time\tpose.x\tpose.y\tpose.z");
+    #else
+    initSetpointLog(gt_reference_path,"Time\tpose.x\tpose.y");
+    #endif
+    initSetpointLog(drone_setpoints_path, "Time\tAccel.x\tAccel.y"); 
     #endif
 
     startApproaching = ros::Time::now();
@@ -143,10 +139,20 @@ void InteractOperation::ekfStateVectorCallback(
 
 void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
-    const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
-    mast.update(module_pose_ptr);
-    mast.search_period(received_eul_angle.y); //pitch is y euler angle because of different frame
-
+    if(Fluid::getInstance().configuration.ekf){
+        printf("hello from ekf side\n");
+        geometry_msgs::Vector3 vec;
+        vec.x = module_pose_ptr->pose.position.x;
+        vec.y = module_pose_ptr->pose.position.y;
+        vec.z = module_pose_ptr->pose.position.z;
+        saveSetpointLog(gt_reference_path,vec);
+    }
+    else{
+        printf("hello from dark  side\n");
+        const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
+        mast.update(module_pose_ptr);
+        mast.search_period(received_eul_angle.y); //pitch is y euler angle because of different frame
+    }
 }
 
 void InteractOperation::FaceHuggerCallback(const bool released){
@@ -160,14 +166,14 @@ void InteractOperation::FaceHuggerCallback(const bool released){
 }
 
 #if SAVE_DATA
-void InteractOperation::initSetpointLog(const std::string file_name)
+void InteractOperation::initSetpointLog(const std::string file_name, std::string title)
 { //create a header for the logfile.
     std::ofstream save_file_f;
      save_file_f.open(file_name);
     if(save_file_f.is_open())
     {
 //        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
-        save_file_f << "Time\tAccel.x\tAccel.y\n";
+        save_file_f << title << "\n";
         save_file_f.close();
     }
     else
@@ -176,7 +182,7 @@ void InteractOperation::initSetpointLog(const std::string file_name)
     }
 }
 
-void InteractOperation::saveSetpointLog(const std::string file_name, const geometry_msgs::Vector3 accel)
+void InteractOperation::saveSetpointLog(const std::string file_name, const geometry_msgs::Vector3 vec)
 {
     std::ofstream save_file_f;
     save_file_f.open (file_name, std::ios::app);
@@ -184,8 +190,11 @@ void InteractOperation::saveSetpointLog(const std::string file_name, const geome
     {
         save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
                         << ros::Time::now() << "\t"
-                        << accel.x << "\t"
-                        << accel.y 
+                        << vec.x << "\t"
+                        << vec.y 
+                        #if SAVE_Z        
+                        << "\t" << vec.z
+                        #endif
                         << "\n";
         save_file_f.close();
     }
@@ -199,9 +208,9 @@ void InteractOperation::initLog(const std::string file_name)
     if(save_file_f.is_open())
     {
 //        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
-        save_file_f << "Time\tPos.x\tPos.y"
+        save_file_f << "Time\tpose.x\tpose.y"
             #if SAVE_Z        
-            << "\tPos.z"
+            << "\tpose.z"
             #endif
             << "\tVel.x\tVel.y"
             #if SAVE_Z        

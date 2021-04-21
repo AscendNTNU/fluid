@@ -32,11 +32,6 @@
  */
 struct FluidConfiguration {
     /**
-     * @brief whether ekf is used or not
-     */
-    const bool ekf;
-
-    /**
      * @brief The unified refresh rate across the operation machine.
      */
     const int refresh_rate;
