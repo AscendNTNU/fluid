@@ -11,12 +11,13 @@
 #include <std_srvs/SetBool.h>
 
 //A list of parameters for the user
-#define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
-#define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
+#define MAST_INTERACT true //safety feature to avoid going at close proximity to the mast and set the FH
+#define MAX_DIST_FOR_CLOSE_TRACKING     0.9 //max distance from the mast before activating close tracking
     
 
 // Important distances
-#define DIST_FH_DRONE_CENTRE    0.28
+#define DIST_FH_DRONE_CENTRE_X    0.38
+#define DIST_FH_DRONE_CENTRE_Z    -0.1
 
 
 #define SAVE_DATA   true
@@ -25,7 +26,7 @@
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 
 #define TIME_TO_COMPLETION 0.5 //time in second during which we want the drone to succeed a state before moving to the other.
-#define APPROACH_ACCURACY 0.06 //Accuracy needed by the drone to go to the next state
+#define APPROACH_ACCURACY 0.1 //Accuracy needed by the drone to go to the next state
 
 // Feedforward tuning
 #define ACCEL_FEEDFORWARD_X 0.0
@@ -56,7 +57,7 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
     //the offset is set in the frame of the mast:    
     desired_offset.x = offset;     //forward
     desired_offset.y = 0.0;     //left
-    desired_offset.z = -0.45;    //up
+    desired_offset.z = DIST_FH_DRONE_CENTRE_Z;    //up
 
     }
 
@@ -78,8 +79,10 @@ void InteractOperation::initialize() {
     //creating own publisher to choose exactly when we send messages
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
     attitude_setpoint.type_mask = ATTITUDE_CONTROL;   
+    attitude_setpoint.header.frame_id = "interact";   
     
     setpoint.type_mask = TypeMask::POSITION_AND_VELOCITY;
+    setpoint.header.frame_id = "interact";
 
     MavrosInterface mavros_interface;
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
@@ -91,7 +94,7 @@ void InteractOperation::initialize() {
     transition_state.max_vel = MAX_VEL;
     
     faceHugger_is_set = false;    
-    close_tracking = false;
+    set_close_tracking = false;
 
     #if SAVE_DATA
     reference_state = DataFile("reference_state.txt");
@@ -103,6 +106,14 @@ void InteractOperation::initialize() {
     gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
     //create a header for the datafiles.
     #endif
+
+    //sanity check that the drone is facing the mast.
+    setpoint.yaw = mast.get_yaw()+M_PI;
+    ros::Rate rate(rate_int);
+    while( abs( mast.get_yaw()+M_PI - getCurrentYaw()) < M_PI/20.0 ){
+        altitude_and_yaw_pub.publish(setpoint);
+        rate.sleep();
+    }
 
     startApproaching = ros::Time::now();
     completion_count =0;
@@ -218,7 +229,7 @@ geometry_msgs::Quaternion InteractOperation::accel_to_orientation(geometry_msgs:
 
 void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget offset){
     mavros_msgs::PositionTarget ref = Util::addPositionTarget(mast.get_interaction_point_state(), offset);
-
+    attitude_setpoint.header.seq++;
     attitude_setpoint.header.stamp = ros::Time::now();
     attitude_setpoint.thrust = 0.5; //this is the thrust that allow a constant altitude no matter what
 
@@ -329,7 +340,7 @@ void InteractOperation::update_transition_state()
 float InteractOperation::estimate_time_to_mast()
 {
     // Estimation of the time it takes to go from current position to interaction point
-    float dist = transition_state.state.position.x - DIST_FH_DRONE_CENTRE; //assuming that the drone is always accurate
+    float dist = transition_state.state.position.x - DIST_FH_DRONE_CENTRE_X; //assuming that the drone is always accurate
     float dist_acc_decc = MAX_VEL*MAX_VEL/MAX_ACCEL;
     if (dist < dist_acc_decc)
         return 2.0 * sqrt(2.0*dist/MAX_ACCEL);
@@ -383,27 +394,20 @@ void InteractOperation::tick() {
                         //We consider that if the drone is ready at some point, it will 
                         // remain ready until it is time to try
                         completion_count = 0;
-
-                        ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                                << ": Turning on close tracking");
-                        //Assuming that the approching state is close enough for close tracking.
-                        // send a message to perception to switch close tracking on.
-                        //ros::ServiceClient switch_close_tracking = node_handle.serviceClient<fluid::CloseTracking>("perception_main/switch_to_close_tracking");
-                        //perception::CloseTracking switch_to_close_tracking_handle;
-                        //switch_to_close_tracking_handle.request.timeout = 0.1;
-
-                        //TODO: call the perception_main/switch_to_close_tracking service.
                     
                         float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
+                        if(time_to_wait < -TIME_WINDOW_INTERACTION)
+                            time_to_wait+=mast.get_period();
                         ROS_INFO_STREAM(ros::this_node::getName().c_str() 
                                 << ": Control ready to set the FaceHugger. Waiting for the best opportunity"
                                 << "\nEstimated waiting time before go: "
                                 << time_to_wait);
-                        interaction_state = InteractionState::READY;                
+                        interaction_state = InteractionState::READY;   
+                        desired_offset.x = MAX_DIST_FOR_CLOSE_TRACKING;             
                     }
                 }
                 else
-                    completion_count = 0;
+                    completion_count < 2 ? 0 : completion_count-2; //not reset to 0, but remove 2.
             }
             break;
         }
@@ -417,19 +421,28 @@ void InteractOperation::tick() {
                             << time_to_wait);
                 }
             }
-            close_tracking = true;
-            //todo: check the good topic instead
-            
-            if( abs(time_to_wait) <= TIME_WINDOW_INTERACTION and close_tracking)
+            if(!set_close_tracking and (transition_state.finished_bitmask & 0x7) == 0x7){
+                ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                        << ": Turning on close tracking");
+                // send a message to perception to switch close tracking on.
+                //ros::ServiceClient switch_close_tracking = node_handle.serviceClient<fluid::CloseTracking>("perception_main/switch_to_close_tracking");
+                //perception::CloseTracking switch_to_close_tracking_handle;
+
+                //TODO: call the perception_main/switch_to_close_tracking service.
+
+                set_close_tracking = true; //todo: check the good topic instead, or check answer
+            }
+
+            if( abs(time_to_wait) <= TIME_WINDOW_INTERACTION and set_close_tracking)
             { //We are in the good window to set the faceHugger
               // Notice that once the drone is over, the FH is not set yet.
                 interaction_state = InteractionState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Approaching -> Over");
                 //the offset is set in the frame of the mast:    
-                desired_offset.x = DIST_FH_DRONE_CENTRE;  //forward
+                desired_offset.x = DIST_FH_DRONE_CENTRE_X;  //forward
                 desired_offset.y = 0.0;   //left
-                desired_offset.z = -0.45; //up
+                desired_offset.z = DIST_FH_DRONE_CENTRE_Z; //up
                 transition_state.cte_acc = MAX_ACCEL;
                 transition_state.max_vel = MAX_VEL;
 
@@ -449,7 +462,7 @@ void InteractOperation::tick() {
                 interaction_state = InteractionState::INTERACT;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Over -> Interact");
-                desired_offset.x = DIST_FH_DRONE_CENTRE;  //forward
+                desired_offset.x = DIST_FH_DRONE_CENTRE_X;  //forward
                 desired_offset.y = 0.0;   //left
                 desired_offset.z -= 0.2;  //up
 
@@ -474,12 +487,10 @@ void InteractOperation::tick() {
                 //we move backward to ensure there will be no colision
                 // We directly set the transition state as we want to move as fast as possible
                 // and we don't mind anymore about the relative position to the mast
-                transition_state.state.position.x = 2.70;  //further than the desired offset as a fix to make it faster
-                transition_state.state.position.y = 0.0;   
-                transition_state.state.position.z = -1.0;  
-                desired_offset.x = 1.70;   //forward
+                desired_offset.x = 1.50;   //forward
                 desired_offset.y = 0.0;    //left
-                desired_offset.z = -0.8;   //up
+                desired_offset.z = DIST_FH_DRONE_CENTRE_Z-0.6;   //up
+                transition_state.state.position = desired_offset;
                 transition_state.finished_bitmask = 0x0;
                 
 
@@ -497,20 +508,20 @@ void InteractOperation::tick() {
             if(time_cout%(rate_int*2)==0) printf("EXIT\n");
             #endif
             
-            if(transition_state.state.position.x > MAX_DIST_FOR_CLOSE_TRACKING && close_tracking){
+            if(transition_state.state.position.x > MAX_DIST_FOR_CLOSE_TRACKING && set_close_tracking){
             // send a message to AI to switch close tracking off.
                 //ros::ServiceClient switch_close_tracking = node_handle.serviceClient<fluid::CloseTracking>("perception_main/switch_to_close_tracking");
                 //perception::CloseTracking switch_to_close_tracking_handle;
                 //switch_to_close_tracking_handle.request.timeout = 0.1;
 
                 //TODO: call the perception_main/switch_to_close_tracking service.
-                close_tracking = false;
+                set_close_tracking = false;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "switch close tracking on");
+                            << ": " << "switch close tracking off");
             }
 
             //This is a transition state before going back to approach and come back the the base or try again.
-            if ( distance_to_offset < 0.6 ) {
+            if ( distance_to_offset < 0.2 ) {
                 if (faceHugger_is_set){
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Exit -> Extracted");
@@ -524,9 +535,9 @@ void InteractOperation::tick() {
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Exit -> Approaching");
                     interaction_state = InteractionState::APPROACHING;
-                    desired_offset.x = 1.5;
+                    desired_offset.x = MAX_DIST_FOR_CLOSE_TRACKING;
                     desired_offset.y = 0.0;
-                    desired_offset.z = -0.45;
+                    desired_offset.z = DIST_FH_DRONE_CENTRE_Z;
                 }
             }
             break;

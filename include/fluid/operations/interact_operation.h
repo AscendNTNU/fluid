@@ -89,7 +89,7 @@ class InteractOperation : public Operation {
     /**
      * @brief state whether close tracking is activated or not
      */
-    bool close_tracking;
+    bool set_close_tracking;
     
     void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
     void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
