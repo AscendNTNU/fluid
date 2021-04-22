@@ -1,4 +1,5 @@
 <launch>
+    <arg name="ekf"                 default="false"/>
     <arg name="start_full_feedback" default="false"/>
 
     <group if="$(arg start_full_feedback)">
@@ -10,5 +11,6 @@
         <arg name="should_auto_arm"                   value="false"/>
         <arg name="should_auto_offboard"              value="false"/>
         <arg name="launch_rviz"                       value="false"/>
+        <arg name="ekf"                               value="$(arg ekf)"/>
     </include>
 </launch>
