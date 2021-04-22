@@ -17,8 +17,7 @@ MavrosInterface::MavrosInterface() {
     ros::NodeHandle node_handle;
     state_subscriber =
         node_handle.subscribe<mavros_msgs::State>("mavros/state", 1, &MavrosInterface::stateCallback, this);
-    //setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
-    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
+    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
 }
 
 void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) { current_state = *msg; }
@@ -61,8 +60,10 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
     // Is this necessary with Ardupilot? -Erlend
     mavros_msgs::PositionTarget setpoint;
     setpoint.type_mask = TypeMask::IDLE;
+    setpoint.header.frame_id = "Arming";
 
     for (int i = UPDATE_REFRESH_RATE * 2; ros::ok() && i > 0; --i) {
+        setpoint.header.stamp = ros::Time::now();
         setpoint_publisher.publish(setpoint);
         ros::spinOnce();
         rate.sleep();
@@ -101,7 +102,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
 
             last_request = ros::Time::now();
         }
-
+        setpoint.header.stamp = ros::Time::now();
         setpoint_publisher.publish(setpoint);
 
         ros::spinOnce();
@@ -114,6 +115,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
 void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
     mavros_msgs::PositionTarget setpoint;
+    setpoint.header.frame_id = "Guided";
     setpoint.type_mask = TypeMask::IDLE;
 
     // Offboard
@@ -131,7 +133,7 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
         if (auto_offboard) {
             set_offboard = attemptToSetMode("GUIDED");
         }
-
+        setpoint.header.stamp = ros::Time::now();
         setpoint_publisher.publish(setpoint);
 
         ros::spinOnce();
@@ -147,15 +149,19 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
     // send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within Ardupilot
     // Is this necessary with Ardupilot? -Erlend
+    setpoint.header.frame_id = "takeOff";
     setpoint.type_mask = TypeMask::IDLE;
     setpoint.coordinate_frame = 0;
 
     for (int i = UPDATE_REFRESH_RATE * 2; ros::ok() && i > 0; --i) {
+        setpoint.header.stamp = ros::Time::now();
+
         setpoint_publisher.publish(setpoint);
         ros::spinOnce();
         rate.sleep();
     }
     setpoint.type_mask = TypeMask::POSITION;
+    setpoint.header.stamp = ros::Time::now();
     setpoint_publisher.publish(setpoint);
 
     // Taking off
