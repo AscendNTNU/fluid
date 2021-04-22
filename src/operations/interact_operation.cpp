@@ -13,7 +13,7 @@
 //A list of parameters for the user
 #define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
-    //false blocks the FSM and the drone will NOT properly crash into the mast
+    
 
 // Important distances
 #define DIST_FH_DRONE_CENTRE    0.28
@@ -124,16 +124,15 @@ void InteractOperation::ekfStateVectorCallback(
 
 void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
-    if(Fluid::getInstance().configuration.ekf){
+    #if SAVE_DATA
         geometry_msgs::Vector3 vec;
         vec.x = module_pose_ptr->pose.position.x;
         vec.y = module_pose_ptr->pose.position.y;
         vec.z = module_pose_ptr->pose.position.z;
-        #if SAVE_DATA
-            gt_reference.saveVector3(vec);
-        #endif
-    }
-    else{
+        gt_reference.saveVector3(vec);
+    #endif
+    if(!EKF){
+        ROS_INFO_STREAM("NOT EKF");
         const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
         mast.update(module_pose_ptr);
         mast.search_period(received_eul_angle.y); //pitch is y euler angle because of different frame

@@ -80,7 +80,7 @@ def main():
     while not gotConnectionWithServices(2) and not rospy.is_shutdown():
         rospy.logerr("Did not get connection with Fluid's services, is Fluid running?")
 
-    # Perform a take off to 3 meters above ground
+    # Perform a take off to 2 meters above ground
     take_off_response = take_off(2)
     is_executing_operation = True
 

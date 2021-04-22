@@ -366,20 +366,7 @@ def takeoff(height):
     # Set guided and arm
     last_request = rospy.Time.now()
 
-    if not AUTO_ARM:
-        rospy.loginfo("Waiting for Guided mode")
-        while not rospy.is_shutdown() and current_state.mode != 'GUIDED':
-            rate.sleep()
-
-        rospy.loginfo("Set to GUIDED")
-        rospy.loginfo("Waiting for Arming")
-        while not rospy.is_shutdown() and not current_state.armed:
-            rate.sleep()
-
-        rospy.loginfo("Set to Armed")
-    else:    
-    
-        
+    if AUTO_ARM:
         set_mode_client = rospy.ServiceProxy("/mavros/set_mode", SetMode)
         guided_set_mode = SetMode()
         guided_set_mode.custom_mode = "GUIDED"
@@ -402,6 +389,17 @@ def takeoff(height):
         target.header.stamp = rospy.Time.now()
         local_pose_publisher.publish(target)
         rate.sleep()
+    else:
+        rospy.loginfo("Waiting for Guided mode")
+        while not rospy.is_shutdown() and current_state.mode != 'GUIDED':
+            rate.sleep()
+
+        rospy.loginfo("Set to GUIDED")
+        rospy.loginfo("Waiting for Arming")
+        while not rospy.is_shutdown() and not current_state.armed:
+            rate.sleep()
+
+        rospy.loginfo("Set to Armed")
 
     # Send take off command: http://docs.ros.org/en/noetic/api/mavros_msgs/html/srv/CommandTOL.html
     takeoff_client = rospy.ServiceProxy("/mavros/cmd/takeoff", CommandTOL) 

@@ -1,6 +1,6 @@
 <launch>
-    <arg name="start_full_feedback" default="false"/>
     <arg name="ekf"                 default="false"/>
+    <arg name="start_full_feedback" default="false"/>
 
     <group if="$(arg start_full_feedback)">
         <include file="$(find control_test_nodes)/launch/fullFeedback.launch"/>
