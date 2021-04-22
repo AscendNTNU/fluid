@@ -21,9 +21,9 @@ bool TakeOffOperation::hasFinishedExecution() const {
 }
 
 void TakeOffOperation::initialize() {
-    ros::Rate rate(rate_int);
-
     MavrosInterface mavros_interface;
+
+    ros::Rate rate(5);
         
     mavros_interface.establishContactToArduPilot();
     Fluid::getInstance().getStatusPublisherPtr()->status.linked_with_ardupilot = 1;
