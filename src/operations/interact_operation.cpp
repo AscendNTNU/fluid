@@ -543,22 +543,13 @@ void InteractOperation::tick() {
                 desired_offset.z = 3;
             }
         }
-
-
-
     }//end switch state
 
     if (time_cout % rate_int == 0)
     {
         if (SHOW_PRINTS){
-        //    printf("desired offset \t\tx %f, y %f, z %f\n",desired_offset.x,
-        //                    desired_offset.y, desired_offset.z);
             printf("transition pose\tx %f,\ty %f,\tz %f\n",transition_state.state.position.x,
                             transition_state.state.position.y, transition_state.state.position.z);
-        //    printf("transition vel\t x %f, y %f, z %f\n",transition_state.state.velocity.x,
-        //                    transition_state.state.velocity.y, transition_state.state.velocity.z);
-        //    printf("transition accel\t x %f, y %f, z %f\n",transition_state.state.acceleration_or_force.x,
-        //                    transition_state.state.acceleration_or_force.y, transition_state.state.acceleration_or_force.z);
             geometry_msgs::Point cur_drone_pose = getCurrentPose().pose.position;
             printf("Drone pose\tx %f,\ty %f,\tz %f\tyaw %f\n",cur_drone_pose.x,
                                          cur_drone_pose.y, cur_drone_pose.z,getCurrentYaw());
@@ -583,7 +574,6 @@ void InteractOperation::tick() {
         setpoint.velocity.z = interact_pt_state.velocity.z + smooth_rotated_offset.velocity.z;
 
         altitude_and_yaw_pub.publish(setpoint);
-
     }
 
     attitude_pub.publish(attitude_setpoint);
