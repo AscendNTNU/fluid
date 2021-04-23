@@ -17,8 +17,8 @@ MavrosInterface::MavrosInterface() {
     ros::NodeHandle node_handle;
     state_subscriber =
         node_handle.subscribe<mavros_msgs::State>("mavros/state", 1, &MavrosInterface::stateCallback, this);
-    //setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
-    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
+    setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
+    //setpoint_publisher = node_handle.advertise<mavros_msgs::PositionTarget>("fluid/setpoint", 10);
 }
 
 void MavrosInterface::stateCallback(const mavros_msgs::State::ConstPtr& msg) { current_state = *msg; }
@@ -156,7 +156,7 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
         rate.sleep();
     }
     setpoint.type_mask = TypeMask::POSITION;
-    setpoint_publisher.publish(setpoint);
+    
 
     // Taking off
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to take off!");
@@ -167,11 +167,16 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
     ros::ServiceClient takeoff_cl = node_handle.serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/takeoff");
     mavros_msgs::CommandTOL srv_takeoff;
     srv_takeoff.request.altitude = setpoint.position.z;
-    srv_takeoff.request.latitude = setpoint.position.x;
-    srv_takeoff.request.longitude = setpoint.position.y;
-    srv_takeoff.request.min_pitch = 0;
+    srv_takeoff.request.min_pitch = 0.0;
+    srv_takeoff.request.latitude = 0.0;
+    srv_takeoff.request.longitude = 0.0;
     srv_takeoff.request.yaw = setpoint.yaw;
     
+    while (!srv_takeoff.response.success){
+        ros::Duration(.1).sleep();
+        takeoff_cl.call(srv_takeoff);
+    }
+
     bool takeoff = false;
     double arm_request_interval = 0.5;
 
@@ -180,14 +185,15 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
         // Send request to arm every interval specified
         if (ros::Time::now() - last_request > ros::Duration(arm_request_interval)) {
             if(takeoff_cl.call(srv_takeoff)){
-                ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": take_off OK!" << srv_takeoff.response.success);
+                //ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": take_off OK!" << srv_takeoff.response.success);
                 takeoff = true;
             }
             last_request = ros::Time::now();
         }
-    ros::spinOnce();
-    rate.sleep();
+        ros::spinOnce();
+        rate.sleep();
     }
+    setpoint_publisher.publish(setpoint);
 }
 
 
