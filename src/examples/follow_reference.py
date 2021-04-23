@@ -43,8 +43,8 @@ CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't 
 
 #General parameters
 SAMPLE_FREQUENCY = 30.0
-takeoff_height = 1.5
-control_type = CONTROL_POSITION_AND_VELOCITY #CONTROL_LQR_ATTITUDE
+takeoff_height = 2.0
+control_type = CONTROL_LQR
 USE_SQRT = False
 USE_SQ   = False
 
@@ -66,8 +66,8 @@ FIXED_MAST_YAW = pi/4
 
 # parameters for modul position reference
 center = [0.0, 0.0]
-pitch_radius = 0.13  #0.13 for 30m long boat, 1.25m high waves and 3m high module
-roll_radius  = 0.37  # 0.37 for 10m wide boat, 1.25m high waves and 3m high module
+pitch_radius = 0.5  #0.13 for 30m long boat, 1.25m high waves and 3m high module
+roll_radius  = 1.1  # 0.37 for 10m wide boat, 1.25m high waves and 3m high module
 #We estimate that the period of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
 omega = 2.0 * pi / 10.0
 z = takeoff_height
@@ -335,15 +335,15 @@ def initLog(file_name):
 def saveLog(file_name,position,velocity=None,accel=None):
     log = open(file_name,'a')
     log.write("{}".format(rospy.get_rostime().secs + rospy.get_rostime().nsecs/1000000000.0))
-    log.write("\t{}\t{}}".format(float(position.x),float(position.y)))
+    log.write("\t{}\t{}".format(float(position.x),float(position.y)))
     if SAVE_Z:
         log.write("\t{}".format(position.z))
     if velocity:
-        log.write("\t{}\t{}}".format(float(velocity.x),float(velocity.y)))
+        log.write("\t{}\t{}".format(float(velocity.x),float(velocity.y)))
         if SAVE_Z:
             log.write("\t{}".format(velocity.z))
     if accel:
-        log.write("\t{}\t{}}".format(float(position.x),float(position.y)))
+        log.write("\t{}\t{}".format(float(position.x),float(position.y)))
         if SAVE_Z:
             log.write("\t{}".format(accel.z))
 
@@ -372,16 +372,15 @@ def takeoff(height):
 
     # Set guided and arm
     if not AUTO_ARM:
-        rospy.loginfo("Waiting for Guided mode")
-        while not rospy.is_shutdown() and current_state.mode != 'GUIDED':
-            rate.sleep()
 
-        rospy.loginfo("Set to GUIDED")
         rospy.loginfo("Waiting for Arming")
         while not rospy.is_shutdown() and not current_state.armed:
             rate.sleep()
-
-        rospy.loginfo("Vehicle Armed. Taking off!")
+        rospy.loginfo("Vehicle Armed")
+        rospy.loginfo("Waiting for Guided mode")
+        while not rospy.is_shutdown() and current_state.mode != 'GUIDED':
+            rate.sleep()
+        rospy.loginfo("Vehicle in Guided mode. Taking off!")
     else:    
         last_request = rospy.Time.now()    
         set_mode_client = rospy.ServiceProxy("/mavros/set_mode", SetMode)
@@ -402,6 +401,7 @@ def takeoff(height):
                     response = arming_client.call(True)
                     if (response.success):
                         rospy.loginfo("Vehicle armed")
+            rate.sleep()
 
 
     target.header.stamp = rospy.Time.now()
@@ -584,7 +584,7 @@ def main():
     #waiting for takeoff to be finished
     #ugly, need to be done properly perhaps?
     
-    while drone_position.z < takeoff_height - 0.1 and not(rospy.is_shutdown()):
+    while drone_position.z < takeoff_height - 0.15 and not(rospy.is_shutdown()):
         #print("drone altitude: ",drone_position.z)
         rate.sleep()
     rospy.loginfo("Take off finished")
