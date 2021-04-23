@@ -385,6 +385,7 @@ def takeoff(height):
                     response = arming_client.call(True)
                     if (response.success):
                         rospy.loginfo("Vehicle armed")
+            rate.sleep()
 
         target.header.stamp = rospy.Time.now()
         local_pose_publisher.publish(target)
