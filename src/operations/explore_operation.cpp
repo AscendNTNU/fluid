@@ -25,7 +25,7 @@ void ExploreOperation::initialize() {
 
     MoveOperation::initialize();
 
-    ros::ServiceClient fh_extend = node_handle.serviceClient<std_srvs::Trigger>("/simulator/facehugger/moveforward"); //Service to be changed
+    ros::ServiceClient fh_extend = node_handle.serviceClient<std_srvs::Trigger>("/facehugger/moveforward");
     std_srvs::Trigger fh_extend_handle;
     if (fh_extend.call(fh_extend_handle))   ROS_INFO("Facehugger extend called");
     else                                    ROS_INFO("Facehugger extend-call failed");

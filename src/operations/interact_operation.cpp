@@ -74,7 +74,7 @@ void InteractOperation::initialize() {
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
 
-    fh_state_subscriber = node_handle.subscribe("/fh_sim_release/fh_state", 10, &InteractOperation::FaceHuggerCallback, this); //LAEiv
+    fh_state_subscriber = node_handle.subscribe("/fh_interface/fh_state", 10, &InteractOperation::FaceHuggerCallback, this);
 
     if (GROUND_TRUTH){
         module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
@@ -588,17 +588,10 @@ void InteractOperation::tick() {
                 if(time_cout%(rate_int*2)==0) printf("INTERACT\n");
             }
 
-            //std_msgs::Bool b;
-            //b.data = true;
-            //FaceHuggerCallback(b); //LAEiv
-
-            if (facehugger_released) //LAEiv
+            if (facehugger_released)
             {
                 finishInteraction();
             }
-
-            // Make something that subscribes to facehugger-status-topic
-            // and sets state to Exit if FH gone
 
             // we don't want to take the risk to stay too long, 
             // Whether the faceHugger is set or not, we have to exit.
