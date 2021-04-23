@@ -10,7 +10,7 @@
 
 #include <std_srvs/SetBool.h>
 
-#include <std_msgs/Bool.h> //LAEiv
+#include <std_msgs/Bool.h> //Needed for facehugger-state-topic
 
 //includes to write in a file
 #include <iostream>
@@ -18,6 +18,10 @@
 #include <unistd.h> //to get the current directory
 
 //A list of parameters for the user
+
+#define MAST_INTERACT true
+    //false blocks the FSM and the drone will NOT properly crash into the mast
+
 #define SAVE_DATA   true
 #define SAVE_Z      false
 #define USE_SQRT    false
@@ -56,21 +60,6 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
         desired_offset.z = -0.45;    //up
 
     }
-
-
-//LAEiv
-/*
-#include "std_msgs/String.h"
-
-void FHCallbackCaller(const std_msgs::String::ConstPtr& msg)
-{
-    if (*msg.get() == )
-    {
-
-    }
-}
-*/
-//E-LAEiv
 
 
 void InteractOperation::initialize() {
