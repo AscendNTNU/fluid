@@ -430,7 +430,7 @@ void InteractOperation::update_transition_state()
 
 // Analysis on the y axis, same as on the x axis
     if (abs(desired_offset.y - transition_state.state.position.y) >= 0.001){
-        transition_state.finished_bitmask = ~0x2;
+        transition_state.finished_bitmask &= ~0x2;
         if (Util::sq(transition_state.state.velocity.y) / 2.0 / transition_state.cte_acc 
                             >= abs(desired_offset.y - transition_state.state.position.y))
             transition_state.state.acceleration_or_force.y = - Util::sq(transition_state.state.velocity.y) 
@@ -455,7 +455,7 @@ void InteractOperation::update_transition_state()
 
 // Analysis on the z axis, same as on the x axis
     if (abs(desired_offset.z - transition_state.state.position.z) >= 0.001){
-        transition_state.finished_bitmask = ~0x4;
+        transition_state.finished_bitmask &= ~0x4;
         if (Util::sq(transition_state.state.velocity.z) / 2.0 / transition_state.cte_acc 
                             >= abs(desired_offset.z - transition_state.state.position.z))
             transition_state.state.acceleration_or_force.z = - Util::sq(transition_state.state.velocity.z) 
@@ -512,26 +512,28 @@ void InteractOperation::tick() {
                 }
             }
             float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
-            if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
-                //Todo, we may want to judge the velocity in stead of having a time to completion
-                if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int)-1 )
-                    completion_count++;
-                else if(mast.time_to_max_pitch() !=-1){
-                    //We consider that if the drone is ready at some point, it will 
-                    // remain ready until it is time to try
-                    completion_count = 0;
-                    float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
-                    if(time_to_wait < TIME_WINDOW_INTERACTION)
-                        time_to_wait += mast.get_period();
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                            << ": Ready to set the FaceHugger. Waiting for the best opportunity"
-                            << "\nEstimated waiting time before go: "
-                            << time_to_wait);
-                    interaction_state = InteractionState::READY;
+            if(MAST_INTERACT) {
+                if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
+                    //Todo, we may want to judge the velocity in stead of having a time to completion
+                    if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int)-1 )
+                        completion_count++;
+                    else if(mast.time_to_max_pitch() !=-1){
+                        //We consider that if the drone is ready at some point, it will 
+                        // remain ready until it is time to try
+                        completion_count = 0;
+                        float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast;
+                        if(time_to_wait < TIME_WINDOW_INTERACTION)
+                            time_to_wait += mast.get_period();
+                        ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                                << ": Ready to set the FaceHugger. Waiting for the best opportunity"
+                                << "\nEstimated waiting time before go: "
+                                << time_to_wait);
+                        interaction_state = InteractionState::READY;
+                    }
                 }
+                else
+                    completion_count = 0;
             }
-            else
-                completion_count = 0;
             break;
         }
         case InteractionState::READY: {
@@ -557,7 +559,7 @@ void InteractOperation::tick() {
                 transition_state.max_vel = MAX_VEL;
 
                 // Avoid going to the next step before the transition is actuallized
-                transition_state.finished_bitmask = 0;
+                transition_state.finished_bitmask = 0x0;
             }
 
             break;
@@ -566,8 +568,9 @@ void InteractOperation::tick() {
             if (SHOW_PRINTS){
                 if(time_cout%(rate_int*2)==0) printf("OVER\n");
             }
+
             //We assume that the accuracy is fine, we don't want to take the risk to stay too long
-            if (transition_state.finished_bitmask & 0x7 == 0x7) {
+            if ((transition_state.finished_bitmask & 0x7) == 0x7) {
                 interaction_state = InteractionState::INTERACT;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Over -> Interact");
@@ -576,7 +579,7 @@ void InteractOperation::tick() {
                 desired_offset.z -= 0.2;  //up
 
                 // Avoid going to the next step before the transition is actuallized
-                transition_state.finished_bitmask = 0;
+                transition_state.finished_bitmask = 0x0;
             }
             break;
         }
@@ -600,7 +603,7 @@ void InteractOperation::tick() {
             // we don't want to take the risk to stay too long, 
             // Whether the faceHugger is set or not, we have to exit.
             // NB, when FH is set, an interupt function switches the state to EXIT
-            if (transition_state.finished_bitmask & 0x7 == 0x7) {
+            if ((transition_state.finished_bitmask & 0x7) == 0x7) {
                 interaction_state = InteractionState::EXIT;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str() 
                         << "Interact -> Exiting\n"
@@ -615,6 +618,8 @@ void InteractOperation::tick() {
                 desired_offset.x = 1.70;   //forward
                 desired_offset.y = 0.0;    //left
                 desired_offset.z = -0.8;   //up
+                transition_state.finished_bitmask = 0x0;
+                
 
                 //todo: for some reason, the drone is slow to get there. 
                 // It would be nice to get it go back to a stable approach within 5 secs
