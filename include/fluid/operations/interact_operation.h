@@ -13,6 +13,7 @@
 #include "operation_identifier.h"
 #include "mavros_msgs/PositionTarget.h"
 #include "mavros_msgs/AttitudeTarget.h"
+#include "std_msgs/Bool.h" //LAEiv
 
 #include "mast.h"
 #include "data_file.h"
@@ -100,8 +101,9 @@ class InteractOperation : public Operation {
     void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
     void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
-    void FaceHuggerCallback(const bool released);
-    bool faceHugger_is_set;
+    void FaceHuggerCallback(const std_msgs::Bool released);
+    void finishInteraction();
+    bool faceHugger_is_set;     // true as soon av facehugger is released from drone
     
     ros::ServiceClient backpropeller_client;
 

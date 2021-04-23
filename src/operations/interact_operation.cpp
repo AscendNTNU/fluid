@@ -149,14 +149,19 @@ void InteractOperation::modulePoseCallback(
     }
 }
 
-void InteractOperation::FaceHuggerCallback(const bool released){
-    if (released){
+//LAEiv changed data type from bool to std_msgs::Bool and removed "else facehugger_is_set = false;"
+void InteractOperation::FaceHuggerCallback(const std_msgs::Bool released){
+    if (released.data && !faceHugger_is_set){
         ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
         interaction_state =  InteractionState::EXIT;
         faceHugger_is_set = true;
+
+        desired_offset.x = 2.0;   //forward
+        desired_offset.y = 0.0;    //left
+        desired_offset.z = DIST_FH_DRONE_CENTRE_Z - 0.6;   //up
+        transition_state.state.position.z = desired_offset.z;  
+        transition_state.finished_bitmask = 0x0;
     }
-    else 
-        faceHugger_is_set = false;
 }
 
 /*template<typename T>  T& rotate2 (T& pt, float yaw) {
