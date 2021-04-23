@@ -80,8 +80,7 @@ class InteractOperation : public Operation {
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
     void FaceHuggerCallback(const std_msgs::Bool released);
     void finishInteraction();
-    bool facehugger_released;   // true as soon av facehugger is released from drone
-    bool faceHugger_is_set;     // true after facehugger released and interact-cycle completed
+    bool faceHugger_is_set;     // true as soon av facehugger is released from drone
     
     ros::ServiceClient backpropeller_client;
 

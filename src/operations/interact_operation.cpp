@@ -107,7 +107,6 @@ void InteractOperation::initialize() {
     transition_state.cte_acc = 3*MAX_ACCEL; 
     transition_state.max_vel = 3*MAX_VEL;
     completion_count =0;
-    facehugger_released = false;
     faceHugger_is_set = false;    
 
     //estimation of the time it takes to go from approch state to interact state
@@ -142,26 +141,30 @@ void InteractOperation::modulePoseCallback(
 
 //LAEiv changed data type from bool to std_msgs::Bool and removed "else facehugger_is_set = false;"
 void InteractOperation::FaceHuggerCallback(const std_msgs::Bool released){
-    if (released.data && !facehugger_released)
-    {
-        facehugger_released = true;
-    }
-    
-    //if (released.data && !faceHugger_is_set){
-    //    ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
-    //    //interaction_state =  InteractionState::EXIT;         Moved to state-switch
-    //    faceHugger_is_set = true;
+    //if (released.data && !facehugger_released)
+    //{
+    //    facehugger_released = true;
     //}
-    //else 
-    //    faceHugger_is_set = false;
+    
+    if (released.data && !faceHugger_is_set){
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
+        interaction_state =  InteractionState::EXIT;
+        faceHugger_is_set = true;
+
+        desired_offset.x = 1.70;   //forward
+        desired_offset.y = 0.0;    //left
+        desired_offset.z = -0.8;   //up
+        transition_state.state.position.z = desired_offset.z;  
+        transition_state.finished_bitmask = 0x0;
+    }
 }
 
-void InteractOperation::finishInteraction()
-{
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
-    interaction_state =  InteractionState::EXIT;
-    faceHugger_is_set = true;
-}
+//void InteractOperation::finishInteraction()
+//{
+//    ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
+//    interaction_state =  InteractionState::EXIT;
+//    faceHugger_is_set = true;
+//}
 
 #if SAVE_DATA
 void InteractOperation::initSetpointLog(const std::string file_name)
@@ -588,10 +591,10 @@ void InteractOperation::tick() {
                 if(time_cout%(rate_int*2)==0) printf("INTERACT\n");
             }
 
-            if (facehugger_released)
-            {
-                finishInteraction();
-            }
+            //if (facehugger_released)
+            //{
+            //    finishInteraction();
+            //}
 
             // we don't want to take the risk to stay too long, 
             // Whether the faceHugger is set or not, we have to exit.
