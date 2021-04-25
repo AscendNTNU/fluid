@@ -6,7 +6,7 @@
 
 #include "fluid.h"
 
-HoldOperation::HoldOperation() : Operation(OperationIdentifier::HOLD, true, true) {}
+HoldOperation::HoldOperation() : Operation(OperationIdentifier::HOLD, true, false) {}
 
 bool HoldOperation::hasFinishedExecution() const {
     const float threshold = Fluid::getInstance().configuration.velocity_completion_threshold;

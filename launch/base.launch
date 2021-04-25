@@ -5,8 +5,8 @@
   <arg name="refresh_rate"                            default="20"/>
   <arg name="should_auto_arm"/>
   <arg name="should_auto_offboard"/>
-  <arg name="distance_completion_threshold"           default="30"/>
-  <arg name="velocity_completion_threshold"           default="10"/>
+  <arg name="distance_completion_threshold"           default="0.30"/>
+  <arg name="velocity_completion_threshold"           default="0.10"/>
   <arg name="default_height"                          default="2.0"/>
   <arg name="launch_rviz"/>
   

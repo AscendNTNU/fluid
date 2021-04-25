@@ -7,6 +7,8 @@
 #include "fluid.h"
 #include "mavros_interface.h"
 #include "util.h"
+#include <mavros_msgs/CommandTOL.h>
+#include <fluid/OperationCompletion.h>
 
 TakeOffOperation::TakeOffOperation(float height_setpoint)
     : Operation(OperationIdentifier::TAKE_OFF, false, true), height_setpoint(height_setpoint) {}
@@ -14,10 +16,19 @@ TakeOffOperation::TakeOffOperation(float height_setpoint)
 bool TakeOffOperation::hasFinishedExecution() const {
     const float distance_threshold = Fluid::getInstance().configuration.distance_completion_threshold;
     const float velocity_threshold = Fluid::getInstance().configuration.velocity_completion_threshold;
-    return Util::distanceBetween(getCurrentPose().pose.position, setpoint.position) < distance_threshold &&
+    bool completed =  Util::distanceBetween(getCurrentPose().pose.position, setpoint.position) < distance_threshold &&
            std::abs(getCurrentTwist().twist.linear.x) < velocity_threshold &&
            std::abs(getCurrentTwist().twist.linear.y) < velocity_threshold &&
            std::abs(getCurrentTwist().twist.linear.z) < velocity_threshold;
+    if (completed) {
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": take_off OK!");
+    }
+    return completed;
+}
+
+bool cb(fluid::OperationCompletion::Request& request,
+                                      fluid::OperationCompletion::Response& response) {
+    return true;
 }
 
 void TakeOffOperation::initialize() {
