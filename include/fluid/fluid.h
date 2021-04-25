@@ -32,6 +32,16 @@
  */
 struct FluidConfiguration {
     /**
+     * @brief whether ekf is used or not
+     */
+    const bool ekf;
+
+    /**
+     * @brief whether perception_node is used or not
+     */
+    const bool perception_node;
+
+    /**
      * @brief The unified refresh rate across the operation machine.
      */
     const int refresh_rate;
@@ -75,11 +85,6 @@ struct FluidConfiguration {
      */
     const bool interaction_show_prints;
     
-    /**
-     * @brief Use ground_truth data for interact operation.
-     */
-    const bool interaction_ground_truth;  
-
     /**
      * @brief Show some debugging prints during the interact operation
      */

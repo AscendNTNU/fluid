@@ -25,6 +25,20 @@ class Mast{
      */
     bool m_SHOW_PRINTS;
 
+    /**
+     * @brief state of the interaction_point. Includes Position, velocity and acceleration and a header.
+     * 
+     */
+    mavros_msgs::PositionTarget interaction_point_state;
+
+    /**
+     * @brief state of the interaction_point at the previous iteration/tick.
+     *  Includes Position, velocity and acceleration and a header.
+     * 
+     */
+    mavros_msgs::PositionTarget previous_interaction_point_state;
+
+
      /**
      * @brief Should be given by perception and known before entering
      *  InteractOperation
@@ -91,13 +105,38 @@ class Mast{
     Mast(float yaw=0.0);
 
     /**
-     * @brief Update mast euler angles.
-     *        Check if pitch were extremum.
+     * @brief Update position and velocity from EKF output
+     * 
+     * @param module_state state of the interaction_point from the EKF
+     */
+    void updateFromEkf(mavros_msgs::PositionTarget module_state);
+
+    /**
+     * @brief Update position, velocity and acceleration from euler derivations
+     * 
+     * @param module_pose_ptr state of the interaction_point
+     */
+    void update(geometry_msgs::PoseStampedConstPtr module_pose_ptr); //todo: this should also save the pitch automaticaly
+
+    /**
+     * @brief Check if pitch were extremum.
      *        Deduce period.
      * 
-     * @param orientation quaternion mast or module orientation
+     * @param pitch from the current orientation of the mast. Can be noisy.
      */
-    void update(geometry_msgs::Quaternion orientation); //todo: this should also save the pitch automaticaly
+    void search_period(double pitch);
+
+    /**
+     * @brief estimate the velocity of the interaction point from a simple Euler derivation of the position
+     * 
+     */
+    void estimateInteractionPointVel();
+
+    /**
+     * @brief estimate the acceleration of the interaction point from a simple Euler derivation of the velocity
+     * 
+     */
+    void estimateInteractionPointAccel();
 
     /**
      * @brief Estimate the time the mast will take to reach its next 
@@ -132,6 +171,13 @@ class Mast{
      * @return -1 if not estimated yet, the estimated period otherwise
      */
     float get_period();
+
+    /**
+     * @brief Get the interaction point state object
+     * 
+     * @return mavros_msgs::PositionTarget 
+     */
+    mavros_msgs::PositionTarget get_interaction_point_state();
 
 };
 #endif // MAST_H

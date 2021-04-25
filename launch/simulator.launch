@@ -1,6 +1,7 @@
 <launch>
     <arg name="ekf"                 default="false"/>
 	<arg name="launch_rviz"         default="false"/>
+    <arg name="perception_node"     default="false"/>
 
     <include file="$(find fluid)/launch/base.launch">
         <arg name="fcu_url"                           value="udp://:14550@:14551"/>
@@ -8,6 +9,7 @@
         <arg name="should_auto_offboard"              value="true"/>
         <arg name="launch_rviz"                       value="$(arg launch_rviz)"/>
         <arg name="ekf"                               value="$(arg ekf)"/>
+        <arg name="perception_node"                   value="$(arg perception_node)"/>
     </include>
 
 </launch>

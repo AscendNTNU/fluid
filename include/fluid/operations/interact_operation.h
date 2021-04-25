@@ -7,13 +7,17 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PointStamped.h>
+#include <mavros_msgs/DebugValue.h>
 
 #include "operation.h"
 #include "operation_identifier.h"
 #include "mavros_msgs/PositionTarget.h"
 #include "mavros_msgs/AttitudeTarget.h"
+#include "std_msgs/Bool.h" //LAEiv
+#include <std_msgs/Int16.h>
 
 #include "mast.h"
+#include "data_file.h"
 
 /**
  * @brief Represents the operation where the drone is interact with the mast.
@@ -44,18 +48,28 @@ class InteractOperation : public Operation {
 
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
+    bool EKF;
+    bool PERCEPTION_NODE;
 	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
-    
-    
-    mavros_msgs::PositionTarget module_state;
-    mavros_msgs::PositionTarget previous_module_state;
+
+    std_msgs::Int16 number_fail;
     
     
     TransitionSetpointStruct transition_state;
     geometry_msgs::Point desired_offset;
     
+    ros::Subscriber ekf_module_pose_subscriber;
+    ros::Subscriber ekf_state_vector_subscriber;
     ros::Subscriber module_pose_subscriber;
+    ros::Subscriber gt_module_pose_subscriber;
+    ros::Subscriber fh_state_subscriber;
+    ros::Subscriber close_tracking_ready_subscriber;
+
+    ros::ServiceClient start_close_tracking_client;
+    ros::ServiceClient pause_close_tracking_client;    
+
+    ros::Publisher interact_fail_pub;
     ros::Publisher attitude_pub;
     ros::Publisher altitude_and_yaw_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;
@@ -68,16 +82,40 @@ class InteractOperation : public Operation {
     float MAX_VEL;
 
     Mast mast;
+
+    DataFile reference_state;
+    DataFile drone_pose;
+    DataFile gt_reference;
+
+
+
     
     /**
-     * @brief Estimation of the time the drone will take to got from
-     * the Approach state to the interact state
+     * @brief Estimate the travel time from current position to OVER state
+     * 
+     * @return estimated mast to travel to the mast
      */
-    float estimate_time_to_mast;
+    float estimate_time_to_mast();
+
+
+    /**
+     * @brief state whether a service call to switch close tracking has been made or not.
+     * 
+     */
+    bool set_close_tracking;
     
+    /**
+     * @brief state whether close tracking is activated or not
+     */
+    bool close_tracking;
+    
+    void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
+    void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
-    void FaceHuggerCallback(const bool released);
-    bool faceHugger_is_set;
+    void FaceHuggerCallback(const std_msgs::Bool released);
+    void closeTrackingCallback(std_msgs::Bool ready);
+    void finishInteraction();
+    bool faceHugger_is_set;     // true as soon av facehugger is released from drone
     
     ros::ServiceClient backpropeller_client;
 
@@ -114,34 +152,6 @@ class InteractOperation : public Operation {
      * Choose initial offset, set up transitino and init data_files.
      */
     void initialize() override;
-
-
-    /**
-     * @brief //create a header for the logfile.
-     */
-    void initLog(const std::string file_name);
-
-    /**
-     * @brief //Add a new line to the logfile with the given position, velocity and acceleration
-     */
-    void saveLog(const std::string file_name, const mavros_msgs::PositionTarget data);
-
-    /**
-     * @brief //Add a new line to the logfile with the given position, velocity and acceleration
-     */
-    void saveLog(const std::string file_name, const geometry_msgs::PoseStamped pose, const geometry_msgs::TwistStamped vel, const geometry_msgs::Vector3 accel);
-
-    /**
-     * @brief //create a header for the setpoint logfile. 
-     *          It only includes acceleration setpoints
-     */
-    void initSetpointLog(const std::string file_name);
-
-    /**
-     * @brief //Add a new line to the logfile with acceleration setpoint
-     */
-    void saveSetpointLog(const std::string file_name, const geometry_msgs::Vector3 accel);
-
 
     /**
      * @return true When the module has been extracted.

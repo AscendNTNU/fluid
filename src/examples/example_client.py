@@ -98,9 +98,9 @@ def main():
         # This structure is just an example, the logic for when an operation
         # is executing should probably be implemented differently
         if not is_executing_operation:
-            if finished_operation == "SKIPTAKE_OFF":
+            if finished_operation == "TAKE_OFF":
                 # Perform a explore with a (list of) point(s)
-                response = explore([Point(0, 4, 4), Point(0, 5, 2), Point(5, 0,2)], Point(2, 2, 2))
+                response = explore([Point(2,-10,2)], Point(2, 2, 2))
                 #response = explore(explore_points, Point(0, -10, 2))
                 if (not response.success):
                     rospy.logerr(response.message)
@@ -109,7 +109,7 @@ def main():
             elif finished_operation == "EXPLORE":
                 # Perform a the extraction module state using a LQR to follow the mast
                 print("LET US EXTRACT THAT MODULE !!\n")
-                response = interact(math.pi/20, 1.5)
+                response = interact(0, 1.5)
                 if (not response.success):
                     rospy.logerr(response.message)
                 else:
