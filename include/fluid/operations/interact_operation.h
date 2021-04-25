@@ -59,6 +59,7 @@ class InteractOperation : public Operation {
     ros::Subscriber ekf_state_vector_subscriber;
     ros::Subscriber module_pose_subscriber;
     ros::Subscriber gt_module_pose_subscriber;
+    ros::Subscriber fh_state_subscriber;
     ros::Publisher attitude_pub;
     ros::Publisher altitude_and_yaw_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;

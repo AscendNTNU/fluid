@@ -75,6 +75,7 @@ void InteractOperation::initialize() {
     module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                     10, &InteractOperation::modulePoseCallback, this);
     }
+    fh_state_subscriber = node_handle.subscribe("/fh_interface/fh_state", 10, &InteractOperation::FaceHuggerCallback, this);
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
     //creating own publisher to choose exactly when we send messages
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
@@ -149,7 +150,6 @@ void InteractOperation::modulePoseCallback(
     }
 }
 
-//LAEiv changed data type from bool to std_msgs::Bool and removed "else facehugger_is_set = false;"
 void InteractOperation::FaceHuggerCallback(const std_msgs::Bool released){
     if (released.data && !faceHugger_is_set){
         ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
