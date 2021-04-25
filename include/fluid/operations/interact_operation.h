@@ -14,6 +14,7 @@
 #include "mavros_msgs/PositionTarget.h"
 #include "mavros_msgs/AttitudeTarget.h"
 #include "std_msgs/Bool.h" //LAEiv
+#include <std_msgs/Int16.h>
 
 #include "mast.h"
 #include "data_file.h"
@@ -51,6 +52,8 @@ class InteractOperation : public Operation {
     bool PERCEPTION_NODE;
 	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
+
+    std_msgs::Int16 number_fail;
     
     
     TransitionSetpointStruct transition_state;
