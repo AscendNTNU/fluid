@@ -66,7 +66,6 @@ void InteractOperation::initialize() {
         K_LQR_X[i] = temp[2*i];
         K_LQR_Y[i] = temp[2*i+1];
     }
-    EKF = Fluid::getInstance().configuration.ekf;
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
     GROUND_TRUTH = Fluid::getInstance().configuration.interaction_ground_truth;
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
