@@ -161,12 +161,6 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
         rate.sleep();
     }
     setpoint.type_mask = TypeMask::POSITION;
-<<<<<<< HEAD
-    setpoint.header.stamp = ros::Time::now();
-    setpoint_publisher.publish(setpoint);
-=======
-    
->>>>>>> master
 
     // Taking off
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Attempting to take off!");
@@ -203,6 +197,7 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
         ros::spinOnce();
         rate.sleep();
     }
+    setpoint.header.stamp = ros::Time::now();
     setpoint_publisher.publish(setpoint);
 }
 
