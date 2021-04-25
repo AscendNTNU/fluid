@@ -18,8 +18,8 @@
     
 
 // Important distances
-#define DIST_FH_DRONE_CENTRE_X   0.5377//0.25// 0.5376
-#define DIST_FH_DRONE_CENTRE_Z  -0.3214//-0.15// -0.3218
+#define DIST_FH_DRONE_CENTRE_X   0.45 // 0.5377
+#define DIST_FH_DRONE_CENTRE_Z  -0.3214 //-0.3214
 
 #define SAVE_DATA   true
 #define SAVE_Z      false
@@ -421,6 +421,9 @@ void InteractOperation::tick() {
         case InteractionState::READY: {
             //The drone is ready, we just have to wait for the best moment to go!
             float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
+            if(time_to_wait < -TIME_WINDOW_INTERACTION)
+                time_to_wait+=mast.get_period();
+
             if (SHOW_PRINTS and time_cout%(rate_int/2)==0) {
                 ROS_INFO_STREAM("READY; "
                         << "Estimated waiting time before go: "
