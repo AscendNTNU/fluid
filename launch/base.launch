@@ -1,5 +1,6 @@
 <launch>
   <arg name="ekf"                                     default="false"/>
+  <arg name="perception_node"                         default="false"/>
   <arg name="fcu_url"/>
   <arg name="refresh_rate"                            default="20"/>
   <arg name="should_auto_arm"/>
@@ -28,6 +29,7 @@
     <param name="velocity_completion_threshold"       value="$(arg velocity_completion_threshold)"/>
     <param name="default_height"                      value="$(arg default_height)"/>
     <param name="ekf"                                 value="$(arg ekf)"/>
+    <param name="perception_node"                      value="$(arg perception_node)"/>
     
 
     <param name="interaction_ground_truth_data"       value="$(arg interaction_ground_truth_data)"/>

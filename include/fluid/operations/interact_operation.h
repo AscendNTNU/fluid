@@ -48,6 +48,7 @@ class InteractOperation : public Operation {
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
     bool EKF;
+    bool PERCEPTION_NODE;
 	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
     
@@ -59,6 +60,12 @@ class InteractOperation : public Operation {
     ros::Subscriber ekf_state_vector_subscriber;
     ros::Subscriber module_pose_subscriber;
     ros::Subscriber gt_module_pose_subscriber;
+    ros::Subscriber close_tracking_ready_subscriber;
+
+    ros::ServiceClient start_close_tracking_client;
+    ros::ServiceClient pause_close_tracking_client;    
+
+    ros::Publisher interact_fail_pub;
     ros::Publisher attitude_pub;
     ros::Publisher altitude_and_yaw_pub;
     mavros_msgs::AttitudeTarget attitude_setpoint;
@@ -102,6 +109,7 @@ class InteractOperation : public Operation {
     void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
     void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
     void FaceHuggerCallback(const std_msgs::Bool released);
+    void closeTrackingCallback(std_msgs::Bool ready);
     void finishInteraction();
     bool faceHugger_is_set;     // true as soon av facehugger is released from drone
     
