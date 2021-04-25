@@ -14,12 +14,12 @@
 
 //A list of parameters for the user
 #define MAST_INTERACT true //safety feature to avoid going at close proximity to the mast and set the FH
-#define MAX_DIST_FOR_CLOSE_TRACKING     0.9 //max distance from the mast before activating close tracking
+#define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
     
 
 // Important distances
-#define DIST_FH_DRONE_CENTRE_X    0.5376
-#define DIST_FH_DRONE_CENTRE_Z    -0.3218
+#define DIST_FH_DRONE_CENTRE_X   0.5377//0.25// 0.5376
+#define DIST_FH_DRONE_CENTRE_Z  -0.3214//-0.15// -0.3218
 
 #define SAVE_DATA   true
 #define SAVE_Z      false
@@ -77,7 +77,8 @@ void InteractOperation::initialize() {
     module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                     10, &InteractOperation::modulePoseCallback, this);
     }
-    fh_state_subscriber = node_handle.subscribe("/fh_interface/fh_state", 10, &InteractOperation::FaceHuggerCallback, this);
+    fh_state_subscriber = node_handle.subscribe("/fh_interface/fh_state",
+                                    10, &InteractOperation::FaceHuggerCallback, this);
     close_tracking_ready_subscriber = node_handle.subscribe("/close_tracking_running",
                                     10, &InteractOperation::closeTrackingCallback, this);
 
@@ -463,7 +464,7 @@ void InteractOperation::tick() {
                 printf("OVER\n");
     
             //We assume that the accuracy is fine, we don't want to take the risk to stay too long
-            if ((transition_state.finished_bitmask & 0x7) == 0x7 and false) {
+            if ((transition_state.finished_bitmask & 0x7) == 0x7) {
                 interaction_state = InteractionState::INTERACT;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Over -> Interact");
@@ -505,15 +506,16 @@ void InteractOperation::tick() {
             if (SHOW_PRINTS and time_cout%(rate_int*2)==0) 
                 printf("EXIT\n");
     
-            if(set_close_tracking)
+            if(set_close_tracking){
                 if(PERCEPTION_NODE){ //we are getting to far from the mast, and the position is not stable.
-                std_srvs::Trigger srv;
-                if (pause_close_tracking_client.call(srv)){
-                    set_close_tracking = false;
+                    std_srvs::Trigger srv;
+                    if (pause_close_tracking_client.call(srv)){
+                        set_close_tracking = false;
+                    }
                 }
                 else{
-                    set_close_tracking = false;
-                    close_tracking = false;
+                        set_close_tracking = false;
+                        close_tracking = false;
                 }
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                         << ": " << "switch close tracking off");
