@@ -18,7 +18,7 @@
     
 
 // Important distances
-#define DIST_FH_DRONE_CENTRE_X   0.45 // 0.5377
+#define DIST_FH_DRONE_CENTRE_X   0.42 // 0.5377
 #define DIST_FH_DRONE_CENTRE_Z  -0.3214 //-0.3214
 
 #define SAVE_DATA   true

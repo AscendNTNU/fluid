@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
             } else if (finished_operation == "EXPLORE") {
                 ROS_INFO_STREAM("[example_client]: Exploring finished, go interact with the mast");
                 fluid::Interact interact_service_handle;
-                interact_service_handle.request.fixed_mast_yaw = 0;
+                interact_service_handle.request.fixed_mast_yaw = 0.0;
                 interact_service_handle.request.offset = 1.5;
                 
                 if (Interact.call(interact_service_handle)) {
