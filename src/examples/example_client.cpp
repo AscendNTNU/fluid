@@ -114,9 +114,10 @@ int main(int argc, char** argv) {
                 ROS_INFO_STREAM("[example_client]: Take_off finished, go exploring");
                 // Perform an explore with a (list of) point(s)
                 geometry_msgs::Point point, POI;
-                point.x = 5;
-                point.y = 4;
-                POI.y = 2;
+                point.x = 2;
+                point.y = -10;
+                POI.x = 0;
+                POI.y = -10;
                 fluid::Explore explore_service_handle;
                 explore_service_handle.request.path = {point};
                 explore_service_handle.request.point_of_interest = POI;
@@ -134,10 +135,8 @@ int main(int argc, char** argv) {
 
             } else if (finished_operation == "EXPLORE") {
                 ROS_INFO_STREAM("[example_client]: Exploring finished, go interact with the mast");
-                float mast_yaw = M_PI/20.0;
-                printf("send yaw mast of %f\n",mast_yaw);
                 fluid::Interact interact_service_handle;
-                interact_service_handle.request.fixed_mast_yaw = mast_yaw;
+                interact_service_handle.request.fixed_mast_yaw = 0.0;
                 interact_service_handle.request.offset = 1.5;
                 
                 if (Interact.call(interact_service_handle)) {

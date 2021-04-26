@@ -320,9 +320,9 @@ def printPoint(vec,message=None):
 
 def initLog(file_name):
     log = open(file_name,"w")
-    log.write("Time\tPos.x\tPos.y")
+    log.write("Time\tpose.x\tpose.y")
     if SAVE_Z:
-        log.write("\tPos.z")
+        log.write("\tpose.z")
     log.write("\tvelocity.x\tvelocity.y")
     if SAVE_Z:
         log.write("\tvelocity.z")

@@ -114,7 +114,7 @@ plot(samples, '--r');
 hold on
 plot(samples_error,'.b');
 hold off
-
+legend("mast angle", "control error");
 [abs_max,i_abs_max]= max(abs(error(2,:)));
 t_asb_max = (i_abs_max+start) * time_step;
 %% print some information

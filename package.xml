@@ -22,4 +22,5 @@
     <run_depend>actionlib</run_depend>
     <run_depend>tf2</run_depend>
     <run_depend>tf2_geometry_msgs</run_depend>
+    <run_depend>ekf</run_depend>
 </package>

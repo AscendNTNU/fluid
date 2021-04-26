@@ -15,10 +15,18 @@ int main(int argc, char** argv) {
     ros::NodeHandle node_handle;
     const std::string prefix = ros::this_node::getName() + "/";
     int refresh_rate;
-    bool should_auto_arm, should_auto_offboard, interaction_show_prints, interaction_ground_truth;
+    bool ekf, perception_node, should_auto_arm, should_auto_offboard, interaction_show_prints;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
     float interact_max_vel, interact_max_acc;
     float* LQR_gains = (float*) calloc(4,sizeof(float));
+
+    if (!node_handle.getParam(prefix + "ekf", ekf)) {
+        exitAtParameterExtractionFailure(prefix + "ekf");
+    }
+
+    if (!node_handle.getParam(prefix + "perception_node", perception_node)) {
+        exitAtParameterExtractionFailure(prefix + "perception_node");
+    }
 
     if (!node_handle.getParam(prefix + "refresh_rate", refresh_rate)) {
         exitAtParameterExtractionFailure(prefix + "refresh_rate");
@@ -63,10 +71,6 @@ int main(int argc, char** argv) {
     if (!node_handle.getParam(prefix + "interaction_show_prints", interaction_show_prints)) {
         exitAtParameterExtractionFailure(prefix + "interaction_show_prints");
     }
-
-    if (!node_handle.getParam(prefix + "interaction_ground_truth_data", interaction_ground_truth)) {
-        exitAtParameterExtractionFailure(prefix + "interaction_ground_truth_data");
-    }
     
     if (!node_handle.getParam(prefix + "interaction_max_vel", interact_max_vel)) {
         exitAtParameterExtractionFailure(prefix + "interaction_max_vel");
@@ -75,19 +79,20 @@ int main(int argc, char** argv) {
     if (!node_handle.getParam(prefix + "interaction_max_acc", interact_max_acc)) {
         exitAtParameterExtractionFailure(prefix + "interaction_max_acc");
     }
-    interaction_ground_truth = true;
-    FluidConfiguration configuration{refresh_rate,
-                                     should_auto_arm,
-                                     should_auto_offboard,
-                                     distance_completion_threshold,
-                                     velocity_completion_threshold,
-                                     default_height,
-                                     LQR_gains,
-                                     interaction_show_prints,
-                                     interaction_ground_truth,
-                                     interact_max_vel,
-                                     interact_max_acc
-                                     };
+
+    FluidConfiguration configuration{ekf,
+                                    perception_node,
+                                    refresh_rate,
+                                    should_auto_arm,
+                                    should_auto_offboard,
+                                    distance_completion_threshold,
+                                    velocity_completion_threshold,
+                                    default_height,
+                                    LQR_gains,
+                                    interaction_show_prints,
+                                    interact_max_vel,
+                                    interact_max_acc
+                                    };
 
     Fluid::initialize(configuration);
 

@@ -32,7 +32,6 @@ bool cb(fluid::OperationCompletion::Request& request,
 }
 
 void TakeOffOperation::initialize() {
-
     MavrosInterface mavros_interface;
 
     ros::Rate rate(5);
@@ -54,12 +53,10 @@ void TakeOffOperation::initialize() {
         rate.sleep();
     }
 
-    mavros_interface.setParam("WPNAV_SPEED_UP", 50);
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat climb rate to: 0.5 m/s.");
-
+    mavros_interface.setParam("WPNAV_SPEED_UP", 90);
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat climb rate to: " << 90./100. << " m/s.");
 
     //send take off command
-
     setpoint.position.x = getCurrentPose().pose.position.x;
     setpoint.position.y = getCurrentPose().pose.position.y;
     setpoint.position.z = height_setpoint;

@@ -9,11 +9,8 @@
 #include "type_mask.h"
 
 #include <std_srvs/SetBool.h>
-
-//includes to write in a file
-#include <iostream>
-#include <fstream>
-#include <unistd.h> //to get the current directory
+#include <ascend_msgs/SetInt.h>
+#include <std_srvs/Trigger.h>
 
 //A list of parameters for the user
 #define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
@@ -21,16 +18,16 @@
     //false blocks the FSM and the drone will NOT properly crash into the mast
 
 // Important distances
-#define DIST_FH_DRONE_CENTRE    0.28
-
+#define DIST_FH_DRONE_CENTRE_X   0.42 // 0.5377
+#define DIST_FH_DRONE_CENTRE_Z  -0.3214 //-0.3214
 
 #define SAVE_DATA   true
 #define SAVE_Z      false
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 
-#define TIME_TO_COMPLETION 0.5 //time in second during which we want the drone to succeed a state before moving to the other.
-#define APPROACH_ACCURACY 0.06 //Accuracy needed by the drone to go to the next state
+#define TIME_TO_COMPLETION 0.5 //time in sec during which we want the drone to succeed a state before moving to the other.
+#define APPROACH_ACCURACY 0.1 //Accuracy needed by the drone to go to the next state
 
 // Feedforward tuning
 #define ACCEL_FEEDFORWARD_X 0.0
@@ -39,31 +36,13 @@
 #define MAX_ANGLE   400 // in centi-degrees
 
 
-#if SAVE_DATA
-//files saved in home directory
-const std::string reference_state_path = std::string(get_current_dir_name()) + "/../reference_state.txt";
-const std::string drone_pose_path      = std::string(get_current_dir_name()) + "/../drone_state.txt";    
-const std::string drone_setpoints_path = std::string(get_current_dir_name()) + "/../drone_setpoints.txt";
-std::ofstream reference_state_f; 
-std::ofstream drone_pose_f; 
-std::ofstream drone_setpoints_f; 
-#endif
-
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
 
 //function called when creating the operation
 InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& offset) : 
             Operation(OperationIdentifier::INTERACT, false, false) { 
-        mast = Mast(fixed_mast_yaw);
-        //Choose an initial offset. It is the offset for the approaching state.
-        //the offset is set in the frame of the mast:    
-        desired_offset.x = offset;     //forward
-        desired_offset.y = 0.0;     //left
-        desired_offset.z = -0.45;    //up
-
-    }
-
-void InteractOperation::initialize() {
+    mast = Mast(fixed_mast_yaw);
+    
     //get parameters from the launch file.
     const float* temp = Fluid::getInstance().configuration.LQR_gains;
     for (uint8_t i=0 ; i<2 ; i++) { 
@@ -71,7 +50,8 @@ void InteractOperation::initialize() {
         K_LQR_Y[i] = temp[2*i+1];
     }
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
-    GROUND_TRUTH = Fluid::getInstance().configuration.interaction_ground_truth;
+    EKF = Fluid::getInstance().configuration.ekf;
+    PERCEPTION_NODE = Fluid::getInstance().configuration.perception_node;
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
 
@@ -90,177 +70,101 @@ void InteractOperation::initialize() {
 }
     // backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
 
+    interact_fail_pub = node_handle.advertise<std_msgs::Int16>("/fluid/interact_fail",10);
+    
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
     //creating own publisher to choose exactly when we send messages
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
     attitude_setpoint.type_mask = ATTITUDE_CONTROL;   
+    attitude_setpoint.header.frame_id = "interact";   
     
     setpoint.type_mask = TypeMask::POSITION_AND_VELOCITY;
+    setpoint.header.frame_id = "interact";
 
     MavrosInterface mavros_interface;
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << MAX_ANGLE/100.0 << " deg.");
 
-    // The desired offset and the transition state are mesured in the mast frame
+    // The transition state is mesured in the mast frame
     transition_state.state.position = desired_offset;
-    //transition_state.state.position.y = desired_offset.y;
-    //transition_state.state.position.z = desired_offset.z;
-
-    //At the beginning we are far from the mast, we can safely so do a fast transion.
-    //But transition state is also the offset, so it should be useless.
-    transition_state.cte_acc = 3*MAX_ACCEL; 
-    transition_state.max_vel = 3*MAX_VEL;
-    completion_count =0;
+    transition_state.cte_acc = MAX_ACCEL; 
+    transition_state.max_vel = MAX_VEL;
     
     faceHugger_is_set = false;    
+    set_close_tracking = false;
     close_tracking = false;
 
     #if SAVE_DATA
-    //create a header for the datafiles.
-    initLog(reference_state_path); 
-    initLog(drone_pose_path); 
-    initSetpointLog(drone_setpoints_path); 
+    reference_state = DataFile("reference_state.txt");
+    drone_pose = DataFile("drone_pose.txt");
+    gt_reference = DataFile("gt_reference.txt");
+
+    reference_state.initStateLog();
+    drone_pose.initStateLog();    
+    gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
     #endif
 
+    //sanity check that the drone is facing the mast.
+    ros::Rate rate(rate_int);
+    setpoint.yaw = mast.get_yaw()+M_PI;
+    while( abs( mast.get_yaw()+M_PI - getCurrentYaw()) < M_PI/20.0 ){
+        altitude_and_yaw_pub.publish(setpoint);
+        rate.sleep();
+    }
+
     startApproaching = ros::Time::now();
+    completion_count =0;
 }
 
-bool InteractOperation::hasFinishedExecution() const { return interaction_state == InteractionState::EXTRACTED; }
+bool InteractOperation::hasFinishedExecution() const {
+    return interaction_state == InteractionState::EXTRACTED; 
+}
+
+void InteractOperation::ekfModulePoseCallback(
+                const mavros_msgs::PositionTarget module_state) {
+    mast.updateFromEkf(module_state);
+}
+
+void InteractOperation::ekfStateVectorCallback(
+                const mavros_msgs::DebugValue ekf_state) {
+    mast.search_period(ekf_state.data[0]); //the first element is the pitch
+}
 
 void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
-
-    mast.update(module_pose_ptr);
+    #if SAVE_DATA
+        geometry_msgs::Vector3 vec;
+        vec.x = module_pose_ptr->pose.position.x;
+        vec.y = module_pose_ptr->pose.position.y;
+        vec.z = module_pose_ptr->pose.position.z;
+        gt_reference.saveVector3(vec);
+    #endif
+    if(!EKF){
+        const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
+        mast.update(module_pose_ptr);
+        mast.search_period(received_eul_angle.y); //pitch is y euler angle because of different frame
+    }
 }
 
-void InteractOperation::FaceHuggerCallback(const bool released){
-    if (released){
+void InteractOperation::FaceHuggerCallback(const std_msgs::Bool released){
+    if (released.data && !faceHugger_is_set){
         ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
         interaction_state =  InteractionState::EXIT;
         faceHugger_is_set = true;
-    }
-    else 
-        faceHugger_is_set = false;
-}
 
-#if SAVE_DATA
-void InteractOperation::initSetpointLog(const std::string file_name)
-{ //create a header for the logfile.
-    std::ofstream save_file_f;
-     save_file_f.open(file_name);
-    if(save_file_f.is_open())
-    {
-//        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
-        save_file_f << "Time\tAccel.x\tAccel.y\n";
-        save_file_f.close();
-    }
-    else
-    {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
+        desired_offset.x = 2.0;   //forward
+        desired_offset.y = 0.0;    //left
+        desired_offset.z = DIST_FH_DRONE_CENTRE_Z - 0.6;   //up
+        transition_state.state.position.z = desired_offset.z;
+        transition_state.cte_acc = MAX_ACCEL*3;
+        transition_state.max_vel = MAX_VEL*3;
+        transition_state.finished_bitmask = 0x0;
     }
 }
 
-void InteractOperation::saveSetpointLog(const std::string file_name, const geometry_msgs::Vector3 accel)
-{
-    std::ofstream save_file_f;
-    save_file_f.open (file_name, std::ios::app);
-    if(save_file_f.is_open())
-    {
-        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
-                        << ros::Time::now() << "\t"
-                        << accel.x << "\t"
-                        << accel.y 
-                        << "\n";
-        save_file_f.close();
-    }
+void InteractOperation::closeTrackingCallback(std_msgs::Bool ready){
+    close_tracking = ready.data; 
 }
-
-
-void InteractOperation::initLog(const std::string file_name)
-{ //create a header for the logfile.
-    std::ofstream save_file_f;
-     save_file_f.open(file_name);
-    if(save_file_f.is_open())
-    {
-//        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": " << file_name << " open successfully");
-        save_file_f << "Time\tPos.x\tPos.y"
-            #if SAVE_Z        
-            << "\tPos.z"
-            #endif
-            << "\tVel.x\tVel.y"
-            #if SAVE_Z        
-            << "\tVel.z"
-            #endif
-            << "\tAccel.x\tAccel.y"
-            #if SAVE_Z        
-            << "\tAccel.z";
-            #endif
-            << "\n";
-        save_file_f.close();
-    }
-    else
-    {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << file_name);
-    }
-}
-
-
-void InteractOperation::saveLog(const std::string file_name, const geometry_msgs::PoseStamped pose, const geometry_msgs::TwistStamped vel, const geometry_msgs::Vector3 accel)
-{
-    std::ofstream save_file_f;
-    save_file_f.open (file_name, std::ios::app);
-    if(save_file_f.is_open())
-    {
-        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
-                        << ros::Time::now() << "\t"
-                        << pose.pose.position.x << "\t"
-                        << pose.pose.position.y << "\t"
-                        #if SAVE_Z
-                        << pose.pose.position.z << "\t"
-                        #endif
-                        << vel.twist.linear.x << "\t"
-                        << vel.twist.linear.y << "\t"
-                        #if SAVE_Z
-                        << vel.twist.linear.z << "\t"
-                        #endif
-                        << accel.x << "\t"
-                        << accel.y 
-                        #if SAVE_Z
-                        << "\t" << accel.z
-                        #endif
-                        << "\n";
-        save_file_f.close();
-    }
-}
-
-void InteractOperation::saveLog(const std::string file_name, const mavros_msgs::PositionTarget data)
-{
-    std::ofstream save_file_f;
-    save_file_f.open (file_name, std::ios::app);
-    if(save_file_f.is_open())
-    {
-        save_file_f << std::fixed << std::setprecision(3) //only 3 decimals
-                        << ros::Time::now() << "\t"
-                        << data.position.x << "\t"
-                        << data.position.y << "\t"
-                        #if SAVE_Z
-                        << data.position.z << "\t"
-                        #endif
-                        << data.velocity.x << "\t"
-                        << data.velocity.y << "\t"
-                        #if SAVE_Z
-                        << data.velocity.z << "\t"
-                        #endif
-                        << data.acceleration_or_force.x << "\t"
-                        << data.acceleration_or_force.y 
-                        #if SAVE_Z
-                        << "\t" << data.acceleration_or_force.z
-                        #endif
-                        << "\n";
-        save_file_f.close();
-    }
-}
-#endif
 
 /*template<typename T>  T& rotate2 (T& pt, float yaw) {
     T& rotated_point;
@@ -330,7 +234,7 @@ geometry_msgs::Quaternion InteractOperation::accel_to_orientation(geometry_msgs:
 
 void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget offset){
     mavros_msgs::PositionTarget ref = Util::addPositionTarget(mast.get_interaction_point_state(), offset);
-
+    attitude_setpoint.header.seq++;
     attitude_setpoint.header.stamp = ros::Time::now();
     attitude_setpoint.thrust = 0.5; //this is the thrust that allow a constant altitude no matter what
 
@@ -339,29 +243,25 @@ void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget offset
     if(SHOW_PRINTS & time_cout%rate_int==0){
         printf("ref pose\tx %f,\ty %f,\tz %f\n",ref.position.x,
                             ref.position.y, ref.position.z);
-    }    
-
+    }
 }
 
 void InteractOperation::update_transition_state()
-{
-// try to make a smooth transition when the relative targeted position between the drone
+{// try to make a smooth transition when the relative targeted position between the drone
 // and the mast is changed
-
+//mavros_msgs::PositionTargetConstPtr ts = &transition_state.state;
 // Analysis on the x axis
     if (abs(desired_offset.x - transition_state.state.position.x) >= 0.001){
     // if we are in a transition state on the x axis
         transition_state.finished_bitmask &= ~0x1;
         if (Util::sq(transition_state.state.velocity.x) / 2.0 / transition_state.cte_acc 
-                            >= abs(desired_offset.x - transition_state.state.position.x))
-        {
+                            >= abs(desired_offset.x - transition_state.state.position.x)){
         // if it is time to brake to avoid overshoot
             //set the transition acceleration (or deceleration) to the one that will lead us to the exact point we want
             transition_state.state.acceleration_or_force.x = - Util::sq(transition_state.state.velocity.x) 
                                             /2.0 / (desired_offset.x - transition_state.state.position.x);
         }
-        else if (abs(transition_state.state.velocity.x) > transition_state.max_vel)
-        {
+        else if (abs(transition_state.state.velocity.x) > transition_state.max_vel){
         // if we have reached max transitionning speed
             //we stop accelerating and maintain speed
             transition_state.state.acceleration_or_force.x = 0.0;
@@ -441,17 +341,16 @@ void InteractOperation::update_transition_state()
 float InteractOperation::estimate_time_to_mast()
 {
     // Estimation of the time it takes to go from current position to interaction point
-    float dist = transition_state.state.position.x - DIST_FH_DRONE_CENTRE; //assuming that the drone is always accurate
+    float dist = transition_state.state.position.x - DIST_FH_DRONE_CENTRE_X; //assuming that the drone is always accurate
     float dist_acc_decc = MAX_VEL*MAX_VEL/MAX_ACCEL;
     if (dist < dist_acc_decc)
         return 2.0 * sqrt(2.0*dist/MAX_ACCEL);
     else
         return (dist - dist_acc_decc) / MAX_VEL //time during max vel
-                            + 2 * MAX_VEL / MAX_ACCEL; //time during acceleration and decceleration
+                    + 2 * MAX_VEL / MAX_ACCEL; //time during acceleration and decceleration
 }
 
 void InteractOperation::tick() {
-    time_cout++;
     mavros_msgs::PositionTarget interact_pt_state = mast.get_interaction_point_state();
     //printf("mast pitch %f, roll %f, angle %f\n", mast_angle.x, mast_angle.y, mast_angle.z);
     // Wait until we get the first module position readings before we do anything else.
@@ -462,10 +361,6 @@ void InteractOperation::tick() {
         return;
     }
 
-    if(SHOW_PRINTS)
-        if(time_cout%rate_int == 0)
-            ROS_INFO_STREAM("max pitch ETA: " << ros::Time::now() + ros::Duration(mast.time_to_max_pitch()));
-
     update_transition_state();
 
     geometry_msgs::Point rotated_offset = rotate(desired_offset,mast.get_yaw());
@@ -474,79 +369,79 @@ void InteractOperation::tick() {
     const double dz = interact_pt_state.position.z + rotated_offset.z - getCurrentPose().pose.position.z;
     const double distance_to_offset = sqrt(Util::sq(dx) + Util::sq(dy) + Util::sq(dz));
     
-
     switch (interaction_state) {
         case InteractionState::APPROACHING: {
-            if (SHOW_PRINTS){
-                if(time_cout%rate_int==0) {
-                    printf("APPROACHING\t");
-                    printf("distance to ref %f\n", distance_to_offset);
-                }
+            if (SHOW_PRINTS and time_cout%rate_int==0) {
+                printf("APPROACHING\t");
+                printf("distance to ref %f\n", distance_to_offset);
             }
-            float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
+                       
             if(MAST_INTERACT) {
+                float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
                 if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
                     //Todo, we may want to judge the velocity in stead of having a time to completion
-                    if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int)-1 )
+                    if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int) )
                         completion_count++;
-                    else if(mast.time_to_max_pitch() !=-1){
+                    else if(mast.time_to_max_pitch() !=-1){// we don't know the period of the mast yet
                         //We consider that if the drone is ready at some point, it will 
                         // remain ready until it is time to try
                         completion_count = 0;
+                    
                         float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
-                        /*
-                        if(time_to_wait < TIME_WINDOW_INTERACTION){
-                            // the following lines should only be useful if it actually takes time to go through the READY state when the drone is already ready.
-                            interaction_state = InteractionState::OVER;
-                            ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                                        << ": " << "Approaching -> Over");
-                            //the offset is set in the frame of the mast:    
-                            desired_offset.x = DIST_FH_DRONE_CENTRE;  //forward
-                            desired_offset.y = 0.0;   //left
-                            desired_offset.z = -0.45; //up
-                            transition_state.cte_acc = MAX_ACCEL;
-                            transition_state.max_vel = MAX_VEL;
-
-                            // Avoid going to the next step before the transition is actuallized
-                            transition_state.finished_bitmask = 0;
-                        }
-                        */
+                        if(time_to_wait < -TIME_WINDOW_INTERACTION)
+                            time_to_wait+=mast.get_period();
                         ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                                << ": Ready to set the FaceHugger. Waiting for the best opportunity"
+                                << ": Control ready to set the FaceHugger. Waiting for the best opportunity"
                                 << "\nEstimated waiting time before go: "
                                 << time_to_wait);
-                        interaction_state = InteractionState::READY;                
+                        interaction_state = InteractionState::READY;   
+                        desired_offset.x = MAX_DIST_FOR_CLOSE_TRACKING;             
                     }
                 }
                 else
-                    completion_count = 0;
+                    completion_count < 2 ? 0 : completion_count-2; //not reset to 0, but remove 2.
             }
             break;
         }
         case InteractionState::READY: {
             //The drone is ready, we just have to wait for the best moment to go!
             float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
-            if (SHOW_PRINTS){
-                if(time_cout%(rate_int/2)==0) {
-                    ROS_INFO_STREAM("READY; "
-                            << "Estimated waiting time before go: "
-                            << time_to_wait);
+            if(time_to_wait < -TIME_WINDOW_INTERACTION)
+                time_to_wait+=mast.get_period();
+
+            if (SHOW_PRINTS and time_cout%(rate_int/2)==0) {
+                ROS_INFO_STREAM("READY; "
+                        << "Estimated waiting time before go: "
+                        << time_to_wait);
+            }
+            if(!set_close_tracking and (transition_state.finished_bitmask & 0x7) == 0x7){
+                ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                        << ": Turning on close tracking");
+                
+                // send a message to perception to switch close tracking on.
+                if(PERCEPTION_NODE){
+                    ascend_msgs::SetInt srv;
+                    srv.request.data = 10;
+                    if (start_close_tracking_client.call(srv)){
+                        set_close_tracking = true; 
+                    }
+                }
+                else{
+                    set_close_tracking= true; //Todo, to be removed
+                    close_tracking = true;
                 }
             }
-            if( abs(time_to_wait) <= TIME_WINDOW_INTERACTION)
+
+            if( abs(time_to_wait) <= TIME_WINDOW_INTERACTION and close_tracking)
             { //We are in the good window to set the faceHugger
-              // Notice that once the drone is over, the FH is not set yet.
                 interaction_state = InteractionState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Approaching -> Over");
-                //the offset is set in the frame of the mast:    
-                desired_offset.x = DIST_FH_DRONE_CENTRE;  //forward
+                desired_offset.x = DIST_FH_DRONE_CENTRE_X;  //forward
                 desired_offset.y = 0.0;   //left
-                desired_offset.z = -0.45; //up
+                desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03; //up
                 transition_state.cte_acc = MAX_ACCEL;
                 transition_state.max_vel = MAX_VEL;
-
-                // Avoid going to the next step before the transition is actuallized
                 transition_state.finished_bitmask = 0x0;
             }
 
@@ -572,19 +467,17 @@ void InteractOperation::tick() {
                 interaction_state = InteractionState::INTERACT;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Over -> Interact");
-                desired_offset.x = DIST_FH_DRONE_CENTRE;  //forward
+                desired_offset.x = DIST_FH_DRONE_CENTRE_X;  //forward
                 desired_offset.y = 0.0;   //left
                 desired_offset.z -= 0.2;  //up
-
-                // Avoid going to the next step before the transition is actuallized
                 transition_state.finished_bitmask = 0x0;
             }
             break;
         }
         case InteractionState::INTERACT: {
-            if (SHOW_PRINTS){
-                if(time_cout%(rate_int*2)==0) printf("INTERACT\n");
-            }
+            if (SHOW_PRINTS and time_cout%(rate_int*2)==0) 
+                printf("INTERACT\n");
+
             // we don't want to take the risk to stay too long, 
             // Whether the faceHugger is set or not, we have to exit.
             // NB, when FH is set, an interupt function switches the state to EXIT
@@ -597,105 +490,86 @@ void InteractOperation::tick() {
                 //we move backward to ensure there will be no colision
                 // We directly set the transition state as we want to move as fast as possible
                 // and we don't mind anymore about the relative position to the mast
-                transition_state.state.position.x = 2.70;  //further than the desired offset as a fix to make it faster
-                transition_state.state.position.y = 0.0;   
-                transition_state.state.position.z = -1.0;  
-                desired_offset.x = 1.70;   //forward
+                desired_offset.x = 2;   //forward
                 desired_offset.y = 0.0;    //left
-                desired_offset.z = -0.8;   //up
+                desired_offset.z = DIST_FH_DRONE_CENTRE_Z;   //up
+                transition_state.state.position = desired_offset;
+                transition_state.cte_acc = MAX_ACCEL*3;
+                transition_state.max_vel = MAX_VEL*3;
                 transition_state.finished_bitmask = 0x0;
-                
-
-                //todo: for some reason, the drone is slow to get there. 
-                // It would be nice to get it go back to a stable approach within 5 secs
-                // so that we can try to set the FaecHugger as soon as possible!
-                // It may be because of the LQR control which is tuned for accuracy and not fast movements.
-                // It can be overriden by setting far setpoints, but that's not clean, and may include risks
             }
             break;
         }
         case InteractionState::EXIT: {
             // NB, when FH is set, an interupt function switches the state to EXIT
-            #if SHOW_PRINTS
-            if(time_cout%(rate_int*2)==0) printf("EXIT\n");
-            #endif
-            
-            if(transition_state.state.position.x > MAX_DIST_FOR_CLOSE_TRACKING && close_tracking){
-            // send a message to AI to switch close tracking off.
-                //ros::ServiceClient switch_close_tracking = node_handle.serviceClient<fluid::CloseTracking>("perception_main/switch_to_close_tracking");
-                //perception::CloseTracking switch_to_close_tracking_handle;
-                //switch_to_close_tracking_handle.request.timeout = 0.1;
-
-                //TODO: call the perception_main/switch_to_close_tracking service.
-                close_tracking = false;
+            if (SHOW_PRINTS and time_cout%(rate_int*2)==0) 
+                printf("EXIT\n");
+    
+            if(set_close_tracking){
+                if(PERCEPTION_NODE){ //we are getting to far from the mast, and the position is not stable.
+                    std_srvs::Trigger srv;
+                    if (pause_close_tracking_client.call(srv)){
+                        set_close_tracking = false;
+                    }
+                }
+                else{
+                        set_close_tracking = false;
+                        close_tracking = false;
+                }
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "switch close tracking on");
+                        << ": " << "switch close tracking off");
             }
-
-            //This is a transition state before going back to approach and come back the the base or try again.
-            if ( distance_to_offset < 0.6 ) {
+            
+            // Come back the the base or try again.
+            if ( distance_to_offset < 0.2 ) {
                 if (faceHugger_is_set){
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Exit -> Extracted");
                     interaction_state = InteractionState::EXTRACTED;
-                    desired_offset.x = 2;
+                    desired_offset.x = 4;
                     desired_offset.y = 0.0;
                     desired_offset.z = 3;
+                    transition_state.cte_acc = MAX_ACCEL*3;
+                    transition_state.max_vel = MAX_VEL*3;
                 }
                 else {
-                    //we may want to reset startApproaching, but I don't think so
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Exit -> Approaching");
+                    //ascend_msgs::SetInt interact_fail_srv;
+                    number_fail.data++;
+                    //interact_fail_srv.request.data = number_fail;
+                    for(int i = 0; i<3 ; i ++) interact_fail_pub.publish(number_fail);
                     interaction_state = InteractionState::APPROACHING;
-                    desired_offset.x = 1.5;
+                    desired_offset.x = 2;
                     desired_offset.y = 0.0;
-                    desired_offset.z = -0.45;
+                    desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03;
+                    transition_state.cte_acc = MAX_ACCEL;
+                    transition_state.max_vel = MAX_VEL;
                 }
             }
             break;
         }
         case InteractionState::EXTRACTED: {
-            #if SHOW_PRINTS
-            if(time_cout%(rate_int*2)==0) printf("EXIT\n");
-            #endif
-            // This is also a transition state before AI takes the lead back and travel back to the starting point
-            std_srvs::SetBool request;
-            request.request.data = false; 
-            if ( distance_to_offset < 0.2 ) {
-                desired_offset.x = 2;
-                desired_offset.y = 0.0;
-                desired_offset.z = 3;
-            }
+            if (SHOW_PRINTS and time_cout%(rate_int*2)==0) 
+                printf("EXTRACTED\n");
+            // Operation finished, waiting for AI to close the operation
         }
-
-
-
     }//end switch state
 
-    if (time_cout % rate_int == 0)
-    {
-        if (SHOW_PRINTS){
-        //    printf("desired offset \t\tx %f, y %f, z %f\n",desired_offset.x,
-        //                    desired_offset.y, desired_offset.z);
-            printf("transition pose\tx %f,\ty %f,\tz %f\n",transition_state.state.position.x,
-                            transition_state.state.position.y, transition_state.state.position.z);
-        //    printf("transition vel\t x %f, y %f, z %f\n",transition_state.state.velocity.x,
-        //                    transition_state.state.velocity.y, transition_state.state.velocity.z);
-        //    printf("transition accel\t x %f, y %f, z %f\n",transition_state.state.acceleration_or_force.x,
-        //                    transition_state.state.acceleration_or_force.y, transition_state.state.acceleration_or_force.z);
-            geometry_msgs::Point cur_drone_pose = getCurrentPose().pose.position;
-            printf("Drone pose\tx %f,\ty %f,\tz %f\tyaw %f\n",cur_drone_pose.x,
-                                         cur_drone_pose.y, cur_drone_pose.z,getCurrentYaw());
-            printf("Accel target\tx %f,\ty %f,\tz %f\n",accel_target.x,
-                                         accel_target.y, accel_target.z);
-        }
+    if (SHOW_PRINTS and time_cout% rate_int ==0) {
+        printf("transition pose\tx %f,\ty %f,\tz %f\n",transition_state.state.position.x,
+                        transition_state.state.position.y, transition_state.state.position.z);
+        geometry_msgs::Point cur_drone_pose = getCurrentPose().pose.position;
+        printf("Drone pose\tx %f,\ty %f,\tz %f\tyaw %f\n",cur_drone_pose.x,
+                                        cur_drone_pose.y, cur_drone_pose.z,getCurrentYaw());
+        printf("Accel target\tx %f,\ty %f,\tz %f\n",accel_target.x,
+                                        accel_target.y, accel_target.z);
     }
 
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
     update_attitude_input(smooth_rotated_offset);
 
-    if (time_cout % 2 == 0)
-    {
+    if (time_cout % 2 == 0) {
         // todo: it may be possible to publish more often without any trouble.
         setpoint.header.stamp = ros::Time::now();
         setpoint.yaw = mast.get_yaw()+M_PI;
@@ -707,16 +581,14 @@ void InteractOperation::tick() {
         setpoint.velocity.z = interact_pt_state.velocity.z + smooth_rotated_offset.velocity.z;
 
         altitude_and_yaw_pub.publish(setpoint);
-
     }
 
     attitude_pub.publish(attitude_setpoint);
 
     #if SAVE_DATA
-    //save the control data into files
-    saveLog(reference_state_path,Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
-    saveLog(drone_pose_path, getCurrentPose(),getCurrentTwist(),getCurrentAccel());
-    saveSetpointLog(drone_setpoints_path,accel_target);
+        reference_state.saveStateLog(Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
+        drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,getCurrentAccel());
     #endif
-
+    
+    time_cout++;
 }

@@ -105,13 +105,26 @@ class Mast{
     Mast(float yaw=0.0);
 
     /**
-     * @brief Update mast euler angles.
-     *        Check if pitch were extremum.
-     *        Deduce period.
+     * @brief Update position and velocity from EKF output
+     * 
+     * @param module_state state of the interaction_point from the EKF
+     */
+    void updateFromEkf(mavros_msgs::PositionTarget module_state);
+
+    /**
+     * @brief Update position, velocity and acceleration from euler derivations
      * 
      * @param module_pose_ptr state of the interaction_point
      */
     void update(geometry_msgs::PoseStampedConstPtr module_pose_ptr); //todo: this should also save the pitch automaticaly
+
+    /**
+     * @brief Check if pitch were extremum.
+     *        Deduce period.
+     * 
+     * @param pitch from the current orientation of the mast. Can be noisy.
+     */
+    void search_period(double pitch);
 
     /**
      * @brief estimate the velocity of the interaction point from a simple Euler derivation of the position
