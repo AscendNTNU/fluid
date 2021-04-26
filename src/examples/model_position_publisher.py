@@ -13,8 +13,6 @@ import math
 from std_msgs.msg import String, Header
 from geometry_msgs.msg import PoseWithCovariance,PoseWithCovarianceStamped, Pose, Point
 
-log_file_path = "../../module_position.txt" #file saved in home/catkin_ws
-
 def coordinatesToPoseWithCovariance(coordinates):
     x = float(coordinates[0])
     y = float(coordinates[1])
@@ -29,20 +27,9 @@ def coordinatesToPoseWithCovariance(coordinates):
     msg.pose.pose.position = Point(x,y,z)
     return msg
 
-def initLog(file_name):
-    log = open(file_name,"w")
-    log.write("Time\tPos.x\tPos.y\tPos.z\n")
-    log.close()
-
-def saveLog(file_name,x,y,z):
-    log = open(file_name,'a')
-    log.write(f"{rospy.get_rostime().secs + rospy.get_rostime().nsecs/1000000000.0:.3f}\t{x:.3f}\t{y:.3f}\t{z:.3f}\n")
-    log.close()
-
-
 def main():
     rospy.init_node("module_position_publisher")
-    module_position_publisher = rospy.Publisher("/sim/module_position", PoseWithCovarianceStamped, queue_size=1)
+    module_position_publisher = rospy.Publisher("/model_publisher/module_position", PoseWithCovarianceStamped, queue_size=1)
     #initLog(log_file_path)
 
     rate = rospy.Rate(20)

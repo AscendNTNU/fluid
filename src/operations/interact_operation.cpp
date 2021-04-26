@@ -76,16 +76,18 @@ void InteractOperation::initialize() {
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
 
     if (GROUND_TRUTH){
-        module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+        module_pose_subscriber = node_handle.subscribe("/model_publisher/module_position",
                                      10, &InteractOperation::modulePoseCallback, this);
-        module_pose_subscriber2 = node_handle.subscribe("/simulator/module_pose",
-                                     10, &InteractOperation::modulePoseCallback, this);
+//        module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+//                                     10, &InteractOperation::modulePoseCallback, this);
+//        module_pose_subscriber2 = node_handle.subscribe("/simulator/module_pose",
+//                                     10, &InteractOperation::modulePoseCallback, this);
                                  
     }
     else{
         module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
                                      10, &InteractOperation::modulePoseCallback, this);
-    }
+}
     // backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
 
     attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
