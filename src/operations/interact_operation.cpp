@@ -8,7 +8,6 @@
 #include "fluid.h" //to get access to the tick rate
 #include "type_mask.h"
 
-#include <std_srvs/SetBool.h>
 #include <ascend_msgs/SetInt.h>
 #include <std_srvs/Trigger.h>
 
