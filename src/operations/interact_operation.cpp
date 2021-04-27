@@ -61,7 +61,6 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
     desired_offset.x = offset;     //forward
     desired_offset.y = 0.0;     //left
     desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03;    //up
-
 }
 
 void InteractOperation::initialize() { 
@@ -353,14 +352,13 @@ float InteractOperation::estimate_time_to_mast()
 
 void InteractOperation::tick() {
     mavros_msgs::PositionTarget interact_pt_state = mast.get_interaction_point_state();
-    //printf("mast pitch %f, roll %f, angle %f\n", mast_angle.x, mast_angle.y, mast_angle.z);
     // Wait until we get the first module position readings before we do anything else.
     if (interact_pt_state.header.seq == 0) {
         if((time_cout%rate_int)==0){
             printf("Waiting for callback\n");
-            startApproaching = ros::Time::now();
-            time_cout++;
         }
+        startApproaching = ros::Time::now();
+        time_cout++;
         return;
     }
 
