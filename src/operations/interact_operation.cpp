@@ -18,7 +18,7 @@
     //false blocks the FSM and the drone will NOT properly crash into the mast
 
 // Important distances
-#define DIST_FH_DRONE_CENTRE_X   0.42 // 0.5377
+#define DIST_FH_DRONE_CENTRE_X   0.37 // 0.5377
 #define DIST_FH_DRONE_CENTRE_Z  -0.3214 //-0.3214
 
 #define SAVE_DATA   true
