@@ -8,7 +8,6 @@
 
 import os
 import rospy
-import time
 import math
 from std_msgs.msg import String, Header
 from geometry_msgs.msg import PoseWithCovariance,PoseWithCovarianceStamped, Pose, Point
@@ -20,8 +19,7 @@ def coordinatesToPoseWithCovariance(coordinates):
     t = float(coordinates[3])
     msg = PoseWithCovarianceStamped()
     msg.header = Header()
-    msg.header.stamp.secs = int(t)
-    msg.header.stamp.nsecs = int((t%1)*1000000000.0)
+    msg.header.stamp = rospy.Time.now()
     msg.pose = PoseWithCovariance()
     msg.pose.pose = Pose()
     msg.pose.pose.position = Point(x,y,z)
@@ -35,16 +33,16 @@ def main():
     rate = rospy.Rate(20)
 
     center = [0.0, 0.0]
-    pitch_radius = 13 #*100 because ardupilot #0.13 for 30m long boat, 1.25m high waves and 3m high module
-    roll_radius = 37  #*100 because ardupilot # 0.37 for 10m wide boat, 1.25m high waves and 3m high module
+    pitch_radius = 0.13 #*100 because ardupilot #0.13 for 30m long boat, 1.25m high waves and 3m high module
+    roll_radius = 0.37  #*100 because ardupilot # 0.37 for 10m wide boat, 1.25m high waves and 3m high module
     #We estimate that the period of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
     omega = 2.0 * math.pi / 10.0
     z = 3.0
 
     while not rospy.is_shutdown():
         
-        x = center[0] - pitch_radius * math.cos(time.time()*omega)
-        y = center[1] - roll_radius * math.sin(time.time()*omega)
+        x = center[0] - pitch_radius * math.cos(rospy.Time.now().to_sec()*omega)
+        y = center[1] - roll_radius * math.sin(rospy.Time.now().to_sec()*omega)
         position = [x, y, z, 0.0]
         module_position_publisher.publish(coordinatesToPoseWithCovariance(position))
         #print("Publishing to /sim/module_position: ", "%.3f " % position[0], "%.3f " % position[1], position[2], position[3])
