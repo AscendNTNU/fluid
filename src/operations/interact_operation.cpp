@@ -8,7 +8,6 @@
 #include "fluid.h" //to get access to the tick rate
 #include "type_mask.h"
 
-#include <std_srvs/SetBool.h>
 #include <ascend_msgs/SetInt.h>
 #include <std_srvs/Trigger.h>
 
@@ -18,7 +17,7 @@
     
 
 // Important distances
-#define DIST_FH_DRONE_CENTRE_X   0.42 // 0.5377
+#define DIST_FH_DRONE_CENTRE_X   0.37 // 0.5377
 #define DIST_FH_DRONE_CENTRE_Z  -0.3214 //-0.3214
 
 #define SAVE_DATA   true
@@ -146,16 +145,16 @@ void InteractOperation::ekfStateVectorCallback(
 }
 
 void InteractOperation::modulePoseCallback(
-    const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
+    const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
     #if SAVE_DATA
         geometry_msgs::Vector3 vec;
-        vec.x = module_pose_ptr->pose.position.x;
-        vec.y = module_pose_ptr->pose.position.y;
-        vec.z = module_pose_ptr->pose.position.z;
+        vec.x = module_pose_ptr->pose.pose.position.x;
+        vec.y = module_pose_ptr->pose.pose.position.y;
+        vec.z = module_pose_ptr->pose.pose.position.z;
         gt_reference.saveVector3(vec);
     #endif
     if(!EKF){
-        const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
+        const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
         mast.update(module_pose_ptr);
         mast.search_period(received_eul_angle.y); //pitch is y euler angle because of different frame
     }
@@ -366,6 +365,7 @@ float InteractOperation::estimate_time_to_mast()
 }
 
 void InteractOperation::tick() {
+    time_cout++;
     mavros_msgs::PositionTarget interact_pt_state = mast.get_interaction_point_state();
     //printf("mast pitch %f, roll %f, angle %f\n", mast_angle.x, mast_angle.y, mast_angle.z);
     // Wait until we get the first module position readings before we do anything else.
@@ -593,6 +593,4 @@ void InteractOperation::tick() {
         reference_state.saveStateLog(Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
         drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,getCurrentAccel());
     #endif
-    
-    time_cout++;
 }
