@@ -85,6 +85,7 @@ class InteractOperation : public Operation {
 
     DataFile reference_state;
     DataFile drone_pose;
+    DataFile LQR_input;
     DataFile gt_reference;
 
 

@@ -9,7 +9,7 @@ DataFile::DataFile(std::string name, std::string path){
         m_path = std::string(std::getenv("HOME")) + "/"; //store it in home folder by default.
     else
         m_path = path;
-    m_precision = 3;
+    m_precision = 4;
 }
 
 void DataFile::init(std::string title){
@@ -50,7 +50,7 @@ void DataFile::saveVector3(const geometry_msgs::Vector3 vec){
     save_file_f.open (m_path+m_name, std::ios::app);
     if(save_file_f.is_open())
     {
-        save_file_f << std::fixed << std::setprecision(m_precision) //only 3 decimals
+        save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
                         << ros::Time::now() << "\t"
                         << vec.x << "\t"
                         << vec.y << "\t"
@@ -65,7 +65,7 @@ void DataFile::saveStateLog(const geometry_msgs::Point pose, const geometry_msgs
     save_file_f.open (m_path+m_name, std::ios::app);
     if(save_file_f.is_open())
     {
-        save_file_f << std::fixed << std::setprecision(m_precision) //only 3 decimals
+        save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
                         << ros::Time::now() << "\t"
                         << pose.x << "\t"
                         << pose.y << "\t"
@@ -91,7 +91,7 @@ void DataFile::saveArray(double* vec, int n){
     save_file_f.open (m_path+m_name, std::ios::app);
     if(save_file_f.is_open())
     {
-        save_file_f << std::fixed << std::setprecision(m_precision) //only 3 decimals
+        save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
                     << ros::Time::now();
         for(int i = 0; i< n ; i++){
             save_file_f << "\t" << vec[i];

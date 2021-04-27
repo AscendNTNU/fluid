@@ -95,11 +95,11 @@ void InteractOperation::initialize() {
     #if SAVE_DATA
     reference_state = DataFile("reference_state.txt");
     drone_pose = DataFile("drone_pose.txt");
-    gt_reference = DataFile("gt_reference.txt");
+    LQR_input = DataFile("LQR_input.txt");
 
     reference_state.initStateLog();
     drone_pose.initStateLog();    
-    gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
+    LQR_input.init("Time\tAccel.x\tAccel.y\tAccel.z");
     #endif
 
     //sanity check that the drone is facing the mast.
@@ -130,13 +130,6 @@ void InteractOperation::ekfStateVectorCallback(
 
 void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
-    #if SAVE_DATA
-        geometry_msgs::Vector3 vec;
-        vec.x = module_pose_ptr->pose.pose.position.x;
-        vec.y = module_pose_ptr->pose.pose.position.y;
-        vec.z = module_pose_ptr->pose.pose.position.z;
-        gt_reference.saveVector3(vec);
-    #endif
     if(!EKF){
         const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
         mast.update(module_pose_ptr);
@@ -589,6 +582,8 @@ void InteractOperation::tick() {
     #if SAVE_DATA
         reference_state.saveStateLog(Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
         drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,getCurrentAccel());
+        LQR_input.saveVector3(accel_target);
+        printf("accel target: %f ; %f ; %f\n",accel_target.x, accel_target.y, accel_target.z);
     #endif
     
     time_cout++;
