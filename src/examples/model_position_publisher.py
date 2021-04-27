@@ -47,7 +47,7 @@ def main():
         y = center[1] - roll_radius * math.sin(time.time()*omega)
         position = [x, y, z, 0.0]
         module_position_publisher.publish(coordinatesToPoseWithCovariance(position))
-        print("Publishing to /sim/module_position: ", "%.3f " % position[0], "%.3f " % position[1], position[2], position[3])
+        #print("Publishing to /sim/module_position: ", "%.3f " % position[0], "%.3f " % position[1], position[2], position[3])
         #saveLog(log_file_path,position[1],position[0],position[2]) #save in order y,x,z to fit with the drone frame.
 
         rate.sleep()

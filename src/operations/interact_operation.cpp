@@ -49,26 +49,25 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
         K_LQR_X[i] = temp[2*i];
         K_LQR_Y[i] = temp[2*i+1];
     }
+
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
     EKF = Fluid::getInstance().configuration.ekf;
     PERCEPTION_NODE = Fluid::getInstance().configuration.perception_node;
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
 
-    if (GROUND_TRUTH){
-        module_pose_subscriber = node_handle.subscribe("/model_publisher/module_position",
-                                     10, &InteractOperation::modulePoseCallback, this);
-//        module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
-//                                     10, &InteractOperation::modulePoseCallback, this);
-//        module_pose_subscriber2 = node_handle.subscribe("/simulator/module_pose",
-//                                     10, &InteractOperation::modulePoseCallback, this);
-                                 
-    }
-    else{
-        module_pose_subscriber = node_handle.subscribe("/simulator/module/noisy/pose",
-                                     10, &InteractOperation::modulePoseCallback, this);
+    //Choose an initial offset. It is the offset for the approaching state.
+    //the offset is set in the frame of the mast:    
+    desired_offset.x = offset;     //forward
+    desired_offset.y = 0.0;     //left
+    desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03;    //up
+
 }
-    // backpropeller_client = node_handle.serviceClient<std_srvs::SetBool>("/airsim/backpropeller");
+
+void InteractOperation::initialize() { 
+    ROS_INFO_STREAM("interac operation: starting model publisher subscriber");
+    module_pose_subscriber = node_handle.subscribe("/model_publisher/module_position",
+                                    10, &InteractOperation::modulePoseCallback, this);
 
     interact_fail_pub = node_handle.advertise<std_msgs::Int16>("/fluid/interact_fail",10);
     
@@ -355,9 +354,11 @@ void InteractOperation::tick() {
     //printf("mast pitch %f, roll %f, angle %f\n", mast_angle.x, mast_angle.y, mast_angle.z);
     // Wait until we get the first module position readings before we do anything else.
     if (interact_pt_state.header.seq == 0) {
-        if(time_cout%rate_int==0)
+        if((time_cout%rate_int)==0){
             printf("Waiting for callback\n");
-        startApproaching = ros::Time::now();
+            startApproaching = ros::Time::now();
+            time_cout++;
+        }
         return;
     }
 
