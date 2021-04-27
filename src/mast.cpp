@@ -16,10 +16,10 @@ void Mast::updateFromEkf(mavros_msgs::PositionTarget module_state){
     interaction_point_state = module_state;
 }
 
-void Mast::update(geometry_msgs::PoseStampedConstPtr module_pose_ptr){
+void Mast::update(geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr){
     previous_interaction_point_state = interaction_point_state;
     interaction_point_state.header = module_pose_ptr->header;
-    interaction_point_state.position = module_pose_ptr->pose.position;
+    interaction_point_state.position = module_pose_ptr->pose.pose.position;
     estimateInteractionPointVel();    
     estimateInteractionPointAccel(); //this takes into account the updated velocity.
 }

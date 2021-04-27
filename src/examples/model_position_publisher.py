@@ -42,7 +42,7 @@ def saveLog(file_name,x,y,z):
 
 def main():
     rospy.init_node("module_position_publisher")
-    module_position_publisher = rospy.Publisher("/sim/module_position", PoseWithCovarianceStamped, queue_size=1)
+    module_position_publisher = rospy.Publisher("/model_publisher/module_position", PoseWithCovarianceStamped, queue_size=1)
     #initLog(log_file_path)
 
     rate = rospy.Rate(20)
@@ -60,7 +60,7 @@ def main():
         y = center[1] - roll_radius * math.sin(time.time()*omega)
         position = [x, y, z, 0.0]
         module_position_publisher.publish(coordinatesToPoseWithCovariance(position))
-        print("Publishing to /sim/module_position: ", "%.3f " % position[0], "%.3f " % position[1], position[2], position[3])
+        #print("Publishing to /sim/module_position: ", "%.3f " % position[0], "%.3f " % position[1], position[2], position[3])
         #saveLog(log_file_path,position[1],position[0],position[2]) #save in order y,x,z to fit with the drone frame.
 
         rate.sleep()

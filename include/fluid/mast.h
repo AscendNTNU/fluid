@@ -7,6 +7,7 @@
 #define MAST_H
 
 #include "operation.h" //it has all the includes needed and is already included anyway
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 
 //mast movement estimation
 #define SAVE_PITCH_TIME 15
@@ -116,7 +117,7 @@ class Mast{
      * 
      * @param module_pose_ptr state of the interaction_point
      */
-    void update(geometry_msgs::PoseStampedConstPtr module_pose_ptr); //todo: this should also save the pitch automaticaly
+    void update(geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr); //todo: this should also save the pitch automaticaly
 
     /**
      * @brief Check if pitch were extremum.
