@@ -131,16 +131,16 @@ void InteractOperation::ekfStateVectorCallback(
 }
 
 void InteractOperation::modulePoseCallback(
-    const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
+    const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
     #if SAVE_DATA
         geometry_msgs::Vector3 vec;
-        vec.x = module_pose_ptr->pose.position.x;
-        vec.y = module_pose_ptr->pose.position.y;
-        vec.z = module_pose_ptr->pose.position.z;
+        vec.x = module_pose_ptr->pose.pose.position.x;
+        vec.y = module_pose_ptr->pose.pose.position.y;
+        vec.z = module_pose_ptr->pose.pose.position.z;
         gt_reference.saveVector3(vec);
     #endif
     if(!EKF){
-        const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
+        const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
         mast.update(module_pose_ptr);
         mast.search_period(received_eul_angle.y); //pitch is y euler angle because of different frame
     }

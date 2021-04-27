@@ -5,7 +5,7 @@
 #ifndef INTERACT_OPERATION_H
 #define INTERACT_OPERATION_H
 
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PointStamped.h>
 #include <mavros_msgs/DebugValue.h>
 
@@ -111,7 +111,7 @@ class InteractOperation : public Operation {
     
     void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
     void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
-    void modulePoseCallback(const geometry_msgs::PoseStampedConstPtr module_pose);
+    void modulePoseCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose);
     void FaceHuggerCallback(const std_msgs::Bool released);
     void closeTrackingCallback(std_msgs::Bool ready);
     void finishInteraction();
