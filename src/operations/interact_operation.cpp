@@ -365,6 +365,7 @@ float InteractOperation::estimate_time_to_mast()
 }
 
 void InteractOperation::tick() {
+    time_cout++;
     mavros_msgs::PositionTarget interact_pt_state = mast.get_interaction_point_state();
     //printf("mast pitch %f, roll %f, angle %f\n", mast_angle.x, mast_angle.y, mast_angle.z);
     // Wait until we get the first module position readings before we do anything else.
@@ -592,6 +593,4 @@ void InteractOperation::tick() {
         reference_state.saveStateLog(Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
         drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,getCurrentAccel());
     #endif
-    
-    time_cout++;
 }
