@@ -12,9 +12,9 @@
 #include <std_srvs/Trigger.h>
 
 //A list of parameters for the user
-#define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
+#define MAST_INTERACT true //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
-    //false blocks the FSM and the drone will NOT properly crash into the mast
+    
 
 // Important distances
 #define DIST_FH_DRONE_CENTRE_X   0.37 // 0.5377
@@ -48,7 +48,6 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
         K_LQR_X[i] = temp[2*i];
         K_LQR_Y[i] = temp[2*i+1];
     }
-
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
     EKF = Fluid::getInstance().configuration.ekf;
     PERCEPTION_NODE = Fluid::getInstance().configuration.perception_node;
@@ -60,12 +59,30 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
     desired_offset.x = offset;     //forward
     desired_offset.y = 0.0;     //left
     desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03;    //up
-}
 
-void InteractOperation::initialize() { 
-    ROS_INFO_STREAM("interac operation: starting model publisher subscriber");
-    module_pose_subscriber = node_handle.subscribe("/model_publisher/module_position",
+    }
+
+void InteractOperation::initialize() {
+
+    if(EKF){
+        ekf_module_pose_subscriber = node_handle.subscribe("/ekf/module/state",
+                                     10, &InteractOperation::ekfModulePoseCallback, this);
+        ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
+                                     10, &InteractOperation::ekfStateVectorCallback, this);
+        gt_module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+                                     10, &InteractOperation::modulePoseCallback, this);
+    }
+    else{
+    module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                     10, &InteractOperation::modulePoseCallback, this);
+    }
+    fh_state_subscriber = node_handle.subscribe("/fh_interface/fh_state",
+                                    10, &InteractOperation::FaceHuggerCallback, this);
+    close_tracking_ready_subscriber = node_handle.subscribe("/close_tracking_running",
+                                    10, &InteractOperation::closeTrackingCallback, this);
+
+    start_close_tracking_client = node_handle.serviceClient<ascend_msgs::SetInt>("start_close_tracking");
+    pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("Pause_close_tracking");
 
     interact_fail_pub = node_handle.advertise<std_msgs::Int16>("/fluid/interact_fail",10);
     
@@ -94,11 +111,11 @@ void InteractOperation::initialize() {
     #if SAVE_DATA
     reference_state = DataFile("reference_state.txt");
     drone_pose = DataFile("drone_pose.txt");
-    LQR_input = DataFile("LQR_input.txt");
+    gt_reference = DataFile("gt_reference.txt");
 
     reference_state.initStateLog();
     drone_pose.initStateLog();    
-    LQR_input.init("Time\tAccel.x\tAccel.y\tAccel.z");
+    gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
     #endif
 
     //sanity check that the drone is facing the mast.
@@ -129,6 +146,13 @@ void InteractOperation::ekfStateVectorCallback(
 
 void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
+    #if SAVE_DATA
+        geometry_msgs::Vector3 vec;
+        vec.x = module_pose_ptr->pose.pose.position.x;
+        vec.y = module_pose_ptr->pose.pose.position.y;
+        vec.z = module_pose_ptr->pose.pose.position.z;
+        gt_reference.saveVector3(vec);
+    #endif
     if(!EKF){
         const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
         mast.update(module_pose_ptr);
@@ -230,11 +254,9 @@ void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget offset
 
     accel_target = LQR_to_acceleration(ref);
     attitude_setpoint.orientation = accel_to_orientation(accel_target);
-    if(SHOW_PRINTS && time_cout%rate_int==0){
+    if(SHOW_PRINTS & time_cout%rate_int==0){
         printf("ref pose\tx %f,\ty %f,\tz %f\n",ref.position.x,
                             ref.position.y, ref.position.z);
-        printf("ref vel\tx %f,\ty %f,\tz %f\n", ref.velocity.x,
-                            ref.velocity.y, ref.velocity.z);
     }
 }
 
@@ -345,13 +367,12 @@ float InteractOperation::estimate_time_to_mast()
 void InteractOperation::tick() {
     time_cout++;
     mavros_msgs::PositionTarget interact_pt_state = mast.get_interaction_point_state();
+    //printf("mast pitch %f, roll %f, angle %f\n", mast_angle.x, mast_angle.y, mast_angle.z);
     // Wait until we get the first module position readings before we do anything else.
     if (interact_pt_state.header.seq == 0) {
-        if((time_cout%rate_int)==0){
+        if(time_cout%rate_int==0)
             printf("Waiting for callback\n");
-        }
         startApproaching = ros::Time::now();
-        time_cout++;
         return;
     }
 
@@ -442,20 +463,9 @@ void InteractOperation::tick() {
             break;
         }
         case InteractionState::OVER: {
-            if (SHOW_PRINTS){
-                if(time_cout%(rate_int*2)==0) printf("OVER\n");
-            }
-            if(transition_state.state.position.x < MAX_DIST_FOR_CLOSE_TRACKING && !close_tracking){
-            // send a message to perception to switch close tracking on.
-                //ros::ServiceClient switch_close_tracking = node_handle.serviceClient<fluid::CloseTracking>("perception_main/switch_to_close_tracking");
-                //perception::CloseTracking switch_to_close_tracking_handle;
-                //switch_to_close_tracking_handle.request.timeout = 0.1;
-
-                //TODO: call the perception_main/switch_to_close_tracking service.
-                close_tracking = true;
-                ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "switch close tracking on");
-            }
+            if (SHOW_PRINTS and time_cout%(rate_int*2)==0)
+                printf("OVER\n");
+    
             //We assume that the accuracy is fine, we don't want to take the risk to stay too long
             if ((transition_state.finished_bitmask & 0x7) == 0x7) {
                 interaction_state = InteractionState::INTERACT;
@@ -582,7 +592,5 @@ void InteractOperation::tick() {
     #if SAVE_DATA
         reference_state.saveStateLog(Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
         drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,getCurrentAccel());
-        LQR_input.saveVector3(accel_target);
-        printf("accel target: %f ; %f ; %f\n",accel_target.x, accel_target.y, accel_target.z);
     #endif
 }
