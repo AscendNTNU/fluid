@@ -62,12 +62,12 @@ accel_feedforward_y = 0.0
 MAX_ACCEL_X = 0.15
 MAX_ACCEL_Y = 0.30
 
-FIXED_MAST_YAW = pi/4
+FIXED_MAST_YAW = 0
 
 # parameters for modul position reference
 center = [0.0, 0.0]
-pitch_radius = 0.5  #0.13 for 30m long boat, 1.25m high waves and 3m high module
-roll_radius  = 1.1  # 0.37 for 10m wide boat, 1.25m high waves and 3m high module
+pitch_radius = 0.13  #0.13 for 30m long boat, 1.25m high waves and 3m high module
+roll_radius  = 0.37  # 0.37 for 10m wide boat, 1.25m high waves and 3m high module
 #We estimate that the period of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
 omega = 2.0 * pi / 10.0
 z = takeoff_height

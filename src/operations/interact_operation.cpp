@@ -229,6 +229,7 @@ geometry_msgs::Vector3 InteractOperation::LQR_to_acceleration(mavros_msgs::Posit
     #endif
     // the right of the mast is the left of the drone: the drone is facing the mast
     accel_target.x = - accel_target.x;
+    accel_target = rotate(accel_target, mast.get_yaw());// + M_PI);
     return accel_target;
 }
 

@@ -113,8 +113,8 @@ int main(int argc, char** argv) {
             if (finished_operation == "TAKE_OFF") {
                 ROS_INFO_STREAM("[example_client]: Take_off finished, go following");
                 fluid::Interact interact_service_handle;
-                interact_service_handle.request.fixed_mast_yaw = 0.0;
-                interact_service_handle.request.offset = 0.0;
+                interact_service_handle.request.fixed_mast_yaw = M_PI_2;
+                interact_service_handle.request.offset = 10.0;
                 
                 if (Interact.call(interact_service_handle)) {
                     if (!interact_service_handle.response.success) {
