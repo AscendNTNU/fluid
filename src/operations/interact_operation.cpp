@@ -146,16 +146,6 @@ void InteractOperation::ekfStateVectorCallback(
 
 void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
-<<<<<<< HEAD
-    #if SAVE_DATA
-        geometry_msgs::Vector3 vec;
-        vec.x = module_pose_ptr->pose.pose.position.x;
-        vec.y = module_pose_ptr->pose.pose.position.y;
-        vec.z = module_pose_ptr->pose.pose.position.z;
-        gt_reference.saveVector3(vec);
-    #endif
-=======
->>>>>>> 1997e42cd722880c87e852d89104a20ceb2dd2ab
     if(!EKF){
         const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
         mast.update(module_pose_ptr);
