@@ -10,8 +10,7 @@
   <arg name="default_height"                          default="2.0"/>
   <arg name="launch_rviz"/>
   
-  <arg name="interaction_show_prints"                 default="true"/>
-  <arg name="interaction_ground_truth_data"           default="true"/>
+  <arg name="interaction_show_prints"                 default="false"/>
   
   <arg name="Kpx"                                     default="0.4189"/>
   <arg name="Kpy"                                     default="1.189676"/>
@@ -31,8 +30,6 @@
     <param name="ekf"                                 value="$(arg ekf)"/>
     <param name="perception_node"                      value="$(arg perception_node)"/>
     
-
-    <param name="interaction_ground_truth_data"       value="$(arg interaction_ground_truth_data)"/>
     <param name="interaction_show_prints"             value="$(arg interaction_show_prints)"/>
 
     <param name="Kpx"                                 value="$(arg Kpx)"/>

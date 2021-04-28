@@ -12,7 +12,7 @@
 #include <std_srvs/Trigger.h>
 
 //A list of parameters for the user
-#define MAST_INTERACT true //safety feature to avoid going at close proximity to the mast and set the FH
+#define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
     
 
@@ -111,11 +111,11 @@ void InteractOperation::initialize() {
     #if SAVE_DATA
     reference_state = DataFile("reference_state.txt");
     drone_pose = DataFile("drone_pose.txt");
-    gt_reference = DataFile("gt_reference.txt");
+    LQR_input = DataFile("LQR_input.txt");
 
     reference_state.initStateLog();
     drone_pose.initStateLog();    
-    gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
+    LQR_input.init("Time\tAccel.x\tAccel.y\tAccel.z");
     #endif
 
     //sanity check that the drone is facing the mast.
@@ -146,13 +146,6 @@ void InteractOperation::ekfStateVectorCallback(
 
 void InteractOperation::modulePoseCallback(
     const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
-    #if SAVE_DATA
-        geometry_msgs::Vector3 vec;
-        vec.x = module_pose_ptr->pose.pose.position.x;
-        vec.y = module_pose_ptr->pose.pose.position.y;
-        vec.z = module_pose_ptr->pose.pose.position.z;
-        gt_reference.saveVector3(vec);
-    #endif
     if(!EKF){
         const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
         mast.update(module_pose_ptr);
@@ -254,9 +247,11 @@ void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget offset
 
     accel_target = LQR_to_acceleration(ref);
     attitude_setpoint.orientation = accel_to_orientation(accel_target);
-    if(SHOW_PRINTS & time_cout%rate_int==0){
+    if(SHOW_PRINTS && (time_cout%rate_int)==0){
         printf("ref pose\tx %f,\ty %f,\tz %f\n",ref.position.x,
                             ref.position.y, ref.position.z);
+        printf("ref vel\tx %f,\ty %f,\tz %f\n", ref.velocity.x,
+                            ref.velocity.y, ref.velocity.z);
     }
 }
 
@@ -592,5 +587,6 @@ void InteractOperation::tick() {
     #if SAVE_DATA
         reference_state.saveStateLog(Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
         drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,getCurrentAccel());
+        LQR_input.saveVector3(accel_target);
     #endif
 }
