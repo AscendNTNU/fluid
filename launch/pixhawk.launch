@@ -1,6 +1,6 @@
 <launch>
     <arg name="ekf"                 default="false"/>
-    <arg name="perception_node"                         default="false"/>
+    <arg name="perception_node"     default="false"/>
     <arg name="start_full_feedback" default="false"/>
 
     <group if="$(arg start_full_feedback)">

@@ -8,7 +8,6 @@
 #include "fluid.h" //to get access to the tick rate
 #include "type_mask.h"
 
-#include <std_srvs/SetBool.h>
 #include <ascend_msgs/SetInt.h>
 #include <std_srvs/Trigger.h>
 
@@ -344,6 +343,7 @@ float InteractOperation::estimate_time_to_mast()
 }
 
 void InteractOperation::tick() {
+    time_cout++;
     mavros_msgs::PositionTarget interact_pt_state = mast.get_interaction_point_state();
     // Wait until we get the first module position readings before we do anything else.
     if (interact_pt_state.header.seq == 0) {
@@ -585,6 +585,4 @@ void InteractOperation::tick() {
         LQR_input.saveVector3(accel_target);
         printf("accel target: %f ; %f ; %f\n",accel_target.x, accel_target.y, accel_target.z);
     #endif
-    
-    time_cout++;
 }
