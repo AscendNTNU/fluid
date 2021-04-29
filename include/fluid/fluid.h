@@ -37,9 +37,9 @@ struct FluidConfiguration {
     const bool ekf;
 
     /**
-     * @brief whether perception_node is used or not
+     * @brief whether use_perception is used or not
      */
-    const bool perception_node;
+    const bool use_perception;
 
     /**
      * @brief The unified refresh rate across the operation machine.

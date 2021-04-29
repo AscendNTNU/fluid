@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle node_handle;
     const std::string prefix = ros::this_node::getName() + "/";
     int refresh_rate;
-    bool ekf, perception_node, should_auto_arm, should_auto_offboard, interaction_show_prints;
+    bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_show_prints;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
     float interact_max_vel, interact_max_acc;
     float* LQR_gains = (float*) calloc(4,sizeof(float));
@@ -24,8 +24,8 @@ int main(int argc, char** argv) {
         exitAtParameterExtractionFailure(prefix + "ekf");
     }
 
-    if (!node_handle.getParam(prefix + "perception_node", perception_node)) {
-        exitAtParameterExtractionFailure(prefix + "perception_node");
+    if (!node_handle.getParam(prefix + "use_perception", use_perception)) {
+        exitAtParameterExtractionFailure(prefix + "use_perception");
     }
 
     if (!node_handle.getParam(prefix + "refresh_rate", refresh_rate)) {
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
     }
 
     FluidConfiguration configuration{ekf,
-                                    perception_node,
+                                    use_perception,
                                     refresh_rate,
                                     should_auto_arm,
                                     should_auto_offboard,

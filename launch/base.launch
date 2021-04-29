@@ -1,6 +1,6 @@
 <launch>
   <arg name="ekf"                                     default="false"/>
-  <arg name="perception_node"                         default="false"/>
+  <arg name="use_perception"                         default="false"/>
   <arg name="fcu_url"/>
   <arg name="refresh_rate"                            default="20"/>
   <arg name="should_auto_arm"/>
@@ -9,7 +9,7 @@
   <arg name="velocity_completion_threshold"           default="0.10"/>
   <arg name="default_height"                          default="2.0"/>
   <arg name="launch_rviz"/>
-  
+
   <arg name="interaction_show_prints"                 default="false"/>
   <arg name="interaction_ground_truth_data"           default="true"/>
   
@@ -29,7 +29,7 @@
     <param name="velocity_completion_threshold"       value="$(arg velocity_completion_threshold)"/>
     <param name="default_height"                      value="$(arg default_height)"/>
     <param name="ekf"                                 value="$(arg ekf)"/>
-    <param name="perception_node"                      value="$(arg perception_node)"/>
+    <param name="use_perception"                      value="$(arg use_perception)"/>
     
 
     <param name="interaction_ground_truth_data"       value="$(arg interaction_ground_truth_data)"/>

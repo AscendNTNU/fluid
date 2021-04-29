@@ -9,7 +9,7 @@
 LandOperation::LandOperation() : Operation(OperationIdentifier::LAND, true, true) {}
 
 bool LandOperation::isBelowThreshold() const {
-    return getCurrentPose().pose.position.z < 0.05 &&
+    return getCurrentPose().pose.position.z < 0.40 &&
            std::abs(getCurrentTwist().twist.linear.z) <
                Fluid::getInstance().configuration.velocity_completion_threshold;
 }
