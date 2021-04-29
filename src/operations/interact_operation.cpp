@@ -173,7 +173,7 @@ void InteractOperation::FaceHuggerCallback(const std_msgs::Bool released){
         transition_state.cte_acc = MAX_ACCEL*3;
         transition_state.max_vel = MAX_VEL*3;
         transition_state.finished_bitmask = 0x0;
-        transition_state.state.velocity.x = MAX_VEL*3;
+        //transition_state.state.velocity.x = MAX_VEL*3;
     }
 }
 
@@ -504,7 +504,7 @@ void InteractOperation::tick() {
                 transition_state.cte_acc = MAX_ACCEL*3;
                 transition_state.max_vel = MAX_VEL*3;
                 transition_state.finished_bitmask = 0x0;
-                transition_state.state.velocity.x = MAX_VEL*3;
+                //transition_state.state.velocity.x = MAX_VEL*3;
             }
             break;
         }
