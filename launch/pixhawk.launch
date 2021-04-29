@@ -1,6 +1,6 @@
 <launch>
     <arg name="ekf"                 default="false"/>
-    <arg name="perception_node"     default="false"/>
+    <arg name="use_perception"     default="false"/>
     <arg name="start_full_feedback" default="false"/>
 
     <group if="$(arg start_full_feedback)">
@@ -13,6 +13,6 @@
         <arg name="should_auto_offboard"              value="false"/>
         <arg name="launch_rviz"                       value="false"/>
         <arg name="ekf"                               value="$(arg ekf)"/>
-        <arg name="perception_node"                   value="$(arg perception_node)"/>
+        <arg name="use_perception"                   value="$(arg use_perception)"/>
     </include>
 </launch>

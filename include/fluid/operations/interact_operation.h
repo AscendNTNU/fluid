@@ -49,7 +49,7 @@ class InteractOperation : public Operation {
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
     bool EKF;
-    bool PERCEPTION_NODE;
+    bool USE_PERCEPTION;
 	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
 

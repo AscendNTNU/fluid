@@ -17,8 +17,8 @@
     
 
 // Important distances
-#define DIST_FH_DRONE_CENTRE_X   0.48 // 0.5377
-#define DIST_FH_DRONE_CENTRE_Z  -0.3214 //-0.3214
+#define DIST_FH_DRONE_CENTRE_X   0.30 // 0.5377
+#define DIST_FH_DRONE_CENTRE_Z  -0.30 //-0.3214
 
 #define SAVE_DATA   true
 #define SAVE_Z      false
@@ -50,14 +50,14 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
     }
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
     EKF = Fluid::getInstance().configuration.ekf;
-    PERCEPTION_NODE = Fluid::getInstance().configuration.perception_node;
+    USE_PERCEPTION = Fluid::getInstance().configuration.use_perception;
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
 
     //Choose an initial offset. It is the offset for the approaching state.
     //the offset is set in the frame of the mast:    
     desired_offset.x = offset;     //forward
-    desired_offset.y = 0.0;     //left
+    desired_offset.y = 0.03;     //left
     desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03;    //up
 
     }
@@ -167,7 +167,7 @@ void InteractOperation::FaceHuggerCallback(const std_msgs::Bool released){
         faceHugger_is_set = true;
 
         desired_offset.x = 2.0;   //forward
-        desired_offset.y = 0.0;    //left
+        desired_offset.y = 0.03;    //left
         desired_offset.z = DIST_FH_DRONE_CENTRE_Z - 0.3;   //up
         transition_state.state.position.z = desired_offset.z;
         transition_state.cte_acc = MAX_ACCEL*3;
@@ -437,7 +437,7 @@ void InteractOperation::tick() {
                         << ": Turning on close tracking");
                 
                 // send a message to perception to switch close tracking on.
-                if(PERCEPTION_NODE){
+                if(USE_PERCEPTION){
                     ascend_msgs::SetInt srv;
                     srv.request.data = 10;
                     if (start_close_tracking_client.call(srv)){
@@ -456,7 +456,7 @@ void InteractOperation::tick() {
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Approaching -> Over");
                 desired_offset.x = DIST_FH_DRONE_CENTRE_X;  //forward
-                desired_offset.y = 0.0;   //left
+                desired_offset.y = 0.03;   //left
                 desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03; //up
                 transition_state.cte_acc = MAX_ACCEL;
                 transition_state.max_vel = MAX_VEL;
@@ -498,7 +498,7 @@ void InteractOperation::tick() {
                 // We directly set the transition state as we want to move as fast as possible
                 // and we don't mind anymore about the relative position to the mast
                 desired_offset.x = 2;   //forward
-                desired_offset.y = 0.0;    //left
+                desired_offset.y = 0.03;    //left
                 desired_offset.z = DIST_FH_DRONE_CENTRE_Z;   //up
                 transition_state.state.position = desired_offset;
                 transition_state.cte_acc = MAX_ACCEL*3;
@@ -514,7 +514,7 @@ void InteractOperation::tick() {
                 printf("EXIT\n");
     
             if(close_tracking_is_set){
-                if(PERCEPTION_NODE){ //we are getting to far from the mast, and the position is not stable.
+                if(USE_PERCEPTION){ //we are getting to far from the mast, and the position is not stable.
                     std_srvs::Trigger srv;
                     if (pause_close_tracking_client.call(srv)){
                         close_tracking_is_set = false;
@@ -535,7 +535,7 @@ void InteractOperation::tick() {
                             << ": " << "Exit -> Extracted");
                     interaction_state = InteractionState::EXTRACTED;
                     desired_offset.x = 4;
-                    desired_offset.y = 0.0;
+                    desired_offset.y = 0.03;
                     desired_offset.z = 3;
                     transition_state.cte_acc = MAX_ACCEL*3;
                     transition_state.max_vel = MAX_VEL*3;
@@ -549,7 +549,7 @@ void InteractOperation::tick() {
                     for(int i = 0; i<3 ; i ++) interact_fail_pub.publish(number_fail);
                     interaction_state = InteractionState::APPROACHING;
                     desired_offset.x = 2;
-                    desired_offset.y = 0.0;
+                    desired_offset.y = 0.03;
                     desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03;
                     transition_state.cte_acc = MAX_ACCEL;
                     transition_state.max_vel = MAX_VEL;
