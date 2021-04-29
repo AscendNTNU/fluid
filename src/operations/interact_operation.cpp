@@ -105,8 +105,8 @@ void InteractOperation::initialize() {
     transition_state.max_vel = MAX_VEL;
     
     faceHugger_is_set = false;    
-    set_close_tracking = false;
-    close_tracking = false;
+    close_tracking_is_set = false;
+    close_tracking_is_ready = false;
 
     #if SAVE_DATA
     reference_state = DataFile("reference_state.txt");
@@ -168,16 +168,17 @@ void InteractOperation::FaceHuggerCallback(const std_msgs::Bool released){
 
         desired_offset.x = 2.0;   //forward
         desired_offset.y = 0.0;    //left
-        desired_offset.z = DIST_FH_DRONE_CENTRE_Z - 0.6;   //up
+        desired_offset.z = DIST_FH_DRONE_CENTRE_Z - 0.3;   //up
         transition_state.state.position.z = desired_offset.z;
         transition_state.cte_acc = MAX_ACCEL*3;
         transition_state.max_vel = MAX_VEL*3;
         transition_state.finished_bitmask = 0x0;
+        transition_state.state.velocity.x = MAX_VEL*3;
     }
 }
 
 void InteractOperation::closeTrackingCallback(std_msgs::Bool ready){
-    close_tracking = ready.data; 
+    close_tracking_is_ready = ready.data; 
 }
 
 /*template<typename T>  T& rotate2 (T& pt, float yaw) {
@@ -431,7 +432,7 @@ void InteractOperation::tick() {
                         << "Estimated waiting time before go: "
                         << time_to_wait);
             }
-            if(!set_close_tracking and (transition_state.finished_bitmask & 0x7) == 0x7){
+            if(!close_tracking_is_set and (transition_state.finished_bitmask & 0x7) == 0x7){
                 ROS_INFO_STREAM(ros::this_node::getName().c_str() 
                         << ": Turning on close tracking");
                 
@@ -440,16 +441,16 @@ void InteractOperation::tick() {
                     ascend_msgs::SetInt srv;
                     srv.request.data = 10;
                     if (start_close_tracking_client.call(srv)){
-                        set_close_tracking = true; 
+                        close_tracking_is_set = true; 
                     }
                 }
                 else{
-                    set_close_tracking= true; //Todo, to be removed
-                    close_tracking = true;
+                    close_tracking_is_set= true; //Todo, to be removed
+                    close_tracking_is_ready = true;
                 }
             }
 
-            if( abs(time_to_wait) <= TIME_WINDOW_INTERACTION and close_tracking)
+            if( abs(time_to_wait) <= TIME_WINDOW_INTERACTION and close_tracking_is_ready)
             { //We are in the good window to set the faceHugger
                 interaction_state = InteractionState::OVER;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
@@ -503,6 +504,7 @@ void InteractOperation::tick() {
                 transition_state.cte_acc = MAX_ACCEL*3;
                 transition_state.max_vel = MAX_VEL*3;
                 transition_state.finished_bitmask = 0x0;
+                transition_state.state.velocity.x = MAX_VEL*3;
             }
             break;
         }
@@ -511,16 +513,16 @@ void InteractOperation::tick() {
             if (SHOW_PRINTS and time_cout%(rate_int*2)==0) 
                 printf("EXIT\n");
     
-            if(set_close_tracking){
+            if(close_tracking_is_set){
                 if(PERCEPTION_NODE){ //we are getting to far from the mast, and the position is not stable.
                     std_srvs::Trigger srv;
                     if (pause_close_tracking_client.call(srv)){
-                        set_close_tracking = false;
+                        close_tracking_is_set = false;
                     }
                 }
                 else{
-                        set_close_tracking = false;
-                        close_tracking = false;
+                        close_tracking_is_set = false;
+                        close_tracking_is_ready = false;
                 }
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                         << ": " << "switch close tracking off");

@@ -102,12 +102,12 @@ class InteractOperation : public Operation {
      * @brief state whether a service call to switch close tracking has been made or not.
      * 
      */
-    bool set_close_tracking;
+    bool close_tracking_is_set;
     
     /**
      * @brief state whether close tracking is activated or not
      */
-    bool close_tracking;
+    bool close_tracking_is_ready;
     
     void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
     void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
