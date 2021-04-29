@@ -32,7 +32,7 @@
 #define ACCEL_FEEDFORWARD_X 0.0
 #define ACCEL_FEEDFORWARD_Y 0.0
 
-#define MAX_ANGLE   400 // in centi-degrees
+#define MAX_ANGLE   400 // in centi-degrees // 400 = 0.69m/s2
 
 
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
@@ -236,6 +236,7 @@ geometry_msgs::Vector3 InteractOperation::LQR_to_acceleration(mavros_msgs::Posit
     #endif
     // the right of the mast is the left of the drone: the drone is facing the mast
     accel_target.x = - accel_target.x;
+    accel_target = rotate(accel_target, mast.get_yaw());
     return accel_target;
 }
 
@@ -371,7 +372,8 @@ void InteractOperation::tick() {
     // Wait until we get the first module position readings before we do anything else.
     if (interact_pt_state.header.seq == 0) {
         if(time_cout%rate_int==0)
-            printf("Waiting for callback\n");
+            ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                                << ": Waiting for interaction point pose callback\n");
         startApproaching = ros::Time::now();
         return;
     }
