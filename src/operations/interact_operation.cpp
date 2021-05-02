@@ -256,7 +256,7 @@ void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget offset
 
     accel_target = LQR_to_acceleration(ref);
     attitude_setpoint.orientation = accel_to_orientation(accel_target);
-    if(SHOW_PRINTS & time_cout%rate_int==0){
+    if(SHOW_PRINTS && (time_cout%rate_int)==0){
         printf("ref pose\tx %f,\ty %f,\tz %f\n",ref.position.x,
                             ref.position.y, ref.position.z);
     }

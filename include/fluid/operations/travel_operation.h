@@ -24,7 +24,7 @@ class TravelOperation : public MoveOperation {
      * @param 45 is the maximum tilt angle of the drone during movement [deg].
      */
     TravelOperation(const std::vector<geometry_msgs::Point>& path)
-        : MoveOperation(OperationIdentifier::TRAVEL, path, 20, 2, 3, 45) {}
+        : MoveOperation(OperationIdentifier::TRAVEL, path, 100, 2, 3, 70) {}
 };
 
 #endif
