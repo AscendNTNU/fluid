@@ -56,11 +56,6 @@ void Mast::search_period(double pitch){
                 //We have not found a new minimum for 0.5sec. The last one found it the correct one.
                 m_last_min_pitch = m_current_extremum;
                 m_lookForMin = false;
-                if(!m_time_last_max_pitch.isZero()){ //We have already found a min before
-                    m_period = 2* (m_time_last_min_pitch - m_time_last_max_pitch).toSec();
-                    if(m_SHOW_PRINTS)
-                        ROS_INFO_STREAM("period from min = " << m_period);
-                }
             }
         }
     }
@@ -74,11 +69,6 @@ void Mast::search_period(double pitch){
                 //We have not found a new maximum for 0.5sec. The last one found it the correct one.
                 m_last_max_pitch = m_current_extremum;
                 m_lookForMin = true;
-                if(!m_time_last_min_pitch.isZero()){ //We have already found a min before
-                    m_period = 2 * (m_time_last_max_pitch - m_time_last_min_pitch).toSec();
-                    if(m_SHOW_PRINTS)
-                        ROS_INFO_STREAM("period from max = " << m_period);
-                }
             }
         }
     }
@@ -110,6 +100,10 @@ float Mast::time_to_max_pitch(){
 
 float Mast::get_yaw(){
     return m_fixed_yaw;
+}
+
+void Mast::set_period(float period){
+    m_period = period;
 }
 
 float Mast::get_period(){
