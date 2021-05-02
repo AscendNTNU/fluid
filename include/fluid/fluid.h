@@ -94,6 +94,11 @@ struct FluidConfiguration {
      * @brief Use ground_truth data for interact operation.
      */
     const float interact_max_acc;  
+
+    /**
+     * @brief max angle ardupilot parameter for the travel operation.
+     */
+    const float travel_max_angle;  
 };
 
 /**
