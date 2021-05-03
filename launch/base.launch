@@ -19,6 +19,8 @@
   <arg name="Kvy"                                     default="3.141608"/>
   <arg name="interaction_max_vel"                     default="0.30"/>
   <arg name="interaction_max_acc"                     default="0.23"/>
+
+  <arg name="travel_max_angle"                          default="70"/>
   
 
   <node name="fluid" pkg="fluid" type="fluid" output="screen"> 
@@ -41,6 +43,8 @@
     <param name="Kvy"                                 value="$(arg Kvy)"/>
     <param name="interaction_max_vel"                 value="$(arg interaction_max_vel)"/>
     <param name="interaction_max_acc"                 value="$(arg interaction_max_acc)"/>
+
+    <param name="travel_max_angle"                 value="$(arg travel_max_angle)"/>
 
   </node>
 

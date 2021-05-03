@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 
     ros::NodeHandle node_handle;
     const std::string prefix = ros::this_node::getName() + "/";
-    int refresh_rate;
+    int refresh_rate, travel_max_angle;
     bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_show_prints;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
     float interact_max_vel, interact_max_acc;
@@ -80,6 +80,9 @@ int main(int argc, char** argv) {
         exitAtParameterExtractionFailure(prefix + "interaction_max_acc");
     }
 
+    if (!node_handle.getParam(prefix + "travel_max_angle", travel_max_angle)) {
+        exitAtParameterExtractionFailure(prefix + "travel_max_angle");
+    }
     FluidConfiguration configuration{ekf,
                                     use_perception,
                                     refresh_rate,
@@ -91,7 +94,8 @@ int main(int argc, char** argv) {
                                     LQR_gains,
                                     interaction_show_prints,
                                     interact_max_vel,
-                                    interact_max_acc
+                                    interact_max_acc,
+                                    travel_max_angle
                                     };
 
     Fluid::initialize(configuration);
