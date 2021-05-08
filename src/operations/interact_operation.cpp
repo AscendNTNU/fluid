@@ -21,7 +21,7 @@
 #define DIST_FH_DRONE_CENTRE_Z  -0.3214 //-0.3214
 
 #define SAVE_DATA   true
-#define SAVE_Z      false
+#define SAVE_Z      true
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 

@@ -36,7 +36,6 @@ SAVE_Z = True
 CONTROL_POSITION = 2552
 CONTROL_VELOCITY = 2503
 CONTROL_POSITION_AND_VELOCITY = 2496
-CONTROL_LQR = 2111 #this is acceleration_xy_mask. We assume that we wont use it for anything else than LQR
 #Attitude typemask is not the same as the one for raw setpoints:
 #see here http://docs.ros.org/en/api/mavros_msgs/html/msg/AttitudeTarget.html
 CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't work
@@ -44,7 +43,7 @@ CONTROL_LQR_ATTITUDE = 0 # 71 should only allow pitch roll and yaw. But doesn't 
 #General parameters
 SAMPLE_FREQUENCY = 30.0
 takeoff_height = 2.0
-control_type = CONTROL_LQR
+control_type = CONTROL_LQR_ATTITUDE
 USE_SQRT = False
 USE_SQ   = False
 
@@ -75,13 +74,9 @@ z = takeoff_height
 #parameters for data files
 from os.path import expanduser
 home = expanduser("~")
-reference_pose_path = str(home)+"/reference_state_"+ str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"
-drone_pose_path     = str(home)+"/drone_state_"    + str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"     #file saved in home
-drone_setpoints_path= str(home)+"/drone_setpoints_"+ str(datetime.now().hour) +":"+ str(datetime.now().minute) +".txt"     #file saved in home
-
-#reference_pose_path = str(Path.home())+"/reference_state" #file saved in home
-#drone_pose_path  = str(Path.home())+"/drone_state"        #file saved in home
-#drone_setpoints_path=str(Path.home())+"/drone_setpoints"  #file saved in home
+reference_pose_path = str(home)+"/reference_state.txt"
+drone_pose_path     = str(home)+"/drone_state.txt"         #file saved in home
+drone_setpoints_path= str(home)+"/drone_setpoints.txt"     #file saved in home
 
 # Callback for subscriber of drone position
 drone_position = Point()
@@ -562,8 +557,6 @@ def main():
         rospy.loginfo("Drone will be controled in VELOCITY")
     if (control_type == CONTROL_POSITION_AND_VELOCITY):
         rospy.loginfo("Drone will be controled in POSITION and VELOCITY")
-    if (control_type == CONTROL_LQR):
-        rospy.loginfo("Drone will be controled with LQR")
     if (control_type == CONTROL_LQR_ATTITUDE):
         if USE_SQRT:
             rospy.loginfo("Drone will be controled with LQR by ATTITUDE using SQRT error!")
@@ -584,7 +577,7 @@ def main():
     #waiting for takeoff to be finished
     #ugly, need to be done properly perhaps?
     
-    while drone_position.z < takeoff_height - 0.15 and not(rospy.is_shutdown()):
+    while (drone_position.z < takeoff_height - 0.15) and not(rospy.is_shutdown()):
         #print("drone altitude: ",drone_position.z)
         rate.sleep()
     rospy.loginfo("Take off finished")
