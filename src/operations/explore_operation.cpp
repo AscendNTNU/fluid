@@ -11,7 +11,7 @@
 #include "util.h"
 
 ExploreOperation::ExploreOperation(const std::vector<geometry_msgs::Point>& path, const geometry_msgs::Point& point_of_interest)
-    : MoveOperation(OperationIdentifier::EXPLORE, path, 0.5, 0.5, 1, 15),
+    : MoveOperation(OperationIdentifier::EXPLORE, path, 1, 0.5, 1, 4),
       obstacle_avoidance_path_publisher(node_handle.advertise<ascend_msgs::Path>("/obstacle_avoidance/path", 10)),
       obstacle_avoidance_path_subscriber(
           node_handle.subscribe("/obstacle_avoidance/corrected_path", 10, &ExploreOperation::pathCallback, this)),

@@ -1,6 +1,6 @@
 <launch>
   <arg name="ekf"                                     default="false"/>
-  <arg name="perception_node"                         default="false"/>
+  <arg name="use_perception"                         default="false"/>
   <arg name="fcu_url"/>
   <arg name="refresh_rate"                            default="20"/>
   <arg name="should_auto_arm"/>
@@ -12,12 +12,12 @@
   
   <arg name="interaction_show_prints"                 default="true"/>
   
-  <arg name="Kpx"                                     default="0.4189"/>
-  <arg name="Kpy"                                     default="1.189676"/>
-  <arg name="Kvx"                                     default="1.1062"/>
-  <arg name="Kvy"                                     default="3.141608"/>
+  <arg name="Kp"                                     default="1.189676"/>
+  <arg name="Kv"                                     default="3.141608"/>
   <arg name="interaction_max_vel"                     default="0.30"/>
   <arg name="interaction_max_acc"                     default="0.23"/>
+
+  <arg name="travel_max_angle"                          default="70"/>
   
 
   <node name="fluid" pkg="fluid" type="fluid" output="screen"> 
@@ -28,16 +28,16 @@
     <param name="velocity_completion_threshold"       value="$(arg velocity_completion_threshold)"/>
     <param name="default_height"                      value="$(arg default_height)"/>
     <param name="ekf"                                 value="$(arg ekf)"/>
-    <param name="perception_node"                      value="$(arg perception_node)"/>
+    <param name="use_perception"                      value="$(arg use_perception)"/>
     
     <param name="interaction_show_prints"             value="$(arg interaction_show_prints)"/>
 
-    <param name="Kpx"                                 value="$(arg Kpx)"/>
-    <param name="Kpy"                                 value="$(arg Kpy)"/>
-    <param name="Kvx"                                 value="$(arg Kvx)"/>
-    <param name="Kvy"                                 value="$(arg Kvy)"/>
+    <param name="Kp"                                 value="$(arg Kp)"/>
+    <param name="Kv"                                 value="$(arg Kv)"/>
     <param name="interaction_max_vel"                 value="$(arg interaction_max_vel)"/>
     <param name="interaction_max_acc"                 value="$(arg interaction_max_acc)"/>
+
+    <param name="travel_max_angle"                 value="$(arg travel_max_angle)"/>
 
   </node>
 

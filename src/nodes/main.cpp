@@ -14,18 +14,18 @@ int main(int argc, char** argv) {
 
     ros::NodeHandle node_handle;
     const std::string prefix = ros::this_node::getName() + "/";
-    int refresh_rate;
-    bool ekf, perception_node, should_auto_arm, should_auto_offboard, interaction_show_prints;
+    int refresh_rate, travel_max_angle;
+    bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_show_prints;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
     float interact_max_vel, interact_max_acc;
-    float* LQR_gains = (float*) calloc(4,sizeof(float));
+    float* LQR_gains = (float*) calloc(2,sizeof(float));
 
     if (!node_handle.getParam(prefix + "ekf", ekf)) {
         exitAtParameterExtractionFailure(prefix + "ekf");
     }
 
-    if (!node_handle.getParam(prefix + "perception_node", perception_node)) {
-        exitAtParameterExtractionFailure(prefix + "perception_node");
+    if (!node_handle.getParam(prefix + "use_perception", use_perception)) {
+        exitAtParameterExtractionFailure(prefix + "use_perception");
     }
 
     if (!node_handle.getParam(prefix + "refresh_rate", refresh_rate)) {
@@ -52,20 +52,12 @@ int main(int argc, char** argv) {
         exitAtParameterExtractionFailure(prefix + "default_height");
     }
 
-    if (!node_handle.getParam(prefix + "Kpx", LQR_gains[0])) {
-        exitAtParameterExtractionFailure(prefix + "Kpx");
+    if (!node_handle.getParam(prefix + "Kp", LQR_gains[0])) {
+        exitAtParameterExtractionFailure(prefix + "Kp");
     }
 
-    if (!node_handle.getParam(prefix + "Kpy", LQR_gains[1])) {
-        exitAtParameterExtractionFailure(prefix + "Kpy");
-    }
-
-    if (!node_handle.getParam(prefix + "Kvx", LQR_gains[2])) {
-        exitAtParameterExtractionFailure(prefix + "Kvx");
-    }
-
-    if (!node_handle.getParam(prefix + "Kvy", LQR_gains[3])) {
-        exitAtParameterExtractionFailure(prefix + "Kvy");
+    if (!node_handle.getParam(prefix + "Kv", LQR_gains[1])) {
+        exitAtParameterExtractionFailure(prefix + "Kv");
     }
 
     if (!node_handle.getParam(prefix + "interaction_show_prints", interaction_show_prints)) {
@@ -80,8 +72,11 @@ int main(int argc, char** argv) {
         exitAtParameterExtractionFailure(prefix + "interaction_max_acc");
     }
 
+    if (!node_handle.getParam(prefix + "travel_max_angle", travel_max_angle)) {
+        exitAtParameterExtractionFailure(prefix + "travel_max_angle");
+    }
     FluidConfiguration configuration{ekf,
-                                    perception_node,
+                                    use_perception,
                                     refresh_rate,
                                     should_auto_arm,
                                     should_auto_offboard,
@@ -91,7 +86,8 @@ int main(int argc, char** argv) {
                                     LQR_gains,
                                     interaction_show_prints,
                                     interact_max_vel,
-                                    interact_max_acc
+                                    interact_max_acc,
+                                    travel_max_angle
                                     };
 
     Fluid::initialize(configuration);

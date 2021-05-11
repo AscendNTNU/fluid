@@ -17,17 +17,19 @@ void Mast::updateFromEkf(mavros_msgs::PositionTarget module_state){
 }
 
 void Mast::update(geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr){
-    previous_interaction_point_state = interaction_point_state;
-    interaction_point_state.header = module_pose_ptr->header;
-    interaction_point_state.position = module_pose_ptr->pose.pose.position;
-    estimateInteractionPointVel();    
-    estimateInteractionPointAccel(); //this takes into account the updated velocity.
+    if(module_pose_ptr->header.stamp.toSec() - interaction_point_state.header.stamp.toSec() > 0.010){
+    //sanity check that it is a new message.
+        previous_interaction_point_state = interaction_point_state;
+        interaction_point_state.header = module_pose_ptr->header;
+        interaction_point_state.position = module_pose_ptr->pose.pose.position;
+        estimateInteractionPointVel();    
+        estimateInteractionPointAccel(); //this takes into account the updated velocity.
+    }
 }
 
 void Mast::estimateInteractionPointVel(){
     // estimate the velocity of the interaction_point by a simple derivation of the position.
-    // In the long run, I expect to receive a nicer estimate by perception or to create a KF myself.
-    double dt = (interaction_point_state.header.stamp - previous_interaction_point_state.header.stamp).nsec/1000000000.0;
+    double dt = (interaction_point_state.header.stamp - previous_interaction_point_state.header.stamp).toSec();
     interaction_point_state.velocity.x = (interaction_point_state.position.x - previous_interaction_point_state.position.x)/dt;
     interaction_point_state.velocity.y = (interaction_point_state.position.y - previous_interaction_point_state.position.y)/dt;
     interaction_point_state.velocity.z = (interaction_point_state.position.z - previous_interaction_point_state.position.z)/dt;
@@ -35,8 +37,7 @@ void Mast::estimateInteractionPointVel(){
 
 void Mast::estimateInteractionPointAccel(){
     // estimate the acceleration of the interaction_point by simply derivating the velocity.
-    // In the long run, I expect to receive a nicer estimate by perception or to createa KF myself.
-    double dt = (interaction_point_state.header.stamp - previous_interaction_point_state.header.stamp).nsec/1000000000.0;
+    double dt = (interaction_point_state.header.stamp - previous_interaction_point_state.header.stamp).toSec();
     interaction_point_state.acceleration_or_force.x = (interaction_point_state.velocity.x - previous_interaction_point_state.velocity.x)/dt;
     interaction_point_state.acceleration_or_force.y = (interaction_point_state.velocity.y - previous_interaction_point_state.velocity.y)/dt;
     interaction_point_state.acceleration_or_force.z = (interaction_point_state.velocity.z - previous_interaction_point_state.velocity.z)/dt;
@@ -56,11 +57,6 @@ void Mast::search_period(double pitch){
                 //We have not found a new minimum for 0.5sec. The last one found it the correct one.
                 m_last_min_pitch = m_current_extremum;
                 m_lookForMin = false;
-                if(!m_time_last_max_pitch.isZero()){ //We have already found a min before
-                    m_period = 2* (m_time_last_min_pitch - m_time_last_max_pitch).toSec();
-                    if(m_SHOW_PRINTS)
-                        ROS_INFO_STREAM("period from min = " << m_period);
-                }
             }
         }
     }
@@ -74,11 +70,6 @@ void Mast::search_period(double pitch){
                 //We have not found a new maximum for 0.5sec. The last one found it the correct one.
                 m_last_max_pitch = m_current_extremum;
                 m_lookForMin = true;
-                if(!m_time_last_min_pitch.isZero()){ //We have already found a min before
-                    m_period = 2 * (m_time_last_max_pitch - m_time_last_min_pitch).toSec();
-                    if(m_SHOW_PRINTS)
-                        ROS_INFO_STREAM("period from max = " << m_period);
-                }
             }
         }
     }
@@ -110,6 +101,10 @@ float Mast::time_to_max_pitch(){
 
 float Mast::get_yaw(){
     return m_fixed_yaw;
+}
+
+void Mast::set_period(float period){
+    m_period = period;
 }
 
 float Mast::get_period(){

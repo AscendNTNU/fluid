@@ -49,7 +49,7 @@ class InteractOperation : public Operation {
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
     bool EKF;
-    bool PERCEPTION_NODE;
+    bool USE_PERCEPTION;
 	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
 
@@ -75,9 +75,8 @@ class InteractOperation : public Operation {
     mavros_msgs::AttitudeTarget attitude_setpoint;
     geometry_msgs::Vector3 accel_target;
     
-    float LQR_gains[4];
-    float K_LQR_X[2];
-    float K_LQR_Y[2];
+    float Kp_LQR;
+    float Kv_LQR;
     float MAX_ACCEL;
     float MAX_VEL;
 
@@ -103,16 +102,16 @@ class InteractOperation : public Operation {
      * @brief state whether a service call to switch close tracking has been made or not.
      * 
      */
-    bool set_close_tracking;
+    bool close_tracking_is_set;
     
     /**
      * @brief state whether close tracking is activated or not
      */
-    bool close_tracking;
+    bool close_tracking_is_ready;
     
     void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
     void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
-    void modulePoseCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose);
+    void gt_modulePoseCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose);
     void FaceHuggerCallback(const std_msgs::Bool released);
     void closeTrackingCallback(std_msgs::Bool ready);
     void finishInteraction();
@@ -134,7 +133,7 @@ class InteractOperation : public Operation {
     //not sure if they should be public or private
     geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::Vector3 accel);
     geometry_msgs::Vector3 LQR_to_acceleration(mavros_msgs::PositionTarget ref);
-    void update_attitude_input(mavros_msgs::PositionTarget offset);
+    void update_attitude_input(mavros_msgs::PositionTarget ref);
 
     void update_transition_state();
     

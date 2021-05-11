@@ -13,8 +13,6 @@
 #define SAVE_PITCH_TIME 15
 #define SAVE_PITCH_FREQ 4 //Todo, may not work with whatever frequency. 6Hz looks weird
 
-#define TIME_WINDOW_INTERACTION 1.0
-
 /**
  * @brief Represent the mast of Mission 9
  */
@@ -165,6 +163,13 @@ class Mast{
      * @return float mast fixed yaw
      */
     float get_yaw();
+
+    /**
+     * @brief Set the period of the mast
+     * 
+     * @param period from ekf
+     */
+    void set_period(float period);
 
     /**
      * @brief Get the estimated period of the mast

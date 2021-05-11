@@ -37,9 +37,9 @@ struct FluidConfiguration {
     const bool ekf;
 
     /**
-     * @brief whether perception_node is used or not
+     * @brief whether use_perception is used or not
      */
-    const bool perception_node;
+    const bool use_perception;
 
     /**
      * @brief The unified refresh rate across the operation machine.
@@ -94,6 +94,11 @@ struct FluidConfiguration {
      * @brief Use ground_truth data for interact operation.
      */
     const float interact_max_acc;  
+
+    /**
+     * @brief max angle ardupilot parameter for the travel operation.
+     */
+    const int travel_max_angle;  
 };
 
 /**
