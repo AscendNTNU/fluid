@@ -112,10 +112,12 @@ void InteractOperation::initialize() {
     reference_state = DataFile("reference_state.txt");
     drone_pose = DataFile("drone_pose.txt");
     LQR_input = DataFile("LQR_input.txt");
+    gt_reference = DataFile("gt_reference.txt");
 
     reference_state.initStateLog();
     drone_pose.initStateLog();    
     LQR_input.init("Time\tAccel.x\tAccel.y\tAccel.z");
+    gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
     #endif
 
     //sanity check that the drone is facing the mast.
@@ -148,12 +150,12 @@ void InteractOperation::ekfStateVectorCallback(
 void InteractOperation::gt_modulePoseCallback(
     const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
     #if SAVE_DATA
-//        mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
-//        geometry_msgs::Vector3 vec;
-//        vec.x = module_pose_ptr->pose.position.x + smooth_rotated_offset.position.x;
-//        vec.y = module_pose_ptr->pose.position.y + smooth_rotated_offset.position.y;
-//        vec.z = module_pose_ptr->pose.position.z + smooth_rotated_offset.position.z;
-//        gt_reference.saveVector3(vec);
+        mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
+        geometry_msgs::Vector3 vec;
+        vec.x = module_pose_ptr->pose.pose.position.x + smooth_rotated_offset.position.x;
+        vec.y = module_pose_ptr->pose.pose.position.y + smooth_rotated_offset.position.y;
+        vec.z = module_pose_ptr->pose.pose.position.z + smooth_rotated_offset.position.z;
+        gt_reference.saveVector3(vec);
     #endif
     if(!EKF){
         const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
