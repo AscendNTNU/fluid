@@ -34,7 +34,7 @@
 #define ACCEL_FEEDFORWARD_Y 0.0
 
 #define MAX_ANGLE   1500 // in centi-degrees 
-#define MAX_LQR_ACCEL 0.69 // 0.69m/s2 ~= 4°
+#define MAX_LQR_ACCEL 1.0 // 0.69m/s2 ~= 4°
 
 
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
@@ -590,13 +590,13 @@ void InteractOperation::tick() {
 
     if (time_cout % 2 == 0) {
         // todo: it may be possible to publish more often without any trouble.
-//        setpoint.header.seq++;
-//        setpoint.header.stamp = ros::Time::now();
-//        setpoint.yaw = mast.get_yaw()+M_PI;
-//        setpoint.position = ref.position;
-//        setpoint.velocity = ref.velocity;
+        setpoint.header.seq++;
+        setpoint.header.stamp = ros::Time::now();
+        setpoint.yaw = mast.get_yaw()+M_PI;
+        setpoint.position = ref.position;
+        setpoint.velocity = ref.velocity;
 
-        //altitude_and_yaw_pub.publish(setpoint);
+        altitude_and_yaw_pub.publish(setpoint);
     }
 
     attitude_pub.publish(attitude_setpoint);
