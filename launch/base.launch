@@ -12,8 +12,8 @@
   
   <arg name="interaction_show_prints"                 default="true"/>
   
-  <arg name="Kp"                                     default="1.189676"/>
-  <arg name="Kv"                                     default="3.141608"/>
+  <arg name="Kp"                                     default="9.0"/>
+  <arg name="Kv"                                     default="5.0"/>
   <arg name="interaction_max_vel"                     default="0.30"/>
   <arg name="interaction_max_acc"                     default="0.23"/>
 
