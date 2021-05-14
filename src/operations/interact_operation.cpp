@@ -22,7 +22,7 @@
 #define DIST_FH_DRONE_CENTRE_Z  -0.4914 //-0.3214
 
 #define SAVE_DATA   true
-#define SAVE_Z      true
+#define SAVE_Z      false
 #define USE_SQRT    false
 #define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 
@@ -74,7 +74,9 @@ void InteractOperation::initialize() {
         ROS_INFO_STREAM("/fluid: Uses EKF data");
     }
     else{
-    module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+    //module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+    //                                10, &InteractOperation::gt_modulePoseCallback, this);
+    module_pose_subscriber = node_handle.subscribe("/model_publisher/module_position",
                                     10, &InteractOperation::gt_modulePoseCallback, this);
     }
     fh_state_subscriber = node_handle.subscribe("/fh_interface/fh_state",
@@ -609,14 +611,18 @@ void InteractOperation::tick() {
         setpoint.position = ref.position;
         setpoint.velocity = ref.velocity;
 
-        altitude_and_yaw_pub.publish(setpoint);
+        //altitude_and_yaw_pub.publish(setpoint);
     }
 
     attitude_pub.publish(attitude_setpoint);
 
     #if SAVE_DATA
         reference_state.saveStateLog(ref);
-        drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,getCurrentAccel());
+        geometry_msgs::Vector3 drone_acc = rotate(getCurrentAccel(),mast.get_yaw()+M_PI);
+        drone_acc.x = -drone_acc.x;
+        drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,drone_acc);
+        accel_target.y = - accel_target.y;
         LQR_input.saveVector3(accel_target);
+
     #endif
 }
