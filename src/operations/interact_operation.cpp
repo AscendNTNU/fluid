@@ -277,6 +277,8 @@ void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget ref){
         accel_target.x = MAX_LQR_ACCEL * cos(temp_angle);
         accel_target.y = MAX_LQR_ACCEL * sin(temp_angle);
     }
+
+    //accel_target = rotate(accel_target,getCurrentYaw()-mast.get_yaw());
     
     attitude_setpoint.orientation = accel_to_orientation(accel_target);
     if(SHOW_PRINTS && (time_cout%rate_int)==0){
