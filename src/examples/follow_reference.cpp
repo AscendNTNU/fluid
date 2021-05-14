@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
     ros::ServiceClient explore = node_handle.serviceClient<fluid::Explore>("fluid/explore");
     ros::ServiceClient travel = node_handle.serviceClient<fluid::Travel>("fluid/travel");
     ros::ServiceClient land = node_handle.serviceClient<fluid::Land>("fluid/land");
-    ros::ServiceClient Interact = node_handle.serviceClient<fluid::Interact>("fluid/interact");
+    ros::ServiceClient interact = node_handle.serviceClient<fluid::Interact>("fluid/interact");
 
     if (!gotConnectionWithServices(2)) {
         ROS_FATAL("Did not get connection with Fluid's services, is Fluid running?");
@@ -111,12 +111,33 @@ int main(int argc, char** argv) {
             // This structure is just an example, the logic for when an operation
             // is executing should be implemented in a more secure and bulletproof way
             if (finished_operation == "TAKE_OFF") {
-                ROS_INFO_STREAM("[example_client]: Take_off finished, go following");
+                ROS_INFO_STREAM("[example_client]: Take_off finished, go setting good yaw");
+                fluid::Explore explore_service_handle;
+                geometry_msgs::Point target, POI;
+                POI.y = -10;
+                explore_service_handle.request.path = {target};
+                explore_service_handle.request.point_of_interest = POI;
+                
+                if (explore.call(explore_service_handle)) {
+                    if (!explore_service_handle.response.success) {
+                        ROS_FATAL_STREAM(explore_service_handle.response.message);
+                        return 1;
+                    } else {
+                        is_executing_operation = true;
+                    }
+                } else {
+                    ROS_FATAL("Failed to call interact service.");
+                    return 1;
+                }
+                for(int i = 0 ; i<12 ; i++) rate.sleep(); //wait 5 sec so that the drone gets the good yaw
+
+            } else if (finished_operation == "EXPLORE") {
+                ROS_INFO_STREAM("[example_client]: Ready, go following");
                 fluid::Interact interact_service_handle;
                 interact_service_handle.request.fixed_mast_yaw = M_PI_2;
                 interact_service_handle.request.offset = 10.0;
                 
-                if (Interact.call(interact_service_handle)) {
+                if (interact.call(interact_service_handle)) {
                     if (!interact_service_handle.response.success) {
                         ROS_FATAL_STREAM(interact_service_handle.response.message);
                         return 1;
