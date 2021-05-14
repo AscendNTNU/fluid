@@ -10,6 +10,7 @@ DataFile::DataFile(std::string name, std::string path){
     else
         m_path = path;
     m_precision = 4;
+    m_save_z = true;
 }
 
 void DataFile::init(std::string title){
@@ -33,10 +34,18 @@ void DataFile::initStateLog(){
     save_file_f.open(m_path+m_name);
     if(save_file_f.is_open())
     {
-        save_file_f << "Time\tpose.x\tpose.y\tpose.z"
-                    << "\tVel.x\tVel.y\tVel.z"
-                    << "\tAccel.x\tAccel.y\tAccel.z"
-                    << "\n";
+        if(m_save_z){
+            save_file_f << "Time\tpose.x\tpose.y\tpose.z"
+                        << "\tVel.x\tVel.y\tVel.z"
+                        << "\tAccel.x\tAccel.y\tAccel.z"
+                        << "\n";
+        }
+        else{
+            save_file_f << "Time\tpose.x\tpose.y"
+                        << "\tVel.x\tVel.y"
+                        << "\tAccel.x\tAccel.y"
+                        << "\n";
+        }
         save_file_f.close();
     }
     else
@@ -53,8 +62,11 @@ void DataFile::saveVector3(const geometry_msgs::Vector3 vec){
         save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
                         << ros::Time::now() << "\t"
                         << vec.x << "\t"
-                        << vec.y << "\t"
-                        << vec.z << "\n";
+                        << vec.y;
+        if(m_save_z)
+            save_file_f << std::fixed << std::setprecision(m_precision) << "\t" << vec.z;
+        
+        save_file_f << "\n";
         save_file_f.close();
     }
 }
@@ -65,7 +77,8 @@ void DataFile::saveStateLog(const geometry_msgs::Point pose, const geometry_msgs
     save_file_f.open (m_path+m_name, std::ios::app);
     if(save_file_f.is_open())
     {
-        save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
+        if(m_save_z){
+            save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
                         << ros::Time::now() << "\t"
                         << pose.x << "\t"
                         << pose.y << "\t"
@@ -74,9 +87,19 @@ void DataFile::saveStateLog(const geometry_msgs::Point pose, const geometry_msgs
                         << vel.y << "\t"
                         << vel.z << "\t"
                         << accel.x << "\t"
-                        << accel.y 
-                        << "\t" << accel.z
-                        << "\n";
+                        << accel.y << "\t"
+                        << accel.z << "\n";
+        }
+        else{
+            save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
+                        << ros::Time::now() << "\t"
+                        << pose.x << "\t"
+                        << pose.y << "\t"
+                        << vel.x << "\t"
+                        << vel.y << "\t"
+                        << accel.x << "\t"
+                        << accel.y << "\n";
+        }
         save_file_f.close();
     }
 }
@@ -103,4 +126,8 @@ void DataFile::saveArray(double* vec, int n){
 
 void DataFile::setPrecision(int precision){
     m_precision = precision;
+}
+
+void DataFile::shouldSaveZ(bool save_z){
+    m_save_z = save_z;
 }

@@ -71,6 +71,7 @@ void InteractOperation::initialize() {
                                      10, &InteractOperation::ekfStateVectorCallback, this);
         gt_module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
                                      10, &InteractOperation::gt_modulePoseCallback, this);
+        ROS_INFO_STREAM("/fluid: Uses EKF data");
     }
     else{
     module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
@@ -114,10 +115,20 @@ void InteractOperation::initialize() {
     LQR_input = DataFile("LQR_input.txt");
     gt_reference = DataFile("gt_reference.txt");
 
+    reference_state.shouldSaveZ(SAVE_Z);
+    drone_pose.shouldSaveZ(SAVE_Z);
+    LQR_input.shouldSaveZ(SAVE_Z);
+    gt_reference.shouldSaveZ(SAVE_Z);
+
     reference_state.initStateLog();
     drone_pose.initStateLog();    
+    #if SAVE_Z
     LQR_input.init("Time\tAccel.x\tAccel.y\tAccel.z");
     gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
+    #else
+    LQR_input.init("Time\tAccel.x\tAccel.y");
+    gt_reference.init("Time\tpose.x\tpose.y");
+    #endif
     #endif
 
     //sanity check that the drone is facing the mast.

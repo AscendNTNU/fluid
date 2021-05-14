@@ -23,6 +23,7 @@ class DataFile {
     private:
     
     int m_precision;
+    bool m_save_z;
     std::string m_path;
     std::string m_name;
 
@@ -48,5 +49,7 @@ class DataFile {
     void saveArray(double* vec, int n);
 
     void setPrecision(int precision);
+
+    void shouldSaveZ(bool save_z);
 };
 #endif
