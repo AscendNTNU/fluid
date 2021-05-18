@@ -135,10 +135,14 @@ void InteractOperation::initialize() {
 
     //sanity check that the drone is facing the mast.
     ros::Rate rate(rate_int);
+    setpoint.position = getCurrentPose().pose.position;
     setpoint.yaw = mast.get_yaw()+M_PI;
-    while( abs( mast.get_yaw()+M_PI - getCurrentYaw()) < M_PI/20.0 ){
+    double yaw_err = Util::moduloPi( mast.get_yaw()+M_PI - getCurrentYaw() );
+    while( abs( yaw_err) > M_PI/20.0 and ros::ok()){
         altitude_and_yaw_pub.publish(setpoint);
         rate.sleep();
+        ros::spinOnce();
+        yaw_err = Util::moduloPi( mast.get_yaw()+M_PI - getCurrentYaw() );
     }
 
     startApproaching = ros::Time::now();

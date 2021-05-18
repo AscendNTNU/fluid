@@ -111,28 +111,7 @@ int main(int argc, char** argv) {
             // This structure is just an example, the logic for when an operation
             // is executing should be implemented in a more secure and bulletproof way
             if (finished_operation == "TAKE_OFF") {
-                ROS_INFO_STREAM("[example_client]: Take_off finished, fixing yaw");
-                fluid::Explore explore_service_handle;
-                
-                geometry_msgs::Point point, POI;
-                POI.y = -10;
-                explore_service_handle.request.path = {point};
-                explore_service_handle.request.point_of_interest = POI;
-                if (explore.call(explore_service_handle)) {
-                    if (!explore_service_handle.response.success) {
-                        ROS_FATAL_STREAM(explore_service_handle.response.message);
-                        return 1;
-                    } else {
-                        is_executing_operation = true;
-                        for(int i=0;i<10;i++) rate.sleep(); //letting time for the drone to set the good yaw
-                    }
-                } else {
-                    ROS_FATAL("Failed to call interact service.");
-                    return 1;
-                }
-            } else if (finished_operation == "EXPLORE") {
-                
-                ROS_INFO_STREAM("[example_client]: readty, Let's follow");
+                ROS_INFO_STREAM("[example_client]: Take_off finished, Let's follow the mast");
                 fluid::Interact interact_service_handle;
                 interact_service_handle.request.fixed_mast_yaw = M_PI_2;
                 interact_service_handle.request.offset = 10.0;
