@@ -53,15 +53,8 @@ geometry_msgs::Vector3 Operation::orientation_to_acceleration(geometry_msgs::Qua
 
 float Operation::getCurrentYaw() const {
     geometry_msgs::Quaternion quaternion = current_pose.pose.orientation;
-    tf2::Quaternion quat(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
-
-    double roll, pitch, yaw;
-    tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
-    // If the quaternion is invalid, e.g. (0, 0, 0, 0), getRPY will return nan, so in that case we just set
-    // it to zero.
-    yaw = std::isnan(yaw) ? 0.0 : yaw;
-
-    return yaw;
+    geometry_msgs::Vector3 euler = Util::quaternion_to_euler_angle(quaternion);
+    return euler.z;
 }
 
 void Operation::publishSetpoint() { 

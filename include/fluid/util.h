@@ -42,6 +42,15 @@ class Util {
     }
 
     /**
+     * @param n Number you want to square
+     *
+     * @return The quare of @p n.
+     */
+    static double moduloPi(double n) {
+        return n - 2 * M_PI * floor((n+M_PI)/2.0/M_PI);
+    }
+
+    /**
      * @param current First point.
      * @param target Second point.
      *
@@ -139,11 +148,11 @@ class Util {
     /**
      * @brief translate euler angle to Quaternion
      * 
-     * @param euler The euler angle we want to translate. x = pitch, y = roll, z = yaw
+     * @param euler The euler angle we want to translate. y = pitch, x = roll, z = yaw
      * @return The equivalent quaternion
      */
     static geometry_msgs::Quaternion euler_to_quaternion(geometry_msgs::Vector3 euler){
-        return euler_to_quaternion(euler.z, euler.y, euler.x);
+        return euler_to_quaternion(euler.z, euler.x, euler.y);
     }
 
     /**

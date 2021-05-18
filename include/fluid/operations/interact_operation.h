@@ -121,9 +121,9 @@ class InteractOperation : public Operation {
 
     bool called_backpropeller_service = false;
 
-    mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint, float yaw=0);
-    geometry_msgs::Vector3 rotate(geometry_msgs::Vector3 pt, float yaw=0);
-    geometry_msgs::Point rotate(geometry_msgs::Point pt, float yaw=0);
+    mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint, float yaw);
+    geometry_msgs::Vector3 rotate(geometry_msgs::Vector3 pt, float yaw);
+    geometry_msgs::Point rotate(geometry_msgs::Point pt, float yaw);
     geometry_msgs::Vector3 estimateModuleVel();
     geometry_msgs::Vector3 estimateModuleAccel();
 
@@ -132,7 +132,7 @@ class InteractOperation : public Operation {
     //functions in relation to the following of the mast
     //not sure if they should be public or private
     geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::Vector3 accel);
-    geometry_msgs::Vector3 LQR_to_acceleration(mavros_msgs::PositionTarget ref);
+    void LQR_estimate_acceleration_map(mavros_msgs::PositionTarget ref);
     void update_attitude_input(mavros_msgs::PositionTarget ref);
 
     void update_transition_state();

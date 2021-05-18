@@ -204,8 +204,8 @@ void InteractOperation::closeTrackingCallback(std_msgs::Bool ready){
 
 /*template<typename T>  T& rotate2 (T& pt, float yaw) {
     T& rotated_point;
-    rotated_point.x = cos(mast.get_yaw()) * pt.x - sin(mast.get_yaw()) * pt.y;
-    rotated_point.y = cos(mast.get_yaw()) * pt.y + sin(mast.get_yaw()) * pt.x;
+    rotated_point.x = cos(yaw) * pt.x - sin(yaw) * pt.y;
+    rotated_point.y = cos(yaw) * pt.y + sin(yaw) * pt.x;
     rotated_point.z = pt.z;
 
     return rotated_point;
@@ -213,17 +213,17 @@ void InteractOperation::closeTrackingCallback(std_msgs::Bool ready){
 */
 mavros_msgs::PositionTarget InteractOperation::rotate(mavros_msgs::PositionTarget setpoint, float yaw){
     mavros_msgs::PositionTarget rotated_setpoint;
-    rotated_setpoint.position = rotate(setpoint.position);
-    rotated_setpoint.velocity = rotate(setpoint.velocity);
-    rotated_setpoint.acceleration_or_force = rotate(setpoint.acceleration_or_force);
+    rotated_setpoint.position = rotate(setpoint.position, yaw);
+    rotated_setpoint.velocity = rotate(setpoint.velocity, yaw);
+    rotated_setpoint.acceleration_or_force = rotate(setpoint.acceleration_or_force, yaw);
 
     return rotated_setpoint;
 }
 
 geometry_msgs::Vector3 InteractOperation::rotate(geometry_msgs::Vector3 pt, float yaw){
     geometry_msgs::Vector3 rotated_point;
-    rotated_point.x = cos(mast.get_yaw()) * pt.x - sin(mast.get_yaw()) * pt.y;
-    rotated_point.y = cos(mast.get_yaw()) * pt.y + sin(mast.get_yaw()) * pt.x;
+    rotated_point.x = cos(yaw) * pt.x - sin(yaw) * pt.y;
+    rotated_point.y = cos(yaw) * pt.y + sin(yaw) * pt.x;
     rotated_point.z = pt.z;
 
     return rotated_point;
@@ -231,14 +231,15 @@ geometry_msgs::Vector3 InteractOperation::rotate(geometry_msgs::Vector3 pt, floa
 
 geometry_msgs::Point InteractOperation::rotate(geometry_msgs::Point pt, float yaw){
     geometry_msgs::Point rotated_point;
-    rotated_point.x = cos(mast.get_yaw()) * pt.x - sin(mast.get_yaw()) * pt.y;
-    rotated_point.y = cos(mast.get_yaw()) * pt.y + sin(mast.get_yaw()) * pt.x;
+    rotated_point.x = cos(yaw) * pt.x - sin(yaw) * pt.y;
+    rotated_point.y = cos(yaw) * pt.y + sin(yaw) * pt.x;
     rotated_point.z = pt.z;
 
     return rotated_point;
 }
 
-geometry_msgs::Vector3 InteractOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref){
+void InteractOperation::LQR_estimate_acceleration_map(mavros_msgs::PositionTarget ref){
+    //calculated in the map frame
     accel_target.z = 0;
     #if USE_SQRT
         accel_target.x = Kp_LQR * Util::signed_sqrt(ref.position.x - getCurrentPose().pose.position.x) 
@@ -256,17 +257,21 @@ geometry_msgs::Vector3 InteractOperation::LQR_to_acceleration(mavros_msgs::Posit
                      + Kv_LQR * (ref.velocity.y - getCurrentTwist().twist.linear.y) 
                      + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
     #endif
-    // the right of the mast is the left of the drone: the drone is facing the mast
-    accel_target.x = - accel_target.x;
-    accel_target = rotate(accel_target, mast.get_yaw());// + M_PI);
-    return accel_target;
 }
 
 geometry_msgs::Quaternion InteractOperation::accel_to_orientation(geometry_msgs::Vector3 accel){
-    double yaw = mast.get_yaw() + M_PI; //we want to face the mast
-    double roll = atan2(accel.y,9.81);
-    double pitch = atan2(accel.x,9.81);
-    return Util::euler_to_quaternion(yaw, roll, pitch);
+    double tmp = accel.x;
+    accel.x = -accel.y; //accel forward   is done by a rotation allong -y axis.
+    accel.y = tmp;      //accel leftward  is done by a rotation allong +x axis.
+    accel = rotate(accel, -getCurrentYaw());
+    printf("rotate accel in angle shape %f ; %f ; %f\n",accel.x, accel.y, accel.z);
+    accel.x = atan2(accel.x,9.81);
+    accel.y = atan2(accel.y,9.81);
+    accel.z = mast.get_yaw() + M_PI;
+    //double yaw = mast.get_yaw() + M_PI; //we want to face the mast
+    //double roll = atan2(accel.x,9.81);
+    //double pitch = atan2(accel.y,9.81);
+    return Util::euler_to_quaternion(accel);
 }
 
 void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget ref){
@@ -274,7 +279,7 @@ void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget ref){
     attitude_setpoint.header.stamp = ros::Time::now();
     attitude_setpoint.thrust = 0.5; //this is the thrust that allow a constant altitude no matter what
 
-    accel_target = LQR_to_acceleration(ref);
+    LQR_estimate_acceleration_map(ref); //calculate accel_target in the map frame
     if( Util::sq(accel_target.x)+Util::sq(accel_target.y) > Util::sq(MAX_LQR_ACCEL)){
         //constraining the max angle manually because we don't want the drone MAX_ANGLE parameter to be few degrees.
         float temp_angle = atan2(accel_target.y,accel_target.x);
@@ -282,16 +287,15 @@ void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget ref){
         accel_target.y = MAX_LQR_ACCEL * sin(temp_angle);
     }
 
-    //accel_target = rotate(accel_target,getCurrentYaw()-mast.get_yaw());
-    
     attitude_setpoint.orientation = accel_to_orientation(accel_target);
-    if(SHOW_PRINTS && (time_cout%rate_int)==0){
+
+//    if(SHOW_PRINTS && (time_cout%rate_int)==0){
         printf("ref pose\tx %f,\ty %f,\tz %f\n",ref.position.x,
                             ref.position.y, ref.position.z);
         printf("ref vel\tx %f,\ty %f,\tz %f\n", ref.velocity.x,
                             ref.velocity.y, ref.velocity.z);
     }
-}
+//}
 
 void InteractOperation::update_transition_state()
 {// try to make a smooth transition when the relative targeted position between the drone
@@ -595,7 +599,7 @@ void InteractOperation::tick() {
         }
     }//end switch state
 
-    if (SHOW_PRINTS and time_cout% rate_int ==0) {
+//    if (SHOW_PRINTS and time_cout% rate_int ==0) {
 //        printf("transition pose\tx %f,\ty %f,\tz %f\n",transition_state.state.position.x,
 //                        transition_state.state.position.y, transition_state.state.position.z);
         geometry_msgs::Point cur_drone_pose = getCurrentPose().pose.position;
@@ -603,7 +607,7 @@ void InteractOperation::tick() {
                                         cur_drone_pose.y, cur_drone_pose.z,getCurrentYaw());
         printf("Accel target\tx %f,\ty %f,\tz %f\n",accel_target.x,
                                         accel_target.y, accel_target.z);
-    }
+//    }
 
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
     mavros_msgs::PositionTarget ref = Util::addPositionTarget(interact_pt_state,smooth_rotated_offset);
@@ -624,10 +628,10 @@ void InteractOperation::tick() {
 
     #if SAVE_DATA
         reference_state.saveStateLog(ref);
-        geometry_msgs::Vector3 drone_acc = rotate(getCurrentAccel(),mast.get_yaw()+M_PI);
-        drone_acc.x = -drone_acc.x;
+        geometry_msgs::Vector3 drone_acc = rotate(getCurrentAccel(),-getCurrentYaw());
+        //drone_acc.x = -drone_acc.x;
         drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,drone_acc);
-        accel_target.y = - accel_target.y;
+        //accel_target.y = - accel_target.y;
         LQR_input.saveVector3(accel_target);
 
     #endif
