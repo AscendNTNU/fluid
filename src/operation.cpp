@@ -45,8 +45,8 @@ geometry_msgs::Vector3 Operation::orientation_to_acceleration(geometry_msgs::Qua
 {
     geometry_msgs::Vector3 accel;
     geometry_msgs::Vector3 angle = Util::quaternion_to_euler_angle(orientation);
-    accel.x = tan(angle.x) *9.81;
-    accel.y = tan(angle.y) *9.81;
+    accel.x = tan(angle.y) *9.81;
+    accel.y = -tan(angle.x) *9.81;
     accel.z = 0.0; //we actually don't know ...
     return accel;
 }

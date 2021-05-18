@@ -177,7 +177,7 @@ void InteractOperation::gt_modulePoseCallback(
     if(!EKF){
         const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
         mast.update(module_pose_ptr);
-        mast.search_period(received_eul_angle.y); //pitch is y euler angle because of different frame
+        mast.search_period(received_eul_angle.x); //pitch is y euler angle because of different frame
     }
 }
 
@@ -264,13 +264,9 @@ geometry_msgs::Quaternion InteractOperation::accel_to_orientation(geometry_msgs:
     accel.x = -accel.y; //accel forward   is done by a rotation allong -y axis.
     accel.y = tmp;      //accel leftward  is done by a rotation allong +x axis.
     accel = rotate(accel, -getCurrentYaw());
-    printf("rotate accel in angle shape %f ; %f ; %f\n",accel.x, accel.y, accel.z);
     accel.x = atan2(accel.x,9.81);
     accel.y = atan2(accel.y,9.81);
     accel.z = mast.get_yaw() + M_PI;
-    //double yaw = mast.get_yaw() + M_PI; //we want to face the mast
-    //double roll = atan2(accel.x,9.81);
-    //double pitch = atan2(accel.y,9.81);
     return Util::euler_to_quaternion(accel);
 }
 
@@ -289,13 +285,13 @@ void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget ref){
 
     attitude_setpoint.orientation = accel_to_orientation(accel_target);
 
-//    if(SHOW_PRINTS && (time_cout%rate_int)==0){
+    if(SHOW_PRINTS && (time_cout%rate_int)==0){
         printf("ref pose\tx %f,\ty %f,\tz %f\n",ref.position.x,
                             ref.position.y, ref.position.z);
         printf("ref vel\tx %f,\ty %f,\tz %f\n", ref.velocity.x,
                             ref.velocity.y, ref.velocity.z);
     }
-//}
+}
 
 void InteractOperation::update_transition_state()
 {// try to make a smooth transition when the relative targeted position between the drone
@@ -599,7 +595,7 @@ void InteractOperation::tick() {
         }
     }//end switch state
 
-//    if (SHOW_PRINTS and time_cout% rate_int ==0) {
+    if (SHOW_PRINTS and time_cout% rate_int ==0) {
 //        printf("transition pose\tx %f,\ty %f,\tz %f\n",transition_state.state.position.x,
 //                        transition_state.state.position.y, transition_state.state.position.z);
         geometry_msgs::Point cur_drone_pose = getCurrentPose().pose.position;
@@ -607,7 +603,7 @@ void InteractOperation::tick() {
                                         cur_drone_pose.y, cur_drone_pose.z,getCurrentYaw());
         printf("Accel target\tx %f,\ty %f,\tz %f\n",accel_target.x,
                                         accel_target.y, accel_target.z);
-//    }
+    }
 
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
     mavros_msgs::PositionTarget ref = Util::addPositionTarget(interact_pt_state,smooth_rotated_offset);
@@ -628,10 +624,8 @@ void InteractOperation::tick() {
 
     #if SAVE_DATA
         reference_state.saveStateLog(ref);
-        geometry_msgs::Vector3 drone_acc = rotate(getCurrentAccel(),-getCurrentYaw());
-        //drone_acc.x = -drone_acc.x;
+        geometry_msgs::Vector3 drone_acc = rotate(getCurrentAccel(),getCurrentYaw());
         drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,drone_acc);
-        //accel_target.y = - accel_target.y;
         LQR_input.saveVector3(accel_target);
 
     #endif

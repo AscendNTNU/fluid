@@ -126,12 +126,12 @@ class Util {
     /**
      * @brief translate euler angle to Quaternion
      * 
-     * @param yaw The euler yaw
-     * @param roll The euler roll
-     * @param pitch The euler pitch
+     * @param yaw The euler yaw (arround the z axis)
+     * @param pitch The euler pitch (arround the y axis)
+     * @param roll The euler roll (arround the x axis)
      * @return The equivalent quaternion 
      */
-    static geometry_msgs::Quaternion euler_to_quaternion(double yaw, double roll, double pitch){
+    static geometry_msgs::Quaternion euler_to_quaternion(double yaw, double pitch, double roll){
         tf2::Quaternion q;
         q.setRPY(roll,pitch,yaw);
         q = q.normalize();
@@ -152,7 +152,7 @@ class Util {
      * @return The equivalent quaternion
      */
     static geometry_msgs::Quaternion euler_to_quaternion(geometry_msgs::Vector3 euler){
-        return euler_to_quaternion(euler.z, euler.x, euler.y);
+        return euler_to_quaternion(euler.z, euler.y, euler.x);
     }
 
     /**
@@ -167,7 +167,7 @@ class Util {
         tf2::Quaternion q;
         q.setValue(orientation.x, orientation.y, orientation.z, orientation.w);
         tf2::Matrix3x3 m(q);
-        m.getEulerYPR(eul.z, eul.x, eul.y);
+        m.getEulerYPR(eul.z, eul.y, eul.x);
         return eul;
     }
 };
