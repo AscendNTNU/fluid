@@ -77,6 +77,7 @@ class InteractOperation : public Operation {
     
     float Kp_LQR;
     float Kv_LQR;
+    float LQR_FF;
     float MAX_ACCEL;
     float MAX_VEL;
 

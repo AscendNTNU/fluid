@@ -81,6 +81,11 @@ struct FluidConfiguration {
     const float* LQR_gains; 
 
     /**
+     * @brief Feedforward for the LQR, same gain for both axes.
+     */
+    const float LQR_FF; 
+    
+    /**
      * @brief Show some debugging prints during the interact operation
      */
     const bool interaction_show_prints;

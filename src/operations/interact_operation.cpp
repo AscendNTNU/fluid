@@ -29,9 +29,6 @@
 #define TIME_TO_COMPLETION 0.5 //time in sec during which we want the drone to succeed a state before moving to the other.
 #define APPROACH_ACCURACY 0.1 //Accuracy needed by the drone to go to the next state
 
-// Feedforward tuning
-#define LQR_FF 0.5
-
 #define MAX_ANGLE   1500 // in centi-degrees 
 #define MAX_LQR_ACCEL 1.0 // 0.69m/s2 ~= 4°
 
@@ -49,6 +46,7 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
     const float* temp = Fluid::getInstance().configuration.LQR_gains;
     Kp_LQR = temp[0];
     Kv_LQR = temp[1];
+    LQR_FF = Fluid::getInstance().configuration.LQR_FF;
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
     EKF = Fluid::getInstance().configuration.ekf;
     USE_PERCEPTION = Fluid::getInstance().configuration.use_perception;
