@@ -33,8 +33,9 @@
     
     <param name="interaction_show_prints"             value="$(arg interaction_show_prints)"/>
 
-    <param name="Kp"                                 value="$(arg Kp)"/>
-    <param name="Kv"                                 value="$(arg Kv)"/>
+    <param name="Kp"                                  value="$(arg Kp)"/>
+    <param name="Kv"                                  value="$(arg Kv)"/>
+    <param name="LQR_FF"                              value="$(arg LQR_FF)"/>
     <param name="interaction_max_vel"                 value="$(arg interaction_max_vel)"/>
     <param name="interaction_max_acc"                 value="$(arg interaction_max_acc)"/>
 
