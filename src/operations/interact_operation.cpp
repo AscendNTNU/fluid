@@ -37,6 +37,8 @@
 
 
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
+ros::Time prev_gt_pose_time;
+
 
 //function called when creating the operation
 InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& offset) : 
@@ -69,7 +71,7 @@ void InteractOperation::initialize() {
         ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
                                      10, &InteractOperation::ekfStateVectorCallback, this);
         gt_module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
-                                     10, &InteractOperation::gt_modulePoseCallback, this);
+                                     10, &InteractOperation::gt_modulePoseCallbackWithoutCov, this);
         ROS_INFO_STREAM("/fluid: Uses EKF data");
     }
     else{
@@ -165,18 +167,44 @@ void InteractOperation::ekfStateVectorCallback(
 
 void InteractOperation::gt_modulePoseCallback(
     const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
-    #if SAVE_DATA
-        mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
-        geometry_msgs::Vector3 vec;
-        vec.x = module_pose_ptr->pose.pose.position.x + smooth_rotated_offset.position.x;
-        vec.y = module_pose_ptr->pose.pose.position.y + smooth_rotated_offset.position.y;
-        vec.z = module_pose_ptr->pose.pose.position.z + smooth_rotated_offset.position.z;
-        gt_reference.saveVector3(vec);
-    #endif
-    if(!EKF){
-        const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
-        mast.update(module_pose_ptr);
-        mast.search_period(received_eul_angle.x); //pitch is y euler angle because of different frame
+    if((module_pose_ptr->header.stamp - prev_gt_pose_time).toSec() >0.01){
+        prev_gt_pose_time = module_pose_ptr->header.stamp;
+        #if SAVE_DATA
+            mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
+            geometry_msgs::Vector3 vec;
+            vec.x = module_pose_ptr->pose.pose.position.x + smooth_rotated_offset.position.x;
+            vec.y = module_pose_ptr->pose.pose.position.y + smooth_rotated_offset.position.y;
+            vec.z = module_pose_ptr->pose.pose.position.z + smooth_rotated_offset.position.z;
+            gt_reference.saveVector3(vec);
+            #endif
+        if(!EKF){
+            const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
+            mast.update(module_pose_ptr);
+            mast.search_period(received_eul_angle.x); //pitch is y euler angle because of different frame
+        }
+    }
+}
+
+void InteractOperation::gt_modulePoseCallbackWithoutCov(
+    const geometry_msgs::PoseStampedConstPtr module_pose_ptr) {
+    if((module_pose_ptr->header.stamp - prev_gt_pose_time).toSec() >0.01){
+        #if SAVE_DATA
+            prev_gt_pose_time = module_pose_ptr->header.stamp;
+            mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
+            geometry_msgs::Vector3 vec;
+            vec.x = module_pose_ptr->pose.position.x + smooth_rotated_offset.position.x;
+            vec.y = module_pose_ptr->pose.position.y + smooth_rotated_offset.position.y;
+            vec.z = module_pose_ptr->pose.position.z + smooth_rotated_offset.position.z;
+            gt_reference.saveVector3(vec);
+        #endif
+        if(!EKF){
+            geometry_msgs::PoseWithCovarianceStamped pose_with_cov;
+            pose_with_cov.header = module_pose_ptr->header;
+            pose_with_cov.pose.pose = module_pose_ptr->pose;
+            const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.orientation);
+            mast.update(geometry_msgs::PoseWithCovarianceStamped::ConstPtr(&pose_with_cov));
+            mast.search_period(received_eul_angle.x); //pitch is y euler angle because of different frame
+        }
     }
 }
 
@@ -608,16 +636,13 @@ void InteractOperation::tick() {
     mavros_msgs::PositionTarget ref = Util::addPositionTarget(interact_pt_state,smooth_rotated_offset);
     update_attitude_input(ref);
 
-    if (time_cout % 2 == 0) {
-        // todo: it may be possible to publish more often without any trouble.
-        setpoint.header.seq++;
-        setpoint.header.stamp = ros::Time::now();
-        setpoint.yaw = mast.get_yaw()+M_PI;
-        setpoint.position = ref.position;
-        setpoint.velocity = ref.velocity;
+    setpoint.header.seq++;
+    setpoint.header.stamp = ros::Time::now();
+    setpoint.yaw = mast.get_yaw()+M_PI;
+    setpoint.position = ref.position;
+    setpoint.velocity = ref.velocity;
 
-        //altitude_and_yaw_pub.publish(setpoint);
-    }
+//  altitude_and_yaw_pub.publish(setpoint);
 
     attitude_pub.publish(attitude_setpoint);
 

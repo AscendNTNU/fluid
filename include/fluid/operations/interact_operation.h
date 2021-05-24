@@ -112,6 +112,7 @@ class InteractOperation : public Operation {
     void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
     void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
     void gt_modulePoseCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose);
+    void gt_modulePoseCallbackWithoutCov(const geometry_msgs::PoseStampedConstPtr module_pose);
     void FaceHuggerCallback(const std_msgs::Bool released);
     void closeTrackingCallback(std_msgs::Bool ready);
     void finishInteraction();
