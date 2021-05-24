@@ -16,12 +16,12 @@ void Mast::updateFromEkf(mavros_msgs::PositionTarget module_state){
     interaction_point_state = module_state;
 }
 
-void Mast::update(geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr){
-    if(module_pose_ptr->header.stamp.toSec() - interaction_point_state.header.stamp.toSec() > 0.010){
+void Mast::update(geometry_msgs::PoseStamped module_pose){
+    if(module_pose.header.stamp.toSec() - interaction_point_state.header.stamp.toSec() > 0.010){
     //sanity check that it is a new message.
         previous_interaction_point_state = interaction_point_state;
-        interaction_point_state.header = module_pose_ptr->header;
-        interaction_point_state.position = module_pose_ptr->pose.pose.position;
+        interaction_point_state.header = module_pose.header;
+        interaction_point_state.position = module_pose.pose.position;
         estimateInteractionPointVel();    
         estimateInteractionPointAccel(); //this takes into account the updated velocity.
     }

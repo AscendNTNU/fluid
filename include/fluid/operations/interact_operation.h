@@ -44,7 +44,7 @@ class InteractOperation : public Operation {
     /**
      * @brief Determine when we enter the state APPROACHING
      */
-    ros::Time startApproaching;
+    ros::Time approaching_t0;
 
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
@@ -112,7 +112,8 @@ class InteractOperation : public Operation {
     
     void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
     void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
-    void gt_modulePoseCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose);
+    void gt_modulePoseCallback(const geometry_msgs::PoseStamped module_pose);
+    void gt_modulePoseCallbackWithCov(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose);
     void gt_modulePoseCallbackWithoutCov(const geometry_msgs::PoseStampedConstPtr module_pose);
     void FaceHuggerCallback(const std_msgs::Bool released);
     void closeTrackingCallback(std_msgs::Bool ready);
@@ -124,8 +125,6 @@ class InteractOperation : public Operation {
     bool called_backpropeller_service = false;
 
     mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint, float yaw);
-    geometry_msgs::Vector3 rotate(geometry_msgs::Vector3 pt, float yaw);
-    geometry_msgs::Point rotate(geometry_msgs::Point pt, float yaw);
     geometry_msgs::Vector3 estimateModuleVel();
     geometry_msgs::Vector3 estimateModuleAccel();
 

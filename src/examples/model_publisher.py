@@ -48,7 +48,7 @@ def main():
     roll_radius =  0.37  #*100 because ardupilot # 0.37 for 10m wide boat, 1.25m high waves and 3m high module
     #We estimate that the period of the waves is 10 sec and then, we expect the mast to do one round every 10 sec.
     omega = 2.0 * math.pi / 10.0
-    z0 = 2.0
+    z0 = 2.5
 
     while not rospy.is_shutdown():
         
