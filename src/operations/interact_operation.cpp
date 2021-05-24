@@ -30,8 +30,7 @@
 #define APPROACH_ACCURACY 0.1 //Accuracy needed by the drone to go to the next state
 
 // Feedforward tuning
-#define ACCEL_FEEDFORWARD_X 0.0
-#define ACCEL_FEEDFORWARD_Y 0.0
+#define LQR_FF 0.5
 
 #define MAX_ANGLE   1500 // in centi-degrees 
 #define MAX_LQR_ACCEL 1.0 // 0.69m/s2 ~= 4°
@@ -244,18 +243,18 @@ void InteractOperation::LQR_estimate_acceleration_map(mavros_msgs::PositionTarge
     #if USE_SQRT
         accel_target.x = Kp_LQR * Util::signed_sqrt(ref.position.x - getCurrentPose().pose.position.x) 
                      + Kv_LQR * Util::signed_sqrt(ref.velocity.x - getCurrentTwist().twist.linear.x) 
-                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
+                     + LQR_FF * ref.acceleration_or_force.x;
         accel_target.y = Kp_LQR * Util::signed_sqrt(ref.position.y - getCurrentPose().pose.position.y) 
                      + Kv_LQR * Util::signed_sqrt(ref.velocity.y - getCurrentTwist().twist.linear.y) 
-                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
+                     + LQR_FF * ref.acceleration_or_force.y;
 
     #else
         accel_target.x = Kp_LQR * (ref.position.x - getCurrentPose().pose.position.x) 
                      + Kv_LQR * (ref.velocity.x - getCurrentTwist().twist.linear.x) 
-                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
+                     + LQR_FF * ref.acceleration_or_force.x;
         accel_target.y = Kp_LQR * (ref.position.y - getCurrentPose().pose.position.y) 
                      + Kv_LQR * (ref.velocity.y - getCurrentTwist().twist.linear.y) 
-                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
+                     + LQR_FF * ref.acceleration_or_force.y;
     #endif
 }
 
