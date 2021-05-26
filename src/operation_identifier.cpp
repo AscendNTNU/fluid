@@ -2,6 +2,8 @@
 
 std::string getArdupilotModeForOperationIdentifier(const OperationIdentifier& operation_identifier) {
     switch (operation_identifier) {
+        case OperationIdentifier::TAKE_OFF:
+            return ARDUPILOT_MODE_LOITER; //Cannot arm if in guided.
         case OperationIdentifier::LAND:
             return ARDUPILOT_MODE_LAND;
         default:

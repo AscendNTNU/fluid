@@ -9,6 +9,7 @@
 #include <string>
 
 const std::string ARDUPILOT_MODE_GUIDED = "GUIDED";
+const std::string ARDUPILOT_MODE_LOITER = "LOITER";
 const std::string ARDUPILOT_MODE_LAND = "LAND"; //cahnged from AUTO.LAND to LAND for ardupilot  
 
 /**
