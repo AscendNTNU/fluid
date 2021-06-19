@@ -16,10 +16,10 @@
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
 #define TIME_WINDOW_INTERACTION 1.0 // window within the drone is allowed to go to the OVER state    
 
-// Important distances
-#define DIST_FH_DRONE_CENTRE_X   0.42 // 0.5377
-#define DIST_FH_DRONE_CENTRE_Y   0.02 // 0.5377
-#define DIST_FH_DRONE_CENTRE_Z  -0.4914 //-0.3214
+// Important distances                  // best_sim // theoretical_sim
+#define DIST_FH_DRONE_CENTRE_X   0.42   // 0.42     // 0.5377
+#define DIST_FH_DRONE_CENTRE_Y   0.02   // 0.02     // 0.5377
+#define DIST_FH_DRONE_CENTRE_Z  -0.2914 //-0.4914   //-0.3214
 
 #define SAVE_DATA   true
 #define SAVE_Z      false
