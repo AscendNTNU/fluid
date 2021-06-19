@@ -93,6 +93,11 @@ struct FluidConfiguration {
      * @brief max angle ardupilot parameter for the travel operation.
      */
     const float travel_max_angle;  
+
+    /**
+     * @brief 3D offset of the Face_hugger compared to the drone center
+     */
+    const float* fh_offset;
 };
 
 /**
