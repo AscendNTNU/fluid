@@ -33,8 +33,12 @@
 #define ACCEL_FEEDFORWARD_X 0.0
 #define ACCEL_FEEDFORWARD_Y 0.0
 
+<<<<<<< HEAD
 #define MAX_ANGLE   1500 // in centi-degrees 
 #define MAX_LQR_ACCEL 0.69 // 0.69m/s2 ~= 4°
+=======
+#define MAX_ANGLE   400 // in centi-degrees // 400 = 0.69m/s2
+>>>>>>> d6322e7000a4cb0a0d0d52529a0a596cd3807ecd
 
 
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
@@ -239,7 +243,11 @@ geometry_msgs::Vector3 InteractOperation::LQR_to_acceleration(mavros_msgs::Posit
     #endif
     // the right of the mast is the left of the drone: the drone is facing the mast
     accel_target.x = - accel_target.x;
+<<<<<<< HEAD
     accel_target = rotate(accel_target, mast.get_yaw());// + M_PI);
+=======
+    accel_target = rotate(accel_target, mast.get_yaw());
+>>>>>>> d6322e7000a4cb0a0d0d52529a0a596cd3807ecd
     return accel_target;
 }
 
