@@ -16,10 +16,10 @@
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
 #define TIME_WINDOW_INTERACTION 1.0 // window within the drone is allowed to go to the OVER state    
 
-// Important distances
-#define DIST_FH_DRONE_CENTRE_X   0.42 // 0.5377
-#define DIST_FH_DRONE_CENTRE_Y   0.02 // 0.5377
-#define DIST_FH_DRONE_CENTRE_Z  -0.4914 //-0.3214
+  // Important distances                  // best_sim // theoretical_sim
+//#define DIST_FH_DRONE_CENTRE_X   0.42   // 0.42     // 0.5377
+//#define DIST_FH_DRONE_CENTRE_Y   0.02   // 0.02     // 0.5377
+//#define DIST_FH_DRONE_CENTRE_Z  -0.2914 //-0.4914   //-0.3214
 
 #define SAVE_DATA   true
 #define SAVE_Z      false
@@ -31,6 +31,7 @@
 
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
 ros::Time prev_gt_pose_time;
+geometry_msgs::Vector3 DIST_FH_DRONE_CENTRE;
 
 
 //function called when creating the operation
@@ -43,12 +44,15 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
     USE_PERCEPTION = Fluid::getInstance().configuration.use_perception;
     MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
     MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
+    DIST_FH_DRONE_CENTRE.x = Fluid::getInstance().configuration.fh_offset[0];
+    DIST_FH_DRONE_CENTRE.y = Fluid::getInstance().configuration.fh_offset[1];
+    DIST_FH_DRONE_CENTRE.z = Fluid::getInstance().configuration.fh_offset[2];
 
     //Choose an initial offset. It is the offset for the approaching state.
     //the offset is set in the frame of the mast:    
     desired_offset.x = offset;     //forward
-    desired_offset.y = DIST_FH_DRONE_CENTRE_Y;     //left
-    desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03;    //up
+    desired_offset.y = DIST_FH_DRONE_CENTRE.y;     //left
+    desired_offset.z = DIST_FH_DRONE_CENTRE.z+0.03;    //up
 
     }
 
@@ -184,8 +188,8 @@ void InteractOperation::FaceHuggerCallback(const std_msgs::Bool released){
         faceHugger_is_set = true;
 
         desired_offset.x = 2.0;   //forward
-        desired_offset.y = DIST_FH_DRONE_CENTRE_Y;    //left
-        desired_offset.z = DIST_FH_DRONE_CENTRE_Z - 0.3;   //up
+        desired_offset.y = DIST_FH_DRONE_CENTRE.y;    //left
+        desired_offset.z = DIST_FH_DRONE_CENTRE.z - 0.3;   //up
         transition_state.state.position.z = desired_offset.z;
         transition_state.cte_acc = MAX_ACCEL*3;
         transition_state.max_vel = MAX_VEL*3;
@@ -313,7 +317,7 @@ void InteractOperation::update_transition_state()
 float InteractOperation::estimate_time_to_mast()
 {
     // Estimation of the time it takes to go from current position to interaction point
-    float dist = transition_state.state.position.x - DIST_FH_DRONE_CENTRE_X; //assuming that the drone is always accurate
+    float dist = transition_state.state.position.x - DIST_FH_DRONE_CENTRE.x; //assuming that the drone is always accurate
     float dist_acc_decc = Util::sq(MAX_VEL)/MAX_ACCEL;
     if (dist < dist_acc_decc)
         return 2.0 * sqrt(2.0*dist/MAX_ACCEL);
@@ -411,9 +415,9 @@ void InteractOperation::tick() {
                     interaction_state = InteractionState::OVER;
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                                 << ": " << "Ready -> Over");
-                    desired_offset.x = DIST_FH_DRONE_CENTRE_X;  //forward
-                    desired_offset.y = DIST_FH_DRONE_CENTRE_Y;   //left
-                    desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03; //up
+                    desired_offset.x = DIST_FH_DRONE_CENTRE.x;  //forward
+                    desired_offset.y = DIST_FH_DRONE_CENTRE.y;   //left
+                    desired_offset.z = DIST_FH_DRONE_CENTRE.z+0.03; //up
                     transition_state.cte_acc = MAX_ACCEL;
                     transition_state.max_vel = MAX_VEL;
                     transition_state.finished_bitmask = 0x0;
@@ -430,7 +434,7 @@ void InteractOperation::tick() {
                 interaction_state = InteractionState::INTERACT;
                 ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Over -> Interact");
-                desired_offset.x = DIST_FH_DRONE_CENTRE_X;  //forward
+                desired_offset.x = DIST_FH_DRONE_CENTRE.x;  //forward
                 desired_offset.y = 0.0;   //left
                 desired_offset.z -= 0.2;  //up
                 transition_state.finished_bitmask = 0x0;
@@ -454,8 +458,8 @@ void InteractOperation::tick() {
                 // We directly set the transition state as we want to move as fast as possible
                 // and we don't mind anymore about the relative position to the mast
                 desired_offset.x = 2;   //forward
-                desired_offset.y = DIST_FH_DRONE_CENTRE_Y;    //left
-                desired_offset.z = DIST_FH_DRONE_CENTRE_Z;   //up
+                desired_offset.y = DIST_FH_DRONE_CENTRE.y;    //left
+                desired_offset.z = DIST_FH_DRONE_CENTRE.z;   //up
                 transition_state.state.position = desired_offset;
                 transition_state.cte_acc = MAX_ACCEL*3;
                 transition_state.max_vel = MAX_VEL*3;
@@ -491,7 +495,7 @@ void InteractOperation::tick() {
                             << ": " << "Exit -> Extracted");
                     interaction_state = InteractionState::EXTRACTED;
                     desired_offset.x = 4;
-                    desired_offset.y = DIST_FH_DRONE_CENTRE_Y;
+                    desired_offset.y = DIST_FH_DRONE_CENTRE.y;
                     desired_offset.z = 3;
                     transition_state.cte_acc = MAX_ACCEL*3;
                     transition_state.max_vel = MAX_VEL*3;
@@ -505,8 +509,8 @@ void InteractOperation::tick() {
                     for(int i = 0; i<3 ; i ++) interact_fail_pub.publish(number_fail);
                     interaction_state = InteractionState::APPROACHING;
                     desired_offset.x = 2;
-                    desired_offset.y = DIST_FH_DRONE_CENTRE_Y;
-                    desired_offset.z = DIST_FH_DRONE_CENTRE_Z+0.03;
+                    desired_offset.y = DIST_FH_DRONE_CENTRE.y;
+                    desired_offset.z = DIST_FH_DRONE_CENTRE.z+0.03;
                     transition_state.cte_acc = MAX_ACCEL;
                     transition_state.max_vel = MAX_VEL;
                 }
