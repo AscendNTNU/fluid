@@ -79,6 +79,7 @@ void InteractOperation::initialize() {
     pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("Pause_close_tracking");
 
     interact_fail_pub = node_handle.advertise<std_msgs::Int16>("/fluid/interact_fail",10);
+    altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
     
     setpoint.type_mask = TypeMask::POSITION_AND_VELOCITY;
     setpoint.header.frame_id = "interact";
@@ -527,7 +528,7 @@ void InteractOperation::tick() {
         printf("Drone pose\tx %f,\ty %f,\tz %f\tyaw %f\n",cur_drone_pose.x,
                                         cur_drone_pose.y, cur_drone_pose.z,getCurrentYaw());
     }
-
+    
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
     mavros_msgs::PositionTarget ref = Util::addPositionTarget(interact_pt_state,smooth_rotated_offset);
 
@@ -538,7 +539,7 @@ void InteractOperation::tick() {
     setpoint.velocity = ref.velocity;
 
     altitude_and_yaw_pub.publish(setpoint);
-
+    
     #if SAVE_DATA
         reference_state.saveStateLog(ref);
         geometry_msgs::Vector3 drone_acc = rotate2<geometry_msgs::Vector3>(getCurrentAccel(),getCurrentYaw());
