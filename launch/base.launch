@@ -17,7 +17,7 @@
   
   <arg name="fh_offset_x"                             default="0.42"/>
   <arg name="fh_offset_y"                             default="0.02"/>
-  <arg name="fh_offset_z"                             default="-0.4914"/>
+  <arg name="fh_offset_z"                             default="-0.10"/>
   
 
   <node name="fluid" pkg="fluid" type="fluid" output="screen"> 
