@@ -12,7 +12,7 @@
 #include <std_srvs/Trigger.h>
 
 //A list of parameters for the user
-#define MAST_INTERACT true //safety feature to avoid going at close proximity to the mast and set the FH
+#define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
 #define TIME_WINDOW_INTERACTION 1.0 // window within the drone is allowed to go to the OVER state    
 
