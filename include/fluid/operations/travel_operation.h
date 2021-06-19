@@ -30,8 +30,7 @@ class TravelOperation : public MoveOperation {
             MavrosInterface mavros_interface;
             mavros_interface.setParam("WPNAV_ACCEL", 1000);
             ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max acceleration to: " << 1000/100.0 << " m/s2.");
-        }
-        
+        }     
 };
 
 #endif

@@ -29,7 +29,6 @@
 
 #define MAX_ANGLE   1500 // in centi-degrees 
 
-
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
 ros::Time prev_gt_pose_time;
 
