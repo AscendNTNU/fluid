@@ -75,17 +75,6 @@ struct FluidConfiguration {
     const float default_height;
 
     /**
-     * @brief Kpx, Kpy, Kvx, Kvy are the gains used by the LQR.
-     *        Respectively the gain in position for both axes and in velocity for both axes.
-     */
-    const float* LQR_gains; 
-
-    /**
-     * @brief Feedforward for the LQR, same gain for both axes.
-     */
-    const float LQR_FF; 
-    
-    /**
      * @brief Show some debugging prints during the interact operation
      */
     const bool interaction_show_prints;
@@ -103,7 +92,7 @@ struct FluidConfiguration {
     /**
      * @brief max angle ardupilot parameter for the travel operation.
      */
-    const int travel_max_angle;  
+    const float travel_max_angle;  
 };
 
 /**

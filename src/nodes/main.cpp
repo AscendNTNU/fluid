@@ -52,18 +52,6 @@ int main(int argc, char** argv) {
         exitAtParameterExtractionFailure(prefix + "default_height");
     }
 
-    if (!node_handle.getParam(prefix + "Kp", LQR_gains[0])) {
-        exitAtParameterExtractionFailure(prefix + "Kp");
-    }
-
-    if (!node_handle.getParam(prefix + "Kv", LQR_gains[1])) {
-        exitAtParameterExtractionFailure(prefix + "Kv");
-    }
-
-    if (!node_handle.getParam(prefix + "LQR_FF", LQR_FF)) {
-        exitAtParameterExtractionFailure(prefix + "LQR_FF");
-    }
-
     if (!node_handle.getParam(prefix + "interaction_show_prints", interaction_show_prints)) {
         exitAtParameterExtractionFailure(prefix + "interaction_show_prints");
     }
@@ -87,8 +75,6 @@ int main(int argc, char** argv) {
                                     distance_completion_threshold,
                                     velocity_completion_threshold,
                                     default_height,
-                                    LQR_gains,
-                                    LQR_FF,
                                     interaction_show_prints,
                                     interact_max_vel,
                                     interact_max_acc,
