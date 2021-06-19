@@ -113,10 +113,6 @@ class InteractOperation : public Operation {
     void finishInteraction();
     bool faceHugger_is_set;     // true as soon av facehugger is released from drone
     
-    ros::ServiceClient backpropeller_client;
-
-    bool called_backpropeller_service = false;
-
     mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint, float yaw);
     geometry_msgs::Vector3 estimateModuleVel();
     geometry_msgs::Vector3 estimateModuleAccel();
