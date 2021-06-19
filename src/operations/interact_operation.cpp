@@ -23,14 +23,11 @@
 
 #define SAVE_DATA   true
 #define SAVE_Z      false
-#define USE_SQRT    false
-#define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 
 #define TIME_TO_COMPLETION 0.5 //time in sec during which we want the drone to succeed a state before moving to the other.
 #define APPROACH_ACCURACY 0.1 //Accuracy needed by the drone to go to the next state
 
 #define MAX_ANGLE   1500 // in centi-degrees 
-#define MAX_LQR_ACCEL 1.0 // 0.69m/s2 ~= 4°
 
 
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
@@ -42,11 +39,6 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
             Operation(OperationIdentifier::INTERACT, false, false) { 
     mast = Mast(fixed_mast_yaw);
     
-    //get parameters from the launch file.
-    const float* temp = Fluid::getInstance().configuration.LQR_gains;
-    Kp_LQR = temp[0];
-    Kv_LQR = temp[1];
-    LQR_FF = Fluid::getInstance().configuration.LQR_FF;
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
     EKF = Fluid::getInstance().configuration.ekf;
     USE_PERCEPTION = Fluid::getInstance().configuration.use_perception;
@@ -69,14 +61,14 @@ void InteractOperation::initialize() {
         ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
                                      10, &InteractOperation::ekfStateVectorCallback, this);
         gt_module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
-                                     10, &InteractOperation::gt_modulePoseCallbackWithoutCov, this);
+                                     10, &InteractOperation::gt_modulePoseCallbackWithCov, this);
         ROS_INFO_STREAM("/fluid: Uses EKF data");
     }
     else{
-    //module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
-    //                                10, &InteractOperation::gt_modulePoseCallbackWithoutCov, this);
-    module_pose_subscriber = node_handle.subscribe("/model_publisher/module_position_without_cov",
-                                    10, &InteractOperation::gt_modulePoseCallbackWithoutCov, this);
+    module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+                                    10, &InteractOperation::gt_modulePoseCallbackWithCov, this);
+    //module_pose_subscriber = node_handle.subscribe("/model_publisher/module_position",
+    //                                10, &InteractOperation::gt_modulePoseCallbackWithCov, this);
     }
     fh_state_subscriber = node_handle.subscribe("/fh_interface/fh_state",
                                     10, &InteractOperation::FaceHuggerCallback, this);
@@ -87,12 +79,6 @@ void InteractOperation::initialize() {
     pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("Pause_close_tracking");
 
     interact_fail_pub = node_handle.advertise<std_msgs::Int16>("/fluid/interact_fail",10);
-    
-    attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
-    //creating own publisher to choose exactly when we send messages
-    altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
-    attitude_setpoint.type_mask = ATTITUDE_CONTROL;   
-    attitude_setpoint.header.frame_id = "interact";   
     
     setpoint.type_mask = TypeMask::POSITION_AND_VELOCITY;
     setpoint.header.frame_id = "interact";
@@ -113,27 +99,23 @@ void InteractOperation::initialize() {
     #if SAVE_DATA
     reference_state = DataFile("reference_state.txt");
     drone_pose = DataFile("drone_pose.txt");
-    LQR_input = DataFile("LQR_input.txt");
     gt_reference = DataFile("gt_reference.txt");
 
     reference_state.shouldSaveZ(SAVE_Z);
     drone_pose.shouldSaveZ(SAVE_Z);
-    LQR_input.shouldSaveZ(SAVE_Z);
     gt_reference.shouldSaveZ(SAVE_Z);
 
     reference_state.initStateLog();
     drone_pose.initStateLog();    
     #if SAVE_Z
-    LQR_input.init("Time\tAccel.x\tAccel.y\tAccel.z");
     gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
     #else
-    LQR_input.init("Time\tAccel.x\tAccel.y");
     gt_reference.init("Time\tpose.x\tpose.y");
     #endif
     #endif
 
     //sanity check that the drone is facing the mast.
-    ros::Rate rate(rate_int);
+/*    ros::Rate rate(rate_int);
     setpoint.position = getCurrentPose().pose.position;
     setpoint.yaw = mast.get_yaw()+M_PI;
     double yaw_err = Util::moduloPi( mast.get_yaw()+M_PI - getCurrentYaw() );
@@ -143,7 +125,7 @@ void InteractOperation::initialize() {
         ros::spinOnce();
         yaw_err = Util::moduloPi( mast.get_yaw()+M_PI - getCurrentYaw() );
     }
-
+*/
     approaching_t0 = ros::Time::now();
     completion_count =0;
 }
@@ -235,60 +217,6 @@ mavros_msgs::PositionTarget InteractOperation::rotate(mavros_msgs::PositionTarge
     return rotated_setpoint;
 }
 
-void InteractOperation::LQR_estimate_acceleration_map(mavros_msgs::PositionTarget ref){
-    //calculated in the map frame
-    accel_target.z = 0;
-    #if USE_SQRT
-        accel_target.x = Kp_LQR * Util::signed_sqrt(ref.position.x - getCurrentPose().pose.position.x) 
-                     + Kv_LQR * Util::signed_sqrt(ref.velocity.x - getCurrentTwist().twist.linear.x) 
-                     + LQR_FF * ref.acceleration_or_force.x;
-        accel_target.y = Kp_LQR * Util::signed_sqrt(ref.position.y - getCurrentPose().pose.position.y) 
-                     + Kv_LQR * Util::signed_sqrt(ref.velocity.y - getCurrentTwist().twist.linear.y) 
-                     + LQR_FF * ref.acceleration_or_force.y;
-
-    #else
-        accel_target.x = Kp_LQR * (ref.position.x - getCurrentPose().pose.position.x) 
-                     + Kv_LQR * (ref.velocity.x - getCurrentTwist().twist.linear.x) 
-                     + LQR_FF * ref.acceleration_or_force.x;
-        accel_target.y = Kp_LQR * (ref.position.y - getCurrentPose().pose.position.y) 
-                     + Kv_LQR * (ref.velocity.y - getCurrentTwist().twist.linear.y) 
-                     + LQR_FF * ref.acceleration_or_force.y;
-    #endif
-}
-
-geometry_msgs::Quaternion InteractOperation::accel_to_orientation(geometry_msgs::Vector3 accel){
-    double tmp = accel.x;
-    accel.x = -accel.y; //accel forward   is done by a rotation allong -y axis.
-    accel.y = tmp;      //accel leftward  is done by a rotation allong +x axis.
-    accel = rotate2<geometry_msgs::Vector3>(accel, -getCurrentYaw());
-    accel.x = atan2(accel.x,9.81);
-    accel.y = atan2(accel.y,9.81);
-    accel.z = mast.get_yaw() + M_PI;
-    return Util::euler_to_quaternion(accel);
-}
-
-void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget ref){
-    attitude_setpoint.header.seq++;
-    attitude_setpoint.header.stamp = ros::Time::now();
-    attitude_setpoint.thrust = 0.5; //this is the thrust that allow a constant altitude no matter what
-
-    LQR_estimate_acceleration_map(ref); //calculate accel_target in the map frame
-    if( Util::sq(accel_target.x)+Util::sq(accel_target.y) > Util::sq(MAX_LQR_ACCEL)){
-        //constraining the max angle manually because we don't want the drone MAX_ANGLE parameter to be few degrees.
-        float acc_angle = atan2(accel_target.y,accel_target.x);
-        accel_target.x = MAX_LQR_ACCEL * cos(acc_angle);
-        accel_target.y = MAX_LQR_ACCEL * sin(acc_angle);
-    }
-
-    attitude_setpoint.orientation = accel_to_orientation(accel_target);
-
-    if(SHOW_PRINTS && (time_cout%rate_int)==0){
-        printf("ref pose\tx %f,\ty %f,\tz %f\n",ref.position.x,
-                            ref.position.y, ref.position.z);
-        printf("ref vel\tx %f,\ty %f,\tz %f\n", ref.velocity.x,
-                            ref.velocity.y, ref.velocity.z);
-    }
-}
 
 void InteractOperation::update_transition_state()
 {// try to make a smooth transition when the relative targeted position between the drone
@@ -593,18 +521,15 @@ void InteractOperation::tick() {
     }//end switch state
 
     if (SHOW_PRINTS and time_cout% rate_int ==0) {
-//        printf("transition pose\tx %f,\ty %f,\tz %f\n",transition_state.state.position.x,
-//                        transition_state.state.position.y, transition_state.state.position.z);
+        printf("transition pose\tx %f,\ty %f,\tz %f\n",transition_state.state.position.x,
+                        transition_state.state.position.y, transition_state.state.position.z);
         geometry_msgs::Point cur_drone_pose = getCurrentPose().pose.position;
         printf("Drone pose\tx %f,\ty %f,\tz %f\tyaw %f\n",cur_drone_pose.x,
                                         cur_drone_pose.y, cur_drone_pose.z,getCurrentYaw());
-        printf("Accel target\tx %f,\ty %f,\tz %f\n",accel_target.x,
-                                        accel_target.y, accel_target.z);
     }
 
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
     mavros_msgs::PositionTarget ref = Util::addPositionTarget(interact_pt_state,smooth_rotated_offset);
-    update_attitude_input(ref);
 
     setpoint.header.seq++;
     setpoint.header.stamp = ros::Time::now();
@@ -614,13 +539,9 @@ void InteractOperation::tick() {
 
     altitude_and_yaw_pub.publish(setpoint);
 
-    //attitude_pub.publish(attitude_setpoint);
-
     #if SAVE_DATA
         reference_state.saveStateLog(ref);
         geometry_msgs::Vector3 drone_acc = rotate2<geometry_msgs::Vector3>(getCurrentAccel(),getCurrentYaw());
         drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,drone_acc);
-        LQR_input.saveVector3(accel_target);
-
     #endif
 }

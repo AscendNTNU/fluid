@@ -12,9 +12,9 @@
   
   <arg name="interaction_show_prints"                 default="true"/>
   
-  <arg name="Kp"                                      default="6.0"/>
-  <arg name="Kv"                                      default="4.5"/>
-  <arg name="LQR_FF"                                  default="0.5"/>
+  <arg name="Kp"                                      default="7.5"/>
+  <arg name="Kv"                                      default="5.0"/>
+  <arg name="LQR_FF"                                  default="0.50"/>
   <arg name="interaction_max_vel"                     default="0.30"/>
   <arg name="interaction_max_acc"                     default="0.23"/>
 

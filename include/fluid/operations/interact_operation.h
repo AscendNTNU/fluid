@@ -70,14 +70,8 @@ class InteractOperation : public Operation {
     ros::ServiceClient pause_close_tracking_client;    
 
     ros::Publisher interact_fail_pub;
-    ros::Publisher attitude_pub;
     ros::Publisher altitude_and_yaw_pub;
-    mavros_msgs::AttitudeTarget attitude_setpoint;
-    geometry_msgs::Vector3 accel_target;
     
-    float Kp_LQR;
-    float Kv_LQR;
-    float LQR_FF;
     float MAX_ACCEL;
     float MAX_VEL;
 
@@ -85,7 +79,6 @@ class InteractOperation : public Operation {
 
     DataFile reference_state;
     DataFile drone_pose;
-    DataFile LQR_input;
     DataFile gt_reference;
 
 
@@ -127,14 +120,6 @@ class InteractOperation : public Operation {
     mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint, float yaw);
     geometry_msgs::Vector3 estimateModuleVel();
     geometry_msgs::Vector3 estimateModuleAccel();
-
-    
-    
-    //functions in relation to the following of the mast
-    //not sure if they should be public or private
-    geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::Vector3 accel);
-    void LQR_estimate_acceleration_map(mavros_msgs::PositionTarget ref);
-    void update_attitude_input(mavros_msgs::PositionTarget ref);
 
     void update_transition_state();
     
