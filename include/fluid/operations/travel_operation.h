@@ -7,6 +7,7 @@
 
 #include "move_operation.h"
 #include "operation_identifier.h"
+#include "mavros_interface.h"
 
 /**
  * @brief Represents the operation where the drone is moving quickly at large distances.
@@ -25,7 +26,11 @@ class TravelOperation : public MoveOperation {
      *                  This is set in the base.launch file.
      */
     TravelOperation(const std::vector<geometry_msgs::Point>& path)
-        : MoveOperation(OperationIdentifier::TRAVEL, path, 100, 2, 3, Fluid::getInstance().configuration.travel_max_angle) {}
+        : MoveOperation(OperationIdentifier::TRAVEL, path, 100, 2, 3, Fluid::getInstance().configuration.travel_max_angle) {
+            MavrosInterface mavros_interface;
+            mavros_interface.setParam("WPNAV_ACCEL", 1000);
+            ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max acceleration to: " << 1000/100.0 << " m/s2.");
+        }
         
 };
 
