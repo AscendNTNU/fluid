@@ -12,7 +12,7 @@
 #include <std_srvs/Trigger.h>
 
 //A list of parameters for the user
-#define MAST_INTERACT true //safety feature to avoid going at close proximity to the mast and set the FH
+#define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
 #define TIME_WINDOW_INTERACTION 1.0 // window within the drone is allowed to go to the OVER state    
 
@@ -23,32 +23,21 @@
 
 #define SAVE_DATA   true
 #define SAVE_Z      false
-#define USE_SQRT    false
-#define ATTITUDE_CONTROL 4   //4 = ignore yaw rate   //Attitude control does not work without thrust
 
 #define TIME_TO_COMPLETION 0.5 //time in sec during which we want the drone to succeed a state before moving to the other.
 #define APPROACH_ACCURACY 0.1 //Accuracy needed by the drone to go to the next state
 
-// Feedforward tuning
-#define ACCEL_FEEDFORWARD_X 0.0
-#define ACCEL_FEEDFORWARD_Y 0.0
-
-#define MAX_ANGLE   400 // in centi-degrees // 400 = 0.69m/s2
-
+#define MAX_ANGLE   1500 // in centi-degrees 
 
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
+ros::Time prev_gt_pose_time;
+
 
 //function called when creating the operation
 InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& offset) : 
             Operation(OperationIdentifier::INTERACT, false, false) { 
     mast = Mast(fixed_mast_yaw);
     
-    //get parameters from the launch file.
-    const float* temp = Fluid::getInstance().configuration.LQR_gains;
-    for (uint8_t i=0 ; i<2 ; i++) { 
-        K_LQR_X[i] = temp[2*i];
-        K_LQR_Y[i] = temp[2*i+1];
-    }
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
     EKF = Fluid::getInstance().configuration.ekf;
     USE_PERCEPTION = Fluid::getInstance().configuration.use_perception;
@@ -71,11 +60,14 @@ void InteractOperation::initialize() {
         ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
                                      10, &InteractOperation::ekfStateVectorCallback, this);
         gt_module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
-                                     10, &InteractOperation::modulePoseCallback, this);
+                                     10, &InteractOperation::gt_modulePoseCallbackWithCov, this);
+        ROS_INFO_STREAM("/fluid: Uses EKF data");
     }
     else{
     module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
-                                    10, &InteractOperation::modulePoseCallback, this);
+                                    10, &InteractOperation::gt_modulePoseCallbackWithCov, this);
+    //module_pose_subscriber = node_handle.subscribe("/model_publisher/module_position",
+    //                                10, &InteractOperation::gt_modulePoseCallbackWithCov, this);
     }
     fh_state_subscriber = node_handle.subscribe("/fh_interface/fh_state",
                                     10, &InteractOperation::FaceHuggerCallback, this);
@@ -86,12 +78,7 @@ void InteractOperation::initialize() {
     pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("Pause_close_tracking");
 
     interact_fail_pub = node_handle.advertise<std_msgs::Int16>("/fluid/interact_fail",10);
-    
-    attitude_pub = node_handle.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",10);
-    //creating own publisher to choose exactly when we send messages
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
-    attitude_setpoint.type_mask = ATTITUDE_CONTROL;   
-    attitude_setpoint.header.frame_id = "interact";   
     
     setpoint.type_mask = TypeMask::POSITION_AND_VELOCITY;
     setpoint.header.frame_id = "interact";
@@ -114,20 +101,32 @@ void InteractOperation::initialize() {
     drone_pose = DataFile("drone_pose.txt");
     gt_reference = DataFile("gt_reference.txt");
 
+    reference_state.shouldSaveZ(SAVE_Z);
+    drone_pose.shouldSaveZ(SAVE_Z);
+    gt_reference.shouldSaveZ(SAVE_Z);
+
     reference_state.initStateLog();
     drone_pose.initStateLog();    
+    #if SAVE_Z
     gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
+    #else
+    gt_reference.init("Time\tpose.x\tpose.y");
+    #endif
     #endif
 
     //sanity check that the drone is facing the mast.
-    ros::Rate rate(rate_int);
+/*    ros::Rate rate(rate_int);
+    setpoint.position = getCurrentPose().pose.position;
     setpoint.yaw = mast.get_yaw()+M_PI;
-    while( abs( mast.get_yaw()+M_PI - getCurrentYaw()) < M_PI/20.0 ){
+    double yaw_err = Util::moduloPi( mast.get_yaw()+M_PI - getCurrentYaw() );
+    while( abs( yaw_err) > M_PI/20.0 and ros::ok()){
         altitude_and_yaw_pub.publish(setpoint);
         rate.sleep();
+        ros::spinOnce();
+        yaw_err = Util::moduloPi( mast.get_yaw()+M_PI - getCurrentYaw() );
     }
-
-    startApproaching = ros::Time::now();
+*/
+    approaching_t0 = ros::Time::now();
     completion_count =0;
 }
 
@@ -146,19 +145,35 @@ void InteractOperation::ekfStateVectorCallback(
     mast.set_period(2*M_PI/ekf_state.data[4]);
 }
 
-void InteractOperation::modulePoseCallback(
+void InteractOperation::gt_modulePoseCallbackWithCov(
     const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr) {
-    #if SAVE_DATA
-        geometry_msgs::Vector3 vec;
-        vec.x = module_pose_ptr->pose.pose.position.x;
-        vec.y = module_pose_ptr->pose.pose.position.y;
-        vec.z = module_pose_ptr->pose.pose.position.z;
-        gt_reference.saveVector3(vec);
-    #endif
-    if(!EKF){
-        const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose_ptr->pose.pose.orientation);
-        mast.update(module_pose_ptr);
-        mast.search_period(received_eul_angle.y); //pitch is y euler angle because of different frame
+    geometry_msgs::PoseStamped module_pose;
+    module_pose.header = module_pose_ptr->header;
+    module_pose.pose = module_pose_ptr->pose.pose;
+    gt_modulePoseCallback(module_pose);
+}
+
+void InteractOperation::gt_modulePoseCallbackWithoutCov(geometry_msgs::PoseStampedConstPtr module_pose_ptr){
+    gt_modulePoseCallback(*module_pose_ptr);
+}
+
+void InteractOperation::gt_modulePoseCallback(
+    const geometry_msgs::PoseStamped module_pose) {
+    if((module_pose.header.stamp - prev_gt_pose_time).toSec() >0.01){
+        #if SAVE_DATA
+            prev_gt_pose_time = module_pose.header.stamp;
+            mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
+            geometry_msgs::Vector3 vec;
+            vec.x = module_pose.pose.position.x + smooth_rotated_offset.position.x;
+            vec.y = module_pose.pose.position.y + smooth_rotated_offset.position.y;
+            vec.z = module_pose.pose.position.z + smooth_rotated_offset.position.z;
+            gt_reference.saveVector3(vec);
+        #endif
+        if(!EKF){
+            const geometry_msgs::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose.pose.orientation);
+            mast.update(module_pose);
+            mast.search_period(received_eul_angle.x); //pitch is y euler angle because of different frame
+        }
     }
 }
 
@@ -183,86 +198,25 @@ void InteractOperation::closeTrackingCallback(std_msgs::Bool ready){
     close_tracking_is_ready = ready.data; 
 }
 
-/*template<typename T>  T& rotate2 (T& pt, float yaw) {
-    T& rotated_point;
-    rotated_point.x = cos(mast.get_yaw()) * pt.x - sin(mast.get_yaw()) * pt.y;
-    rotated_point.y = cos(mast.get_yaw()) * pt.y + sin(mast.get_yaw()) * pt.x;
+
+template<typename T>  T rotate2 (T pt, float yaw) {
+    T rotated_point;
+    rotated_point.x = cos(yaw) * pt.x - sin(yaw) * pt.y;
+    rotated_point.y = cos(yaw) * pt.y + sin(yaw) * pt.x;
     rotated_point.z = pt.z;
 
     return rotated_point;
 }
-*/
+
 mavros_msgs::PositionTarget InteractOperation::rotate(mavros_msgs::PositionTarget setpoint, float yaw){
     mavros_msgs::PositionTarget rotated_setpoint;
-    rotated_setpoint.position = rotate(setpoint.position);
-    rotated_setpoint.velocity = rotate(setpoint.velocity);
-    rotated_setpoint.acceleration_or_force = rotate(setpoint.acceleration_or_force);
+    rotated_setpoint.position = rotate2<geometry_msgs::Point>(setpoint.position, yaw);
+    rotated_setpoint.velocity = rotate2<geometry_msgs::Vector3>(setpoint.velocity, yaw);
+    rotated_setpoint.acceleration_or_force = rotate2<geometry_msgs::Vector3>(setpoint.acceleration_or_force, yaw);
 
     return rotated_setpoint;
 }
 
-geometry_msgs::Vector3 InteractOperation::rotate(geometry_msgs::Vector3 pt, float yaw){
-    geometry_msgs::Vector3 rotated_point;
-    rotated_point.x = cos(mast.get_yaw()) * pt.x - sin(mast.get_yaw()) * pt.y;
-    rotated_point.y = cos(mast.get_yaw()) * pt.y + sin(mast.get_yaw()) * pt.x;
-    rotated_point.z = pt.z;
-
-    return rotated_point;
-}
-
-geometry_msgs::Point InteractOperation::rotate(geometry_msgs::Point pt, float yaw){
-    geometry_msgs::Point rotated_point;
-    rotated_point.x = cos(mast.get_yaw()) * pt.x - sin(mast.get_yaw()) * pt.y;
-    rotated_point.y = cos(mast.get_yaw()) * pt.y + sin(mast.get_yaw()) * pt.x;
-    rotated_point.z = pt.z;
-
-    return rotated_point;
-}
-
-geometry_msgs::Vector3 InteractOperation::LQR_to_acceleration(mavros_msgs::PositionTarget ref){
-    accel_target.z = 0;
-    #if USE_SQRT
-        accel_target.x = K_LQR_X[0] * Util::signed_sqrt(ref.position.x - getCurrentPose().pose.position.x) 
-                     + K_LQR_X[1] * Util::signed_sqrt(ref.velocity.x - getCurrentTwist().twist.linear.x) 
-                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
-        accel_target.y = K_LQR_Y[0] * Util::signed_sqrt(ref.position.y - getCurrentPose().pose.position.y) 
-                     + K_LQR_Y[1] * Util::signed_sqrt(ref.velocity.y - getCurrentTwist().twist.linear.y) 
-                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
-
-    #else
-        accel_target.x = K_LQR_X[0] * (ref.position.x - getCurrentPose().pose.position.x) 
-                     + K_LQR_X[1] * (ref.velocity.x - getCurrentTwist().twist.linear.x) 
-                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.x;
-        accel_target.y = K_LQR_Y[0] * (ref.position.y - getCurrentPose().pose.position.y) 
-                     + K_LQR_Y[1] * (ref.velocity.y - getCurrentTwist().twist.linear.y) 
-                     + ACCEL_FEEDFORWARD_X * ref.acceleration_or_force.y;
-    #endif
-    // the right of the mast is the left of the drone: the drone is facing the mast
-    accel_target.x = - accel_target.x;
-    accel_target = rotate(accel_target, mast.get_yaw());
-    return accel_target;
-}
-
-geometry_msgs::Quaternion InteractOperation::accel_to_orientation(geometry_msgs::Vector3 accel){
-    double yaw = mast.get_yaw() + M_PI; //we want to face the mast
-    double roll = atan2(accel.y,9.81);
-    double pitch = atan2(accel.x,9.81);
-    return Util::euler_to_quaternion(yaw, roll, pitch);
-}
-
-void InteractOperation::update_attitude_input(mavros_msgs::PositionTarget offset){
-    mavros_msgs::PositionTarget ref = Util::addPositionTarget(mast.get_interaction_point_state(), offset);
-    attitude_setpoint.header.seq++;
-    attitude_setpoint.header.stamp = ros::Time::now();
-    attitude_setpoint.thrust = 0.5; //this is the thrust that allow a constant altitude no matter what
-
-    accel_target = LQR_to_acceleration(ref);
-    attitude_setpoint.orientation = accel_to_orientation(accel_target);
-    if(SHOW_PRINTS && (time_cout%rate_int)==0){
-        printf("ref pose\tx %f,\ty %f,\tz %f\n",ref.position.x,
-                            ref.position.y, ref.position.z);
-    }
-}
 
 void InteractOperation::update_transition_state()
 {// try to make a smooth transition when the relative targeted position between the drone
@@ -377,13 +331,13 @@ void InteractOperation::tick() {
         if(time_cout%rate_int==0)
             ROS_INFO_STREAM(ros::this_node::getName().c_str() 
                                 << ": Waiting for interaction point pose callback\n");
-        startApproaching = ros::Time::now();
+        approaching_t0 = ros::Time::now();
         return;
     }
 
     update_transition_state();
 
-    geometry_msgs::Point rotated_offset = rotate(desired_offset,mast.get_yaw());
+    geometry_msgs::Point rotated_offset = rotate2<geometry_msgs::Point>(desired_offset,mast.get_yaw());
     const double dx = interact_pt_state.position.x + rotated_offset.x - getCurrentPose().pose.position.x;
     const double dy = interact_pt_state.position.y + rotated_offset.y - getCurrentPose().pose.position.y;
     const double dz = interact_pt_state.position.z + rotated_offset.z - getCurrentPose().pose.position.z;
@@ -397,7 +351,7 @@ void InteractOperation::tick() {
             }
                        
             if(MAST_INTERACT) {
-                float time_out_gain = 1 + (ros::Time::now()-startApproaching).toSec()/30.0;
+                float time_out_gain = 1 + (ros::Time::now()-approaching_t0).toSec()/30.0;
                 if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
                     //Todo, we may want to judge the velocity in stead of having a time to completion
                     if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int) )
@@ -417,7 +371,7 @@ void InteractOperation::tick() {
                     }
                 }
                 else
-                    completion_count < 2 ? 0 : completion_count-2; //not reset to 0, but remove 2.
+                    completion_count = 0;
             }
             break;
         }
@@ -572,31 +526,22 @@ void InteractOperation::tick() {
         geometry_msgs::Point cur_drone_pose = getCurrentPose().pose.position;
         printf("Drone pose\tx %f,\ty %f,\tz %f\tyaw %f\n",cur_drone_pose.x,
                                         cur_drone_pose.y, cur_drone_pose.z,getCurrentYaw());
-        printf("Accel target\tx %f,\ty %f,\tz %f\n",accel_target.x,
-                                        accel_target.y, accel_target.z);
     }
-
+    
     mavros_msgs::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
-    update_attitude_input(smooth_rotated_offset);
+    mavros_msgs::PositionTarget ref = Util::addPositionTarget(interact_pt_state,smooth_rotated_offset);
 
-    if (time_cout % 2 == 0) {
-        // todo: it may be possible to publish more often without any trouble.
-        setpoint.header.stamp = ros::Time::now();
-        setpoint.yaw = mast.get_yaw()+M_PI;
-        setpoint.position.x = interact_pt_state.position.x + smooth_rotated_offset.position.x;
-        setpoint.position.y = interact_pt_state.position.y + smooth_rotated_offset.position.y;
-        setpoint.position.z = interact_pt_state.position.z + smooth_rotated_offset.position.z;
-        setpoint.velocity.x = interact_pt_state.velocity.x + smooth_rotated_offset.velocity.x;
-        setpoint.velocity.y = interact_pt_state.velocity.y + smooth_rotated_offset.velocity.y;
-        setpoint.velocity.z = interact_pt_state.velocity.z + smooth_rotated_offset.velocity.z;
+    setpoint.header.seq++;
+    setpoint.header.stamp = ros::Time::now();
+    setpoint.yaw = mast.get_yaw()+M_PI;
+    setpoint.position = ref.position;
+    setpoint.velocity = ref.velocity;
 
-        altitude_and_yaw_pub.publish(setpoint);
-    }
-
-    attitude_pub.publish(attitude_setpoint);
-
+    altitude_and_yaw_pub.publish(setpoint);
+    
     #if SAVE_DATA
-        reference_state.saveStateLog(Util::addPositionTarget(interact_pt_state, smooth_rotated_offset));
-        drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,getCurrentAccel());
+        reference_state.saveStateLog(ref);
+        geometry_msgs::Vector3 drone_acc = rotate2<geometry_msgs::Vector3>(getCurrentAccel(),getCurrentYaw());
+        drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,drone_acc);
     #endif
 }

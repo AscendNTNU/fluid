@@ -115,7 +115,7 @@ class Mast{
      * 
      * @param module_pose_ptr state of the interaction_point
      */
-    void update(geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose_ptr); //todo: this should also save the pitch automaticaly
+    void update(geometry_msgs::PoseStamped module_pose_ptr); //todo: this should also save the pitch automaticaly
 
     /**
      * @brief Check if pitch were extremum.

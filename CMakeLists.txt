@@ -51,9 +51,12 @@ file(GLOB fluid_operations_SRC "src/operations/*.cpp")
 
 add_executable(fluid              src/nodes/main.cpp                            ${fluid_SRC} ${fluid_operations_SRC})
 add_executable(example_client     src/examples/example_client.cpp               ${fluid_SRC} ${fluid_operations_SRC})
+add_executable(follow_reference     src/examples/follow_reference.cpp               ${fluid_SRC} ${fluid_operations_SRC})
 
 add_dependencies(fluid                   ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(example_client          ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(follow_reference          ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(fluid              ${catkin_LIBRARIES})
 target_link_libraries(example_client     ${catkin_LIBRARIES})
+target_link_libraries(follow_reference     ${catkin_LIBRARIES})

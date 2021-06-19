@@ -42,6 +42,15 @@ class Util {
     }
 
     /**
+     * @param n Number you want to square
+     *
+     * @return The quare of @p n.
+     */
+    static double moduloPi(double n) {
+        return n - 2 * M_PI * floor((n+M_PI)/2.0/M_PI);
+    }
+
+    /**
      * @param current First point.
      * @param target Second point.
      *
@@ -117,31 +126,29 @@ class Util {
     /**
      * @brief translate euler angle to Quaternion
      * 
-     * @param yaw The euler yaw
-     * @param roll The euler roll
-     * @param pitch The euler pitch
+     * @param yaw The euler yaw (arround the z axis)
+     * @param pitch The euler pitch (arround the y axis)
+     * @param roll The euler roll (arround the x axis)
      * @return The equivalent quaternion 
      */
-    static geometry_msgs::Quaternion euler_to_quaternion(double yaw, double roll, double pitch){
-        double cy = cos(yaw * 0.5);
-        double sy = sin(yaw * 0.5);
-        double cp = cos(pitch * 0.5);
-        double sp = sin(pitch * 0.5);
-        double cr = cos(roll * 0.5);
-        double sr = sin(roll * 0.5);
+    static geometry_msgs::Quaternion euler_to_quaternion(double yaw, double pitch, double roll){
+        tf2::Quaternion q;
+        q.setRPY(roll,pitch,yaw);
+        q = q.normalize();
 
-        geometry_msgs::Quaternion q;
-        q.w = cr * cp * cy + sr * sp * sy;
-        q.x = sr * cp * cy - cr * sp * sy;
-        q.y = cr * sp * cy + sr * cp * sy;
-        q.z = cr * cp * sy - sr * sp * cy;
-        return q;
+        geometry_msgs::Quaternion quat;
+        quat.w = q.getW();
+        quat.x = q.getX();
+        quat.y = q.getY();
+        quat.z = q.getZ();
+        
+        return quat;
     }
 
     /**
      * @brief translate euler angle to Quaternion
      * 
-     * @param euler The euler angle we want to translate. x = pitch, y = roll, z = yaw
+     * @param euler The euler angle we want to translate. y = pitch, x = roll, z = yaw
      * @return The equivalent quaternion
      */
     static geometry_msgs::Quaternion euler_to_quaternion(geometry_msgs::Vector3 euler){
@@ -156,25 +163,12 @@ class Util {
      * @return The equivalent euler angle.
      */
     static geometry_msgs::Vector3 quaternion_to_euler_angle(geometry_msgs::Quaternion orientation){
-        float w = orientation.w;
-        float x = orientation.x;
-        float y = orientation.y;
-        float z = orientation.z;
-
-        geometry_msgs::Vector3 ret;
-        float t0 = +2.0 * (w * x + y * z);
-        float t1 = +1.0 - 2.0 * (x * x + y * y);
-        ret.x = atan2(t0, t1);
-
-        float t2 = +2.0 * (w * y - z * x);
-        t2 = t2>1.0 ? 1.0 : t2;
-        t2 = t2<-1.0 ? -1.0 : t2;
-        ret.y = asin(t2);
-
-        float t3 = +2.0 * (w * z + x * y);
-        float t4 = +1.0 - 2.0 * (y * y + z * z);
-        ret.z = atan2(t3, t4);
-        return ret;
+        geometry_msgs::Vector3 eul;
+        tf2::Quaternion q;
+        q.setValue(orientation.x, orientation.y, orientation.z, orientation.w);
+        tf2::Matrix3x3 m(q);
+        m.getEulerYPR(eul.z, eul.y, eul.x);
+        return eul;
     }
 };
 

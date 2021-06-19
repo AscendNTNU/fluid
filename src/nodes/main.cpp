@@ -17,8 +17,8 @@ int main(int argc, char** argv) {
     int refresh_rate, travel_max_angle;
     bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_show_prints;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
-    float interact_max_vel, interact_max_acc;
-    float* LQR_gains = (float*) calloc(4,sizeof(float));
+    float interact_max_vel, interact_max_acc, LQR_FF;
+    float* LQR_gains = (float*) calloc(2,sizeof(float));
 
     if (!node_handle.getParam(prefix + "ekf", ekf)) {
         exitAtParameterExtractionFailure(prefix + "ekf");
@@ -52,22 +52,6 @@ int main(int argc, char** argv) {
         exitAtParameterExtractionFailure(prefix + "default_height");
     }
 
-    if (!node_handle.getParam(prefix + "Kpx", LQR_gains[0])) {
-        exitAtParameterExtractionFailure(prefix + "Kpx");
-    }
-
-    if (!node_handle.getParam(prefix + "Kpy", LQR_gains[1])) {
-        exitAtParameterExtractionFailure(prefix + "Kpy");
-    }
-
-    if (!node_handle.getParam(prefix + "Kvx", LQR_gains[2])) {
-        exitAtParameterExtractionFailure(prefix + "Kvx");
-    }
-
-    if (!node_handle.getParam(prefix + "Kvy", LQR_gains[3])) {
-        exitAtParameterExtractionFailure(prefix + "Kvy");
-    }
-
     if (!node_handle.getParam(prefix + "interaction_show_prints", interaction_show_prints)) {
         exitAtParameterExtractionFailure(prefix + "interaction_show_prints");
     }
@@ -91,7 +75,6 @@ int main(int argc, char** argv) {
                                     distance_completion_threshold,
                                     velocity_completion_threshold,
                                     default_height,
-                                    LQR_gains,
                                     interaction_show_prints,
                                     interact_max_vel,
                                     interact_max_acc,

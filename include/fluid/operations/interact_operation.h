@@ -44,7 +44,7 @@ class InteractOperation : public Operation {
     /**
      * @brief Determine when we enter the state APPROACHING
      */
-    ros::Time startApproaching;
+    ros::Time approaching_t0;
 
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
@@ -70,14 +70,8 @@ class InteractOperation : public Operation {
     ros::ServiceClient pause_close_tracking_client;    
 
     ros::Publisher interact_fail_pub;
-    ros::Publisher attitude_pub;
     ros::Publisher altitude_and_yaw_pub;
-    mavros_msgs::AttitudeTarget attitude_setpoint;
-    geometry_msgs::Vector3 accel_target;
     
-    float LQR_gains[4];
-    float K_LQR_X[2];
-    float K_LQR_Y[2];
     float MAX_ACCEL;
     float MAX_VEL;
 
@@ -111,29 +105,17 @@ class InteractOperation : public Operation {
     
     void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
     void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
-    void modulePoseCallback(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose);
+    void gt_modulePoseCallback(const geometry_msgs::PoseStamped module_pose);
+    void gt_modulePoseCallbackWithCov(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose);
+    void gt_modulePoseCallbackWithoutCov(const geometry_msgs::PoseStampedConstPtr module_pose);
     void FaceHuggerCallback(const std_msgs::Bool released);
     void closeTrackingCallback(std_msgs::Bool ready);
     void finishInteraction();
     bool faceHugger_is_set;     // true as soon av facehugger is released from drone
     
-    ros::ServiceClient backpropeller_client;
-
-    bool called_backpropeller_service = false;
-
-    mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint, float yaw=0);
-    geometry_msgs::Vector3 rotate(geometry_msgs::Vector3 pt, float yaw=0);
-    geometry_msgs::Point rotate(geometry_msgs::Point pt, float yaw=0);
+    mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint, float yaw);
     geometry_msgs::Vector3 estimateModuleVel();
     geometry_msgs::Vector3 estimateModuleAccel();
-
-    
-    
-    //functions in relation to the following of the mast
-    //not sure if they should be public or private
-    geometry_msgs::Quaternion accel_to_orientation(geometry_msgs::Vector3 accel);
-    geometry_msgs::Vector3 LQR_to_acceleration(mavros_msgs::PositionTarget ref);
-    void update_attitude_input(mavros_msgs::PositionTarget offset);
 
     void update_transition_state();
     

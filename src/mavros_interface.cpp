@@ -93,7 +93,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
                         armed = true;
                     }
                     else{
-                        setParam("ANGLE_MAX", 4000);
+                        setParam("ANGLE_MAX", 4000); //todo: can be removed
                     }
                 }
             } else {
@@ -119,10 +119,10 @@ void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     setpoint.type_mask = TypeMask::IDLE;
 
     // Offboard
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Trying to set offboard..!");
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Trying to set guided..!");
 
     if (!auto_offboard) {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Waiting for offboard signal..!");
+        ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Waiting for guided signal..!");
     }
 
     bool set_offboard = false;

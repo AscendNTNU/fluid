@@ -75,12 +75,6 @@ struct FluidConfiguration {
     const float default_height;
 
     /**
-     * @brief Kpx, Kpy, Kvx, Kvy are the gains used by the LQR.
-     *        Respectively the gain in position for both axes and in velocity for both axes.
-     */
-    const float* LQR_gains; 
-
-    /**
      * @brief Show some debugging prints during the interact operation
      */
     const bool interaction_show_prints;
