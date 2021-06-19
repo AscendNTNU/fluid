@@ -25,6 +25,10 @@ void ExploreOperation::initialize() {
 
     MoveOperation::initialize();
 
+    MavrosInterface mavros_interface;
+    mavros_interface.setParam("WPNAV_ACCEL", 50);
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << 50/100.0 << " m/s2.");
+
     ros::ServiceClient fh_extend = node_handle.serviceClient<std_srvs::Trigger>("/facehugger/moveforward");
     std_srvs::Trigger fh_extend_handle;
     if (fh_extend.call(fh_extend_handle))   ROS_INFO("Facehugger extend called");
