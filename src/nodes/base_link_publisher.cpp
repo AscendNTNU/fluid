@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "base_link_tf_publisher");
 
     transform_stamped.header.frame_id = "odom";
-    transform_stamped.child_frame_id = "base_linke";
+    transform_stamped.child_frame_id = "base_link";
 
     ros::NodeHandle node;
     ros::Subscriber pose_subscriber = node.subscribe("/mavros/local_position/pose", 10, &poseCallback);

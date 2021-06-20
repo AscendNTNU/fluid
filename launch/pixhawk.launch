@@ -12,7 +12,7 @@
         name="map_odom_static_broadcaster"
         args="0 0 0 0 0 0 map odom 100" />
 
-    <node name="fluid" pkg="fluid" type="base_link_publisher" output="screen"/>
+    <node name="base_link_publisher" pkg="fluid" type="base_link_publisher" output="screen"/>
 
     <include file="$(find fluid)/launch/base.launch">
         <arg name="fcu_url"                           value="/dev/ttyPixhawk:921600"/>
