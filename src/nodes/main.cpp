@@ -18,8 +18,8 @@ int main(int argc, char** argv) {
     bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_show_prints;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
     float interact_max_vel, interact_max_acc, travel_speed, travel_accel;
-    float* LQR_gains = (float*) calloc(2,sizeof(float));
-
+    float* fh_offset = (float*) calloc(3,sizeof(float));
+    
     if (!node_handle.getParam(prefix + "ekf", ekf)) {
         exitAtParameterExtractionFailure(prefix + "ekf");
     }
@@ -68,6 +68,18 @@ int main(int argc, char** argv) {
         exitAtParameterExtractionFailure(prefix + "travel_max_angle");
     }
 
+    if (!node_handle.getParam(prefix + "fh_offset_x", fh_offset[0])) {
+        exitAtParameterExtractionFailure(prefix + "fh_offset_x");
+    }
+
+    if (!node_handle.getParam(prefix + "fh_offset_y", fh_offset[1])) {
+        exitAtParameterExtractionFailure(prefix + "fh_offset_y");
+    }
+
+    if (!node_handle.getParam(prefix + "fh_offset_z", fh_offset[2])) {
+        exitAtParameterExtractionFailure(prefix + "fh_offset_z");
+    }
+
     if (!node_handle.getParam(prefix + "travel_speed", travel_speed)) {
         exitAtParameterExtractionFailure(prefix + "travel_speed");
     }
@@ -87,6 +99,7 @@ int main(int argc, char** argv) {
                                     interact_max_vel,
                                     interact_max_acc,
                                     travel_max_angle,
+                                    fh_offset,
                                     travel_speed,
                                     travel_accel
                                     };

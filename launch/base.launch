@@ -17,6 +17,10 @@
   <arg name="travel_speed"                            default="15"/>
   <arg name="travel_accel"                            default="10"/>
   
+  <arg name="fh_offset_x"                             default="0.42"/>
+  <arg name="fh_offset_y"                             default="0.02"/>
+  <arg name="fh_offset_z"                             default="-0.10"/>
+  
 
   <node name="fluid" pkg="fluid" type="fluid" output="screen"> 
     <param name="refresh_rate"                        value="$(arg refresh_rate)"/>
@@ -29,13 +33,18 @@
     <param name="use_perception"                      value="$(arg use_perception)"/>
     
     <param name="interaction_show_prints"             value="$(arg interaction_show_prints)"/>
-
     <param name="interaction_max_vel"                 value="$(arg interaction_max_vel)"/>
     <param name="interaction_max_acc"                 value="$(arg interaction_max_acc)"/>
+    <param name="travel_max_angle"                    value="$(arg travel_max_angle)"/>
+    <param name="travel_speed"                        value="$(arg travel_speed)"/>
+    <param name="travel_accel"                        value="$(arg travel_accel)"/>
 
     <param name="travel_max_angle"                 value="$(arg travel_max_angle)"/>
     <param name="travel_speed"                 value="$(arg travel_speed)"/>
     <param name="travel_accel"                 value="$(arg travel_accel)"/>
+    <param name="fh_offset_x"                         value="$(arg fh_offset_x)"/>
+    <param name="fh_offset_y"                         value="$(arg fh_offset_y)"/>
+    <param name="fh_offset_z"                         value="$(arg fh_offset_z)"/>
 
   </node>
 

@@ -19,7 +19,7 @@ class TravelOperation : public MoveOperation {
      *
      * @param path List of setpoints.
      * @param speed is the travel speed in [m/s].
-     * @param 2 means that setpoints count as visited within 2 [m].
+     * @param position_threshold means that setpoints count as visited within 2 [m].
      * @param 3 is the maximum speed the drone can have in the setpoint
      *          to mark it as visited [m/s].
      * @param max_angle is the maximum tilt angle of the drone during movement [deg]. 

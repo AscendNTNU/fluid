@@ -99,7 +99,7 @@ def main():
         # is executing should probably be implemented differently
         if not is_executing_operation:
             if finished_operation == "TAKE_OFF":
-                 # Perform a travel with a list of points
+                # Perform a travel with a list of points
                 response = travel([Point(15, 0, 1.5), Point(-15, 0, 1.5)])
                 if (not response.success):
                     rospy.logerr(response.message)
