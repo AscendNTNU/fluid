@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     int refresh_rate, travel_max_angle;
     bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_show_prints;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
-    float interact_max_vel, interact_max_acc, LQR_FF;
+    float interact_max_vel, interact_max_acc, travel_speed, travel_accel;
     float* fh_offset = (float*) calloc(3,sizeof(float));
     
     if (!node_handle.getParam(prefix + "ekf", ekf)) {
@@ -80,6 +80,14 @@ int main(int argc, char** argv) {
         exitAtParameterExtractionFailure(prefix + "fh_offset_z");
     }
 
+    if (!node_handle.getParam(prefix + "travel_speed", travel_speed)) {
+        exitAtParameterExtractionFailure(prefix + "travel_speed");
+    }
+
+    if (!node_handle.getParam(prefix + "travel_accel", travel_accel)) {
+        exitAtParameterExtractionFailure(prefix + "travel_accel");
+    }
+
     FluidConfiguration configuration{ekf,
                                     use_perception,
                                     refresh_rate,
@@ -92,7 +100,9 @@ int main(int argc, char** argv) {
                                     interact_max_vel,
                                     interact_max_acc,
                                     travel_max_angle,
-                                    fh_offset
+                                    fh_offset,
+                                    travel_speed,
+                                    travel_accel
                                     };
 
     Fluid::initialize(configuration);

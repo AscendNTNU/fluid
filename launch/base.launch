@@ -14,6 +14,8 @@
   <arg name="interaction_max_vel"                     default="0.30"/>
   <arg name="interaction_max_acc"                     default="0.23"/>
   <arg name="travel_max_angle"                        default="70"/>
+  <arg name="travel_speed"                            default="15"/>
+  <arg name="travel_accel"                            default="10"/>
   
   <arg name="fh_offset_x"                             default="0.42"/>
   <arg name="fh_offset_y"                             default="0.02"/>
@@ -34,6 +36,8 @@
     <param name="interaction_max_vel"                 value="$(arg interaction_max_vel)"/>
     <param name="interaction_max_acc"                 value="$(arg interaction_max_acc)"/>
     <param name="travel_max_angle"                    value="$(arg travel_max_angle)"/>
+    <param name="travel_speed"                        value="$(arg travel_speed)"/>
+    <param name="travel_accel"                        value="$(arg travel_accel)"/>
 
     <param name="fh_offset_x"                         value="$(arg fh_offset_x)"/>
     <param name="fh_offset_y"                         value="$(arg fh_offset_y)"/>
