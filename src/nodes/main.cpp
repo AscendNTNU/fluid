@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
     int refresh_rate, travel_max_angle;
     bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_show_prints;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
-    float interact_max_vel, interact_max_acc, LQR_FF;
+    float interact_max_vel, interact_max_acc, travel_speed, travel_accel;
     float* LQR_gains = (float*) calloc(2,sizeof(float));
 
     if (!node_handle.getParam(prefix + "ekf", ekf)) {
@@ -67,6 +67,14 @@ int main(int argc, char** argv) {
     if (!node_handle.getParam(prefix + "travel_max_angle", travel_max_angle)) {
         exitAtParameterExtractionFailure(prefix + "travel_max_angle");
     }
+
+    if (!node_handle.getParam(prefix + "travel_speed", travel_speed)) {
+        exitAtParameterExtractionFailure(prefix + "travel_speed");
+    }
+
+    if (!node_handle.getParam(prefix + "travel_accel", travel_accel)) {
+        exitAtParameterExtractionFailure(prefix + "travel_accel");
+    }
     FluidConfiguration configuration{ekf,
                                     use_perception,
                                     refresh_rate,
@@ -78,7 +86,9 @@ int main(int argc, char** argv) {
                                     interaction_show_prints,
                                     interact_max_vel,
                                     interact_max_acc,
-                                    travel_max_angle
+                                    travel_max_angle,
+                                    travel_speed,
+                                    travel_accel
                                     };
 
     Fluid::initialize(configuration);

@@ -93,6 +93,16 @@ struct FluidConfiguration {
      * @brief max angle ardupilot parameter for the travel operation.
      */
     const float travel_max_angle;  
+
+    /**
+     * @brief max speed ardupilot parameter for the travel operation.
+     */
+    const float travel_speed;  
+
+    /**
+     * @brief max accel ardupilot parameter for the travel operation.
+     */
+    const float travel_accel;  
 };
 
 /**
