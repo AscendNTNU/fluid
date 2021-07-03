@@ -8,6 +8,7 @@ void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg) {
     static tf2_ros::TransformBroadcaster broadcaster;
 
     transform_stamped.header.stamp = ros::Time::now();
+    transform_stamped.header.frame_id = msg->header.frame_id;
     transform_stamped.transform.translation.x = msg->pose.position.x;
     transform_stamped.transform.translation.y = msg->pose.position.y;
     transform_stamped.transform.translation.z = msg->pose.position.z;
@@ -23,7 +24,7 @@ void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg) {
 int main(int argc, char** argv) {
     ros::init(argc, argv, "base_link_tf_publisher");
 
-    transform_stamped.header.frame_id = "map";
+    // transform_stamped.header.frame_id = "odom";
     transform_stamped.child_frame_id = "base_link";
 
     ros::NodeHandle node;
