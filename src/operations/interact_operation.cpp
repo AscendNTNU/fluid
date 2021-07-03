@@ -85,7 +85,7 @@ void InteractOperation::initialize() {
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
     
     setpoint.type_mask = TypeMask::POSITION_AND_VELOCITY;
-    setpoint.header.frame_id = "interact";
+    setpoint.header.frame_id = "map";
 
     MavrosInterface mavros_interface;
     mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);

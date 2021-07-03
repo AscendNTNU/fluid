@@ -23,7 +23,7 @@ void poseCallback(const geometry_msgs::PoseStamped::ConstPtr &msg) {
 int main(int argc, char** argv) {
     ros::init(argc, argv, "base_link_tf_publisher");
 
-    transform_stamped.header.frame_id = "odom";
+    transform_stamped.header.frame_id = "map";
     transform_stamped.child_frame_id = "base_link";
 
     ros::NodeHandle node;
