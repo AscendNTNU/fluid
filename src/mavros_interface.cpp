@@ -60,7 +60,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
     // Is this necessary with Ardupilot? -Erlend
     mavros_msgs::PositionTarget setpoint;
     setpoint.type_mask = TypeMask::IDLE;
-    setpoint.header.frame_id = "Arming";
+    setpoint.header.frame_id = "map";
 
     for (int i = UPDATE_REFRESH_RATE * 2; ros::ok() && i > 0; --i) {
         setpoint.header.stamp = ros::Time::now();
@@ -115,7 +115,7 @@ void MavrosInterface::requestArm(const bool& auto_arm) const {
 void MavrosInterface::requestOffboard(const bool& auto_offboard) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
     mavros_msgs::PositionTarget setpoint;
-    setpoint.header.frame_id = "Guided";
+    setpoint.header.frame_id = "map";
     setpoint.type_mask = TypeMask::IDLE;
 
     // Offboard
@@ -149,7 +149,7 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
     // send a few setpoints before starting. This is because the stream has to be set ut before we
     // change modes within Ardupilot
     // Is this necessary with Ardupilot? -Erlend
-    setpoint.header.frame_id = "takeOff";
+    setpoint.header.frame_id = "map";
     setpoint.type_mask = TypeMask::IDLE;
     setpoint.coordinate_frame = 0;
 
