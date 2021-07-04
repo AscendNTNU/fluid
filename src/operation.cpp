@@ -7,13 +7,14 @@
 #include <mavros_msgs/PositionTarget.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
+#include <nav_msgs/Odometry.h>
 
 #include "fluid.h"
 #include "util.h"
 
 Operation::Operation(const OperationIdentifier& identifier, const bool& steady, const bool& autoPublish)
                                         : identifier(identifier), steady(steady), autoPublish(autoPublish){
-    pose_subscriber = node_handle.subscribe("mavros/local_position/pose", 1, &Operation::poseCallback, this);
+    pose_subscriber = node_handle.subscribe("mavros/global_position/local", 1, &Operation::poseCallback, this);
     twist_subscriber =
         node_handle.subscribe("mavros/local_position/velocity_local", 1, &Operation::twistCallback, this);
 
@@ -25,10 +26,10 @@ Operation::Operation(const OperationIdentifier& identifier, const bool& steady, 
 
 geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_pose; }
 
-void Operation::poseCallback(const geometry_msgs::PoseStampedConstPtr pose) {
-    current_pose.pose = pose->pose;
+void Operation::poseCallback(const nav_msgs::Odometry::ConstPtr pose) {
+    current_pose.pose = pose->pose.pose;
     current_pose.header = pose->header;
-    current_accel = orientation_to_acceleration(pose->pose.orientation);
+    current_accel = orientation_to_acceleration(pose->pose.pose.orientation);
 }
 
 geometry_msgs::TwistStamped Operation::getCurrentTwist() const { return current_twist; }
