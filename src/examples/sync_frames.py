@@ -158,18 +158,21 @@ if __name__=="__main__":
         gp_home.position.latitude = msg.latitude
         gp_home.position.longitude = msg.longitude
         gp_home_pub.publish(gp_home)
-        rospy.sleep(1)
-
-
         print("gp_home published")
+        rospy.sleep(5)
 
+#        rospy.sleep(30)
         #get origin GPS coordinates
-#        for _ in range(2):
-#            rospy.sleep(1)
-#            #print_gsp_pose()
-#            get_global_origin(mav, mavlink_pub)
-#            print_gsp_pose()
-#            set_home_position(mav, mavlink_pub)
-#            set_global_origin(mav, mavlink_pub)
+        for _ in range(10):
+            if rospy.is_shutdown():
+                exit()
+            rospy.sleep(5)
+            #request global origin
+            the_connection.mav.command_long_send(the_connection.target_system, the_connection.target_component, mavutil.mavlink.MAV_CMD_REQUEST_MESSAGE, 0, 49, 0, 0, 0, 0, 0, 0, 0)
+            #read global origin message
+            msg = the_connection.recv_match(type='GPS_GLOBAL_ORIGIN')
+            if msg:
+                print_gps(msg)
+
     except rospy.ROSInterruptException:
         pass
