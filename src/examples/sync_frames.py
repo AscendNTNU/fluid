@@ -6,12 +6,12 @@
 #
 ##
 
-from re import L
+#from re import L
 import rospy
-from pymavlink.dialects.v10 import ardupilotmega as MAV_APM
+#from pymavlink.dialects.v10 import ardupilotmega as MAV_APM
 from pymavlink import mavutil
-from mavros.mavlink import convert_to_rosmsg
-from mavros_msgs.msg import Mavlink
+#from mavros.mavlink import convert_to_rosmsg
+#from mavros_msgs.msg import Mavlink
 from mavros_msgs.msg import geographic_msgs # for geographic_msgs/GeoPointStamped
 
 
