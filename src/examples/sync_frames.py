@@ -2,16 +2,13 @@
 
 ##
 #
-# Send SET_GPS_GLOBAL_ORIGIN and SET_HOME_POSITION messages
+# Request GPS_GLOBAL_ORIGIN and mavros/global_position/set_gp_origin 
+# with the received position
 #
 ##
 
-#from re import L
 import rospy
-#from pymavlink.dialects.v10 import ardupilotmega as MAV_APM
 from pymavlink import mavutil
-#from mavros.mavlink import convert_to_rosmsg
-#from mavros_msgs.msg import Mavlink
 from mavros_msgs.msg import geographic_msgs # for geographic_msgs/GeoPointStamped
 
 
