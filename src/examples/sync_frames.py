@@ -12,12 +12,14 @@ from pymavlink.dialects.v10 import ardupilotmega as MAV_APM
 from pymavlink import mavutil
 from mavros.mavlink import convert_to_rosmsg
 from mavros_msgs.msg import Mavlink
+from mavros_msgs.msg import geographic_msgs # for geographic_msgs/GeoPointStamped
 
 # Global position of the origin
 lat = 425633500  # Terni
 lon = 126432900  # Terni
 alt = 163000 
 
+# Start a connection listening to a UDP port
 the_connection = mavutil.mavlink_connection('localhost:14550')
 
 class fifo(object):
@@ -115,7 +117,7 @@ def set_home_position(mav, pub):
 
     send_message(msg, mav, pub)
 
-def print_gsp_pose():
+def print_gsp_pose(): # does not work for some reason (probably need to be run at the exact good moment)
     #listening to GPS_GLOBAL_ORIGIN
     pose = the_connection.messages['GPS_GLOBAL_ORIGIN']  # Note, you can access message fields as attributes!
     alt = pose.alt
@@ -137,31 +139,37 @@ if __name__=="__main__":
     try:
         rospy.init_node("origin_publisher")
         mavlink_pub = rospy.Publisher("/mavlink/to", Mavlink, queue_size=20)
+        gp_home_pub = rospy.Publisher("/mavros/global_position/set_gp_origin", geographic_msgs.msg.GeoPointStamped, queue_size=10)
         
-        # Start a connection listening to a UDP port
-
         # Set up mavlink instance
         f = fifo()
         mav = MAV_APM.MAVLink(f, srcSystem=1, srcComponent=1)
 
+        the_connection.wait_heartbeat()
+        print("Hearbit found")
+
         msg = the_connection.recv_match(type='GPS_GLOBAL_ORIGIN', blocking=True)
         print_gps(msg)
 
-        the_connection.wait_heartbeat()
-        print("heartbit found\n")
-        # wait to initialize
-        while mavlink_pub.get_num_connections() <= 0:
-            pass
-        rospy.sleep(60)
+        gp_home = geographic_msgs.msg.GeoPointStamped()
+        gp_home.header.stamp = rospy.Time.now()
+        #gp_home.header.frame_id = 1
+        gp_home.position.altitude = msg.altitude
+        gp_home.position.latitude = msg.latitude
+        gp_home.position.longitude = msg.longitude
+        gp_home_pub.publish(gp_home)
+        rospy.sleep(1)
+
+
+        print("gp_home published")
+
         #get origin GPS coordinates
-        print_gsp_pose()
-        print("origin found!")
-        for _ in range(2):
-            rospy.sleep(1)
-            #print_gsp_pose()
-            get_global_origin(mav, mavlink_pub)
-            print_gsp_pose()
-            set_home_position(mav, mavlink_pub)
-            set_global_origin(mav, mavlink_pub)
+#        for _ in range(2):
+#            rospy.sleep(1)
+#            #print_gsp_pose()
+#            get_global_origin(mav, mavlink_pub)
+#            print_gsp_pose()
+#            set_home_position(mav, mavlink_pub)
+#            set_global_origin(mav, mavlink_pub)
     except rospy.ROSInterruptException:
         pass
