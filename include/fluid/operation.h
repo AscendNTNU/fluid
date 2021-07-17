@@ -8,6 +8,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <mavros_msgs/PositionTarget.h>
+#include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 
 #include <memory>
@@ -37,7 +38,7 @@ class Operation {
      *
      * @param pose Pose retrieved from the callback.
      */
-    void poseCallback(const geometry_msgs::PoseStampedConstPtr pose);
+    void poseCallback(const nav_msgs::OdometryConstPtr pose);
 
     /**
      * @brief Gets the current twist.
