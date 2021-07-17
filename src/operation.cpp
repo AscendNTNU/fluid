@@ -59,7 +59,7 @@ float Operation::getCurrentYaw() const {
 
 void Operation::publishSetpoint() { 
     setpoint.header.stamp = ros::Time::now();
-    setpoint.header.frame_id = "operation";
+    setpoint.header.frame_id = "map";
     setpoint_publisher.publish(setpoint); 
 }
 

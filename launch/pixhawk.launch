@@ -7,6 +7,13 @@
         <include file="$(find control_test_nodes)/launch/fullFeedback.launch"/>
     </group>
 
+    <node pkg="tf"
+        type="static_transform_publisher"
+        name="map_odom_static_broadcaster"
+        args="0 0 0 0 0 0 map odom 100" />
+
+    <node name="base_link_publisher" pkg="fluid" type="base_link_publisher" output="screen"/>
+
     <include file="$(find fluid)/launch/base.launch">
         <arg name="fcu_url"                           value="/dev/ttyPixhawk:921600"/>
         <arg name="should_auto_arm"                   value="false"/>
@@ -15,4 +22,6 @@
         <arg name="ekf"                               value="$(arg ekf)"/>
         <arg name="use_perception"                   value="$(arg use_perception)"/>
     </include>
+
+
 </launch>

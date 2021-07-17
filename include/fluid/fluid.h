@@ -98,6 +98,16 @@ struct FluidConfiguration {
      * @brief 3D offset of the Face_hugger compared to the drone center
      */
     const float* fh_offset;
+
+    /**
+     * @brief max speed ardupilot parameter for the travel operation.
+     */
+    const float travel_speed;  
+
+    /**
+     * @brief max accel ardupilot parameter for the travel operation.
+     */
+    const float travel_accel;  
 };
 
 /**
