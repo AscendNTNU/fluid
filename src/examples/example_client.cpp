@@ -68,6 +68,9 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "fluid_client");
     ros::NodeHandle node_handle;
 
+    ros::Publisher start_ekf_pub = 
+            node_handle.advertise<geometry_msgs::Point>("/ekf/start",1);
+
     // Declared const as we only need to set up the service and get the calls to the callback, we don't need to do
     // anything with this object.
     const ros::ServiceServer operation_completion_server =
@@ -135,9 +138,15 @@ int main(int argc, char** argv) {
 
             } else if (finished_operation == "EXPLORE") {
                 ROS_INFO_STREAM("[example_client]: Exploring finished, go interact with the mast");
+                
+                geometry_msgs::Point mast_base;
+                mast_base.x = -0.62;
+                mast_base.y = -10.80;
+                mast_base.z = 0.0;
                 fluid::Interact interact_service_handle;
-                interact_service_handle.request.fixed_mast_yaw = 0.0;
-                interact_service_handle.request.offset = 1.5;
+                interact_service_handle.request.fixed_mast_yaw = M_PI/3.0;
+                interact_service_handle.request.offset = 2.0;
+                start_ekf_pub.publish(mast_base);
                 
                 if (Interact.call(interact_service_handle)) {
                     if (!interact_service_handle.response.success) {
