@@ -1,17 +1,28 @@
 /**
- * @file move_operation.h
+ * @file move_operation_global.h
  */
 
 #ifndef MOVE_OPERATION_H
 #define MOVE_OPERATION_H
 
 #include "operation.h"
+#include <mavros_msgs/GlobalPositionTarget.h>
 
 /**
  * @brief Serves as the base for move operations such as #ExploreOperation and #TravelOperation.
  */
 class MoveOperation : public Operation {
    private:
+    /**
+     * @brief Publisher to global position setpoint.
+     */
+    ros::Publisher global_pose_pub;
+
+    /**
+     * @brief Subscriber to global position setpoint.
+     */
+    ros::Subscriber global_pose_sub;
+
     /**
      * @brief The threshold for when the drone is within a given setpoint.
      */
@@ -37,7 +48,7 @@ class MoveOperation : public Operation {
      * @brief Convenicene variable representing that the drone has been through all the setpoints in the #path.
      */
     bool been_to_all_points = false;
-
+    
    protected:
     /**
      * @brief Flag for forcing the operation to update the setpoint even the drone hasn't reached the setpoint.
@@ -47,12 +58,12 @@ class MoveOperation : public Operation {
     /**
      * @brief The current setpoint.
      */
-    std::vector<geometry_msgs::Point>::iterator current_setpoint_iterator;
-
+    std::vector<mavros_msgs::GlobalPositionTarget>::iterator current_setpoint_iterator;
+ 
     /**
      * @brief List of the setpoints.
      */
-    std::vector<geometry_msgs::Point> path;
+    std::vector<mavros_msgs::GlobalPositionTarget> path;
 
     /**
      * @brief Sets up the move operation.
@@ -65,7 +76,7 @@ class MoveOperation : public Operation {
      * @param max_angle Is the maximum allowed angle during movement [deg].
      */
     explicit MoveOperation(const OperationIdentifier& operation_identifier,
-                           const std::vector<geometry_msgs::Point>& path, const double& speed,
+                           const std::vector<mavros_msgs::GlobalPositionTarget>& path, const double& speed,
                            const double& position_threshold, const double& velocity_threshold,
                            const double& max_angle);
 

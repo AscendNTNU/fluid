@@ -1,8 +1,8 @@
 /**
- * @file move_operation.cpp
+ * @file move_operation_global.cpp
  */
 
-#include "move_operation.h"
+#include "move_operation_global.h"
 
 #include <geometry_msgs/Quaternion.h>
 #include <mavros_msgs/ParamSet.h>
@@ -15,21 +15,24 @@
 #include "util.h"
 
 MoveOperation::MoveOperation(const OperationIdentifier& operation_identifier,
-                             const std::vector<geometry_msgs::Point>& path, const double& speed,
+                             const std::vector<mavros_msgs::GlobalPositionTarget>& path, const double& speed,
                              const double& position_threshold, const double& velocity_threshold,
                              const double& max_angle = 45)
-    : Operation(operation_identifier, false, true),
+    : Operation(operation_identifier, false, false),
       path(path),
       speed(speed*100),
       position_threshold(position_threshold),
       velocity_threshold(velocity_threshold),
-      max_angle(max_angle*100) {}
-
+      max_angle(max_angle*100){}
+      
 bool MoveOperation::hasFinishedExecution() const { return been_to_all_points; }
 
 void MoveOperation::initialize() {
+    global_pose_pub = node_handle.advertise <mavros_msgs::GlobalPositionTarget> ("mavros/setpoint_position/global", 10)
+    global_pose_sub = node_handle.subscribe ...
+    
     for (auto iterator = path.begin(); iterator != path.end(); iterator++) {
-        if (iterator->z <= 0.1) {
+        if (iterator->altitude <= 0.1) {
             iterator->z = Fluid::getInstance().configuration.default_height;
         }
     }
