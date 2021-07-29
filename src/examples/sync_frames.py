@@ -7,10 +7,15 @@
 #
 ##
 
+from threading import local
 import rospy
 from pymavlink import mavutil
 from mavros_msgs.msg import geographic_msgs # for geographic_msgs/GeoPointStamped
+from geometry_msgs.msg import Point
+import math
+from sensor_msgs.msg import NavSatFix
 
+origin = geographic_msgs.msg.GeoPointStamped()
 
 def print_gps(msg):
     print("Altitude is " + str(msg.altitude))
@@ -28,12 +33,28 @@ def forward_gps_origin(msg, pub):
     pub.publish(gp_home)
     print("gp_home published")
 
+def gp_callback(gp):
+    if(origin):
+        local_pose = Point()
+        R = 6371000 #6371000 
+        # In NED frame.
+        local_pose.y = R* math.radians(origin.latitude/1E7-gp.latitude)
+        local_pose.x = R* math.cos(math.radians(gp.latitude))*math.radians(origin.longitude/1E7-gp.longitude)
+        local_pose.z = gp.altitude
+        print("diff lat: " + str(origin.latitude/1E7-gp.latitude))
+        print("diff long: " + str(origin.longitude/1E7-gp.longitude))
+        print("received lat:" + str(gp.latitude) + "long:" + str(gp.longitude))
+        print("origin lat:" + str(origin.latitude/1E7) + "long:" + str(origin.longitude/1E7))
+        print("gps in local is x:" + str(local_pose.x) + "\ty:" + str(local_pose.y) + "\tz:" + str(local_pose.z) + "\n")
+    else:
+        print("no origin yet")
 
 if __name__=="__main__":
     try:
         rospy.init_node("origin_publisher")
         gp_home_pub = rospy.Publisher("/mavros/global_position/set_gp_origin", geographic_msgs.msg.GeoPointStamped, queue_size=10)
-        
+        global_pose_sub = rospy.Subscriber("/mavros/global_position/global",NavSatFix,gp_callback, queue_size=10)
+
         # Start a connection listening to a UDP port
         the_connection = mavutil.mavlink_connection('localhost:14550')
 
@@ -49,8 +70,12 @@ if __name__=="__main__":
             if msg:
                 forward_gps_origin(msg, gp_home_pub)
                 print_gps(msg)
-                exit()
+                origin = msg
+                break
         rospy.sleep(1)
+        while not rospy.is_shutdown():
+            rospy.sleep(1)
+        
 
     except rospy.ROSInterruptException:
         pass
