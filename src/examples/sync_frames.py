@@ -15,7 +15,7 @@ from geometry_msgs.msg import Point
 import math
 from sensor_msgs.msg import NavSatFix
 
-origin = geographic_msgs.msg.GeoPointStamped()
+origin = 0
 
 def print_gps(msg):
     print("Altitude is " + str(msg.altitude))
@@ -41,13 +41,7 @@ def gp_callback(gp):
         local_pose.y = R* math.radians(origin.latitude/1E7-gp.latitude)
         local_pose.x = R* math.cos(math.radians(gp.latitude))*math.radians(origin.longitude/1E7-gp.longitude)
         local_pose.z = gp.altitude
-        print("diff lat: " + str(origin.latitude/1E7-gp.latitude))
-        print("diff long: " + str(origin.longitude/1E7-gp.longitude))
-        print("received lat:" + str(gp.latitude) + "long:" + str(gp.longitude))
-        print("origin lat:" + str(origin.latitude/1E7) + "long:" + str(origin.longitude/1E7))
         print("gps in local is x:" + str(local_pose.x) + "\ty:" + str(local_pose.y) + "\tz:" + str(local_pose.z) + "\n")
-    else:
-        print("no origin yet")
 
 if __name__=="__main__":
     try:
