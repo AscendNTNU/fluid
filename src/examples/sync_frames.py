@@ -36,11 +36,11 @@ def forward_gps_origin(msg, pub):
 def gp_callback(gp):
     if(origin):
         local_pose = Point()
-        R = 6371000 #6371000 
+        R = 6378100 #6371000  https://github.com/ArduPilot/ardupilot/search?q=earth
         # In NED frame.
         local_pose.y = R* math.radians(origin.latitude/1E7-gp.latitude)
         local_pose.x = R* math.cos(math.radians(gp.latitude))*math.radians(origin.longitude/1E7-gp.longitude)
-        local_pose.z = gp.altitude
+        local_pose.z = gp.altitude - origin.altitude
         print("gps in local is x:" + str(local_pose.x) + "\ty:" + str(local_pose.y) + "\tz:" + str(local_pose.z) + "\n")
 
 if __name__=="__main__":
