@@ -16,6 +16,8 @@
 #include "travel_operation.h"
 #include "util.h"
 
+geographic_msgs::GeoPointStamped _origin;
+
 /******************************************************************************************************
  *                                          Singleton                                                 *
  ******************************************************************************************************/
@@ -33,6 +35,7 @@ Fluid& Fluid::getInstance() { return *instance_ptr; }
 
 std::shared_ptr<StatusPublisher> Fluid::getStatusPublisherPtr() { return status_publisher_ptr; }
 
+geographic_msgs::GeoPointStamped Fluid::getOrigin() { return origin; }
 /******************************************************************************************************
  *                                          Operations                                                *
  ******************************************************************************************************/
@@ -168,6 +171,14 @@ bool Fluid::isValidOperation(const OperationIdentifier& current_operation_identi
     }
 }
 
+void setOrigin(geographic_msgs::GeoPointStampedConstPtr or_ptr){
+    _origin = *or_ptr;
+}
+
+void globalPoseCallback(geographic_msgs::GeoPointStampedConstPtr gp_ptr){
+    _origin.position.altitude = gp_ptr->position.altitude;
+}
+
 /******************************************************************************************************
  *                                          Main Logic                                                *
  ******************************************************************************************************/
@@ -175,6 +186,24 @@ bool Fluid::isValidOperation(const OperationIdentifier& current_operation_identi
 void Fluid::run() {
     ros::Rate rate(configuration.refresh_rate);
     bool has_called_completion = false;
+     
+    ros::Subscriber origin_sub = node_handle.subscribe(
+        "/mavros/global_position/set_gp_origin", 1, setOrigin);
+    
+    //Waiting for receiving origin data.
+    while(origin.position.latitude == 0.0){
+        ros::spinOnce();
+        rate.sleep();        
+    }
+    if(origin.position.altitude == 0.0){
+        ros::Subscriber pose_sub = node_handle.subscribe(
+        "/mavros/global_position/global", 1, globalPoseCallback);
+    }
+    while(origin.position.altitude == 0.0){
+        ros::spinOnce();
+        rate.sleep();        
+    }
+    origin = _origin;
 
     while (ros::ok()) {
         got_new_operation = false;

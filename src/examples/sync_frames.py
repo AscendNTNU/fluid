@@ -15,6 +15,8 @@ from geometry_msgs.msg import Point
 import math
 from sensor_msgs.msg import NavSatFix
 
+LOCATION_SCALING_FACTOR = 0.011131884502145034
+
 origin = 0
 
 def print_gps(msg):
@@ -33,13 +35,27 @@ def forward_gps_origin(msg, pub):
     pub.publish(gp_home)
     print("gp_home published")
 
+## get lon1-lon2, wrapping at -180e7 to 180e7
+def diff_longitude(lon1, lon2):
+    if ((int(lon1) & 0x80000000) == (int(lon2) & 0x80000000)):
+        # common case of same sign
+        return lon1 - lon2
+    dlon = lon1 - lon2
+    if (dlon > 1800000000):
+        dlon -= 3600000000
+    elif (dlon < -1800000000):
+        dlon += 3600000000
+    return dlon
+
 def gp_callback(gp):
     if(origin):
         local_pose = Point()
         R = 6378100 #6371000  https://github.com/ArduPilot/ardupilot/search?q=earth
-        # In NED frame.
-        local_pose.y = R* math.radians(origin.latitude/1E7-gp.latitude)
-        local_pose.x = R* math.cos(math.radians(gp.latitude))*math.radians(origin.longitude/1E7-gp.longitude)
+        # In NE frame: https://github.com/ArduPilot/ardupilot/blob/e9f6a5afdf33899ca94026075c80733616f74732/libraries/AP_Common/Location.cpp#L252
+        local_pose.y = (gp.latitude*1E7 - origin.latitude) * LOCATION_SCALING_FACTOR
+        #local_pose.y = R* math.radians(origin.latitude/1E7-gp.latitude)
+        local_pose.x = diff_longitude(origin.longitude,gp.longitude*1E7) * LOCATION_SCALING_FACTOR * math.cos(((origin.latitude/1E7+gp.latitude)/2) * math.pi / 180.0)
+        #local_pose.x = R* math.cos(math.radians(gp.latitude))*math.radians(origin.longitude/1E7-gp.longitude)
         local_pose.z = gp.altitude - origin.altitude
         print("gps in local is x:" + str(local_pose.x) + "\ty:" + str(local_pose.y) + "\tz:" + str(local_pose.z) + "\n")
 

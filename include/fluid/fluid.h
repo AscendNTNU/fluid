@@ -20,6 +20,7 @@
 #include <fluid/Travel.h>
 #include <geometry_msgs/Point32.h>
 #include <ros/ros.h>
+#include "geographic_msgs/GeoPointStamped.h"
 
 #include <map>
 #include <memory>
@@ -80,12 +81,12 @@ struct FluidConfiguration {
     const bool interaction_show_prints;
     
     /**
-     * @brief Show some debugging prints during the interact operation
+     * @brief Maximum transitionnary velocity allowed during setpoint change
      */
     const float interact_max_vel;
     
     /**
-     * @brief Use ground_truth data for interact operation.
+     * @brief Maximum transitionnary acceleration allowed during setpoint change
      */
     const float interact_max_acc;  
 
@@ -124,6 +125,11 @@ class Fluid {
      * @brief Interface for publishing status messages.
      */
     std::shared_ptr<StatusPublisher> status_publisher_ptr;
+
+    /**
+     * @brief Origin of local frame
+     */
+    geographic_msgs::GeoPointStamped origin;
 
     /**
      * @brief Sets up the service servers and clients.
@@ -318,6 +324,13 @@ class Fluid {
      * @brief Runs the operation macine.
      */
     void run();
+
+    /**
+     * @brief Get the Origin of the local frame
+     * 
+     * @return geographic_msgs::GeoPointStamped 
+     */
+    geographic_msgs::GeoPointStamped getOrigin();
 };
 
 #endif
