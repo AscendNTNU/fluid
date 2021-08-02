@@ -9,22 +9,39 @@
 #include "operation_identifier.h"
 #include "mavros_interface.h"
 
+#define LOCATION_SCALING_FACTOR 0.011131884502145034
 
-/*
-geometry_msgs::Point global_to_local(geometry_msgs::Point gp){
-    if(origin){
-        local_pose = geometry_msgs::Point();
-        R = 6378100 //6371000  https://github.com/ArduPilot/ardupilot/search?q=earth
-        # In NE frame: https://github.com/ArduPilot/ardupilot/blob/e9f6a5afdf33899ca94026075c80733616f74732/libraries/AP_Common/Location.cpp#L252
-        local_pose.y = (gp.latitude*1E7 - origin.latitude) * LOCATION_SCALING_FACTOR
-        #local_pose.y = R* math.radians(origin.latitude/1E7-gp.latitude)
-        local_pose.x = diff_longitude(origin.longitude,gp.longitude*1E7) * LOCATION_SCALING_FACTOR * math.cos(((origin.latitude/1E7+gp.latitude)/2) * math.pi / 180.0)
-        #local_pose.x = R* math.cos(math.radians(gp.latitude))*math.radians(origin.longitude/1E7-gp.longitude)
-        local_pose.z = gp.altitude - origin.altitude
-        print("gps in local is x:" + str(local_pose.x) + "\ty:" + str(local_pose.y) + "\tz:" + str(local_pose.z) + "\n")
-    }
+long diff_longitude(long lon1, long lon2){
+    if ((int(lon1) & 0x80000000) == (int(lon2) & 0x80000000))
+        // common case of same sign
+        return lon1 - lon2;
+    long dlon = lon1 - lon2;
+    if (dlon > 1800000000)
+        dlon -= 3600000000;
+    else if (dlon < -1800000000)
+        dlon += 3600000000;
+    return dlon;
 }
-*/
+
+geometry_msgs::Point global_to_local(geographic_msgs::GeoPointStamped gp){
+    geographic_msgs::GeoPointStamped origin = Fluid::getOrigin();
+    geometry_msgs::Point local_pose;
+    if(origin.position.altitude !=0){
+        double R = 6378100; //6371000  https://github.com/ArduPilot/ardupilot/search?q=earth
+        // In NE frame: https://github.com/ArduPilot/ardupilot/blob/e9f6a5afdf33899ca94026075c80733616f74732/libraries/AP_Common/Location.cpp#L252
+        local_pose.y = (gp.position.latitude*1E7 - origin.position.latitude) * LOCATION_SCALING_FACTOR;
+        //local_pose.y = R* math.radians(origin.latitude/1E7-gp.latitude)
+        local_pose.x = diff_longitude(origin.position.longitude,gp.position.longitude*1E7) * LOCATION_SCALING_FACTOR * cos(((origin.position.latitude/1E7+gp.position.latitude)/2) * M_PI / 180.0);
+        //local_pose.x = R* math.cos(math.radians(gp.latitude))*math.radians(origin.longitude/1E7-gp.longitude)
+        local_pose.z = gp.position.altitude - origin.position.altitude;
+        printf("gps in local is x: %f\ty: %f\tz: %f\n", local_pose.x, local_pose.y, local_pose.z);
+    }
+    else{
+        ROS_INFO_STREAM("Travel_operation: can't translate from global to local setpoints. Origin not set yet.");
+    }
+    return local_pose;
+}
+
 /**
  * @brief Represents the operation where the drone is moving quickly at large distances.
  */

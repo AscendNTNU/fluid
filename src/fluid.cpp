@@ -35,7 +35,7 @@ Fluid& Fluid::getInstance() { return *instance_ptr; }
 
 std::shared_ptr<StatusPublisher> Fluid::getStatusPublisherPtr() { return status_publisher_ptr; }
 
-geographic_msgs::GeoPointStamped Fluid::getOrigin() { return origin; }
+geographic_msgs::GeoPointStamped Fluid::getOrigin() { return Fluid::origin; }
 /******************************************************************************************************
  *                                          Operations                                                *
  ******************************************************************************************************/

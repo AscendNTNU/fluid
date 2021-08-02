@@ -129,7 +129,7 @@ class Fluid {
     /**
      * @brief Origin of local frame
      */
-    geographic_msgs::GeoPointStamped origin;
+    static geographic_msgs::GeoPointStamped origin;
 
     /**
      * @brief Sets up the service servers and clients.
@@ -330,7 +330,7 @@ class Fluid {
      * 
      * @return geographic_msgs::GeoPointStamped 
      */
-    geographic_msgs::GeoPointStamped getOrigin();
+    static geographic_msgs::GeoPointStamped getOrigin();
 };
 
 #endif

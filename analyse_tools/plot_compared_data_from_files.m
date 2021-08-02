@@ -1,4 +1,4 @@
-%% The aim of this script is to compare data from two different files.
+c%% The aim of this script is to compare data from two different files.
 % The way it does it is by finding similar titles and then plot the similar
 % variables on the same graphs
 % This code is written from plot_data_from_file.m
