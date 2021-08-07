@@ -35,7 +35,7 @@ Fluid& Fluid::getInstance() { return *instance_ptr; }
 
 std::shared_ptr<StatusPublisher> Fluid::getStatusPublisherPtr() { return status_publisher_ptr; }
 
-geographic_msgs::GeoPointStamped Fluid::getOrigin() { return Fluid::origin; }
+geographic_msgs::GeoPointStamped Fluid::getOrigin() { return _origin; }
 /******************************************************************************************************
  *                                          Operations                                                *
  ******************************************************************************************************/
@@ -191,19 +191,19 @@ void Fluid::run() {
         "/mavros/global_position/set_gp_origin", 1, setOrigin);
     
     //Waiting for receiving origin data.
-    while(origin.position.latitude == 0.0){
+    while(_origin.position.latitude == 0.0){
         ros::spinOnce();
         rate.sleep();        
     }
-    if(origin.position.altitude == 0.0){
+    if(_origin.position.altitude == 0.0){
         ros::Subscriber pose_sub = node_handle.subscribe(
         "/mavros/global_position/global", 1, globalPoseCallback);
     }
-    while(origin.position.altitude == 0.0){
+    while(_origin.position.altitude == 0.0){
         ros::spinOnce();
         rate.sleep();        
     }
-    origin = _origin;
+    //origin = _origin;
 
     while (ros::ok()) {
         got_new_operation = false;
