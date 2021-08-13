@@ -24,16 +24,16 @@ long diff_longitude(long lon1, long lon2){
 }
 
 geometry_msgs::Point global_to_local(geographic_msgs::GeoPointStamped gp){
-    geographic_msgs::GeoPointStamped origin = Fluid::getOrigin();
+    geographic_msgs::GeoPoint origin = Fluid::getOrigin().position;
     geometry_msgs::Point local_pose;
-    if(origin.position.altitude !=0){
+    if(origin.altitude !=0){
         double R = 6378100; //6371000  https://github.com/ArduPilot/ardupilot/search?q=earth
         // In NE frame: https://github.com/ArduPilot/ardupilot/blob/e9f6a5afdf33899ca94026075c80733616f74732/libraries/AP_Common/Location.cpp#L252
-        local_pose.y = (gp.position.latitude*1E7 - origin.position.latitude) * LOCATION_SCALING_FACTOR;
+        local_pose.y = (gp.position.latitude*1E7 - origin.latitude) * LOCATION_SCALING_FACTOR;
         //local_pose.y = R* math.radians(origin.latitude/1E7-gp.latitude)
-        local_pose.x = diff_longitude(origin.position.longitude,gp.position.longitude*1E7) * LOCATION_SCALING_FACTOR * cos(((origin.position.latitude/1E7+gp.position.latitude)/2) * M_PI / 180.0);
+        local_pose.x = diff_longitude(origin.longitude,gp.position.longitude*1E7) * LOCATION_SCALING_FACTOR * cos(((origin.latitude/1E7+gp.position.latitude)/2) * M_PI / 180.0);
         //local_pose.x = R* math.cos(math.radians(gp.latitude))*math.radians(origin.longitude/1E7-gp.longitude)
-        local_pose.z = gp.position.altitude - origin.position.altitude;
+        local_pose.z = gp.position.altitude - origin.altitude;
         printf("gps in local is x: %f\ty: %f\tz: %f\n", local_pose.x, local_pose.y, local_pose.z);
     }
     else{

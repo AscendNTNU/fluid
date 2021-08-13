@@ -16,7 +16,7 @@
 #include "travel_operation.h"
 #include "util.h"
 
-geographic_msgs::GeoPointStamped _origin;
+geographic_msgs::GeoPointStamped origin;
 
 /******************************************************************************************************
  *                                          Singleton                                                 *
@@ -35,7 +35,7 @@ Fluid& Fluid::getInstance() { return *instance_ptr; }
 
 std::shared_ptr<StatusPublisher> Fluid::getStatusPublisherPtr() { return status_publisher_ptr; }
 
-geographic_msgs::GeoPointStamped Fluid::getOrigin() { return _origin; }
+geographic_msgs::GeoPointStamped Fluid::getOrigin() { return origin; }
 /******************************************************************************************************
  *                                          Operations                                                *
  ******************************************************************************************************/
@@ -172,11 +172,11 @@ bool Fluid::isValidOperation(const OperationIdentifier& current_operation_identi
 }
 
 void setOrigin(geographic_msgs::GeoPointStampedConstPtr or_ptr){
-    _origin = *or_ptr;
+    origin = *or_ptr;
 }
 
 void globalPoseCallback(geographic_msgs::GeoPointStampedConstPtr gp_ptr){
-    _origin.position.altitude = gp_ptr->position.altitude;
+    origin.position.altitude = gp_ptr->position.altitude;
 }
 
 /******************************************************************************************************
@@ -191,19 +191,18 @@ void Fluid::run() {
         "/mavros/global_position/set_gp_origin", 1, setOrigin);
     
     //Waiting for receiving origin data.
-    while(_origin.position.latitude == 0.0){
+    while(origin.position.latitude == 0.0){
         ros::spinOnce();
         rate.sleep();        
     }
-    if(_origin.position.altitude == 0.0){
+    if(origin.position.altitude == 0.0){
         ros::Subscriber pose_sub = node_handle.subscribe(
         "/mavros/global_position/global", 1, globalPoseCallback);
     }
-    while(_origin.position.altitude == 0.0){
+    while(origin.position.altitude == 0.0){
         ros::spinOnce();
         rate.sleep();        
     }
-    //origin = _origin;
 
     while (ros::ok()) {
         got_new_operation = false;

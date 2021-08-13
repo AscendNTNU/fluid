@@ -127,11 +127,6 @@ class Fluid {
     std::shared_ptr<StatusPublisher> status_publisher_ptr;
 
     /**
-     * @brief Origin of local frame
-     */
-    static geographic_msgs::GeoPointStamped origin;
-
-    /**
      * @brief Sets up the service servers and clients.
      */
     Fluid(const FluidConfiguration configuration) : configuration(configuration) {
