@@ -12,7 +12,6 @@
 #include <std_srvs/Trigger.h>
 
 //A list of parameters for the user
-#define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
 #define TIME_WINDOW_INTERACTION 1.0 // window within the drone is allowed to go to the OVER state    
 
@@ -39,6 +38,7 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
             Operation(OperationIdentifier::INTERACT, false, false) { 
     mast = Mast(fixed_mast_yaw);
     
+    MAST_INTERACT = Fluid::getInstance().configuration.interaction_interacts;
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
     EKF = Fluid::getInstance().configuration.ekf;
     USE_PERCEPTION = Fluid::getInstance().configuration.use_perception;
@@ -47,7 +47,7 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
     DIST_FH_DRONE_CENTRE.x = Fluid::getInstance().configuration.fh_offset[0];
     DIST_FH_DRONE_CENTRE.y = Fluid::getInstance().configuration.fh_offset[1];
     DIST_FH_DRONE_CENTRE.z = Fluid::getInstance().configuration.fh_offset[2];
-
+    
     //Choose an initial offset. It is the offset for the approaching state.
     //the offset is set in the frame of the mast:    
     desired_offset.x = offset;     //forward

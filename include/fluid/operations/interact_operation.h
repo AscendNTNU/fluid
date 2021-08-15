@@ -46,6 +46,7 @@ class InteractOperation : public Operation {
      */
     ros::Time approaching_t0;
 
+    bool MAST_INTERACT;
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
     bool EKF;
@@ -74,6 +75,7 @@ class InteractOperation : public Operation {
     
     float MAX_ACCEL;
     float MAX_VEL;
+
 
     Mast mast;
 
