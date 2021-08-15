@@ -377,6 +377,10 @@ void InteractOperation::tick() {
                 else
                     completion_count = 0;
             }
+            else{
+                ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                        << ": Interaction has been desabled for safety reasons. The drone will NOT interact with the mast.");
+            }
             break;
         }
         case InteractionState::READY: {
