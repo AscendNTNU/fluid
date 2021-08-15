@@ -457,7 +457,7 @@ void InteractOperation::tick() {
                 //we move backward to ensure there will be no colision
                 // We directly set the transition state as we want to move as fast as possible
                 // and we don't mind anymore about the relative position to the mast
-                desired_offset.x = 2;   //forward
+                desired_offset.x = 2.5;   //forward
                 desired_offset.y = DIST_FH_DRONE_CENTRE.y;    //left
                 desired_offset.z = DIST_FH_DRONE_CENTRE.z;   //up
                 transition_state.state.position = desired_offset;
@@ -489,7 +489,7 @@ void InteractOperation::tick() {
             }
             
             // Come back the the base or try again.
-            if ( distance_to_offset < 0.2 ) {
+            if ( distance_to_offset < 0.7 ) {
                 if (faceHugger_is_set){
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Exit -> Extracted");
