@@ -8,9 +8,6 @@
 #include "fluid.h" //to get access to the tick rate
 #include "type_mask.h"
 
-#include <ascend_msgs/SetInt.h>
-#include <std_srvs/Trigger.h>
-
 //A list of parameters for the user
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
 #define TIME_WINDOW_INTERACTION 1.0 // window within the drone is allowed to go to the OVER state    
@@ -81,6 +78,8 @@ void InteractOperation::initialize() {
     start_close_tracking_client = node_handle.serviceClient<ascend_msgs::SetInt>("/perception_main_node/switch_to_close_tracking");
     pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("/perception/main_node/restart");
 
+    close_tracking_lost_service = node_handle.advertiseService<std_srvs::Trigger>("/fluid/close_tracking_lost", &InteractOperation::close_tracking_lost_callback);
+
     interact_fail_pub = node_handle.advertise<std_msgs::Int16>("/fluid/interact_fail",10);
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
     
@@ -136,6 +135,13 @@ void InteractOperation::initialize() {
 
 bool InteractOperation::hasFinishedExecution() const {
     return interaction_state == InteractionState::EXTRACTED; 
+}
+
+bool InteractOperation::close_tracking_lost_callback(std_srvs::Trigger::Request& request, std_srvs::Trigger::Response& response){
+    close_tracking_is_set = false;
+    close_tracking_is_ready = false;
+    interaction_state = InteractionState::READY;   
+    return true;
 }
 
 void InteractOperation::ekfModulePoseCallback(
