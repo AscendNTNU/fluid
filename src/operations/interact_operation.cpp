@@ -78,7 +78,7 @@ void InteractOperation::initialize() {
     start_close_tracking_client = node_handle.serviceClient<ascend_msgs::SetInt>("/perception_main_node/switch_to_close_tracking");
     pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("/perception/main_node/restart");
 
-    close_tracking_lost_service = node_handle.advertiseService<std_srvs::Trigger>("/fluid/close_tracking_lost", &InteractOperation::close_tracking_lost_callback);
+    close_tracking_lost_service = node_handle.advertiseService("/fluid/close_tracking_lost", &InteractOperation::close_tracking_lost_callback, this);
 
     interact_fail_pub = node_handle.advertise<std_msgs::Int16>("/fluid/interact_fail",10);
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
