@@ -140,9 +140,15 @@ bool InteractOperation::hasFinishedExecution() const {
 bool InteractOperation::close_tracking_lost_callback(std_srvs::Trigger::Request& request, std_srvs::Trigger::Response& response){
     transition_state.state.position.x = 2.5;
     transition_state.state.position.z = DIST_FH_DRONE_CENTRE.z+0.03;
+    if (USE_PERCEPTION) {
+        std_srvs::Trigger srv;
+        if (!pause_close_tracking_client.call(srv)){
+            ROS_ERROR("Service call to restart perception_main failed.");
+        }
+    }
     close_tracking_is_set = false;
     close_tracking_is_ready = false;
-    interaction_state = InteractionState::APPROACHING;   
+    interaction_state = InteractionState::APPROACHING;
     return true;
 }
 
@@ -403,6 +409,7 @@ void InteractOperation::tick() {
                     srv.request.data = 10;
                     if (start_close_tracking_client.call(srv)){
                         close_tracking_is_set = true; 
+                        close_tracking_is_ready = true;
                     }
                 }
                 else{
@@ -490,6 +497,7 @@ void InteractOperation::tick() {
                     std_srvs::Trigger srv;
                     if (pause_close_tracking_client.call(srv)){
                         close_tracking_is_set = false;
+                        close_tracking_is_ready = false;
                     }
                 }
                 else{
