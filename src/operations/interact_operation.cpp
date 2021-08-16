@@ -138,9 +138,11 @@ bool InteractOperation::hasFinishedExecution() const {
 }
 
 bool InteractOperation::close_tracking_lost_callback(std_srvs::Trigger::Request& request, std_srvs::Trigger::Response& response){
+    transition_state.state.position.x = 2.5;
+    transition_state.state.position.z = DIST_FH_DRONE_CENTRE.z+0.03;
     close_tracking_is_set = false;
     close_tracking_is_ready = false;
-    interaction_state = InteractionState::READY;   
+    interaction_state = InteractionState::APPROACHING;   
     return true;
 }
 
