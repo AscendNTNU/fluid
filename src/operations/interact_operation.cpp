@@ -76,7 +76,7 @@ void InteractOperation::initialize() {
                                     10, &InteractOperation::closeTrackingCallback, this);
 
     start_close_tracking_client = node_handle.serviceClient<ascend_msgs::SetInt>("/perception_main_node/switch_to_close_tracking");
-    pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("/perception/main_node/restart");
+    pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("/perception_main_node/restart");
 
     close_tracking_lost_service = node_handle.advertiseService("/fluid/close_tracking_lost", &InteractOperation::close_tracking_lost_callback, this);
 
