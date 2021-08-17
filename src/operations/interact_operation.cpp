@@ -8,11 +8,7 @@
 #include "fluid.h" //to get access to the tick rate
 #include "type_mask.h"
 
-#include <ascend_msgs/SetInt.h>
-#include <std_srvs/Trigger.h>
-
 //A list of parameters for the user
-#define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
 #define TIME_WINDOW_INTERACTION 1.0 // window within the drone is allowed to go to the OVER state    
 
@@ -39,6 +35,7 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
             Operation(OperationIdentifier::INTERACT, false, false) { 
     mast = Mast(fixed_mast_yaw);
     
+    MAST_INTERACT = Fluid::getInstance().configuration.interaction_interacts;
     SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
     EKF = Fluid::getInstance().configuration.ekf;
     USE_PERCEPTION = Fluid::getInstance().configuration.use_perception;
@@ -47,7 +44,7 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
     DIST_FH_DRONE_CENTRE.x = Fluid::getInstance().configuration.fh_offset[0];
     DIST_FH_DRONE_CENTRE.y = Fluid::getInstance().configuration.fh_offset[1];
     DIST_FH_DRONE_CENTRE.z = Fluid::getInstance().configuration.fh_offset[2];
-
+    
     //Choose an initial offset. It is the offset for the approaching state.
     //the offset is set in the frame of the mast:    
     desired_offset.x = offset;     //forward
@@ -78,8 +75,10 @@ void InteractOperation::initialize() {
     close_tracking_ready_subscriber = node_handle.subscribe("/close_tracking_running",
                                     10, &InteractOperation::closeTrackingCallback, this);
 
-    start_close_tracking_client = node_handle.serviceClient<ascend_msgs::SetInt>("start_close_tracking");
-    pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("Pause_close_tracking");
+    start_close_tracking_client = node_handle.serviceClient<ascend_msgs::SetInt>("/perception_main_node/switch_to_close_tracking");
+    pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("/perception_main_node/restart");
+
+    close_tracking_lost_service = node_handle.advertiseService("/fluid/close_tracking_lost", &InteractOperation::close_tracking_lost_callback, this);
 
     interact_fail_pub = node_handle.advertise<std_msgs::Int16>("/fluid/interact_fail",10);
     altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
@@ -136,6 +135,16 @@ void InteractOperation::initialize() {
 
 bool InteractOperation::hasFinishedExecution() const {
     return interaction_state == InteractionState::EXTRACTED; 
+}
+
+bool InteractOperation::close_tracking_lost_callback(std_srvs::Trigger::Request& request, std_srvs::Trigger::Response& response){
+    desired_offset.x = 3;
+    desired_offset.y = DIST_FH_DRONE_CENTRE.y;
+    desired_offset.z = DIST_FH_DRONE_CENTRE.z+0.03;
+    close_tracking_is_set = false;
+    close_tracking_is_ready = false;
+    interaction_state = InteractionState::APPROACHING;
+    return true;
 }
 
 void InteractOperation::ekfModulePoseCallback(
@@ -377,6 +386,10 @@ void InteractOperation::tick() {
                 else
                     completion_count = 0;
             }
+            else{
+                ROS_INFO_STREAM(ros::this_node::getName().c_str() 
+                        << ": Interaction has been desabled for safety reasons. The drone will NOT interact with the mast.");
+            }
             break;
         }
         case InteractionState::READY: {
@@ -391,6 +404,7 @@ void InteractOperation::tick() {
                     srv.request.data = 10;
                     if (start_close_tracking_client.call(srv)){
                         close_tracking_is_set = true; 
+                        close_tracking_is_ready = true;
                     }
                 }
                 else{
@@ -457,7 +471,7 @@ void InteractOperation::tick() {
                 //we move backward to ensure there will be no colision
                 // We directly set the transition state as we want to move as fast as possible
                 // and we don't mind anymore about the relative position to the mast
-                desired_offset.x = 2;   //forward
+                desired_offset.x = 2.5;   //forward
                 desired_offset.y = DIST_FH_DRONE_CENTRE.y;    //left
                 desired_offset.z = DIST_FH_DRONE_CENTRE.z;   //up
                 transition_state.state.position = desired_offset;
@@ -478,6 +492,7 @@ void InteractOperation::tick() {
                     std_srvs::Trigger srv;
                     if (pause_close_tracking_client.call(srv)){
                         close_tracking_is_set = false;
+                        close_tracking_is_ready = false;
                     }
                 }
                 else{
@@ -489,7 +504,7 @@ void InteractOperation::tick() {
             }
             
             // Come back the the base or try again.
-            if ( distance_to_offset < 0.2 ) {
+            if ( distance_to_offset < 0.7 ) {
                 if (faceHugger_is_set){
                     ROS_INFO_STREAM(ros::this_node::getName().c_str()
                             << ": " << "Exit -> Extracted");

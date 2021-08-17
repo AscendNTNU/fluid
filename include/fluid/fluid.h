@@ -75,17 +75,22 @@ struct FluidConfiguration {
     const float default_height;
 
     /**
+     * @brief safety feature to avoid going at close proximity to the mast and set the FH
+     */
+    const bool interaction_interacts;
+
+    /**
      * @brief Show some debugging prints during the interact operation
      */
     const bool interaction_show_prints;
     
     /**
-     * @brief Show some debugging prints during the interact operation
+     * @brief max offset velocity allowed during a change of offset.
      */
     const float interact_max_vel;
     
     /**
-     * @brief Use ground_truth data for interact operation.
+     * @brief max offset acceleration allowed during a change of offset.
      */
     const float interact_max_acc;  
 

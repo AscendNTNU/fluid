@@ -16,6 +16,9 @@
 #include <std_msgs/Bool.h> //LAEiv
 #include <std_msgs/Int16.h>
 
+#include <ascend_msgs/SetInt.h>
+#include <std_srvs/Trigger.h>
+
 #include "mast.h"
 #include "data_file.h"
 
@@ -46,6 +49,7 @@ class InteractOperation : public Operation {
      */
     ros::Time approaching_t0;
 
+    bool MAST_INTERACT;
     bool SHOW_PRINTS;
     bool GROUND_TRUTH;
     bool EKF;
@@ -68,12 +72,14 @@ class InteractOperation : public Operation {
 
     ros::ServiceClient start_close_tracking_client;
     ros::ServiceClient pause_close_tracking_client;    
+    ros::ServiceServer close_tracking_lost_service;
 
     ros::Publisher interact_fail_pub;
     ros::Publisher altitude_and_yaw_pub;
     
     float MAX_ACCEL;
     float MAX_VEL;
+
 
     Mast mast;
 
@@ -103,6 +109,7 @@ class InteractOperation : public Operation {
      */
     bool close_tracking_is_ready;
     
+    bool close_tracking_lost_callback(std_srvs::Trigger::Request& request, std_srvs::Trigger::Response& response);
     void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
     void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
     void gt_modulePoseCallback(const geometry_msgs::PoseStamped module_pose);

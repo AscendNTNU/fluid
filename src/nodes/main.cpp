@@ -14,10 +14,10 @@ int main(int argc, char** argv) {
 
     ros::NodeHandle node_handle;
     const std::string prefix = ros::this_node::getName() + "/";
-    int refresh_rate, travel_max_angle;
-    bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_show_prints;
+    int refresh_rate;
+    bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_interacts, interaction_show_prints;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
-    float interact_max_vel, interact_max_acc, travel_speed, travel_accel;
+    float interact_max_vel, interact_max_acc, travel_speed, travel_accel, travel_max_angle;
     float* fh_offset = (float*) calloc(3,sizeof(float));
     
     if (!node_handle.getParam(prefix + "ekf", ekf)) {
@@ -50,6 +50,10 @@ int main(int argc, char** argv) {
 
     if (!node_handle.getParam(prefix + "default_height", default_height)) {
         exitAtParameterExtractionFailure(prefix + "default_height");
+    }
+
+    if (!node_handle.getParam(prefix + "interaction_interacts", interaction_interacts)) {
+        exitAtParameterExtractionFailure(prefix + "interaction_interacts");
     }
 
     if (!node_handle.getParam(prefix + "interaction_show_prints", interaction_show_prints)) {
@@ -95,6 +99,7 @@ int main(int argc, char** argv) {
                                     distance_completion_threshold,
                                     velocity_completion_threshold,
                                     default_height,
+                                    interaction_interacts,
                                     interaction_show_prints,
                                     interact_max_vel,
                                     interact_max_acc,
