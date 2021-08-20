@@ -335,6 +335,22 @@ float InteractOperation::estimate_time_to_mast()
                     + 2 * MAX_VEL / MAX_ACCEL; //time during acceleration and decceleration
 }
 
+geometry_msgs::Point InteractOperation::widen_path_from_mast_acc(mavros_msgs::PositionTarget path_state){
+    geometry_msgs::Point final_pose;
+    final_pose.x = path_state.position.x - path_state.acceleration_or_force.x / 9.81;
+    final_pose.y = path_state.position.y - path_state.acceleration_or_force.y / 9.81;
+    final_pose.z = path_state.position.z;
+    return final_pose;
+}
+
+geometry_msgs::Point InteractOperation::widen_path_from_drone_acc(mavros_msgs::PositionTarget path_state){
+    geometry_msgs::Point final_pose;
+    final_pose.x = path_state.position.x - getCurrentAccel().x / 9.81;
+    final_pose.y = path_state.position.y - getCurrentAccel().y / 9.81;
+    final_pose.z = path_state.position.z;
+    return final_pose;
+}
+
 void InteractOperation::tick() {
     time_cout++;
     mavros_msgs::PositionTarget interact_pt_state = mast.get_interaction_point_state();
@@ -347,6 +363,8 @@ void InteractOperation::tick() {
         approaching_t0 = ros::Time::now();
         return;
     }
+
+    interact_pt_state.position = widen_path_from_drone_acc(interact_pt_state);
 
     update_transition_state();
 
