@@ -7,6 +7,7 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Accel.h>
 #include <mavros_msgs/PositionTarget.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
@@ -51,17 +52,22 @@ class Operation {
     geometry_msgs::TwistStamped current_twist;
 
     /**
+     * @brief Twist at the previous tick.
+     */
+    geometry_msgs::TwistStamped previous_twist;
+
+    /**
+     * @brief Current linear acceleration of the drone.
+     * Base on the derivate of the twist
+     */
+    geometry_msgs::Accel current_accel;
+
+    /**
      * @brief Callback for current twist.
      *
      * @param twist Twist retrieved from the callback.
      */
     void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
-
-    
-    /**
-     * @brief Current acceleration.
-     */
-    geometry_msgs::Vector3 current_accel;
 
     /**
      * @brief Determines whether this operation is a operation we can be at for longer periods of time. E.g. hold or
@@ -132,7 +138,7 @@ class Operation {
     /**
      * @return The current twist.
      */
-    geometry_msgs::Vector3 getCurrentAccel() const;
+    geometry_msgs::Accel getCurrentAccel() const;
 
     /**
      * @return The current yaw.

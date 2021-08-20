@@ -345,8 +345,8 @@ geometry_msgs::Point InteractOperation::widen_path_from_mast_acc(mavros_msgs::Po
 
 geometry_msgs::Point InteractOperation::widen_path_from_drone_acc(mavros_msgs::PositionTarget path_state){
     geometry_msgs::Point final_pose;
-    final_pose.x = path_state.position.x - getCurrentAccel().x / 9.81;
-    final_pose.y = path_state.position.y - getCurrentAccel().y / 9.81;
+    final_pose.x = path_state.position.x - getCurrentAccel().linear.x / 9.81;
+    final_pose.y = path_state.position.y - getCurrentAccel().linear.y / 9.81;
     final_pose.z = path_state.position.z;
     return final_pose;
 }
@@ -578,7 +578,7 @@ void InteractOperation::tick() {
     
     #if SAVE_DATA
         reference_state.saveStateLog(ref);
-        geometry_msgs::Vector3 drone_acc = rotate2<geometry_msgs::Vector3>(getCurrentAccel(),getCurrentYaw());
+        geometry_msgs::Vector3 drone_acc = rotate2<geometry_msgs::Vector3>(getCurrentAccel().linear,getCurrentYaw());
         drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,drone_acc);
     #endif
 }
