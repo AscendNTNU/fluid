@@ -9,7 +9,7 @@
 #include "type_mask.h"
 
 //A list of parameters for the user
-#define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
+#define MAX_DIST_FOR_CLOSE_TRACKING     1.5 //max distance from the mast before activating close tracking
 #define TIME_WINDOW_INTERACTION 1.0 // window within the drone is allowed to go to the OVER state    
 
   // Important distances                  // best_sim // theoretical_sim
