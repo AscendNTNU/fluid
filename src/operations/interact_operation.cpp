@@ -364,7 +364,7 @@ void InteractOperation::tick() {
         return;
     }
 
-    interact_pt_state.position = widen_path_from_drone_acc(interact_pt_state);
+    interact_pt_state.position = widen_path_from_mast_acc(interact_pt_state);
 
     update_transition_state();
 
