@@ -22,6 +22,8 @@
 #include "mast.h"
 #include "data_file.h"
 
+#include <chrono>
+
 /**
  * @brief Represents the operation where the drone is interact with the mast.
  */
@@ -108,6 +110,7 @@ class InteractOperation : public Operation {
      * @brief state whether close tracking is activated or not
      */
     bool close_tracking_is_ready;
+    std::chrono::steady_clock::time_point close_tracking_ready_timeout;
     
     bool close_tracking_lost_callback(std_srvs::Trigger::Request& request, std_srvs::Trigger::Response& response);
     void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
