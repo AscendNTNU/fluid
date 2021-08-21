@@ -430,17 +430,18 @@ void InteractOperation::tick() {
                     close_tracking_is_ready = true;
                 }
             }
+
+            if (SHOW_PRINTS and time_cout%(rate_int/2)==0) {
+                ROS_INFO_STREAM("READY; "
+                        << "Estimated time to max mast pitch: "
+                        << mast.time_to_max_pitch() );
+            }
             if(mast.time_to_max_pitch() !=-1){ //we don't konw it yet
                 float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
 //              printf("t_2max_pitch %f\t t_2mast %f\tt_wait %f\n",
 //                          mast.time_to_max_pitch(), estimate_time_to_mast(), time_to_wait);
                 if(time_to_wait < -TIME_WINDOW_INTERACTION){
                     time_to_wait+=mast.get_period();
-                }
-                if (SHOW_PRINTS and time_cout%(rate_int/2)==0) {
-                    ROS_INFO_STREAM("READY; "
-                            << "Estimated waiting time before go: "
-                            << time_to_wait);
                 }
                 if( close_tracking_is_ready and (abs(time_to_wait) <= TIME_WINDOW_INTERACTION) )
                 { //We are in the good window to set the faceHugger
