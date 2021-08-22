@@ -18,7 +18,7 @@
 //#define DIST_FH_DRONE_CENTRE_Z  -0.2914 //-0.4914   //-0.3214
 
 #define SAVE_DATA   true
-#define SAVE_Z      false
+#define SAVE_Z      true
 
 #define TIME_TO_COMPLETION 0.5 //time in sec during which we want the drone to succeed a state before moving to the other.
 #define APPROACH_ACCURACY 0.1 //Accuracy needed by the drone to go to the next state
