@@ -430,7 +430,7 @@ void InteractOperation::tick() {
                     ROS_INFO_STREAM(ros::this_node::getName().c_str() 
                             << ": Turning on close tracking");                
                     // send a message to perception to switch close tracking on.
-                    if(USE_PERCEPTION){
+                    if(USE_PERCEPTION && !close_tracking_is_set){
                         ascend_msgs::SetInt srv;
                         srv.request.data = 10;
                         if (start_close_tracking_client.call(srv)){
