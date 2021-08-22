@@ -20,7 +20,7 @@
   
   <arg name="fh_offset_x"                             default="0.42"/>
   <arg name="fh_offset_y"                             default="0.04"/>
-  <arg name="fh_offset_z"                             default="-0.28"/> 
+  <arg name="fh_offset_z"                             default="-0.48"/> 
   <!--fh_offset_z = -0.48 with use_perception = false-->
 
   
