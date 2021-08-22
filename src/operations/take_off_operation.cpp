@@ -54,7 +54,7 @@ void TakeOffOperation::initialize() {
     }
 
     int wpnav_speed_up = 2;
-    mavros_interface.setParam("WPNAV_SPEED_UP", wpnav_speed_up);
+    mavros_interface.setParam("WPNAV_SPEED_UP", wpnav_speed_up, 5);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat climb rate to: " << wpnav_speed_up/100.0 << " m/s.");
 
     //send take off command

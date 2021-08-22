@@ -202,7 +202,7 @@ void MavrosInterface::requestTakeOff(mavros_msgs::PositionTarget setpoint) const
 }
 
 
-void MavrosInterface::setParam(const std::string& parameter, const float& value) const {
+void MavrosInterface::setParam(const std::string& parameter, const float& value, int retries) const {
     ros::Rate rate(UPDATE_REFRESH_RATE);
     ros::NodeHandle node_handle;
     ros::ServiceClient param_set_service_client = node_handle.serviceClient<mavros_msgs::ParamSet>("mavros/param/set");
@@ -212,16 +212,19 @@ void MavrosInterface::setParam(const std::string& parameter, const float& value)
     param_set_service.request.param_id = parameter;
     param_set_service.request.value.real = value;
 
-    bool failed_setting = false;
-
     while (!param_set_service_client.call(param_set_service) && ros::ok()) {
-        if (!failed_setting) {
+        if (--retries >= 0) {
             ROS_FATAL_STREAM(ros::this_node::getName().c_str()
-                             << " Failed to set param " << parameter.c_str() << " for ArduPilot. Retrying...");
-            failed_setting = true;
+                             << " Failed to set param " << parameter.c_str() << " for ArduPilot. "
+                             << retries << " retries left.");
+            rate.sleep();
+            ros::spinOnce();
         }
-
-        rate.sleep();
-        ros::spinOnce();
+        else {
+            ROS_FATAL_STREAM(ros::this_node::getName().c_str()
+                             << " Failed to set param " << parameter.c_str() << " for ArduPilot. "
+                             << "No retries left :(");
+            return;
+        }
     }
 }
