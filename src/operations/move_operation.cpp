@@ -51,6 +51,9 @@ void MoveOperation::initialize() {
     mavros_interface.setParam("ANGLE_MAX", max_angle);
     ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << max_angle/100 << " deg.");
 
+    int wpnav_speed_up = 90;
+    mavros_interface.setParam("WPNAV_SPEED_UP", wpnav_speed_up);
+    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat climb rate to: " << wpnav_speed_up/100.0 << " m/s.");
 }
 
 void MoveOperation::tick() {
