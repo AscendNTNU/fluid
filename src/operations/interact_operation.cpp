@@ -446,7 +446,7 @@ void InteractOperation::tick() {
                         close_tracking_is_ready = true;
                     }
 
-                    if (close_trackin_is_set && !close_tracking_is_ready && std::chrono::steady_clock::now() > close_tracking_timeout) {
+                    if (close_tracking_is_set && !close_tracking_is_ready && std::chrono::steady_clock::now() > close_tracking_ready_timeout) {
                         interaction_state = InteractionState::EXIT;
                         return;
                     }
