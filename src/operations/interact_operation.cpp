@@ -434,8 +434,11 @@ void InteractOperation::tick() {
                         ascend_msgs::SetInt srv;
                         srv.request.data = 10;
                         if (start_close_tracking_client.call(srv)){
+                            ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                                << ": Called switch_to_close_tracking");
                             close_tracking_is_set = true; 
-                            close_tracking_is_ready = true;
+                            close_tracking_is_ready = false;
+                            close_tracking_ready_timeout = std::chrono::steady_clock::now() + std::chrono::seconds(2);
                         }
                     }
                     else{
@@ -443,15 +446,22 @@ void InteractOperation::tick() {
                         close_tracking_is_ready = true;
                     }
 
-                    interaction_state = InteractionState::OVER;
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                                << ": " << "Ready -> Over");
-                    desired_offset.x = DIST_FH_DRONE_CENTRE.x;  //forward
-                    desired_offset.y = DIST_FH_DRONE_CENTRE.y;   //left
-                    desired_offset.z = DIST_FH_DRONE_CENTRE.z+0.03; //up
-                    transition_state.cte_acc = MAX_ACCEL;
-                    transition_state.max_vel = MAX_VEL;
-                    transition_state.finished_bitmask = 0x0;
+                    if (close_trackin_is_set && !close_tracking_is_ready && std::chrono::steady_clock::now() > close_tracking_timeout) {
+                        interaction_state = InteractionState::EXIT;
+                        return;
+                    }
+
+                    if (close_tracking_is_ready) {
+                        interaction_state = InteractionState::OVER;
+                        ROS_INFO_STREAM(ros::this_node::getName().c_str()
+                                    << ": " << "Ready -> Over");
+                        desired_offset.x = DIST_FH_DRONE_CENTRE.x;  //forward
+                        desired_offset.y = DIST_FH_DRONE_CENTRE.y;   //left
+                        desired_offset.z = DIST_FH_DRONE_CENTRE.z+0.03; //up
+                        transition_state.cte_acc = MAX_ACCEL;
+                        transition_state.max_vel = MAX_VEL;
+                        transition_state.finished_bitmask = 0x0;
+                    }
                 }
             }
             break;
