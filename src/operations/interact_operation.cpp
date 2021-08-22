@@ -412,42 +412,12 @@ void InteractOperation::tick() {
         }
         case InteractionState::READY: {
             //The drone is ready, we just have to wait for the best moment to go!
-<<<<<<< HEAD
-            if(!close_tracking_is_set and (transition_state.finished_bitmask & 0x7) == 0x7){
-                ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                        << ": Turning on close tracking");
-                
-                // send a message to perception to switch close tracking on.
-                if(USE_PERCEPTION){
-                    ascend_msgs::SetInt srv;
-                    srv.request.data = 10;
-                    if (start_close_tracking_client.call(srv)){
-                        close_tracking_is_set = true; 
-                        close_tracking_ready_timeout = std::chrono::steady_clock::now() + std::chrono::seconds(2);
-                        // close_tracking_is_ready = true;
-                    }
-                }
-                else{
-                    close_tracking_is_set= true; //Todo, to be removed
-                    close_tracking_is_ready = true;
-                }
-            }
-
-            if (close_tracking_is_set && !close_tracking_is_ready && std::chrono::steady_clock::now() > close_tracking_ready_timeout) {
-                interaction_state = InteractionState::EXIT;
-                ROS_INFO_STREAM("Fluid: timeout waiting for close_tracking_ready");
-                break;
-            }
-
-            if(mast.time_to_max_pitch() !=-1){ //we don't konw it yet
-=======
             if (SHOW_PRINTS and time_cout%(rate_int/2)==0) {
                 ROS_INFO_STREAM("READY: "
                         << "Estimated time to max mast pitch: "
                         << mast.time_to_max_pitch() );
             }
             if(mast.time_to_max_pitch() !=-1 and (transition_state.finished_bitmask & 0x7) == 0x7){
->>>>>>> feature/widen_path
                 float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
 //              printf("t_2max_pitch %f\t t_2mast %f\tt_wait %f\n",
 //                          mast.time_to_max_pitch(), estimate_time_to_mast(), time_to_wait);
