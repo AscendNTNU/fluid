@@ -29,18 +29,22 @@ geometry_msgs::PoseStamped Operation::getCurrentPose() const { return current_po
 void Operation::poseCallback(const nav_msgs::Odometry::ConstPtr pose) {
     current_pose.pose = pose->pose.pose;
     current_pose.header = pose->header;
-    current_accel = orientation_to_acceleration(pose->pose.pose.orientation);
 }
 
 geometry_msgs::TwistStamped Operation::getCurrentTwist() const { return current_twist; }
 
 
 void Operation::twistCallback(const geometry_msgs::TwistStampedConstPtr twist) {
+    previous_twist.twist.linear = current_twist.twist.linear;
     current_twist.twist = twist->twist;
     current_twist.header = twist->header;
+    
+    current_accel.linear.x = (current_twist.twist.linear.x - previous_twist.twist.linear.x);
+    current_accel.linear.y = (current_twist.twist.linear.y - previous_twist.twist.linear.y);
+    current_accel.linear.z = (current_twist.twist.linear.z - previous_twist.twist.linear.z);
 }
 
-geometry_msgs::Vector3 Operation::getCurrentAccel() const { return current_accel; }
+geometry_msgs::Accel Operation::getCurrentAccel() const { return current_accel; }
 
 geometry_msgs::Vector3 Operation::orientation_to_acceleration(geometry_msgs::Quaternion orientation)
 {

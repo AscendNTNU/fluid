@@ -9,7 +9,9 @@ Mast::Mast(float yaw){
     m_fixed_yaw = yaw;
     m_period = 10;
     m_SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
-    m_current_extremum = 0;
+    m_current_extremum = 0.0;
+//    m_time_last_min_pitch = ros::Time::now();
+//    m_time_last_max_pitch = ros::Time::now();
 }
 
 void Mast::updateFromEkf(mavros_msgs::PositionTarget module_state){
@@ -44,8 +46,10 @@ void Mast::estimateInteractionPointAccel(){
 }
 
 void Mast::search_period(double pitch){
-    m_angle.x =  pitch;
-
+//    printf("m-periode = %f\n",m_period);
+    m_angle.x = pitch;
+//    printf("search period. Search for min? %d\n",m_lookForMin);
+//    printf("pitch %f vs current_extremum %f\n",m_angle.x,m_current_extremum);
     if(m_lookForMin)
     {
         if(m_angle.x < m_current_extremum){
@@ -55,6 +59,7 @@ void Mast::search_period(double pitch){
         else if ( (ros::Time::now() - m_time_last_max_pitch) >= ros::Duration(m_period/3.0) ){ //todo: may cause some trouble at the init
             if ((ros::Time::now() - m_time_last_min_pitch) >= ros::Duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
                 //We have not found a new minimum for 0.5sec. The last one found it the correct one.
+                //ROS_INFO_STREAM("EKF: min pitch is " << m_last_min_pitch);
                 m_last_min_pitch = m_current_extremum;
                 m_lookForMin = false;
             }
@@ -64,16 +69,23 @@ void Mast::search_period(double pitch){
         if (m_angle.x > m_current_extremum){
             m_current_extremum = m_angle.x;
             m_time_last_max_pitch = ros::Time::now();
+//            printf("new max pitch %f\t", m_current_extremum);
         }
-        else if ( (ros::Time::now() - m_time_last_min_pitch) >= ros::Duration(m_period/3.0) ){ //todo: may cause some trouble at the init
-            if ( (ros::Time::now() - m_time_last_max_pitch) >= ros::Duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
-                //We have not found a new maximum for 0.5sec. The last one found it the correct one.
-                m_last_max_pitch = m_current_extremum;
-                m_lookForMin = true;
+        else {
+//            printf("waiting to check it was the extremum\t");
+            if ( (ros::Time::now() - m_time_last_min_pitch) >= ros::Duration(m_period/3.0) ){ //todo: may cause some trouble at the init
+                //printf("3s after last min pitch\t");
+                if ( (ros::Time::now() - m_time_last_max_pitch) >= ros::Duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
+//                    printf("0.5s after last max pitch");
+                    //We have not found a new maximum for 0.5sec. The last one found it the correct one.
+                    m_last_max_pitch = m_current_extremum;
+//                    ROS_INFO_STREAM("EKF: max pitch is " << m_last_max_pitch);
+                    m_lookForMin = true;
+                }
             }
+            //printf("\n");
         }
     }
-    
 
 }
 
@@ -86,6 +98,7 @@ float Mast::time_to_max_pitch(){
     //check that we got both a min and a max
     if(!m_time_last_max_pitch.isZero() && !m_time_last_min_pitch.isZero())
     {
+        //printf("last max pitch: %f, last min pitch: %f, current pitch: %f\n",m_last_max_pitch, m_last_min_pitch, m_angle.x);
         if(m_lookForMin){
             //the mast is pitching backward:
             return m_period/2.0 *(2.0 - (m_last_max_pitch-m_angle.x)/(m_last_max_pitch-m_last_min_pitch));

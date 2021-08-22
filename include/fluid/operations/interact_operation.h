@@ -128,6 +128,8 @@ class InteractOperation : public Operation {
     geometry_msgs::Vector3 estimateModuleAccel();
 
     void update_transition_state();
+    geometry_msgs::Point widen_path_from_mast_acc(mavros_msgs::PositionTarget path_state);
+    geometry_msgs::Point widen_path_from_drone_acc(mavros_msgs::PositionTarget path_state);
     
    public:
     /**
