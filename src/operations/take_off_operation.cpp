@@ -62,5 +62,5 @@ void TakeOffOperation::initialize() {
     setpoint.position.y = getCurrentPose().pose.position.y;
     setpoint.position.z = height_setpoint;
     setpoint.yaw = getCurrentYaw();
-    mavros_interface.requestTakeOff(setpoint);
+    // mavros_interface.requestTakeOff(setpoint);
 }
