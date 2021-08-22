@@ -89,9 +89,7 @@ class Mast{
      * @brief time at whitch the last maximum pitch has been found
      * 
      */
-    ros::Time m_time_last_max_pitch;
-
-    
+    ros::Time m_time_last_max_pitch;    
     
     
     public:
