@@ -10,13 +10,13 @@
   <arg name="default_height"                          default="2.0"/>
   <arg name="launch_rviz"/> 
   
-  <arg name="interaction_interacts"                   default="true"/>
+  <arg name="interaction_interacts"                   default="false"/>
   <arg name="interaction_show_prints"                 default="false"/>
   <arg name="interaction_max_vel"                     default="0.30"/>
   <arg name="interaction_max_acc"                     default="0.23"/>
-  <arg name="travel_max_angle"                        default="70"/>
-  <arg name="travel_speed"                            default="15"/>
-  <arg name="travel_accel"                            default="10"/>
+  <arg name="travel_max_angle"                        default="35"/>
+  <arg name="travel_speed"                            default="20"/>
+  <arg name="travel_accel"                            default="4"/>
   
   <arg name="fh_offset_x"                             default="0.42"/>
   <arg name="fh_offset_y"                             default="0.02"/>
