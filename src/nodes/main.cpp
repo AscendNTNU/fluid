@@ -1,6 +1,6 @@
 #include <ros/ros.h>
 
-#include "fluid.h"
+#include "interact_operation.h"
 
 void exitAtParameterExtractionFailure(const std::string& param) {
     ROS_FATAL_STREAM(ros::this_node::getName() << ": Could not find parameter: " << param.c_str());
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     if (!node_handle.getParam(prefix + "travel_accel", travel_accel)) {
         exitAtParameterExtractionFailure(prefix + "travel_accel");
     }
-    FluidConfiguration configuration{ekf,
+    MastNodeConfiguration configuration{ekf,
                                     use_perception,
                                     refresh_rate,
                                     should_auto_arm,
@@ -104,9 +104,7 @@ int main(int argc, char** argv) {
                                     travel_accel
                                     };
 
-    Fluid::initialize(configuration);
-
-    Fluid::getInstance().run();
-
+    InteractOperation interact = InteractOperation::InteractOperation(configuration);
+    interact.perform(true, false)
     return 0;
 }

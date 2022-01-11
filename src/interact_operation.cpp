@@ -3,9 +3,7 @@
  */
 #include "interact_operation.h"
 
-#include "mavros_interface.h"
 #include "util.h"
-#include "fluid.h" //to get access to the tick rate
 #include "type_mask.h"
 
 #include <ascend_msgs/SetInt.h>
@@ -35,18 +33,30 @@ geometry_msgs::Vector3 DIST_FH_DRONE_CENTRE;
 
 
 //function called when creating the operation
-InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& offset) : 
-            Operation(OperationIdentifier::INTERACT, false, false) { 
+InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& offset, const bool& steady,
+    const bool& autoPublish, MastNodeConfiguration config) 
+        : steady(steady), autoPublish(autoPublish), config(config), rclcpp:Node("mast_node") { 
+
     mast = Mast(fixed_mast_yaw);
+
+    pose_subscriber = 
+        this->create_subscription<nav_msgs::Odometry::ConstPtr>("mavros/global_position/local", 1, &InteractOperation::poseCallback, this);
+    twist_subscriber =
+        this->create_subscription<geometry_msgs::TwistStampedConstPtr>("mavros/local_position/velocity_local", 1, &InteractOperation::twistCallback, this);
+
+    setpoint_publisher = this->create_publisher<mavros_msgs::PositionTarget>("mavros/setpoint_raw/local", 10);
+    setpoint.coordinate_frame = mavros_msgs::PositionTarget::FRAME_LOCAL_NED;
+
+    rate_int = (int) config.refresh_rate;
     
-    SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
-    EKF = Fluid::getInstance().configuration.ekf;
-    USE_PERCEPTION = Fluid::getInstance().configuration.use_perception;
-    MAX_ACCEL = Fluid::getInstance().configuration.interact_max_acc;
-    MAX_VEL = Fluid::getInstance().configuration.interact_max_vel;
-    DIST_FH_DRONE_CENTRE.x = Fluid::getInstance().configuration.fh_offset[0];
-    DIST_FH_DRONE_CENTRE.y = Fluid::getInstance().configuration.fh_offset[1];
-    DIST_FH_DRONE_CENTRE.z = Fluid::getInstance().configuration.fh_offset[2];
+    SHOW_PRINTS = config.interaction_show_prints;
+    EKF = config.ekf;
+    USE_PERCEPTION = config.use_perception;
+    MAX_ACCEL = config.interact_max_acc;
+    MAX_VEL = config.interact_max_vel;
+    DIST_FH_DRONE_CENTRE.x = config.fh_offset[0];
+    DIST_FH_DRONE_CENTRE.y = config.fh_offset[1];
+    DIST_FH_DRONE_CENTRE.z = config.fh_offset[2];
 
     //Choose an initial offset. It is the offset for the approaching state.
     //the offset is set in the frame of the mast:    
@@ -59,39 +69,32 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const float& o
 void InteractOperation::initialize() {
 
     if(EKF){
-        ekf_module_pose_subscriber = node_handle.subscribe("/ekf/module/state",
+        ekf_module_pose_subscriber = this->create_subscription<mavros_msgs::PositionTarget>("/ekf/module/state",
                                      10, &InteractOperation::ekfModulePoseCallback, this);
-        ekf_state_vector_subscriber = node_handle.subscribe("/ekf/state",
+        ekf_state_vector_subscriber = this->create_subscription<mavros_msgs::DebugValue>("/ekf/state",
                                      10, &InteractOperation::ekfStateVectorCallback, this);
-        gt_module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+        gt_module_pose_subscriber = this->create_subscription<geometry_msgs::PoseWithCovarianceStampedConstPtr>("/simulator/module/ground_truth/pose",
                                      10, &InteractOperation::gt_modulePoseCallbackWithCov, this);
         ROS_INFO_STREAM("/fluid: Uses EKF data");
     }
     else{
-    module_pose_subscriber = node_handle.subscribe("/simulator/module/ground_truth/pose",
+    module_pose_subscriber = this->create_subscription<geometry_msgs::PoseWithCovarianceStampedConstPtr>("/simulator/module/ground_truth/pose",
                                     10, &InteractOperation::gt_modulePoseCallbackWithCov, this);
-    //module_pose_subscriber = node_handle.subscribe("/model_publisher/module_position",
-    //                                10, &InteractOperation::gt_modulePoseCallbackWithCov, this);
     }
-    fh_state_subscriber = node_handle.subscribe("/fh_interface/fh_state",
+    fh_state_subscriber = this->create_subscription<std_msgs::Bool>("/fh_interface/fh_state",
                                     10, &InteractOperation::FaceHuggerCallback, this);
-    close_tracking_ready_subscriber = node_handle.subscribe("/close_tracking_running",
+    close_tracking_ready_subscriber = this->create_subscription<std_msgs::Bool>("/close_tracking_running",
                                     10, &InteractOperation::closeTrackingCallback, this);
 
-    start_close_tracking_client = node_handle.serviceClient<ascend_msgs::SetInt>("start_close_tracking");
-    pause_close_tracking_client = node_handle.serviceClient<std_srvs::Trigger>("Pause_close_tracking");
+    start_close_tracking_client = this->create_client<ascend_msgs::SetInt>("start_close_tracking");
+    pause_close_tracking_client = this->create_client<std_srvs::Trigger>("Pause_close_tracking");
 
-    interact_fail_pub = node_handle.advertise<std_msgs::Int16>("/fluid/interact_fail",10);
-    altitude_and_yaw_pub = node_handle.advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
+    interact_fail_pub = this->create_publisher<std_msgs::Int16>("/fluid/interact_fail",10);
+    altitude_and_yaw_pub = this->create_publisher<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",10);
     
     setpoint.type_mask = TypeMask::POSITION_AND_VELOCITY;
     setpoint.header.frame_id = "map";
 
-    MavrosInterface mavros_interface;
-    mavros_interface.setParam("ANGLE_MAX", MAX_ANGLE);
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Sat max angle to: " << MAX_ANGLE/100.0 << " deg.");
-
-    // The transition state is mesured in the mast frame
     transition_state.state.position = desired_offset;
     transition_state.cte_acc = MAX_ACCEL; 
     transition_state.max_vel = MAX_VEL;
@@ -117,19 +120,6 @@ void InteractOperation::initialize() {
     gt_reference.init("Time\tpose.x\tpose.y");
     #endif
     #endif
-
-    //sanity check that the drone is facing the mast.
-/*    ros::Rate rate(rate_int);
-    setpoint.position = getCurrentPose().pose.position;
-    setpoint.yaw = mast.get_yaw()+M_PI;
-    double yaw_err = Util::moduloPi( mast.get_yaw()+M_PI - getCurrentYaw() );
-    while( abs( yaw_err) > M_PI/20.0 and ros::ok()){
-        altitude_and_yaw_pub.publish(setpoint);
-        rate.sleep();
-        ros::spinOnce();
-        yaw_err = Util::moduloPi( mast.get_yaw()+M_PI - getCurrentYaw() );
-    }
-*/
     approaching_t0 = ros::Time::now();
     completion_count =0;
 }
@@ -549,3 +539,56 @@ void InteractOperation::tick() {
         drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,drone_acc);
     #endif
 }
+
+void InteractOperation::perform(std::function<bool(void)> should_tick, bool should_halt_if_steady) {
+
+    ros::Rate rate(rate_int);
+    initialize();
+
+    do {
+        tick();
+        if (autoPublish)
+            publishSetpoint();
+        ros::spinOnce();
+        rate.sleep();
+    } while (ros::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && should_tick());
+}
+
+geometry_msgs::Vector3 InteractOperation::orientation_to_acceleration(geometry_msgs::Quaternion orientation)
+{
+    geometry_msgs::Vector3 accel;__
+    geometry_msgs::Vector3 angle = Util::quaternion_to_euler_angle(orientation);
+    accel.x = tan(angle.y) *9.81;
+    accel.y = -tan(angle.x) *9.81;
+    accel.z = 0.0; //we actually don't know ...
+    return accel;
+}
+
+void InteractOperation::publishSetpoint() { 
+    setpoint.header.stamp = ros::Time::now();
+    setpoint.header.frame_id = "map";
+    setpoint_publisher.publish(setpoint); 
+}
+
+void InteractOperation::poseCallback(const nav_msgs::Odometry::ConstPtr pose) {
+    current_pose.pose = pose->pose.pose;
+    current_pose.header = pose->header;
+    current_accel = orientation_to_acceleration(pose->pose.pose.orientation);
+}
+
+void InteractOperation::twistCallback(const geometry_msgs::TwistStampedConstPtr twist) {
+    current_twist.twist = twist->twist;
+    current_twist.header = twist->header;
+}
+
+float InteractOperation::getCurrentYaw() const {
+    geometry_msgs::Quaternion quaternion = current_pose.pose.orientation;
+    geometry_msgs::Vector3 euler = Util::quaternion_to_euler_angle(quaternion);
+    return euler.z;
+}
+
+geometry_msgs::PoseStamped InteractOperation::getCurrentPose() const { return current_pose; }
+
+geometry_msgs::TwistStamped InteractOperation::getCurrentTwist() const { return current_twist; }
+
+geometry_msgs::Vector3 InteractOperation::getCurrentAccel() const { return current_accel; }

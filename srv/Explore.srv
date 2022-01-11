@@ -1,5 +1,0 @@
-geometry_msgs/Point[] path
-geometry_msgs/Point point_of_interest
----
-bool success 
-string message

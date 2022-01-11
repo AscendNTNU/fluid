@@ -1,5 +1,0 @@
-float32 fixed_mast_yaw
-float32 offset
----
-bool success
-string message

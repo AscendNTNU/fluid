@@ -6,8 +6,18 @@
 #ifndef MAST_H
 #define MAST_H
 
-#include "operation.h" //it has all the includes needed and is already included anyway
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <mavros_msgs/PositionTarget.h>
+#include <nav_msgs/Odometry.h>
+#include <ros/ros.h>
+
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "type_mask.h"
 
 //mast movement estimation
 #define SAVE_PITCH_TIME 15
