@@ -5,12 +5,12 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/Point.hpp>
+#include <geometry_msgs/Quaternion.hpp>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/transform_datatypes.h>
-#include <mavros_msgs/PositionTarget.h>
+#include <mavros_msgs/PositionTarget.hpp>
 
 #include <vector>
 

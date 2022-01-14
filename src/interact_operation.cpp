@@ -6,8 +6,8 @@
 #include "util.h"
 #include "type_mask.h"
 
-#include <ascend_msgs/SetInt.h>
-#include <std_srvs/Trigger.h>
+#include <ascend_msgs/SetInt.hpp>
+#include <std_srvs/Trigger.hpp>
 
 //A list of parameters for the user
 #define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
