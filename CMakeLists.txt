@@ -1,67 +1,32 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(fluid)
-add_compile_options(-std=c++14)
 
-#########################################################################################
+Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-find_package(catkin REQUIRED COMPONENTS
-        cmake_modules
-        roscpp
-        ascend_msgs
-        std_msgs
-        visualization_msgs
-        tf2
-        tf2_geometry_msgs
-        tf2_ros
-        message_generation
-)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
-add_service_files(
-        FILES
-        OperationCompletion.srv
-        Explore.srv
-        Interact.srv
-        Land.srv
-        TakeOff.srv
-        Travel.srv
-)
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(mavros_msgs REQUIRED)
+find_package(ascend_msgs REQUIRED)
 
-generate_messages(
-        DEPENDENCIES
-        std_msgs
-        geometry_msgs
-)
+add_executable(fluid src/nodes/main.cpp)
+add_executable(base_link_publisher src/nodes/base_link_publisher.cpp)
+ament_target_dependencies(main rclcpp std_msgs std_srvs geometry_msgs nav_msgs mavros_msgs ascend_msgs)
+ament_target_dependencies(main
 
-catkin_package(
-        INCLUDE_DIRS include
-        CATKIN_DEPENDS message_runtime ascend_msgs roscpp 
-)
+install(TARGETS
+  main
+  base_link_publisher
+  DESTINATION lib/${PROJECT_NAME})
 
-#########################################################################################
-
-include_directories(include
-        include/fluid
-        include/fluid/operations
-        ${catkin_INCLUDE_DIRS}
-)
-
-file(GLOB fluid_SRC "src/*.cpp")
-file(GLOB fluid_operations_SRC "src/operations/*.cpp")
-
-#########################################################################################
-
-add_executable(fluid              src/nodes/main.cpp                            ${fluid_SRC} ${fluid_operations_SRC})
-add_executable(example_client     src/examples/example_client.cpp               ${fluid_SRC} ${fluid_operations_SRC})
-add_executable(follow_reference     src/examples/follow_reference.cpp               ${fluid_SRC} ${fluid_operations_SRC})
-add_executable(base_link_publisher     src/nodes/base_link_publisher.cpp)
-
-add_dependencies(fluid                   ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(example_client          ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(follow_reference          ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(base_link_publisher          ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-
-target_link_libraries(fluid              ${catkin_LIBRARIES})
-target_link_libraries(example_client     ${catkin_LIBRARIES})
-target_link_libraries(follow_reference     ${catkin_LIBRARIES})
-target_link_libraries(base_link_publisher     ${catkin_LIBRARIES})
+ament_package()
