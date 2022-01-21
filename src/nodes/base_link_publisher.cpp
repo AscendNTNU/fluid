@@ -1,6 +1,4 @@
 #include <rclcpp/rclcpp.hpp>
-#include <chrono>
-
 #include <geometry_msgs/PoseStamped.hpp>
 #include <tf2_ros/transform_broadcaster.hpp>
 #include <nav_msgs/Odometry.hpp>
@@ -10,8 +8,8 @@ static geometry_msgs::TransformStamped transform_stamped;
 void poseCallback(const nav_msgs::Odometry::ConstPtr &msg) {
     static tf2_ros::TransformBroadcaster broadcaster;
 
-    std::chrono::system_time clock;
-    transform_stamped.header.stamp = clock.now();
+    rclcpp::Time now = this->get_clock()->now();
+    transform_stamped.header.stamp = now;
     transform_stamped.header.frame_id = msg->header.frame_id;
     transform_stamped.transform.translation.x = msg->pose.pose.position.x;
     transform_stamped.transform.translation.y = msg->pose.pose.position.y;
