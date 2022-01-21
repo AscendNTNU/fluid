@@ -6,9 +6,10 @@
 #include "util.h"
 #include "type_mask.h"
 
+#include <rclcpp.h>
 #include <ascend_msgs/SetInt.hpp>
 #include <std_srvs/Trigger.hpp>
-
+#include <chrono>
 //A list of parameters for the user
 #define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
@@ -28,7 +29,9 @@
 #define MAX_ANGLE   1500 // in centi-degrees 
 
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
-ros::Time prev_gt_pose_time;
+
+std::chrono::system_time clock:
+std::chrono::time_point prev_gt_pose_time;
 geometry_msgs::Vector3 DIST_FH_DRONE_CENTRE;
 
 
@@ -120,7 +123,7 @@ void InteractOperation::initialize() {
     gt_reference.init("Time\tpose.x\tpose.y");
     #endif
     #endif
-    approaching_t0 = ros::Time::now();
+    approaching_t0 = clock.now();
     completion_count =0;
 }
 
@@ -228,7 +231,6 @@ void InteractOperation::update_transition_state()
                                             /2.0 / (desired_offset.x - transition_state.state.position.x);
         }
         else if (abs(transition_state.state.velocity.x) > transition_state.max_vel){
-        // if we have reached max transitionning speed
             //we stop accelerating and maintain speed
             transition_state.state.acceleration_or_force.x = 0.0;
         }
@@ -325,7 +327,7 @@ void InteractOperation::tick() {
         if(time_cout%rate_int==0)
             ROS_INFO_STREAM(ros::this_node::getName().c_str() 
                                 << ": Waiting for interaction point pose callback\n");
-        approaching_t0 = ros::Time::now();
+        approaching_t0 = clock.now();
         return;
     }
 
@@ -345,7 +347,7 @@ void InteractOperation::tick() {
             }
                        
             if(MAST_INTERACT) {
-                float time_out_gain = 1 + (ros::Time::now()-approaching_t0).toSec()/30.0;
+                float time_out_gain = 1 + (clock.now()-approaching_t0).toSec()/30.0;
                 if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
                     //Todo, we may want to judge the velocity in stead of having a time to completion
                     if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int) )
@@ -526,7 +528,7 @@ void InteractOperation::tick() {
     mavros_msgs::PositionTarget ref = Util::addPositionTarget(interact_pt_state,smooth_rotated_offset);
 
     setpoint.header.seq++;
-    setpoint.header.stamp = ros::Time::now();
+    setpoint.header.stamp = clock.now();
     setpoint.yaw = mast.get_yaw()+M_PI;
     setpoint.position = ref.position;
     setpoint.velocity = ref.velocity;
@@ -565,7 +567,7 @@ geometry_msgs::Vector3 InteractOperation::orientation_to_acceleration(geometry_m
 }
 
 void InteractOperation::publishSetpoint() { 
-    setpoint.header.stamp = ros::Time::now();
+    setpoint.header.stamp = clock.now();
     setpoint.header.frame_id = "map";
     setpoint_publisher.publish(setpoint); 
 }
