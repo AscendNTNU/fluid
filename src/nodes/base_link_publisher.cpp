@@ -1,4 +1,6 @@
-#include <ros/ros.h>
+#include <rclcpp.hpp>
+#include <chrono>
+
 #include <geometry_msgs/PoseStamped.hpp>
 #include <tf2_ros/transform_broadcaster.hpp>
 #include <nav_msgs/Odometry.hpp>
@@ -8,7 +10,8 @@ static geometry_msgs::TransformStamped transform_stamped;
 void poseCallback(const nav_msgs::Odometry::ConstPtr &msg) {
     static tf2_ros::TransformBroadcaster broadcaster;
 
-    transform_stamped.header.stamp = ros::Time::now();
+    std::chrono::system_time clock;
+    transform_stamped.header.stamp = clock.now();
     transform_stamped.header.frame_id = msg->header.frame_id;
     transform_stamped.transform.translation.x = msg->pose.pose.position.x;
     transform_stamped.transform.translation.y = msg->pose.pose.position.y;
@@ -23,13 +26,12 @@ void poseCallback(const nav_msgs::Odometry::ConstPtr &msg) {
 }
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "base_link_tf_publisher");
+    rclcpp::init(argc, argv, "base_link_tf_publisher");
 
     // transform_stamped.header.frame_id = "odom";
     transform_stamped.child_frame_id = "base_link";
 
-    ros::NodeHandle node;
-    ros::Subscriber pose_subscriber = node.subscribe("/mavros/global_position/local", 10, &poseCallback);
+    rclcpp::Subscription<nav_msgs::Odometry::ConstPtr>::SharedPtr pose_subscriber = node.subscribe("/mavros/global_position/local", 10, &poseCallback);
 
     ros::spin();
 
