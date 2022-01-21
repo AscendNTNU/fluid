@@ -64,8 +64,8 @@ void Mast::search_period(double pitch){
             m_current_extremum = m_angle.x;
             m_time_last_max_pitch = clock.now();
         }
-        else if ( (clock.now() - m_time_last_min_pitch) >= ros::Duration(m_period/3.0) ){ //todo: may cause some trouble at the init
-            if ( (clock.now() - m_time_last_max_pitch) >= ros::Duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
+        else if ( (clock.now() - m_time_last_min_pitch) >= std::chrono::Duration(m_period/3.0) ){ //todo: may cause some trouble at the init
+            if ( (clock.now() - m_time_last_max_pitch) >= std::chrono::Duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
                 //We have not found a new maximum for 0.5sec. The last one found it the correct one.
                 m_last_max_pitch = m_current_extremum;
                 m_lookForMin = true;
