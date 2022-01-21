@@ -6,7 +6,7 @@
 #include "util.h"
 #include "type_mask.h"
 
-#include <rclcpp.h>
+#include <rclcpp/rclcpp.h>
 #include <ascend_msgs/SetInt.hpp>
 #include <std_srvs/Trigger.hpp>
 #include <chrono>
