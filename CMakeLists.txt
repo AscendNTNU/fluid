@@ -22,7 +22,6 @@ find_package(ascend_msgs REQUIRED)
 add_executable(fluid src/nodes/main.cpp)
 add_executable(base_link_publisher src/nodes/base_link_publisher.cpp)
 ament_target_dependencies(main rclcpp std_msgs std_srvs geometry_msgs nav_msgs mavros_msgs ascend_msgs)
-ament_target_dependencies(main
 
 install(TARGETS
   main
