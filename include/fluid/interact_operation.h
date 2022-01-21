@@ -5,6 +5,8 @@
 #ifndef INTERACT_OPERATION_H
 #define INTERACT_OPERATION_H
 
+#include <chrono>
+
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PointStamped.h>
 #include <mavros_msgs/DebugValue.h>
@@ -120,20 +122,22 @@ class InteractOperation : public rclcpp::Node {
         uint8_t finished_bitmask;
     };
 
+    std::chrono::system_time clock;
+
     /**
      * @brief Determine when we enter the state APPROACHING
      */
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr approaching_t0;
+    std::chrono::time_point approaching_t0;
     
-    rclcpp::Publisher<mavros_msgs::PositionTarget>::SharedPtr ekf_module_pose_subscriber;
-    rclcpp::Publisher<mavros_msgs::DebugValue>::SharedPtr ekf_state_vector_subscriber;
-    rclcpp::Publisher<geometry_msgs::PoseWithCovarianceStampedConstPtr>::SharedPtr module_pose_subscriber;
-    rclcpp::Publisher<geometry_msgs::PoseWithCovarianceStampedConstPtr>::SharedPtr gt_module_pose_subscriber;
-    rclcpp::Publisher<td_msgs::Bool>::SharedPtr fh_state_subscriber;
-    rclcpp::Publisher<td_msgs::Bool>::SharedPtr close_tracking_ready_subscriber;
+    rclcpp::Subscription<mavros_msgs::PositionTarget>::SharedPtr ekf_module_pose_subscriber;
+    rclcpp::Subscription<mavros_msgs::DebugValue>::SharedPtr ekf_state_vector_subscriber;
+    rclcpp::Subscription<geometry_msgs::PoseWithCovarianceStampedConstPtr>::SharedPtr module_pose_subscriber;
+    rclcpp::Subscription<geometry_msgs::PoseWithCovarianceStampedConstPtr>::SharedPtr gt_module_pose_subscriber;
+    rclcpp::Subscription<td_msgs::Bool>::SharedPtr fh_state_subscriber;
+    rclcpp::Subscription<td_msgs::Bool>::SharedPtr close_tracking_ready_subscriber;
 
-    ros::ServiceClient start_close_tracking_client;
-    ros::ServiceClient pause_close_tracking_client;    
+    rclcpp::Client<ascend_msgs::SetInt>::SharedPtr start_close_tracking_client;
+    rclcpp::Client<std_srvs::Trigger>::SharedPtr pause_close_tracking_client;
 
     rclcpp::Publisher<std_msgs::Int16>::SharedPtr interact_fail_pub;
     rclcpp::Publisher<mavros_msgs::PositionTarget>::SharedPtr altitude_and_yaw_pub;
@@ -205,18 +209,17 @@ class InteractOperation : public rclcpp::Node {
 
     void update_transition_state();
 
-    ros::Subscriber pose_subscriber;
+    rclcpp::Subscriber<geometry_msgs::PoseWithCovarianceStamped> pose_subscriber;
     geometry_msgs::PoseStamped current_pose;
     void poseCallback(const nav_msgs::OdometryConstPtr pose);
 
-    ros::Subscriber twist_subscriber;
+    rclcpp::Subscription<geometry_msgs::TwistStampedConstPtr> twist_subscriber;
     geometry_msgs::TwistStamped current_twist;
     void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
     geometry_msgs::Vector3 current_accel;
     int rate_int;
 
-    ros::Publisher setpoint_publisher;
-    ros::NodeHandle node_handle;
+    rclcpp::Publisher<mavros_msgs::PositionTarget>::SharedPtr setpoint_publisher;
     mavros_msgs::PositionTarget setpoint;
 
     void publishSetpoint();
