@@ -11,11 +11,11 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.hpp>
 #include <mavros_msgs/PositionTarget.hpp>
 #include <nav_msgs/Odometry.hpp>
-#include <std::chrono.h> //chrono is used instead of ROS time. 
-
+ 
 #include <memory>
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include "type_mask.h"
 
@@ -99,13 +99,13 @@ class Mast{
      * @brief time at whitch the last minimum pitch has been found
      * 
      */
-    ros::Time m_time_last_min_pitch;
+    std::chrono::duration m_time_last_min_pitch;
 
     /**
      * @brief time at whitch the last maximum pitch has been found
      * 
      */
-    ros::Time m_time_last_max_pitch;
+    std::chrono::duration m_time_last_max_pitch;
 
     
     
