@@ -1,7 +1,7 @@
 /**
  * @file data_file.cpp
  */
-#include "data_file.h"
+#include "data_file.hpp"
 
 DataFile::DataFile(std::string name, std::string path){
     m_name = name;

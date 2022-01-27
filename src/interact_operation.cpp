@@ -1,12 +1,12 @@
 /**
  * @file interact_operation.cpp
  */
-#include "interact_operation.h"
+#include "interact_operation.hpp"
 
-#include "util.h"
-#include "type_mask.h"
+#include "util.hpp"
+#include "type_mask.hpp"
 
-#include <rclcpp/rclcpp.h>
+#include <rclcpp/rclcpp.hpp>
 #include <ascend_msgs/SetInt.hpp>
 #include <std_srvs/Trigger.hpp>
 #include <chrono>

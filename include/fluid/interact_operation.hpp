@@ -7,18 +7,18 @@
 
 #include <chrono>
 
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <geometry_msgs/PointStamped.h>
-#include <mavros_msgs/DebugValue.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.hpp>
+#include <geometry_msgs/PointStamped.hpp>
+#include <mavros_msgs/DebugValue.hpp>
 
 #include <rclcpp/rclcpp.hpp>
-#include "mavros_msgs/PositionTarget.h"
-#include "mavros_msgs/AttitudeTarget.h"
-#include <std_msgs/Bool.h>
-#include <std_msgs/Int16.h>
+#include "mavros_msgs/PositionTarget.hpp"
+#include "mavros_msgs/AttitudeTarget.hpp"
+#include <std_msgs/Bool.hpp>
+#include <std_msgs/Int16.hpp>
 
-#include "mast.h"
-#include "data_file.h"
+#include "mast.hpp"
+#include "data_file.hpp"
 
 struct MastNodeConfiguration {
     /**

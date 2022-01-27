@@ -7,14 +7,14 @@
 
 #include <iostream>
 #include <fstream>
-#include <unistd.h> //to get the current directory
+#include <unistd.hpp> //to get the current directory
 #include <chrono>
 
 #include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/Vector3.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/TwistStamped.h>
-#include <mavros_msgs/PositionTarget.h>
+#include <geometry_msgs/Vector3.hpp>
+#include <geometry_msgs/PoseStamped.hpp>
+#include <geometry_msgs/TwistStamped.hpp>
+#include <mavros_msgs/PositionTarget.hpp>
 
 
 /**

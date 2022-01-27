@@ -1,8 +1,8 @@
 /**
  * @file mast.cpp
  */
-#include "mast.h"
-#include "util.h"
+#include "mast.hpp"
+#include "util.hpp"
 
 Mast::Mast(float yaw){
     m_fixed_yaw = yaw;

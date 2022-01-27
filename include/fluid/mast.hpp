@@ -17,7 +17,7 @@
 #include <vector>
 #include <chrono>
 
-#include "type_mask.h"
+#include "type_mask.hpp"
 
 //mast movement estimation
 #define SAVE_PITCH_TIME 15
