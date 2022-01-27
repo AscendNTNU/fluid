@@ -209,7 +209,7 @@ class InteractOperation : public rclcpp::Node {
 
     void update_transition_state();
 
-    rclcpp::Subscriber<geometry_msgs::PoseWithCovarianceStamped> pose_subscriber;
+    rclcpp::Subscription<geometry_msgs::PoseWithCovarianceStamped> pose_subscriber;
     geometry_msgs::PoseStamped current_pose;
     void poseCallback(const nav_msgs::OdometryConstPtr pose);
 
