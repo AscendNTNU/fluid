@@ -90,12 +90,6 @@ class Mast{
     float m_last_max_pitch;
 
     /**
-     * @brief Clock used for time keeping
-     * 
-     */
-    std::chrono::system_clock clock;
-
-    /**
      * @brief time at whitch the last minimum pitch has been found
      * 
      */

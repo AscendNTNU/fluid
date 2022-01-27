@@ -49,10 +49,10 @@ void Mast::search_period(double pitch){
     {
         if(m_angle.x < m_current_extremum){
             m_current_extremum = m_angle.x;
-            m_time_last_min_pitch = clock.now();
+            m_time_last_min_pitch = std::chrono::system_clock::now();
         }
-        else if ( (clock.now() - m_time_last_max_pitch) >= std::chrono::duration(m_period/3.0) ){ //todo: may cause some trouble at the init
-            if ((clock.now() - m_time_last_min_pitch) >= std::chrono::duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
+        else if ( (std::chrono::system_clock::now() - m_time_last_max_pitch) >= std::chrono::duration(m_period/3.0) ){ //todo: may cause some trouble at the init
+            if ((std::chrono::system_clock::now() - m_time_last_min_pitch) >= std::chrono::duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
                 //We have not found a new minimum for 0.5sec. The last one found it the correct one.
                 m_last_min_pitch = m_current_extremum;
                 m_lookForMin = false;
@@ -62,10 +62,10 @@ void Mast::search_period(double pitch){
     else{ //If we do no look for a min, we look for a max
         if (m_angle.x > m_current_extremum){
             m_current_extremum = m_angle.x;
-            m_time_last_max_pitch = clock.now();
+            m_time_last_max_pitch = std::chrono::system_clock::now();
         }
-        else if ( (clock.now() - m_time_last_min_pitch) >= std::chrono::duration(m_period/3.0) ){ //todo: may cause some trouble at the init
-            if ( (clock.now() - m_time_last_max_pitch) >= std::chrono::duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
+        else if ( (std::chrono::system_clock::now() - m_time_last_min_pitch) >= std::chrono::duration(m_period/3.0) ){ //todo: may cause some trouble at the init
+            if ( (std::chrono::system_clock::now() - m_time_last_max_pitch) >= std::chrono::duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
                 //We have not found a new maximum for 0.5sec. The last one found it the correct one.
                 m_last_max_pitch = m_current_extremum;
                 m_lookForMin = true;

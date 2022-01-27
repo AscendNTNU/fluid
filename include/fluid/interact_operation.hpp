@@ -122,8 +122,6 @@ class InteractOperation : public rclcpp::Node {
         uint8_t finished_bitmask;
     };
 
-    std::chrono::system_time clock;
-
     /**
      * @brief Determine when we enter the state APPROACHING
      */

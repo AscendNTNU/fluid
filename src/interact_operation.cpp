@@ -30,7 +30,7 @@
 
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
 
-std::chrono::system_time clock:
+
 std::chrono::time_point prev_gt_pose_time;
 geometry_msgs::Vector3 DIST_FH_DRONE_CENTRE;
 
@@ -123,7 +123,7 @@ void InteractOperation::initialize() {
     gt_reference.init("Time\tpose.x\tpose.y");
     #endif
     #endif
-    approaching_t0 = clock.now();
+    approaching_t0 = std::chrono::system_clock::now();
     completion_count =0;
 }
 
@@ -327,7 +327,7 @@ void InteractOperation::tick() {
         if(time_cout%rate_int==0)
             ROS_INFO_STREAM(ros::this_node::getName().c_str() 
                                 << ": Waiting for interaction point pose callback\n");
-        approaching_t0 = clock.now();
+        approaching_t0 = std::chrono::system_clock::now();
         return;
     }
 
@@ -347,7 +347,7 @@ void InteractOperation::tick() {
             }
                        
             if(MAST_INTERACT) {
-                float time_out_gain = 1 + (clock.now()-approaching_t0).toSec()/30.0;
+                float time_out_gain = 1 + (std::chrono::system_clock::now()-approaching_t0).toSec()/30.0;
                 if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
                     //Todo, we may want to judge the velocity in stead of having a time to completion
                     if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int) )
@@ -528,7 +528,7 @@ void InteractOperation::tick() {
     mavros_msgs::PositionTarget ref = Util::addPositionTarget(interact_pt_state,smooth_rotated_offset);
 
     setpoint.header.seq++;
-    setpoint.header.stamp = clock.now();
+    setpoint.header.stamp = std::chrono::system_clock::now();
     setpoint.yaw = mast.get_yaw()+M_PI;
     setpoint.position = ref.position;
     setpoint.velocity = ref.velocity;
@@ -567,7 +567,7 @@ geometry_msgs::Vector3 InteractOperation::orientation_to_acceleration(geometry_m
 }
 
 void InteractOperation::publishSetpoint() { 
-    setpoint.header.stamp = clock.now();
+    setpoint.header.stamp = std::chrono::system_clock::now();
     setpoint.header.frame_id = "map";
     setpoint_publisher.publish(setpoint); 
 }

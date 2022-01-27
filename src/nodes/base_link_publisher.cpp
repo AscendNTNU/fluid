@@ -2,13 +2,14 @@
 #include <geometry_msgs/PoseStamped.hpp>
 #include <tf2_ros/transform_broadcaster.hpp>
 #include <nav_msgs/Odometry.hpp>
+#include <chrono>
 
 static geometry_msgs::TransformStamped transform_stamped;
 
 void poseCallback(const nav_msgs::Odometry::ConstPtr &msg) {
     static tf2_ros::TransformBroadcaster broadcaster;
 
-    rclcpp::Time now = this->get_clock()->now();
+    rclcpp::Time now = std::chrono::system_clock::now();
     transform_stamped.header.stamp = now;
     transform_stamped.header.frame_id = msg->header.frame_id;
     transform_stamped.transform.translation.x = msg->pose.pose.position.x;
