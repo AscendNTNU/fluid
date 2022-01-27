@@ -1,91 +1,90 @@
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include "interact_operation.h"
 
-void exitAtParameterExtractionFailure(const std::string& param) {
-    ROS_FATAL_STREAM(ros::this_node::getName() << ": Could not find parameter: " << param.c_str());
-    ros::shutdown();
+void exitAtParameterExtractionFailure(std::shared_ptr<rclcpp::Node> node, const std::string& param) {
+    RCLCPP_FATAL(rclcpp::get_logger("fluid"), ": Could not find parameter: " + param.c_str());
+    rclcpp::shutdown();
 }
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "fluid_server");
+    rclcpp::init(argc, argv, "fluid_server");
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("fluid_server");
+    RCLCPP_INFO(rclcpp::get_logger("fluid"), ": Starting up.");
 
-    ROS_INFO_STREAM(ros::this_node::getName().c_str() << ": Starting up.");
-
-    ros::NodeHandle node_handle;
-    const std::string prefix = ros::this_node::getName() + "/";
+    const std::string prefix = node->get_name() + "/";
     int refresh_rate, travel_max_angle;
     bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_show_prints;
     float distance_completion_threshold, velocity_completion_threshold, default_height;
     float interact_max_vel, interact_max_acc, travel_speed, travel_accel;
     float* fh_offset = (float*) calloc(3,sizeof(float));
     
-    if (!node_handle.getParam(prefix + "ekf", ekf)) {
-        exitAtParameterExtractionFailure(prefix + "ekf");
+    if (!node.get_parameter(prefix + "ekf", ekf)) {
+        exitAtParameterExtractionFailure(node, prefix + "ekf");
     }
 
-    if (!node_handle.getParam(prefix + "use_perception", use_perception)) {
-        exitAtParameterExtractionFailure(prefix + "use_perception");
+    if (!node.get_parameter(prefix + "use_perception", use_perception)) {
+        exitAtParameterExtractionFailure(node, prefix + "use_perception");
     }
 
-    if (!node_handle.getParam(prefix + "refresh_rate", refresh_rate)) {
-        exitAtParameterExtractionFailure(prefix + "refresh_rate");
+    if (!node.get_parameter(prefix + "refresh_rate", refresh_rate)) {
+        exitAtParameterExtractionFailure(node, prefix + "refresh_rate");
     }
 
-    if (!node_handle.getParam(prefix + "should_auto_arm", should_auto_arm)) {
-        exitAtParameterExtractionFailure(prefix + "should_auto_arm");
+    if (!node.get_parameter(prefix + "should_auto_arm", should_auto_arm)) {
+        exitAtParameterExtractionFailure(node, prefix + "should_auto_arm");
     }
 
-    if (!node_handle.getParam(prefix + "should_auto_offboard", should_auto_offboard)) {
-        exitAtParameterExtractionFailure(prefix + "should_auto_offboard");
+    if (!node.get_parameter(prefix + "should_auto_offboard", should_auto_offboard)) {
+        exitAtParameterExtractionFailure(node, prefix + "should_auto_offboard");
     }
 
-    if (!node_handle.getParam(prefix + "distance_completion_threshold", distance_completion_threshold)) {
-        exitAtParameterExtractionFailure(prefix + "distance_completion_threshold");
+    if (!node.get_parameter(prefix + "distance_completion_threshold", distance_completion_threshold)) {
+        exitAtParameterExtractionFailure(node, prefix + "distance_completion_threshold");
     }
 
-    if (!node_handle.getParam(prefix + "velocity_completion_threshold", velocity_completion_threshold)) {
-        exitAtParameterExtractionFailure(prefix + "velocity_completion_threshold");
+    if (!node.get_parameter(prefix + "velocity_completion_threshold", velocity_completion_threshold)) {
+        exitAtParameterExtractionFailure(node, prefix + "velocity_completion_threshold");
     }
 
-    if (!node_handle.getParam(prefix + "default_height", default_height)) {
-        exitAtParameterExtractionFailure(prefix + "default_height");
+    if (!node.get_parameter(prefix + "default_height", default_height)) {
+        exitAtParameterExtractionFailure(node, prefix + "default_height");
     }
 
-    if (!node_handle.getParam(prefix + "interaction_show_prints", interaction_show_prints)) {
-        exitAtParameterExtractionFailure(prefix + "interaction_show_prints");
+    if (!node.get_parameter(prefix + "interaction_show_prints", interaction_show_prints)) {
+        exitAtParameterExtractionFailure(node, prefix + "interaction_show_prints");
     }
     
-    if (!node_handle.getParam(prefix + "interaction_max_vel", interact_max_vel)) {
-        exitAtParameterExtractionFailure(prefix + "interaction_max_vel");
+    if (!node.get_parameter(prefix + "interaction_max_vel", interact_max_vel)) {
+        exitAtParameterExtractionFailure(node, prefix + "interaction_max_vel");
     }
 
-    if (!node_handle.getParam(prefix + "interaction_max_acc", interact_max_acc)) {
-        exitAtParameterExtractionFailure(prefix + "interaction_max_acc");
+    if (!node.get_parameter(prefix + "interaction_max_acc", interact_max_acc)) {
+        exitAtParameterExtractionFailure(node, prefix + "interaction_max_acc");
     }
 
-    if (!node_handle.getParam(prefix + "travel_max_angle", travel_max_angle)) {
-        exitAtParameterExtractionFailure(prefix + "travel_max_angle");
+    if (!node.get_parameter(prefix + "travel_max_angle", travel_max_angle)) {
+        exitAtParameterExtractionFailure(node, prefix + "travel_max_angle");
     }
 
-    if (!node_handle.getParam(prefix + "fh_offset_x", fh_offset[0])) {
-        exitAtParameterExtractionFailure(prefix + "fh_offset_x");
+    if (!node.get_parameter(prefix + "fh_offset_x", fh_offset[0])) {
+        exitAtParameterExtractionFailure(node, prefix + "fh_offset_x");
     }
 
-    if (!node_handle.getParam(prefix + "fh_offset_y", fh_offset[1])) {
-        exitAtParameterExtractionFailure(prefix + "fh_offset_y");
+    if (!node.get_parameter(prefix + "fh_offset_y", fh_offset[1])) {
+        exitAtParameterExtractionFailure(node, prefix + "fh_offset_y");
     }
 
-    if (!node_handle.getParam(prefix + "fh_offset_z", fh_offset[2])) {
-        exitAtParameterExtractionFailure(prefix + "fh_offset_z");
+    if (!node.get_parameter(prefix + "fh_offset_z", fh_offset[2])) {
+        exitAtParameterExtractionFailure(node, prefix + "fh_offset_z");
     }
 
-    if (!node_handle.getParam(prefix + "travel_speed", travel_speed)) {
-        exitAtParameterExtractionFailure(prefix + "travel_speed");
+    if (!node.get_parameter(prefix + "travel_speed", travel_speed)) {
+        exitAtParameterExtractionFailure(node, prefix + "travel_speed");
     }
 
-    if (!node_handle.getParam(prefix + "travel_accel", travel_accel)) {
-        exitAtParameterExtractionFailure(prefix + "travel_accel");
+    if (!node.get_parameter(prefix + "travel_accel", travel_accel)) {
+        exitAtParameterExtractionFailure(node, prefix + "travel_accel");
     }
     MastNodeConfiguration configuration{ekf,
                                     use_perception,
