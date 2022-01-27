@@ -24,7 +24,7 @@ void DataFile::init(std::string title){
     }
     else
     {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << m_path+m_name);
+        RCLCPP_INFO(rclcpp::get_logger("data_file"), "could not open " m_path + m_name);
     }
 }
 
@@ -50,7 +50,7 @@ void DataFile::initStateLog(){
     }
     else
     {
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "could not open " << m_path+m_name);
+        RCLCPP_INFO(rclcpp::get_logger("data_file"), "could not open " + m_path + m_name);
     }
 }
 
@@ -60,7 +60,7 @@ void DataFile::saveVector3(const geometry_msgs::Vector3 vec){
     if(save_file_f.is_open())
     {
         save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
-                        << ros::Time::now() << "\t"
+                        << std::chrono::system_clock::now() << "\t"
                         << vec.x << "\t"
                         << vec.y;
         if(m_save_z)
@@ -79,7 +79,7 @@ void DataFile::saveStateLog(const geometry_msgs::Point pose, const geometry_msgs
     {
         if(m_save_z){
             save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
-                        << ros::Time::now() << "\t"
+                        << std::chrono::system_clock::now() << "\t"
                         << pose.x << "\t"
                         << pose.y << "\t"
                         << pose.z << "\t"
@@ -92,7 +92,7 @@ void DataFile::saveStateLog(const geometry_msgs::Point pose, const geometry_msgs
         }
         else{
             save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
-                        << ros::Time::now() << "\t"
+                        << std::chrono::system_clock::now() << "\t"
                         << pose.x << "\t"
                         << pose.y << "\t"
                         << vel.x << "\t"
@@ -115,7 +115,7 @@ void DataFile::saveArray(double* vec, int n){
     if(save_file_f.is_open())
     {
         save_file_f << std::fixed << std::setprecision(m_precision) //fix decimal number
-                    << ros::Time::now();
+                    << std::chrono::system_clock::now();
         for(int i = 0; i< n ; i++){
             save_file_f << "\t" << vec[i];
         }
