@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <unistd.hpp> //to get the current directory
+#include <unistd.h> //to get the current directory
 #include <chrono>
 
 #include <rclcpp/rclcpp.hpp>
@@ -39,13 +39,13 @@ class DataFile {
      */
     void init(std::string title);
     
-    void initStateLog(); // initLog
+    void initStateLog();
 
-    void saveVector3(const geometry_msgs::Vector3 vec);// saveSetpointLog
+    void saveVector3(const geometry_msgs::Vector3 vec);
 
     void saveStateLog(const geometry_msgs::Point pose, const geometry_msgs::Vector3 vel, const geometry_msgs::Vector3 accel); //saveLog
     
-    void saveStateLog(const mavros_msgs::PositionTarget data); //saveLog
+    void saveStateLog(const mavros_msgs::PositionTarget data);
     
     void saveArray(double* vec, int n);
 
