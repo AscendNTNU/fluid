@@ -1,6 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 
-#include "interact_operation.hpp"
+#include "../include/fluid/interact_operation.hpp"
 
 void exitAtParameterExtractionFailure(std::shared_ptr<rclcpp::Node> node, const std::string& param) {
     RCLCPP_FATAL(rclcpp::get_logger("fluid"), ": Could not find parameter: " + param.c_str());

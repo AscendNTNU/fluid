@@ -6,11 +6,11 @@
 #ifndef MAST_H
 #define MAST_H
 
-#include <geometry_msgs/PoseStamped.hpp>
-#include <geometry_msgs/TwistStamped.hpp>
-#include <geometry_msgs/PoseWithCovarianceStamped.hpp>
-#include <mavros_msgs/PositionTarget.hpp>
-#include <nav_msgs/Odometry.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <mavros_msgs/msg/position_target.hpp>
+#include <nav_msgs/msg/odometry.hpp>
  
 #include <memory>
 #include <string>

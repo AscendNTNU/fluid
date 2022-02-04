@@ -12,10 +12,10 @@
 #include <string>
 
 #include <rclcpp/rclcpp.hpp>
-#include <geometry_msgs/Vector3.hpp>
-#include <geometry_msgs/PoseStamped.hpp>
-#include <geometry_msgs/TwistStamped.hpp>
-#include <mavros_msgs/PositionTarget.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <mavros_msgs/msg/position_target.hpp>
 
 
 /**

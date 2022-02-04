@@ -1,7 +1,7 @@
 /**
  * @file interact_operation.cpp
  */
-#include "interact_operation.hpp"
+#include "../include/fluid/interact_operation.hpp"
 
 #include "util.hpp"
 #include "type_mask.hpp"
@@ -31,7 +31,7 @@
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
 
 
-std::chrono::time_point prev_gt_pose_time;
+std::chrono::time_point<std::chrono::system_clock> prev_gt_pose_time;
 geometry_msgs::Vector3 DIST_FH_DRONE_CENTRE;
 
 
