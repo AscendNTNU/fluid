@@ -9,6 +9,7 @@
 #include <fstream>
 #include <unistd.h> //to get the current directory
 #include <chrono>
+#include <string>
 
 #include <rclcpp/rclcpp.hpp>
 #include <geometry_msgs/Vector3.hpp>
