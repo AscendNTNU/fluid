@@ -1,10 +1,10 @@
 /**
  * @file interact_operation.cpp
  */
-#include "../include/fluid/interact_operation.hpp"
+#include "fluid/interact_operation.hpp"
 
-#include "util.hpp"
-#include "type_mask.hpp"
+#include "fluid/util.hpp"
+#include "fluid/type_mask.hpp"
 
 #include <rclcpp/rclcpp.hpp>
 #include <ascend_msgs/SetInt.hpp>
@@ -78,7 +78,7 @@ void InteractOperation::initialize() {
                                      10, &InteractOperation::ekfStateVectorCallback, this);
         gt_module_pose_subscriber = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr>("/simulator/module/ground_truth/pose",
                                      10, &InteractOperation::gt_modulePoseCallbackWithCov, this);
-        RCLCPP_INFO_STREAM("/fluid: Uses EKF data");
+        RCLCPP_INFO(this->get_logger("interact_operation"), "/fluid: Uses EKF data");
     }
     else{
     module_pose_subscriber = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr>("/simulator/module/ground_truth/pose",
@@ -176,7 +176,7 @@ void InteractOperation::gt_modulePoseCallback(
 
 void InteractOperation::FaceHuggerCallback(const std_msgs::msg::Bool released){
     if (released.data && !faceHugger_is_set){
-        ROS_INFO_STREAM(ros::this_node::getName().c_str() << "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
+        RCLCPP_INFO(this->get_logger("interact_operation"), "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
         interaction_state =  InteractionState::EXIT;
         faceHugger_is_set = true;
 
@@ -325,8 +325,7 @@ void InteractOperation::tick() {
     // Wait until we get the first module position readings before we do anything else.
     if (interact_pt_state.header.seq == 0) {
         if(time_cout%rate_int==0)
-            ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                                << ": Waiting for interaction point pose callback\n");
+            RCLCPP_INFO(this->get_logger("interact_operation"), ": Waiting for interaction point pose callback\n");
         approaching_t0 = std::chrono::system_clock::now();
         return;
     }
@@ -355,13 +354,11 @@ void InteractOperation::tick() {
                     else {
                         //We consider that if the drone is ready at some point, it will 
                         //remain ready until it is time to try
-                        ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                                        << ": " << "Approaching -> Ready");
+                        RCLCPP_INFO(this->get_logger("interact_operation"), ": " + "Approaching -> Ready");
 
                         completion_count = 0;
-                        ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                                << ": Control ready to set the FaceHugger."
-                                << " Waiting for the best opportunity");
+                        RCLCPP_INFO(this->get_logger("interact_operation"), ": Control ready to set the FaceHugger."
+                                + " Waiting for the best opportunity");
                         interaction_state = InteractionState::READY;   
                         desired_offset.x = MAX_DIST_FOR_CLOSE_TRACKING;             
                     }
@@ -374,8 +371,7 @@ void InteractOperation::tick() {
         case InteractionState::READY: {
             //The drone is ready, we just have to wait for the best moment to go!
             if(!close_tracking_is_set and (transition_state.finished_bitmask & 0x7) == 0x7){
-                ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                        << ": Turning on close tracking");
+                RCLCPP_INFO(this->get_logger("interact_operation"), ": Turning on close tracking");
                 
                 // send a message to perception to switch close tracking on.
                 if(USE_PERCEPTION){
@@ -405,8 +401,7 @@ void InteractOperation::tick() {
                 if( close_tracking_is_ready and (abs(time_to_wait) <= TIME_WINDOW_INTERACTION) )
                 { //We are in the good window to set the faceHugger
                     interaction_state = InteractionState::OVER;
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                                << ": " << "Ready -> Over");
+                    RCLCPP_INFO(this->get_logger("interact_operation"), ": Ready -> Over");
                     desired_offset.x = DIST_FH_DRONE_CENTRE.x;  //forward
                     desired_offset.y = DIST_FH_DRONE_CENTRE.y;   //left
                     desired_offset.z = DIST_FH_DRONE_CENTRE.z+0.03; //up
@@ -424,8 +419,7 @@ void InteractOperation::tick() {
             //We assume that the accuracy is fine, we don't want to take the risk to stay too long
             if ((transition_state.finished_bitmask & 0x7) == 0x7) {
                 interaction_state = InteractionState::INTERACT;
-                ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "Over -> Interact");
+                RCLCPP_INFO(this->get_logger("interact_operation"), ": Over -> Interact");
                 desired_offset.x = DIST_FH_DRONE_CENTRE.x;  //forward
                 desired_offset.y = 0.0;   //left
                 desired_offset.z -= 0.2;  //up
@@ -442,9 +436,8 @@ void InteractOperation::tick() {
             // NB, when FH is set, an interupt function switches the state to EXIT
             if ((transition_state.finished_bitmask & 0x7) == 0x7) {
                 interaction_state = InteractionState::EXIT;
-                ROS_INFO_STREAM(ros::this_node::getName().c_str() 
-                        << "Interact -> Exiting\n"
-                        << "Exit for safety reasons, the FaceHugger could not be placed..."); 
+                RCLCPP_INFO(this->get_logger("interact_operation"), "Interact -> Exiting\n" + 
+                "Exit for safety reasons, the FaceHugger could not be placed..."); 
 
                 //we move backward to ensure there will be no colision
                 // We directly set the transition state as we want to move as fast as possible
@@ -476,15 +469,13 @@ void InteractOperation::tick() {
                         close_tracking_is_set = false;
                         close_tracking_is_ready = false;
                 }
-                ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                        << ": " << "switch close tracking off");
+                RCLCPP_INFO(this->get_logger("interact_operation"), ": " + "switch close tracking off");
             }
             
             // Come back the the base or try again.
             if ( distance_to_offset < 0.2 ) {
                 if (faceHugger_is_set){
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "Exit -> Extracted");
+                    RCLCPP_INFO(this->get_logger("interact_operation"), ": " + "Exit -> Extracted");
                     interaction_state = InteractionState::EXTRACTED;
                     desired_offset.x = 4;
                     desired_offset.y = DIST_FH_DRONE_CENTRE.y;
@@ -493,8 +484,7 @@ void InteractOperation::tick() {
                     transition_state.max_vel = MAX_VEL*3;
                 }
                 else {
-                    ROS_INFO_STREAM(ros::this_node::getName().c_str()
-                            << ": " << "Exit -> Approaching");
+                    RCLCPP_INFO(this->get_logger("interact_operation"), ": Exit -> Approaching");
                     //ascend_msgs::msg::SetInt interact_fail_srv;
                     number_fail.data++;
                     //interact_fail_srv.request.data = number_fail;

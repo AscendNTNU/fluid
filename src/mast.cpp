@@ -1,8 +1,8 @@
 /**
  * @file mast.cpp
  */
-#include "mast.hpp"
-#include "util.hpp"
+#include "fluid/mast.hpp"
+#include "fluid/util.hpp"
 
 Mast::Mast(float yaw){
     m_fixed_yaw = yaw;
@@ -11,11 +11,11 @@ Mast::Mast(float yaw){
     m_current_extremum = 0;
 }
 
-void Mast::updateFromEkf(mavros_msgs::PositionTarget module_state){
+void Mast::updateFromEkf(mavros_msgs::msg::PositionTarget module_state){
     interaction_point_state = module_state;
 }
 
-void Mast::update(geometry_msgs::PoseStamped module_pose){
+void Mast::update(geometry_msgs::msg::PoseStamped module_pose){
     if(module_pose.header.stamp.toSec() - interaction_point_state.header.stamp.toSec() > 0.010){
     //sanity check that it is a new message.
         previous_interaction_point_state = interaction_point_state;
@@ -110,6 +110,6 @@ float Mast::get_period(){
     return m_period;
 }
 
-mavros_msgs::PositionTarget Mast::get_interaction_point_state(){
+mavros_msgs::msg::PositionTarget Mast::get_interaction_point_state(){
     return interaction_point_state;
 }

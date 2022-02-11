@@ -5,12 +5,12 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <geometry_msgs/Point.hpp>
-#include <geometry_msgs/Quaternion.hpp>
-#include <tf2/LinearMath/Matrix3x3.hpp>
-#include <tf2/LinearMath/Quaternion.hpp>
-#include <tf2/transform_datatypes.hpp>
-#include <mavros_msgs/PositionTarget.hpp>
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/transform_datatypes.h>
+#include <mavros_msgs/msg/position_target.hpp>
 
 #include <vector>
 
@@ -56,7 +56,7 @@ class Util {
      *
      * @return Eucledian distance betweeen @p current and @p target.
      */
-    static double distanceBetween(const geometry_msgs::Point& current, const geometry_msgs::Point& target) {
+    static double distanceBetween(const geometry_msgs::msg::Point& current, const geometry_msgs::msg::Point& target) {
         double delta_x = target.x - current.x;
         double delta_y = target.y - current.y;
         double delta_z = target.z - current.z;
@@ -74,18 +74,18 @@ class Util {
      *
      * @return The new path with inserted points.
      */
-    static std::vector<geometry_msgs::Point> createPath(const geometry_msgs::Point& first,
-                                                        const geometry_msgs::Point& last, const double& density) {
+    static std::vector<geometry_msgs::msg::Point> createPath(const geometry_msgs::msg::Point& first,
+                                                        const geometry_msgs::msg::Point& last, const double& density) {
         double distance = distanceBetween(first, last);
 
-        std::vector<geometry_msgs::Point> path;
+        std::vector<geometry_msgs::msg::Point> path;
 
         float delta_x = last.x - first.x;
         float delta_y = last.y - first.y;
         float delta_z = last.z - first.z;
 
         for (int i = 0; i < int(density * distance) + 1; i++) {
-            geometry_msgs::Point temp;
+            geometry_msgs::msg::Point temp;
 
             temp.x = first.x + i * delta_x / (density * distance);
             temp.y = first.y + i * delta_y / (density * distance);
@@ -104,8 +104,8 @@ class Util {
      * @param b The second position target to sum
      * @return mavros_msgs::PositionTarget 
      */
-    static mavros_msgs::PositionTarget addPositionTarget(mavros_msgs::PositionTarget a, mavros_msgs::PositionTarget b){
-        mavros_msgs::PositionTarget res;
+    static mavros_msgs::msg::PositionTarget addPositionTarget(mavros_msgs::msg::PositionTarget a, mavros_msgs::msg::PositionTarget b){
+        mavros_msgs::msg::PositionTarget res;
         res.header = a.header; // this is arbitrary. Did no find a perfect solution, but should not have any impact
 
         res.position.x = a.position.x + b.position.x;
@@ -131,12 +131,12 @@ class Util {
      * @param roll The euler roll (arround the x axis)
      * @return The equivalent quaternion 
      */
-    static geometry_msgs::Quaternion euler_to_quaternion(double yaw, double pitch, double roll){
+    static geometry_msgs::msg::Quaternion euler_to_quaternion(double yaw, double pitch, double roll){
         tf2::Quaternion q;
         q.setRPY(roll,pitch,yaw);
         q = q.normalize();
 
-        geometry_msgs::Quaternion quat;
+        geometry_msgs::msg::Quaternion quat;
         quat.w = q.getW();
         quat.x = q.getX();
         quat.y = q.getY();
@@ -151,7 +151,7 @@ class Util {
      * @param euler The euler angle we want to translate. y = pitch, x = roll, z = yaw
      * @return The equivalent quaternion
      */
-    static geometry_msgs::Quaternion euler_to_quaternion(geometry_msgs::Vector3 euler){
+    static geometry_msgs::msg::Quaternion euler_to_quaternion(geometry_msgs::msg::Vector3 euler){
         return euler_to_quaternion(euler.z, euler.y, euler.x);
     }
 
@@ -162,8 +162,8 @@ class Util {
      * 
      * @return The equivalent euler angle.
      */
-    static geometry_msgs::Vector3 quaternion_to_euler_angle(geometry_msgs::Quaternion orientation){
-        geometry_msgs::Vector3 eul;
+    static geometry_msgs::msg::Vector3 quaternion_to_euler_angle(geometry_msgs::msg::Quaternion orientation){
+        geometry_msgs::msg::Vector3 eul;
         tf2::Quaternion q;
         q.setValue(orientation.x, orientation.y, orientation.z, orientation.w);
         tf2::Matrix3x3 m(q);

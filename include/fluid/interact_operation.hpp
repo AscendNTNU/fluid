@@ -16,9 +16,10 @@
 #include "mavros_msgs/msg/attitude_target.hpp"
 #include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/int16.hpp>
+#include <std_srvs/srv/trigger.hpp>
 
-#include "../include/fluid/mast.hpp"
-#include "../include/fluid/data_file.hpp"
+#include "fluid/mast.hpp"
+#include "fluid/data_file.hpp"
 
 struct MastNodeConfiguration {
     /**

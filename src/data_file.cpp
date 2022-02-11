@@ -1,7 +1,8 @@
 /**
  * @file data_file.cpp
  */
-#include "data_file.hpp"
+#include "fluid/data_file.hpp"
+#include <iomanip>
 
 DataFile::DataFile(std::string name, std::string path){
     m_name = name;
@@ -24,7 +25,7 @@ void DataFile::init(std::string title){
     }
     else
     {
-        RCLCPP_INFO(rclcpp::get_logger("data_file"), "could not open " m_path + m_name);
+        RCLCPP_INFO(rclcpp::get_logger("data_file"), "could not open " + m_path + m_name);
     }
 }
 
@@ -54,7 +55,7 @@ void DataFile::initStateLog(){
     }
 }
 
-void DataFile::saveVector3(const geometry_msgs::Vector3 vec){
+void DataFile::saveVector3(const geometry_msgs::msg::Vector3 vec){
     std::ofstream save_file_f;
     save_file_f.open (m_path+m_name, std::ios::app);
     if(save_file_f.is_open())
@@ -71,7 +72,7 @@ void DataFile::saveVector3(const geometry_msgs::Vector3 vec){
     }
 }
 
-void DataFile::saveStateLog(const geometry_msgs::Point pose, const geometry_msgs::Vector3 vel, const geometry_msgs::Vector3 accel)
+void DataFile::saveStateLog(const geometry_msgs::msg::Point pose, const geometry_msgs::msg::Vector3 vel, const geometry_msgs::msg::Vector3 accel)
 {
     std::ofstream save_file_f;
     save_file_f.open (m_path+m_name, std::ios::app);
@@ -104,7 +105,7 @@ void DataFile::saveStateLog(const geometry_msgs::Point pose, const geometry_msgs
     }
 }
 
-void DataFile::saveStateLog(const mavros_msgs::PositionTarget data) //saveLog
+void DataFile::saveStateLog(const mavros_msgs::msg::PositionTarget data) //saveLog
 {
     saveStateLog(data.position, data.velocity, data.acceleration_or_force);
 }
