@@ -42,11 +42,11 @@ class DataFile {
     
     void initStateLog();
 
-    void saveVector3(const geometry_msgs::Vector3 vec);
+    void saveVector3(const geometry_msgs::msg::Vector3 vec);
 
-    void saveStateLog(const geometry_msgs::Point pose, const geometry_msgs::Vector3 vel, const geometry_msgs::Vector3 accel); //saveLog
+    void saveStateLog(const geometry_msgs::msg::Point pose, const geometry_msgs::msg::Vector3 vel, const geometry_msgs::msg::Vector3 accel); //saveLog
     
-    void saveStateLog(const mavros_msgs::PositionTarget data);
+    void saveStateLog(const mavros_msgs::msg::PositionTarget data);
     
     void saveArray(double* vec, int n);
 

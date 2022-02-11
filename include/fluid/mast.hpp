@@ -38,14 +38,14 @@ class Mast{
      * @brief state of the interaction_point. Includes Position, velocity and acceleration and a header.
      * 
      */
-    mavros_msgs::PositionTarget interaction_point_state;
+    mavros_msgs::msg::PositionTarget interaction_point_state;
 
     /**
      * @brief state of the interaction_point at the previous iteration/tick.
      *  Includes Position, velocity and acceleration and a header.
      * 
      */
-    mavros_msgs::PositionTarget previous_interaction_point_state;
+    mavros_msgs::msg::PositionTarget previous_interaction_point_state;
 
 
      /**
@@ -57,7 +57,7 @@ class Mast{
     /**
      * @brief the pitch, roll and trigonometric angle of the mast
      */
-    geometry_msgs::Vector3 m_angle;
+    geometry_msgs::msg::Vector3 m_angle;
 
     /**
      * @brief The estimated period of the pitch of the mast.
@@ -93,13 +93,13 @@ class Mast{
      * @brief time at whitch the last minimum pitch has been found
      * 
      */
-    std::chrono::duration m_time_last_min_pitch;
+    std::chrono::duration<std::chrono::system_clock> m_time_last_min_pitch;
 
     /**
      * @brief time at whitch the last maximum pitch has been found
      * 
      */
-    std::chrono::duration m_time_last_max_pitch;
+    std::chrono::duration<std::chrono::system_clock> m_time_last_max_pitch;
 
     
     
@@ -118,14 +118,14 @@ class Mast{
      * 
      * @param module_state state of the interaction_point from the EKF
      */
-    void updateFromEkf(mavros_msgs::PositionTarget module_state);
+    void updateFromEkf(mavros_msgs::msg::PositionTarget module_state);
 
     /**
      * @brief Update position, velocity and acceleration from euler derivations
      * 
      * @param module_pose_ptr state of the interaction_point
      */
-    void update(geometry_msgs::PoseStamped module_pose_ptr); //todo: this should also save the pitch automaticaly
+    void update(geometry_msgs::msg::PoseStamped module_pose_ptr); //todo: this should also save the pitch automaticaly
 
     /**
      * @brief Check if pitch were extremum.
@@ -191,9 +191,9 @@ class Mast{
     /**
      * @brief Get the interaction point state object
      * 
-     * @return mavros_msgs::PositionTarget 
+     * @return mavros_msgs::msg::PositionTarget 
      */
-    mavros_msgs::PositionTarget get_interaction_point_state();
+    mavros_msgs::msg::PositionTarget get_interaction_point_state();
 
 };
 #endif // MAST_H

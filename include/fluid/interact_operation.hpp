@@ -118,27 +118,27 @@ class InteractOperation : public rclcpp::Node {
     struct TransitionSetpointStruct {
         float max_vel;
         float cte_acc;
-        mavros_msgs::PositionTarget state;
+        mavros_msgs::msg::PositionTarget state;
         uint8_t finished_bitmask;
     };
 
     /**
      * @brief Determine when we enter the state APPROACHING
      */
-    std::chrono::time_point approaching_t0;
+    std::chrono::time_point<std::chrono::system_clock> approaching_t0;
     
-    rclcpp::Subscription<mavros_msgs::PositionTarget>::SharedPtr ekf_module_pose_subscriber;
-    rclcpp::Subscription<mavros_msgs::DebugValue>::SharedPtr ekf_state_vector_subscriber;
-    rclcpp::Subscription<geometry_msgs::PoseWithCovarianceStampedConstPtr>::SharedPtr module_pose_subscriber;
-    rclcpp::Subscription<geometry_msgs::PoseWithCovarianceStampedConstPtr>::SharedPtr gt_module_pose_subscriber;
-    rclcpp::Subscription<std_msgs::Bool>::SharedPtr fh_state_subscriber;
-    rclcpp::Subscription<std_msgs::Bool>::SharedPtr close_tracking_ready_subscriber;
+    rclcpp::Subscription<mavros_msgs::msg::PositionTarget>::SharedPtr ekf_module_pose_subscriber;
+    rclcpp::Subscription<mavros_msgs::msg::DebugValue>::SharedPtr ekf_state_vector_subscriber;
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr module_pose_subscriber;
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr gt_module_pose_subscriber;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr fh_state_subscriber;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr close_tracking_ready_subscriber;
 
-    rclcpp::Client<ascend_msgs::SetInt>::SharedPtr start_close_tracking_client;
-    rclcpp::Client<std_srvs::Trigger>::SharedPtr pause_close_tracking_client;
+    rclcpp::Client<ascend_msgs::msg::SetInt>::SharedPtr start_close_tracking_client;
+    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr pause_close_tracking_client;
 
-    rclcpp::Publisher<std_msgs::Int16>::SharedPtr interact_fail_pub;
-    rclcpp::Publisher<mavros_msgs::PositionTarget>::SharedPtr altitude_and_yaw_pub;
+    rclcpp::Publisher<std_msgs::msg::Int16>::SharedPtr interact_fail_pub;
+    rclcpp::Publisher<mavros_msgs::msg::PositionTarget>::SharedPtr altitude_and_yaw_pub;
 
     
 
@@ -152,11 +152,11 @@ class InteractOperation : public rclcpp::Node {
     const bool steady;
     bool autoPublish;
 
-    std_msgs::Int16 number_fail;
+    std_msgs::msg::Int16 number_fail;
     
     
     TransitionSetpointStruct transition_state;
-    geometry_msgs::Point desired_offset;
+    geometry_msgs::msg::Point desired_offset;
     
 
     
@@ -191,52 +191,49 @@ class InteractOperation : public rclcpp::Node {
      */
     bool close_tracking_is_ready;
     
-    void ekfStateVectorCallback(const mavros_msgs::DebugValue ekf_state);
-    void ekfModulePoseCallback(const mavros_msgs::PositionTarget module_state);
-    void gt_modulePoseCallback(const geometry_msgs::PoseStamped module_pose);
-    void gt_modulePoseCallbackWithCov(const geometry_msgs::PoseWithCovarianceStampedConstPtr module_pose);
-    void gt_modulePoseCallbackWithoutCov(const geometry_msgs::PoseStampedConstPtr module_pose);
-    void FaceHuggerCallback(const std_msgs::Bool released);
-    void closeTrackingCallback(std_msgs::Bool ready);
+    void ekfStateVectorCallback(const mavros_msgs::msg::DebugValue ekf_state);
+    void ekfModulePoseCallback(const mavros_msgs::msg::PositionTarget module_state);
+    void gt_modulePoseCallback(const geometry_msgs::msg::PoseStamped module_pose);
+    void gt_modulePoseCallbackWithCov(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr module_pose);
+    void gt_modulePoseCallbackWithoutCov(const geometry_msgs::msg::PoseStamped::SharedPtr module_pose);
+    void FaceHuggerCallback(const std_msgs::msg::Bool released);
+    void closeTrackingCallback(std_msgs::msg::Bool ready);
     void finishInteraction();
     bool faceHugger_is_set;     // true as soon av facehugger is released from drone
     
-    mavros_msgs::PositionTarget rotate(mavros_msgs::PositionTarget setpoint, float yaw);
-    geometry_msgs::Vector3 estimateModuleVel();
-    geometry_msgs::Vector3 estimateModuleAccel();
+    mavros_msgs::msg::PositionTarget rotate(mavros_msgs::msg::PositionTarget setpoint, float yaw);
+    geometry_msgs::msg::Vector3 estimateModuleVel();
+    geometry_msgs::msg::Vector3 estimateModuleAccel();
 
     void update_transition_state();
 
-    rclcpp::Subscription<geometry_msgs::PoseWithCovarianceStamped> pose_subscriber;
-    geometry_msgs::PoseStamped current_pose;
-    void poseCallback(const nav_msgs::OdometryConstPtr pose);
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped> pose_subscriber;
+    geometry_msgs::msg::PoseStamped current_pose;
+    void poseCallback(const nav_msgs::msg::Odometry::SharedPtr pose);
 
-    rclcpp::Subscription<geometry_msgs::TwistStampedConstPtr> twist_subscriber;
-    geometry_msgs::TwistStamped current_twist;
-    void twistCallback(const geometry_msgs::TwistStampedConstPtr twist);
-    geometry_msgs::Vector3 current_accel;
+    rclcpp::Subscription<geometry_msgs::msg::TwistStamped::SharedPtr> twist_subscriber;
+    geometry_msgs::msg::TwistStamped current_twist;
+    void twistCallback(const geometry_msgs::msg::TwistStamped::SharedPtr twist);
+    geometry_msgs::msg::Vector3 current_accel;
     int rate_int;
 
-    rclcpp::Publisher<mavros_msgs::PositionTarget>::SharedPtr setpoint_publisher;
-    mavros_msgs::PositionTarget setpoint;
+    rclcpp::Publisher<mavros_msgs::msg::PositionTarget>::SharedPtr setpoint_publisher;
+    mavros_msgs::msg::PositionTarget setpoint;
 
     void publishSetpoint();
-    virtual bool hasFinishedExecution() const = 0;
-    virtual void initialize() {}
-    virtual void tick() {}
-    geometry_msgs::PoseStamped getCurrentPose() const;
-    geometry_msgs::TwistStamped getCurrentTwist() const;
-    geometry_msgs::Vector3 getCurrentAccel() const;
+    geometry_msgs::msg::PoseStamped getCurrentPose() const;
+    geometry_msgs::msg::TwistStamped getCurrentTwist() const;
+    geometry_msgs::msg::Vector3 getCurrentAccel() const;
     float getCurrentYaw() const;
-    geometry_msgs::Vector3 orientation_to_acceleration(geometry_msgs::Quaternion orientation);
+    geometry_msgs::msg::Vector3 orientation_to_acceleration(geometry_msgs::msg::Quaternion orientation);
 
    public:
-    explicit InteractOperation(const float& fixed_mast_yaw, const float& offset=3.0, const bool& steady,
-    const bool& autoPublish, MastNodeConfiguration config);
-    void initialize() override;
-    bool hasFinishedExecution() const override;
-    void tick() override;
-    virtual void perform(std::function<bool(void)> should_tick, bool should_halt_if_steady);
+    explicit InteractOperation(const float& fixed_mast_yaw, const bool& steady,
+    const bool& autoPublish, MastNodeConfiguration config, const float& offset=3.0);
+    void initialize();
+    bool hasFinishedExecution() const;
+    void tick();
+    void perform(std::function<bool(void)> should_tick, bool should_halt_if_steady);
 
 };
 
