@@ -126,7 +126,7 @@ class InteractOperation : public rclcpp::Node {
     /**
      * @brief Determine when we enter the state APPROACHING
      */
-    std::chrono::time_point<std::chrono::system_clock> approaching_t0;
+    rclcpp::Time approaching_t0;
     
     rclcpp::Subscription<mavros_msgs::msg::PositionTarget>::SharedPtr ekf_module_pose_subscriber;
     rclcpp::Subscription<mavros_msgs::msg::DebugValue>::SharedPtr ekf_state_vector_subscriber;
@@ -210,7 +210,7 @@ class InteractOperation : public rclcpp::Node {
 
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_subscriber;
     geometry_msgs::msg::PoseStamped current_pose;
-    void poseCallback(const nav_msgs::msg::Odometry::SharedPtr pose);
+    void poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr pose);
 
     rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr twist_subscriber;
     geometry_msgs::msg::TwistStamped current_twist;

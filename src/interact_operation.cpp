@@ -10,7 +10,9 @@
 #include <rclcpp/node.hpp>
 #include <rclcpp/rclcpp.hpp>
 //#include <ascend_msgs/SetInt.hpp>
+#include <rclcpp/time.hpp>
 #include <std_srvs/srv/trigger.hpp>
+#include <std_msgs/msg/header.hpp>
 #include <chrono>
 //A list of parameters for the user
 #define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
@@ -30,10 +32,12 @@
 
 #define MAX_ANGLE   1500 // in centi-degrees 
 
+using std::placeholders::_1;
+
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
 
 
-std::chrono::time_point<std::chrono::system_clock> prev_gt_pose_time;
+rclcpp::Time prev_gt_pose_time;
 geometry_msgs::msg::Vector3 DIST_FH_DRONE_CENTRE;
 
 
@@ -45,9 +49,9 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const bool& st
     mast = Mast(fixed_mast_yaw);
 
     pose_subscriber = 
-        this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("mavros/global_position/local", 1, std::bind(&InteractOperation::poseCallback, this, std::placeholders::_1));
+        this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("mavros/global_position/local", 1, std::bind(&InteractOperation::poseCallback, this, _1));
     twist_subscriber =
-        this->create_subscription<geometry_msgs::msg::TwistStamped>("mavros/local_position/velocity_local", 1, std::bind(&InteractOperation::twistCallback, this, std::placeholders::_1));
+        this->create_subscription<geometry_msgs::msg::TwistStamped>("mavros/local_position/velocity_local", 1, std::bind(&InteractOperation::twistCallback, this, _1));
 
     setpoint_publisher = this->create_publisher<mavros_msgs::msg::PositionTarget>("mavros/setpoint_raw/local", 10);
     setpoint.coordinate_frame = mavros_msgs::msg::PositionTarget::FRAME_LOCAL_NED;
@@ -74,21 +78,21 @@ void InteractOperation::initialize() {
 
     if(EKF){
         ekf_module_pose_subscriber = this->create_subscription<mavros_msgs::msg::PositionTarget>("/ekf/module/state",
-                                     10, std::bind(&InteractOperation::ekfModulePoseCallback, this, std::placeholders::_1));
+                                     10, std::bind(&InteractOperation::ekfModulePoseCallback, this, _1));
         ekf_state_vector_subscriber = this->create_subscription<mavros_msgs::msg::DebugValue>("/ekf/state",
-                                     10, std::bind(&InteractOperation::ekfStateVectorCallback, this, std::placeholders::_1));
+                                     10, std::bind(&InteractOperation::ekfStateVectorCallback, this, _1));
         gt_module_pose_subscriber = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr>("/simulator/module/ground_truth/pose",
-                                     10, std::bind(&InteractOperation::gt_modulePoseCallbackWithCov, this, std::placeholders::_1));
+                                     10, std::bind(&InteractOperation::gt_modulePoseCallbackWithCov, this, _1));
         RCLCPP_INFO(rclcpp::get_logger("interact_operation"), "/fluid: Uses EKF data");
     }
     else{
     module_pose_subscriber = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/simulator/module/ground_truth/pose",
-                                    10, std::bind(&InteractOperation::gt_modulePoseCallbackWithCov, this, std::placeholders::_1));
+                                    10, std::bind(&InteractOperation::gt_modulePoseCallbackWithCov, this, _1));
     }
     fh_state_subscriber = this->create_subscription<std_msgs::msg::Bool>("/fh_interface/fh_state",
-                                    10, std::bind(&InteractOperation::FaceHuggerCallback, this, std::placeholders::_1));
+                                    10, std::bind(&InteractOperation::FaceHuggerCallback, this, _1));
     close_tracking_ready_subscriber = this->create_subscription<std_msgs::msg::Bool>("/close_tracking_running",
-                                    10, std::bind(&InteractOperation::closeTrackingCallback, this, std::placeholders::_1));
+                                    10, std::bind(&InteractOperation::closeTrackingCallback, this, _1));
 
     // start_close_tracking_client = this->create_client<ascend_msgs::msg::SetInt>("start_close_tracking");
     pause_close_tracking_client = this->create_client<std_srvs::srv::Trigger>("Pause_close_tracking");
@@ -124,7 +128,7 @@ void InteractOperation::initialize() {
     gt_reference.init("Time\tpose.x\tpose.y");
     #endif
     #endif
-    approaching_t0 = std::chrono::system_clock::now();
+    approaching_t0 = this->now();
     completion_count =0;
 }
 
@@ -157,7 +161,7 @@ void InteractOperation::gt_modulePoseCallbackWithoutCov(geometry_msgs::msg::Pose
 
 void InteractOperation::gt_modulePoseCallback(
     const geometry_msgs::msg::PoseStamped module_pose) {
-    if((module_pose.header.stamp - prev_gt_pose_time).toSec() >0.01){
+    if((module_pose.header.stamp - prev_gt_pose_time) > 0.01){
         #if SAVE_DATA
             prev_gt_pose_time = module_pose.header.stamp;
             mavros_msgs::msg::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
@@ -327,7 +331,7 @@ void InteractOperation::tick() {
     if (interact_pt_state.header.seq == 0) {
         if(time_cout%rate_int==0)
             RCLCPP_INFO(rclcpp::get_logger("interact_operation"), ": Waiting for interaction point pose callback\n");
-        approaching_t0 = std::chrono::system_clock::now();
+        approaching_t0 = this->now();
         return;
     }
 
@@ -347,7 +351,7 @@ void InteractOperation::tick() {
             }
                        
             if(MAST_INTERACT) {
-                float time_out_gain = 1 + (this->now()-approaching_t0).toSec()/30.0;
+                float time_out_gain = 1 + (this->now() - approaching_t0).seconds()/30.0;
                 if ( distance_to_offset <= APPROACH_ACCURACY *time_out_gain ) { 
                     //Todo, we may want to judge the velocity in stead of having a time to completion
                     if (completion_count < ceil(TIME_TO_COMPLETION * (float)rate_int) )
@@ -355,7 +359,7 @@ void InteractOperation::tick() {
                     else {
                         //We consider that if the drone is ready at some point, it will 
                         //remain ready until it is time to try
-                        RCLCPP_INFO(rclcpp::get_logger("interact_operation"), ": " + "Approaching -> Ready");
+                        RCLCPP_INFO(rclcpp::get_logger("interact_operation"), ": Approaching -> Ready");
 
                         completion_count = 0;
                         RCLCPP_INFO(rclcpp::get_logger("interact_operation"), ": Control ready to set the FaceHugger. Waiting for the best opportunity");
@@ -516,7 +520,6 @@ void InteractOperation::tick() {
     mavros_msgs::msg::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
     mavros_msgs::msg::PositionTarget ref = Util::addPositionTarget(interact_pt_state,smooth_rotated_offset);
 
-    setpoint.header.seq++;
     setpoint.header.stamp = this->now();
     setpoint.yaw = mast.get_yaw()+M_PI;
     setpoint.position = ref.position;
@@ -561,7 +564,7 @@ void InteractOperation::publishSetpoint() {
     setpoint_publisher->publish(setpoint); 
 }
 
-void InteractOperation::poseCallback(const nav_msgs::msg::Odometry::SharedPtr pose) {
+void InteractOperation::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr pose) {
     current_pose.pose = pose->pose.pose;
     current_pose.header = pose->header;
     current_accel = orientation_to_acceleration(pose->pose.pose.orientation);
