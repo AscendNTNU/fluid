@@ -135,7 +135,7 @@ class InteractOperation : public rclcpp::Node {
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr fh_state_subscriber;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr close_tracking_ready_subscriber;
 
-    rclcpp::Client<ascend_msgs::msg::SetInt>::SharedPtr start_close_tracking_client;
+    //rclcpp::Client<ascend_msgs::msg::SetInt>::SharedPtr start_close_tracking_client;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr pause_close_tracking_client;
 
     rclcpp::Publisher<std_msgs::msg::Int16>::SharedPtr interact_fail_pub;
@@ -208,11 +208,11 @@ class InteractOperation : public rclcpp::Node {
 
     void update_transition_state();
 
-    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped> pose_subscriber;
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_subscriber;
     geometry_msgs::msg::PoseStamped current_pose;
     void poseCallback(const nav_msgs::msg::Odometry::SharedPtr pose);
 
-    rclcpp::Subscription<geometry_msgs::msg::TwistStamped::SharedPtr> twist_subscriber;
+    rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr twist_subscriber;
     geometry_msgs::msg::TwistStamped current_twist;
     void twistCallback(const geometry_msgs::msg::TwistStamped::SharedPtr twist);
     geometry_msgs::msg::Vector3 current_accel;
