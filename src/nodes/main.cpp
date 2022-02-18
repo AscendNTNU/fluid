@@ -1,9 +1,9 @@
 #include <rclcpp/rclcpp.hpp>
 
-#include "../include/fluid/interact_operation.hpp"
+#include "fluid/interact_operation.hpp"
 
 void exitAtParameterExtractionFailure(std::shared_ptr<rclcpp::Node> node, const std::string& param) {
-    RCLCPP_FATAL(rclcpp::get_logger("fluid"), ": Could not find parameter: " + param.c_str());
+    RCLCPP_FATAL(rclcpp::get_logger("fluid"), ": Could not find parameter: ", param.c_str());
     rclcpp::shutdown();
 }
 
@@ -12,10 +12,10 @@ int main(int argc, char** argv) {
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("fluid_server");
     RCLCPP_INFO(rclcpp::get_logger("fluid"), ": Starting up.");
 
-    const std::string prefix = node->get_name() + "/";
-    int refresh_rate, travel_max_angle;
+    const std::string prefix = std::string(node->get_name()) + "/";
+    int refresh_rate;
     bool ekf, use_perception, should_auto_arm, should_auto_offboard, interaction_show_prints;
-    float distance_completion_threshold, velocity_completion_threshold, default_height;
+    float distance_completion_threshold, velocity_completion_threshold, default_height, travel_max_angle;
     float interact_max_vel, interact_max_acc, travel_speed, travel_accel;
     float* fh_offset = (float*) calloc(3,sizeof(float));
     
