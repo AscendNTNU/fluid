@@ -7,7 +7,6 @@
 Mast::Mast(float yaw){
     m_fixed_yaw = yaw;
     m_period = 10;
-    m_SHOW_PRINTS = Fluid::getInstance().configuration.interaction_show_prints;
     m_current_extremum = 0;
 }
 
@@ -15,8 +14,8 @@ void Mast::updateFromEkf(mavros_msgs::msg::PositionTarget module_state){
     interaction_point_state = module_state;
 }
 
-void Mast::update(geometry_msgs::msg::PoseStamped module_pose){
-    if(module_pose.header.stamp.toSec() - interaction_point_state.header.stamp.toSec() > 0.010){
+void Mast::update(geometry_msgs::msg::PoseStamped module_pose){//   10 ms = 10000000 ns
+    if(abs(int(module_pose.header.stamp.nanosec) - int(interaction_point_state.header.stamp.nanosec))%1000000000 > 10000000){
     //sanity check that it is a new message.
         previous_interaction_point_state = interaction_point_state;
         interaction_point_state.header = module_pose.header;
@@ -28,7 +27,9 @@ void Mast::update(geometry_msgs::msg::PoseStamped module_pose){
 
 void Mast::estimateInteractionPointVel(){
     // estimate the velocity of the interaction_point by a simple derivation of the position.
-    double dt = (interaction_point_state.header.stamp - previous_interaction_point_state.header.stamp).toSec();
+    int secs = interaction_point_state.header.stamp.sec - previous_interaction_point_state.header.stamp.sec;
+    int nsecs = interaction_point_state.header.stamp.nanosec - previous_interaction_point_state.header.stamp.nanosec;
+    double dt = secs*1.0 + nsecs*1e-9;
     interaction_point_state.velocity.x = (interaction_point_state.position.x - previous_interaction_point_state.position.x)/dt;
     interaction_point_state.velocity.y = (interaction_point_state.position.y - previous_interaction_point_state.position.y)/dt;
     interaction_point_state.velocity.z = (interaction_point_state.position.z - previous_interaction_point_state.position.z)/dt;
@@ -36,7 +37,9 @@ void Mast::estimateInteractionPointVel(){
 
 void Mast::estimateInteractionPointAccel(){
     // estimate the acceleration of the interaction_point by simply derivating the velocity.
-    double dt = (interaction_point_state.header.stamp - previous_interaction_point_state.header.stamp).toSec();
+    int secs = interaction_point_state.header.stamp.sec - previous_interaction_point_state.header.stamp.sec;
+    int nsecs = interaction_point_state.header.stamp.nanosec - previous_interaction_point_state.header.stamp.nanosec;
+    double dt = secs*1.0 + nsecs*1e-9;
     interaction_point_state.acceleration_or_force.x = (interaction_point_state.velocity.x - previous_interaction_point_state.velocity.x)/dt;
     interaction_point_state.acceleration_or_force.y = (interaction_point_state.velocity.y - previous_interaction_point_state.velocity.y)/dt;
     interaction_point_state.acceleration_or_force.z = (interaction_point_state.velocity.z - previous_interaction_point_state.velocity.z)/dt;
