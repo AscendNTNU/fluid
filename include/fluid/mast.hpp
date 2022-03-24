@@ -11,8 +11,10 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <mavros_msgs/msg/position_target.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <rclcpp/rclcpp.hpp>
  
 #include <memory>
+#include <rclcpp/time.hpp>
 #include <string>
 #include <vector>
 #include <chrono>
@@ -88,12 +90,17 @@ class Mast{
      * 
      */
     float m_last_max_pitch;
-
+    
+    /**
+     * @brief Node pointer to get the time from ROS2
+     * 
+     */
+    rclcpp::Node* node;
     /**
      * @brief time at whitch the last minimum pitch has been found
      * 
      */
-    std::chrono::duration<std::chrono::system_clock> m_time_last_min_pitch;
+    rclcpp::Time m_time_last_min_pitch;
 
     /**
      * @brief time at whitch the last maximum pitch has been found
@@ -111,7 +118,7 @@ class Mast{
      * @param yaw The fixed yaw angle of mast. 
      * Should be calculated by perception and given by AI
      */
-    Mast(float yaw=0.0);
+    Mast(rclcpp::Node* n, float yaw=0.0);
 
     /**
      * @brief Update position and velocity from EKF output

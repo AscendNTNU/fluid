@@ -3,11 +3,14 @@
  */
 #include "fluid/mast.hpp"
 #include "fluid/util.hpp"
+#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/duration.hpp>
 
-Mast::Mast(float yaw){
+Mast::Mast(rclcpp::Node* n, float yaw){
     m_fixed_yaw = yaw;
     m_period = 10;
     m_current_extremum = 0;
+    node = n;
 }
 
 void Mast::updateFromEkf(mavros_msgs::msg::PositionTarget module_state){
@@ -42,16 +45,20 @@ void Mast::estimateInteractionPointAccel(){
 }
 
 void Mast::search_period(double pitch){
+    /**
+     * @brief Function used to update the extremums for the mast ocilations.
+     * 
+     */
     m_angle.x =  pitch;
 
     if(m_lookForMin)
     {
         if(m_angle.x < m_current_extremum){
             m_current_extremum = m_angle.x;
-            m_time_last_min_pitch = std::chrono::system_clock::now();
+            m_time_last_min_pitch = node->now();
         }
-        else if ( (std::chrono::system_clock::now() - m_time_last_max_pitch) >= std::chrono::duration(m_period/3.0) ){ //todo: may cause some trouble at the init
-            if ((std::chrono::system_clock::now() - m_time_last_min_pitch) >= std::chrono::duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
+        else if (node->now() - m_time_last_max_pitch >= rclcpp::Duration(m_period/3.0) ){ //todo: may cause some trouble at the init
+            if ((node->now() - m_time_last_min_pitch) >= std::chrono::duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
                 //We have not found a new minimum for 0.5sec. The last one found it the correct one.
                 m_last_min_pitch = m_current_extremum;
                 m_lookForMin = false;
@@ -61,10 +68,10 @@ void Mast::search_period(double pitch){
     else{ //If we do no look for a min, we look for a max
         if (m_angle.x > m_current_extremum){
             m_current_extremum = m_angle.x;
-            m_time_last_max_pitch = std::chrono::system_clock::now();
+            m_time_last_max_pitch = node->now();
         }
-        else if ( (std::chrono::system_clock::now() - m_time_last_min_pitch) >= std::chrono::duration(m_period/3.0) ){ //todo: may cause some trouble at the init
-            if ( (std::chrono::system_clock::now() - m_time_last_max_pitch) >= std::chrono::duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
+        else if ( (node->now() - m_time_last_min_pitch) >= std::chrono::duration(m_period/3.0) ){ //todo: may cause some trouble at the init
+            if ( (node->now() - m_time_last_max_pitch) >= std::chrono::duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
                 //We have not found a new maximum for 0.5sec. The last one found it the correct one.
                 m_last_max_pitch = m_current_extremum;
                 m_lookForMin = true;

@@ -50,10 +50,15 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const bool& st
 
     pose_subscriber = 
         this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("mavros/global_position/local", 1, std::bind(&InteractOperation::poseCallback, this, _1));
+        //Change name of topic
     twist_subscriber =
         this->create_subscription<geometry_msgs::msg::TwistStamped>("mavros/local_position/velocity_local", 1, std::bind(&InteractOperation::twistCallback, this, _1));
+        //Change name of topic
 
     setpoint_publisher = this->create_publisher<mavros_msgs::msg::PositionTarget>("mavros/setpoint_raw/local", 10);
+    //setpoint_publisher = this->create_publisher<>("", 10)
+    //Change message type, maybe convert to function so its callable.
+    
     setpoint.coordinate_frame = mavros_msgs::msg::PositionTarget::FRAME_LOCAL_NED;
 
     rate_int = (int) config.refresh_rate;
@@ -394,10 +399,9 @@ void InteractOperation::tick() {
                     close_tracking_is_ready = true;
                 }
             }
-            if(mast.time_to_max_pitch() !=-1){ //we don't konw it yet
+            if(mast.time_to_max_pitch() !=-1){ //we don't know it yet
                 float time_to_wait = mast.time_to_max_pitch()-estimate_time_to_mast();
-//              printf("t_2max_pitch %f\t t_2mast %f\tt_wait %f\n",
-//                          mast.time_to_max_pitch(), estimate_time_to_mast(), time_to_wait);
+
                 if(time_to_wait < -TIME_WINDOW_INTERACTION){
                     time_to_wait+=mast.get_period();
                 }
@@ -564,7 +568,7 @@ geometry_msgs::msg::Vector3 InteractOperation::orientation_to_acceleration(geome
 void InteractOperation::publishSetpoint() { 
     setpoint.header.stamp = this->now();
     setpoint.header.frame_id = "map";
-    setpoint_publisher->publish(setpoint); 
+    setpoint_publisher->publish(fix_format(setpoint)); 
 }
 
 void InteractOperation::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr pose) {

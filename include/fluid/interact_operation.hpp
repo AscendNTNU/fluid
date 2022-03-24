@@ -196,12 +196,7 @@ class InteractOperation : public rclcpp::Node {
     void ekfModulePoseCallback(const mavros_msgs::msg::PositionTarget module_state);
     void gt_modulePoseCallback(const geometry_msgs::msg::PoseStamped module_pose);
     void gt_modulePoseCallbackWithCov(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr module_pose);
-    void gt_modulePoseCallbackWithoutCov(const geometry_msgs::msg::PoseStamped::SharedPtr module_pose);
-    void FaceHuggerCallback(const std_msgs::msg::Bool released);
-    void closeTrackingCallback(std_msgs::msg::Bool ready);
-    void finishInteraction();
-    bool faceHugger_is_set;     // true as soon as facehugger is released from drone
-    bool rcvd_module_pose; // true as soon as we have received the first interactio pt state
+    void gt_modulePoseCallbackWithoutCRCLCPP_INFOsoon as we have received the first interactio pt state
     
     mavros_msgs::msg::PositionTarget rotate(mavros_msgs::msg::PositionTarget setpoint, float yaw);
     geometry_msgs::msg::Vector3 estimateModuleVel();
@@ -221,6 +216,9 @@ class InteractOperation : public rclcpp::Node {
 
     rclcpp::Publisher<mavros_msgs::msg::PositionTarget>::SharedPtr setpoint_publisher;
     mavros_msgs::msg::PositionTarget setpoint;
+
+    //rclcpp::Publisher<CommandWithParameters>::SharedPtr setpoint_publisher;
+    //CommandWithParameters setpoint;
 
     void publishSetpoint();
     geometry_msgs::msg::PoseStamped getCurrentPose() const;
