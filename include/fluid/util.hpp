@@ -172,8 +172,9 @@ class Util {
         m.getEulerYPR(eul.z, eul.y, eul.x);
         return eul;
     }
-    static float header_to_seconds(std_msgs::msg::Header h){
-        return h.stamp.sec +h.stamp.nanosec*1e-9;
+    static double header_to_seconds(std_msgs::msg::Header h){
+        double seconds = h.stamp.sec +h.stamp.nanosec*1e-9;
+        return seconds;
     }
 };
 
