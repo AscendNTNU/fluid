@@ -7,10 +7,12 @@
 
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/quaternion.hpp>
+#include <std_msgs/msg/detail/header__struct.hpp>
 #include <tf2/LinearMath/Matrix3x3.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/transform_datatypes.h>
 #include <mavros_msgs/msg/position_target.hpp>
+#include <std_msgs/msg/header.hpp>
 
 #include <vector>
 
@@ -169,6 +171,9 @@ class Util {
         tf2::Matrix3x3 m(q);
         m.getEulerYPR(eul.z, eul.y, eul.x);
         return eul;
+    }
+    static float header_to_seconds(std_msgs::msg::Header h){
+        return h.stamp.sec +h.stamp.nanosec*1e-9;
     }
 };
 
