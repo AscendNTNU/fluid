@@ -2,15 +2,15 @@
 
 #include "fluid/interact_operation.hpp"
 
-void exitAtParameterExtractionFailure(std::shared_ptr<rclcpp::Node> node, const std::string& param) {
-    RCLCPP_FATAL(rclcpp::get_logger("fluid"), ": Could not find parameter: ", param.c_str());
+void exitAtParameterExtractionFailure(const std::string& param) {
+    RCLCPP_FATAL(rclcpp::get_logger("fluid/main"), ": Could not find parameter: ", param.c_str());
     rclcpp::shutdown();
 }
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("fluid_server");
-    RCLCPP_INFO(rclcpp::get_logger("fluid"), ": Starting up.");
+    RCLCPP_INFO(rclcpp::get_logger("fluid/main"), ": Starting up.");
 
     const std::string prefix = std::string(node->get_name()) + "/";
     int refresh_rate;
@@ -20,71 +20,71 @@ int main(int argc, char** argv) {
     float* fh_offset = (float*) calloc(3,sizeof(float));
     
     if (!node->get_parameter(prefix + "ekf", ekf)) {
-        exitAtParameterExtractionFailure(node, prefix + "ekf");
+        exitAtParameterExtractionFailure(prefix + "ekf");
     }
 
     if (!node->get_parameter(prefix + "use_perception", use_perception)) {
-        exitAtParameterExtractionFailure(node, prefix + "use_perception");
+        exitAtParameterExtractionFailure(prefix + "use_perception");
     }
 
     if (!node->get_parameter(prefix + "refresh_rate", refresh_rate)) {
-        exitAtParameterExtractionFailure(node, prefix + "refresh_rate");
+        exitAtParameterExtractionFailure(prefix + "refresh_rate");
     }
 
     if (!node->get_parameter(prefix + "should_auto_arm", should_auto_arm)) {
-        exitAtParameterExtractionFailure(node, prefix + "should_auto_arm");
+        exitAtParameterExtractionFailure(prefix + "should_auto_arm");
     }
 
     if (!node->get_parameter(prefix + "should_auto_offboard", should_auto_offboard)) {
-        exitAtParameterExtractionFailure(node, prefix + "should_auto_offboard");
+        exitAtParameterExtractionFailure(prefix + "should_auto_offboard");
     }
 
     if (!node->get_parameter(prefix + "distance_completion_threshold", distance_completion_threshold)) {
-        exitAtParameterExtractionFailure(node, prefix + "distance_completion_threshold");
+        exitAtParameterExtractionFailure(prefix + "distance_completion_threshold");
     }
 
     if (!node->get_parameter(prefix + "velocity_completion_threshold", velocity_completion_threshold)) {
-        exitAtParameterExtractionFailure(node, prefix + "velocity_completion_threshold");
+        exitAtParameterExtractionFailure(prefix + "velocity_completion_threshold");
     }
 
     if (!node->get_parameter(prefix + "default_height", default_height)) {
-        exitAtParameterExtractionFailure(node, prefix + "default_height");
+        exitAtParameterExtractionFailure(prefix + "default_height");
     }
 
     if (!node->get_parameter(prefix + "interaction_show_prints", interaction_show_prints)) {
-        exitAtParameterExtractionFailure(node, prefix + "interaction_show_prints");
+        exitAtParameterExtractionFailure(prefix + "interaction_show_prints");
     }
     
     if (!node->get_parameter(prefix + "interaction_max_vel", interact_max_vel)) {
-        exitAtParameterExtractionFailure(node, prefix + "interaction_max_vel");
+        exitAtParameterExtractionFailure(prefix + "interaction_max_vel");
     }
 
     if (!node->get_parameter(prefix + "interaction_max_acc", interact_max_acc)) {
-        exitAtParameterExtractionFailure(node, prefix + "interaction_max_acc");
+        exitAtParameterExtractionFailure(prefix + "interaction_max_acc");
     }
 
     if (!node->get_parameter(prefix + "travel_max_angle", travel_max_angle)) {
-        exitAtParameterExtractionFailure(node, prefix + "travel_max_angle");
+        exitAtParameterExtractionFailure(prefix + "travel_max_angle");
     }
 
     if (!node->get_parameter(prefix + "fh_offset_x", fh_offset[0])) {
-        exitAtParameterExtractionFailure(node, prefix + "fh_offset_x");
+        exitAtParameterExtractionFailure(prefix + "fh_offset_x");
     }
 
     if (!node->get_parameter(prefix + "fh_offset_y", fh_offset[1])) {
-        exitAtParameterExtractionFailure(node, prefix + "fh_offset_y");
+        exitAtParameterExtractionFailure(prefix + "fh_offset_y");
     }
 
     if (!node->get_parameter(prefix + "fh_offset_z", fh_offset[2])) {
-        exitAtParameterExtractionFailure(node, prefix + "fh_offset_z");
+        exitAtParameterExtractionFailure(prefix + "fh_offset_z");
     }
 
     if (!node->get_parameter(prefix + "travel_speed", travel_speed)) {
-        exitAtParameterExtractionFailure(node, prefix + "travel_speed");
+        exitAtParameterExtractionFailure(prefix + "travel_speed");
     }
 
     if (!node->get_parameter(prefix + "travel_accel", travel_accel)) {
-        exitAtParameterExtractionFailure(node, prefix + "travel_accel");
+        exitAtParameterExtractionFailure(prefix + "travel_accel");
     }
     MastNodeConfiguration configuration{ekf,
                                     use_perception,
@@ -103,7 +103,8 @@ int main(int argc, char** argv) {
                                     travel_accel
                                     };
 
-    InteractOperation interact = InteractOperation(0.0, 3.0, false, configuration, true);
-    interact.perform(true, false);
+    InteractOperation interact = InteractOperation(0.0, 3.0, false, configuration, true); //const float& fixed_mast_yaw, const bool& steady,const bool& autoPublish, MastNodeConfiguration config, const float& offset=3.0)
+    interact.perform([&]() {return true;}, false);  // change the lambda function to something that
+                                                    // changes if cancellation from main is needed
     return 0;
 }
