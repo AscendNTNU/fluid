@@ -14,8 +14,8 @@ void Mast::updateFromEkf(mavros_msgs::msg::PositionTarget module_state){
     interaction_point_state = module_state;
 }
 
-void Mast::update(geometry_msgs::msg::PoseStamped module_pose){//   10 ms = 10000000 ns
-    if(abs(int(module_pose.header.stamp.nanosec) - int(interaction_point_state.header.stamp.nanosec))%1000000000 > 10000000){
+void Mast::update(geometry_msgs::msg::PoseStamped module_pose){
+    if(abs(Util::header_to_seconds(module_pose.header) - Util::header_to_seconds(interaction_point_state.header)) > 0.01){
     //sanity check that it is a new message.
         previous_interaction_point_state = interaction_point_state;
         interaction_point_state.header = module_pose.header;
@@ -27,9 +27,7 @@ void Mast::update(geometry_msgs::msg::PoseStamped module_pose){//   10 ms = 1000
 
 void Mast::estimateInteractionPointVel(){
     // estimate the velocity of the interaction_point by a simple derivation of the position.
-    int secs = interaction_point_state.header.stamp.sec - previous_interaction_point_state.header.stamp.sec;
-    int nsecs = interaction_point_state.header.stamp.nanosec - previous_interaction_point_state.header.stamp.nanosec;
-    double dt = secs*1.0 + nsecs*1e-9;
+    double dt =  Util::header_to_seconds(interaction_point_state.header) - Util::header_to_seconds(previous_interaction_point_state.header);
     interaction_point_state.velocity.x = (interaction_point_state.position.x - previous_interaction_point_state.position.x)/dt;
     interaction_point_state.velocity.y = (interaction_point_state.position.y - previous_interaction_point_state.position.y)/dt;
     interaction_point_state.velocity.z = (interaction_point_state.position.z - previous_interaction_point_state.position.z)/dt;
@@ -37,9 +35,7 @@ void Mast::estimateInteractionPointVel(){
 
 void Mast::estimateInteractionPointAccel(){
     // estimate the acceleration of the interaction_point by simply derivating the velocity.
-    int secs = interaction_point_state.header.stamp.sec - previous_interaction_point_state.header.stamp.sec;
-    int nsecs = interaction_point_state.header.stamp.nanosec - previous_interaction_point_state.header.stamp.nanosec;
-    double dt = secs*1.0 + nsecs*1e-9;
+    double dt =  Util::header_to_seconds(interaction_point_state.header) - Util::header_to_seconds(previous_interaction_point_state.header);
     interaction_point_state.acceleration_or_force.x = (interaction_point_state.velocity.x - previous_interaction_point_state.velocity.x)/dt;
     interaction_point_state.acceleration_or_force.y = (interaction_point_state.velocity.y - previous_interaction_point_state.velocity.y)/dt;
     interaction_point_state.acceleration_or_force.z = (interaction_point_state.velocity.z - previous_interaction_point_state.velocity.z)/dt;
