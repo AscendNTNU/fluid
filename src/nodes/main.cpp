@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
                                     travel_accel
                                     };
 
-    InteractOperation interact = InteractOperation(0.0, 3.0, false, configuration, true); //const float& fixed_mast_yaw, const bool& steady,const bool& autoPublish, MastNodeConfiguration config, const float& offset=3.0)
+    InteractOperation interact = InteractOperation(0.0, false, true, configuration, 3.0);
     interact.perform([&]() {return true;}, false);  // change the lambda function to something that
                                                     // changes if cancellation from main is needed
     return 0;
