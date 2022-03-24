@@ -200,7 +200,8 @@ class InteractOperation : public rclcpp::Node {
     void FaceHuggerCallback(const std_msgs::msg::Bool released);
     void closeTrackingCallback(std_msgs::msg::Bool ready);
     void finishInteraction();
-    bool faceHugger_is_set;     // true as soon av facehugger is released from drone
+    bool faceHugger_is_set;     // true as soon as facehugger is released from drone
+    bool rcvd_module_pose; // true as soon as we have received the first interactio pt state
     
     mavros_msgs::msg::PositionTarget rotate(mavros_msgs::msg::PositionTarget setpoint, float yaw);
     geometry_msgs::msg::Vector3 estimateModuleVel();

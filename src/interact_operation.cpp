@@ -17,7 +17,7 @@
 //A list of parameters for the user
 #define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
-#define TIME_WINDOW_INTERACTION 1.0 // window within the drone is allowed to go to the OVER state    
+#define TIME_WINDOW_INTERACTION         1.0 //window within the drone is allowed to go to the OVER state    
 
   // Important distances                  // best_sim // theoretical_sim
 //#define DIST_FH_DRONE_CENTRE_X   0.42   // 0.42     // 0.5377
@@ -37,7 +37,7 @@ using std::placeholders::_1;
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
 
 
-rclcpp::Time prev_gt_pose_time;
+geometry_msgs::msg::PoseStamped prev_module_pose;
 geometry_msgs::msg::Vector3 DIST_FH_DRONE_CENTRE;
 
 
@@ -161,9 +161,12 @@ void InteractOperation::gt_modulePoseCallbackWithoutCov(geometry_msgs::msg::Pose
 
 void InteractOperation::gt_modulePoseCallback(
     const geometry_msgs::msg::PoseStamped module_pose) {
-    if((module_pose.header.stamp - prev_gt_pose_time) > 0.01){
+    float module_pose_time = module_pose.header.stamp.sec*1.0 + module_pose.header.stamp.nanosec*1e-9;
+    float prev_module_pose_time = prev_module_pose.header.stamp.sec*1.0 + prev_module_pose.header.stamp.nanosec*1e-9;
+
+    if((module_pose_time - prev_module_pose_time) > 0.01){
         #if SAVE_DATA
-            prev_gt_pose_time = module_pose.header.stamp;
+            prev_module_pose = module_pose;
             mavros_msgs::msg::PositionTarget smooth_rotated_offset = rotate(transition_state.state,mast.get_yaw());
             geometry_msgs::msg::Vector3 vec;
             vec.x = module_pose.pose.position.x + smooth_rotated_offset.position.x;
@@ -328,7 +331,7 @@ void InteractOperation::tick() {
     mavros_msgs::msg::PositionTarget interact_pt_state = mast.get_interaction_point_state();
     //printf("mast pitch %f, roll %f, angle %f\n", mast_angle.x, mast_angle.y, mast_angle.z);
     // Wait until we get the first module position readings before we do anything else.
-    if (interact_pt_state.header.seq == 0) {
+    if (!this->rcvd_module_pose) {
         if(time_cout%rate_int==0)
             RCLCPP_INFO(rclcpp::get_logger("interact_operation"), ": Waiting for interaction point pose callback\n");
         approaching_t0 = this->now();
@@ -463,8 +466,8 @@ void InteractOperation::tick() {
     
             if(close_tracking_is_set){
                 if(USE_PERCEPTION){ //we are getting to far from the mast, and the position is not stable.
-                    std_srvs::srv::Trigger srv;
-                    if (pause_close_tracking_client->call(srv)){
+                    std_srvs::srv::Trigger::Request req;
+                    if (pause_close_tracking_client->async_send_request(req)){
                         close_tracking_is_set = false;
                     }
                 }
