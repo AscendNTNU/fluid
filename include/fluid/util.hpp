@@ -13,6 +13,7 @@
 #include <tf2/transform_datatypes.h>
 #include <mavros_msgs/msg/position_target.hpp>
 #include <std_msgs/msg/header.hpp>
+#include <rclcpp/time.hpp>
 
 #include <vector>
 
@@ -172,8 +173,14 @@ class Util {
         m.getEulerYPR(eul.z, eul.y, eul.x);
         return eul;
     }
+
     static double header_to_seconds(std_msgs::msg::Header h){
         double seconds = h.stamp.sec +h.stamp.nanosec*1e-9;
+        return seconds;
+    }
+    
+    static double rostime_to_seconds(rclcpp::Time t){
+        double seconds = t.seconds() + t.nanoseconds();
         return seconds;
     }
 };
