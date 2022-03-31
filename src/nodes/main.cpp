@@ -1,4 +1,5 @@
 #include <memory>
+#include <rclcpp/node.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #include "fluid/interact_operation.hpp"
@@ -104,11 +105,10 @@ int main(int argc, char** argv) {
                                     travel_accel
                                     };
 
-    //InteractOperation interact = InteractOperation(0.0, false, true, configuration, 3.0);
-
     int rate_int = (int)configuration.refresh_rate;
     rclcpp::Rate rate(rate_int);
-    auto interact_ptr = std::make_shared<InteractOperation>(InteractOperation(0.0, false, true, configuration, 3.0));
+
+    auto interact_ptr = std::make_shared<InteractOperation>(InteractOperation{0.0, true, configuration, 3.0});
     interact_ptr->initialize();
     do {
         interact_ptr->tick();
