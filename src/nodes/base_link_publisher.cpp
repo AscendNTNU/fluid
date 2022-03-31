@@ -13,7 +13,8 @@ void poseCallback(const nav_msgs::msg::Odometry::SharedPtr &msg, rclcpp::Node no
     static tf2_ros::TransformBroadcaster broadcaster= tf2_ros::TransformBroadcaster(node);
 
     std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-    transform_stamped.header.stamp = now;
+    transform_stamped.header.stamp.sec = now.time_since_epoch().count();
+    transform_stamped.header.stamp.sec = now.sec;
     transform_stamped.header.frame_id = msg->header.frame_id;
     transform_stamped.transform.translation.x = msg->pose.pose.position.x;
     transform_stamped.transform.translation.y = msg->pose.pose.position.y;

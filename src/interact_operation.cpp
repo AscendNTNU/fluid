@@ -144,13 +144,8 @@ bool InteractOperation::hasFinishedExecution() const {
 void InteractOperation::ekfModulePoseCallback(
                 const mavros_msgs::msg::PositionTarget module_state) {
     mast.updateFromEkf(module_state);
-}
-
-void InteractOperation::ekfStateVectorCallback(
-                const mavros_msgs::msg::DebugValue ekf_state) {
-    mast.search_period(ekf_state.data[0]); //the first element is the pitch
-    mast.set_period(2*M_PI/ekf_state.data[4]);
-}
+    //Tells code that we are ready to try arate_int
+    }
 
 void InteractOperation::gt_modulePoseCallbackWithCov(
     const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr module_pose_ptr) {
@@ -168,6 +163,8 @@ void InteractOperation::gt_modulePoseCallback(
     const geometry_msgs::msg::PoseStamped module_pose) {
     float module_pose_time = module_pose.header.stamp.sec*1.0 + module_pose.header.stamp.nanosec*1e-9;
     float prev_module_pose_time = prev_module_pose.header.stamp.sec*1.0 + prev_module_pose.header.stamp.nanosec*1e-9;
+    //Tells code that we are ready to try and run. 
+    rcvd_module_pose = true;
 
     if((module_pose_time - prev_module_pose_time) > 0.01){
         #if SAVE_DATA
@@ -469,11 +466,15 @@ void InteractOperation::tick() {
                 printf("EXIT\n");
     
             if(close_tracking_is_set){
-                if(USE_PERCEPTION){ //we are getting to far from the mast, and the position is not stable.
-                    std_srvs::srv::Trigger::Request req;
-                    if (pause_close_tracking_client->async_send_request(req)){
-                        close_tracking_is_set = false;
-                    }
+                if(USE_PERCEPTION){ //Drone is leaving the mast and perception should turn off close tracking
+                    
+                    //Call service to perception
+                    //TODO;
+
+                    // std_srvs::srv::Trigger::Request req;
+                    // if (pause_close_tracking_client->async_send_request(req)){
+                    //     close_tracking_is_set = false;
+                    // }
                 }
                 else{
                         close_tracking_is_set = false;
@@ -541,19 +542,20 @@ void InteractOperation::tick() {
     #endif
 }
 
-void InteractOperation::perform(std::function<bool(void)> should_tick, bool should_halt_if_steady) {
+// void InteractOperation::perform(std::function<bool(void)> should_tick) {
 
-    rclcpp::Rate rate(rate_int);
-    initialize();
+//     // rclcpp::Rate rate(rate_int);
+//     // initialize();
 
-    do {
-        tick();
-        if (autoPublish)
-            publishSetpoint();
-        rclcpp::spin(this);
-        rate.sleep();
-    } while (rclcpp::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && should_tick());
-}
+//     // do {
+//     //     tick();
+//     //     if (autoPublish)
+//     //         publishSetpoint();
+//     //     //rclcpp::spin(this);
+//     //     rate.sleep();
+//     // } while (rclcpp::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && should_tick());
+//     return;
+// }
 
 geometry_msgs::msg::Vector3 InteractOperation::orientation_to_acceleration(geometry_msgs::msg::Quaternion orientation)
 {
@@ -568,7 +570,7 @@ geometry_msgs::msg::Vector3 InteractOperation::orientation_to_acceleration(geome
 void InteractOperation::publishSetpoint() { 
     setpoint.header.stamp = this->now();
     setpoint.header.frame_id = "map";
-    setpoint_publisher->publish(fix_format(setpoint)); 
+    setpoint_publisher->publish(setpoint); // Fix the formatting of this (i. e. make it command) 
 }
 
 void InteractOperation::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr pose) {

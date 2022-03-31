@@ -133,7 +133,7 @@ class InteractOperation : public rclcpp::Node {
     rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr gt_module_pose_subscriber;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr fh_state_subscriber;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr close_tracking_ready_subscriber;
-
+    
     //rclcpp::Client<ascend_msgs::msg::SetInt>::SharedPtr start_close_tracking_client;
     rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr pause_close_tracking_client;
 
@@ -150,7 +150,9 @@ class InteractOperation : public rclcpp::Node {
     uint8_t completion_count; //count the number of ticks since we completeted the current state
 
     const bool steady;
-    bool autoPublish;
+    
+    bool faceHugger_is_set;
+    bool rcvd_module_pose;
 
     std_msgs::msg::Int16 number_fail;
     
@@ -195,6 +197,11 @@ class InteractOperation : public rclcpp::Node {
     void ekfModulePoseCallback(const mavros_msgs::msg::PositionTarget module_state);
     void gt_modulePoseCallback(const geometry_msgs::msg::PoseStamped module_pose);
     void gt_modulePoseCallbackWithCov(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr module_pose);
+    void gt_modulePoseCallbackWithoutCov(geometry_msgs::msg::PoseStamped::SharedPtr module_pose_ptr);
+    void FaceHuggerCallback(const std_msgs::msg::Bool released);
+    void closeTrackingCallback(std_msgs::msg::Bool ready);
+    
+
     // void gt_modulePoseCallbackWithoutCRCLCPP_INFOsoon as we have received the first interactio pt state
     
     mavros_msgs::msg::PositionTarget rotate(mavros_msgs::msg::PositionTarget setpoint, float yaw);
@@ -219,7 +226,7 @@ class InteractOperation : public rclcpp::Node {
     //rclcpp::Publisher<CommandWithParameters>::SharedPtr setpoint_publisher;
     //CommandWithParameters setpoint;
 
-    void publishSetpoint();
+    
     geometry_msgs::msg::PoseStamped getCurrentPose() const;
     geometry_msgs::msg::TwistStamped getCurrentTwist() const;
     geometry_msgs::msg::Vector3 getCurrentAccel() const;
@@ -228,11 +235,14 @@ class InteractOperation : public rclcpp::Node {
 
    public:
     explicit InteractOperation(const float& fixed_mast_yaw, const bool& steady,
-    const bool& autoPublish, MastNodeConfiguration config, const float& offset=3.0);
+        const bool& autoPublish, MastNodeConfiguration config, const float& offset=3.0);
     void initialize();
     bool hasFinishedExecution() const;
     void tick();
     void perform(std::function<bool(void)> should_tick, bool should_halt_if_steady);
+    //Made public to comply with the way fluid was run.
+    void publishSetpoint();
+    bool autoPublish;
 
 };
 

@@ -1,3 +1,4 @@
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
 
 #include "fluid/interact_operation.hpp"
@@ -103,8 +104,18 @@ int main(int argc, char** argv) {
                                     travel_accel
                                     };
 
-    InteractOperation interact = InteractOperation(0.0, false, true, configuration, 3.0);
-    interact.perform([&]() {return true;}, false);  // change the lambda function to something that
-                                                    // changes if cancellation from main is needed
+    //InteractOperation interact = InteractOperation(0.0, false, true, configuration, 3.0);
+
+    int rate_int = (int)configuration.refresh_rate;
+    rclcpp::Rate rate(rate_int);
+    auto interact_ptr = std::make_shared<InteractOperation>(InteractOperation(0.0, false, true, configuration, 3.0));
+    interact_ptr->initialize();
+    do {
+        interact_ptr->tick();
+        if (interact_ptr->autoPublish)
+            interact_ptr->publishSetpoint();
+        rclcpp::spin_some(interact_ptr);
+        rate.sleep();
+    } while (rclcpp::ok() || (!interact_ptr->hasFinishedExecution()));
     return 0;
 }

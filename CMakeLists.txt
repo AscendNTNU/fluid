@@ -31,21 +31,22 @@ find_package(geometry_msgs REQUIRED)
 
 add_executable(main src/nodes/main.cpp)
 ament_target_dependencies(main rclcpp std_msgs nav_msgs geometry_msgs)
-add_executable(base_link_publisher src/nodes/base_link_publisher.cpp)
-ament_target_dependencies(base_link_publisher rclcpp)
+#add_executable(base_link_publisher src/nodes/base_link_publisher.cpp)
+#ament_target_dependencies(base_link_publisher rclcpp)
+#Possibly not needed
 
 
 target_include_directories(main PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
   
-target_include_directories(base_link_publisher PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
+#target_include_directories(base_link_publisher PUBLIC
+#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+#  $<INSTALL_INTERFACE:include>)
 
 install(TARGETS 
   main
-  base_link_publisher
+#  base_link_publisher
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
