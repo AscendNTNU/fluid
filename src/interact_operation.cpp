@@ -46,7 +46,7 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw, const bool& st
     const bool& autoPublish, MastNodeConfiguration config, const float& offset) 
         : Node("mast_node"), config(config), steady(steady), autoPublish(autoPublish) { 
 
-    mast = Mast(fixed_mast_yaw);
+    mast = Mast(this, fixed_mast_yaw);
 
     pose_subscriber = 
         this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("mavros/global_position/local", 1, std::bind(&InteractOperation::poseCallback, this, _1));

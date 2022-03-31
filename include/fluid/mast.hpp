@@ -25,6 +25,7 @@
 #define SAVE_PITCH_TIME 15
 #define SAVE_PITCH_FREQ 4 //Todo, may not work with whatever frequency. 6Hz looks weird
 
+class InteractOperation;
 /**
  * @brief Represent the mast of Mission 9
  */
@@ -95,7 +96,7 @@ class Mast{
      * @brief Node pointer to get the time from ROS2
      * 
      */
-    rclcpp::Node* node;
+    InteractOperation* node;
     /**
      * @brief time at whitch the last minimum pitch has been found
      * 
@@ -118,7 +119,7 @@ class Mast{
      * @param yaw The fixed yaw angle of mast. 
      * Should be calculated by perception and given by AI
      */
-    Mast(rclcpp::Node* n, float yaw=0.0);
+    Mast(InteractOperation* interact=nullptr, float yaw=0.0);
 
     /**
      * @brief Update position and velocity from EKF output

@@ -2,15 +2,15 @@
  * @file mast.cpp
  */
 #include "fluid/mast.hpp"
+#include "fluid/interact_operation.hpp"
 #include "fluid/util.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include <rclcpp/duration.hpp>
-
-Mast::Mast(rclcpp::Node* n, float yaw){
+Mast::Mast(InteractOperation* interact, float yaw){
     m_fixed_yaw = yaw;
     m_period = 10;
     m_current_extremum = 0;
-    node = n;
+    node = interact;
 }
 
 void Mast::updateFromEkf(mavros_msgs::msg::PositionTarget module_state){

@@ -20,7 +20,6 @@
 
 #include "fluid/mast.hpp"
 #include "fluid/data_file.hpp"
-
 struct MastNodeConfiguration {
     /**
      * @brief whether ekf is used or not
@@ -196,7 +195,7 @@ class InteractOperation : public rclcpp::Node {
     void ekfModulePoseCallback(const mavros_msgs::msg::PositionTarget module_state);
     void gt_modulePoseCallback(const geometry_msgs::msg::PoseStamped module_pose);
     void gt_modulePoseCallbackWithCov(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr module_pose);
-    void gt_modulePoseCallbackWithoutCRCLCPP_INFOsoon as we have received the first interactio pt state
+    // void gt_modulePoseCallbackWithoutCRCLCPP_INFOsoon as we have received the first interactio pt state
     
     mavros_msgs::msg::PositionTarget rotate(mavros_msgs::msg::PositionTarget setpoint, float yaw);
     geometry_msgs::msg::Vector3 estimateModuleVel();
