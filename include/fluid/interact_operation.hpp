@@ -148,8 +148,6 @@ class InteractOperation : public rclcpp::Node {
     bool USE_PERCEPTION;
 	InteractionState interaction_state = InteractionState::APPROACHING;
     uint8_t completion_count; //count the number of ticks since we completeted the current state
-
-    const bool steady;
     
     bool faceHugger_is_set;
     bool rcvd_module_pose;
@@ -234,7 +232,7 @@ class InteractOperation : public rclcpp::Node {
     geometry_msgs::msg::Vector3 orientation_to_acceleration(geometry_msgs::msg::Quaternion orientation);
 
    public:
-    explicit InteractOperation(const float& fixed_mast_yaw, const bool& steady,
+    explicit InteractOperation(const float& fixed_mast_yaw,
         const bool& autoPublish, MastNodeConfiguration config, const float& offset=3.0);
     void initialize();
     bool hasFinishedExecution() const;

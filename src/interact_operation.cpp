@@ -42,9 +42,9 @@ geometry_msgs::msg::Vector3 DIST_FH_DRONE_CENTRE;
 
 
 //function called when creating the operation
-InteractOperation::InteractOperation(const float& fixed_mast_yaw, const bool& steady,
+InteractOperation::InteractOperation(const float& fixed_mast_yaw,
     const bool& autoPublish, MastNodeConfiguration config, const float& offset) 
-        : Node("mast_node"), config(config), steady(steady), autoPublish(autoPublish) { 
+        : Node("mast_node"), config(config), autoPublish(autoPublish) { 
 
     mast = Mast(this, fixed_mast_yaw);
 
