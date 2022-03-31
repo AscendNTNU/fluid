@@ -57,8 +57,8 @@ void Mast::search_period(double pitch){
             m_current_extremum = m_angle.x;
             m_time_last_min_pitch = node->now();
         }
-        else if (node->now() - m_time_last_max_pitch >= rclcpp::Duration(m_period/3.0) ){ //todo: may cause some trouble at the init
-            if ((node->now() - m_time_last_min_pitch) >= std::chrono::duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
+        else if ((node->now() - m_time_last_max_pitch).seconds() >= m_period/3.0 ){ //todo: may cause some trouble at the init
+            if ((node->now() - m_time_last_min_pitch).seconds() >= 0.5){ //todo: the last extremum, may be the wrong one, this test is not sufficient
                 //We have not found a new minimum for 0.5sec. The last one found it the correct one.
                 m_last_min_pitch = m_current_extremum;
                 m_lookForMin = false;
@@ -70,8 +70,8 @@ void Mast::search_period(double pitch){
             m_current_extremum = m_angle.x;
             m_time_last_max_pitch = node->now();
         }
-        else if ( (node->now() - m_time_last_min_pitch) >= std::chrono::duration(m_period/3.0) ){ //todo: may cause some trouble at the init
-            if ( (node->now() - m_time_last_max_pitch) >= std::chrono::duration(0.5)){ //todo: the last extremum, may be the wrong one, this test is not sufficient
+        else if ( (node->now() - m_time_last_min_pitch).seconds() >= m_period/3.0 ){ //todo: may cause some trouble at the init
+            if ( (node->now() - m_time_last_max_pitch).seconds() >= 0.5){ //todo: the last extremum, may be the wrong one, this test is not sufficient
                 //We have not found a new maximum for 0.5sec. The last one found it the correct one.
                 m_last_max_pitch = m_current_extremum;
                 m_lookForMin = true;
@@ -89,7 +89,7 @@ float Mast::time_to_max_pitch(){
     // probably not worth the complexity.       
     
     //check that we got both a min and a max
-    if(!m_time_last_max_pitch.isZero() && !m_time_last_min_pitch.isZero())
+    if((!(m_time_last_max_pitch.nanoseconds() == 0) && !(m_time_last_min_pitch.nanoseconds() == 0)))
     {
         if(m_lookForMin){
             //the mast is pitching backward:

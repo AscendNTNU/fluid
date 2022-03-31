@@ -107,7 +107,7 @@ class Mast{
      * @brief time at whitch the last maximum pitch has been found
      * 
      */
-    std::chrono::duration<std::chrono::system_clock> m_time_last_max_pitch;
+    rclcpp::Time m_time_last_max_pitch;
 
     
     
