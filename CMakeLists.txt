@@ -25,12 +25,15 @@ find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
+# Shit Sindre added at 00:42, mistakes are expected. LGTM, Jakob
+find_package(mavros_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
-add_executable(main src/nodes/main.cpp)
-ament_target_dependencies(main rclcpp std_msgs nav_msgs geometry_msgs)
+add_executable(main src/nodes/main.cpp src/interact_operation.cpp src/mast.cpp)
+ament_target_dependencies(main rclcpp std_msgs nav_msgs geometry_msgs mavros_msgs std_srvs)
 #add_executable(base_link_publisher src/nodes/base_link_publisher.cpp)
 #ament_target_dependencies(base_link_publisher rclcpp)
 #Possibly not needed

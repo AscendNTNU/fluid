@@ -36,7 +36,6 @@ using std::placeholders::_1;
 
 uint16_t time_cout = 0; //used not to do some stuffs at every tick
 
-
 geometry_msgs::msg::PoseStamped prev_module_pose;
 geometry_msgs::msg::Vector3 DIST_FH_DRONE_CENTRE;
 
@@ -54,9 +53,12 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw,
     twist_subscriber =
         this->create_subscription<geometry_msgs::msg::TwistStamped>("mavros/local_position/velocity_local", 1, std::bind(&InteractOperation::twistCallback, this, _1));
         //Change name of topic
-
+        gt_module_pose_subscriber = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/simulator/module/ground_truth/pose",
+                                    1, std::bind(&InteractOperation::gt_modulePoseCallbackWithCov, this, _1));
+   
+    
     setpoint_publisher = this->create_publisher<mavros_msgs::msg::PositionTarget>("mavros/setpoint_raw/local", 10);
-    //setpoint_publisher = this->create_publisher<>("", 10)
+    // setpoint_publisher = this->create_publisher<>("", 10)
     //Change message type, maybe convert to function so its callable.
     
     setpoint.coordinate_frame = mavros_msgs::msg::PositionTarget::FRAME_LOCAL_NED;
@@ -82,24 +84,28 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw,
 void InteractOperation::initialize() {
 
     if(EKF){
+        // ekf_module_pose_subscriber = this->create_subscription<mavros_msgs::msg::PositionTarget>("/ekf/module/state",
+                                    //  1, std::bind(&InteractOperation::ekfModulePoseCallback, this, _1));
         ekf_module_pose_subscriber = this->create_subscription<mavros_msgs::msg::PositionTarget>("/ekf/module/state",
                                      10, std::bind(&InteractOperation::ekfModulePoseCallback, this, _1));
-        ekf_state_vector_subscriber = this->create_subscription<mavros_msgs::msg::DebugValue>("/ekf/state",
-                                     10, std::bind(&InteractOperation::ekfStateVectorCallback, this, _1));
-        gt_module_pose_subscriber = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr>("/simulator/module/ground_truth/pose",
-                                     10, std::bind(&InteractOperation::gt_modulePoseCallbackWithCov, this, _1));
-        RCLCPP_INFO(rclcpp::get_logger("interact_operation"), "/fluid: Uses EKF data");
+        //ekf_state_vector_subscriber = this->create_subscription<mavros_msgs::msg::DebugValue>("/ekf/state",
+        //                             10, std::bind(&InteractOperation::ekfStateVectorCallback, this, _1));
+        gt_module_pose_subscriber = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/simulator/module/ground_truth/pose",
+                                     1, std::bind(&InteractOperation::gt_modulePoseCallbackWithCov, this, _1));
+        // RCLCPP_INFO(rclcpp::get_logger("interact_operation"), "/fluid: Uses EKF data");
     }
     else{
-    module_pose_subscriber = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/simulator/module/ground_truth/pose",
+        module_pose_subscriber = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/simulator/module/ground_truth/pose",
                                     10, std::bind(&InteractOperation::gt_modulePoseCallbackWithCov, this, _1));
     }
+    
     fh_state_subscriber = this->create_subscription<std_msgs::msg::Bool>("/fh_interface/fh_state",
                                     10, std::bind(&InteractOperation::FaceHuggerCallback, this, _1));
     close_tracking_ready_subscriber = this->create_subscription<std_msgs::msg::Bool>("/close_tracking_running",
-                                    10, std::bind(&InteractOperation::closeTrackingCallback, this, _1));
+                                   10, std::bind(&InteractOperation::closeTrackingCallback, this, _1));
 
-    // start_close_tracking_client = this->create_client<ascend_msgs::msg::SetInt>("start_close_tracking");
+    //start_close_tracking_client = this->create_client<ascend_msgs::msg::SetInt>("start_close_tracking");
+    // ******* FIXED WHEN WE GET ASCENSD_MSGS BACK. REMEMBER TO COMMENT BACK IN
     pause_close_tracking_client = this->create_client<std_srvs::srv::Trigger>("Pause_close_tracking");
 
     interact_fail_pub = this->create_publisher<std_msgs::msg::Int16>("/fluid/interact_fail",10);
@@ -116,25 +122,25 @@ void InteractOperation::initialize() {
     close_tracking_is_set = false;
     close_tracking_is_ready = false;
 
-    #if SAVE_DATA
-    reference_state = DataFile("reference_state.txt");
-    drone_pose = DataFile("drone_pose.txt");
-    gt_reference = DataFile("gt_reference.txt");
+    // #if SAVE_DATA
+    // reference_state = DataFile("reference_state.txt");
+    // drone_pose = DataFile("drone_pose.txt");
+    // gt_reference = DataFile("gt_reference.txt");
 
-    reference_state.shouldSaveZ(SAVE_Z);
-    drone_pose.shouldSaveZ(SAVE_Z);
-    gt_reference.shouldSaveZ(SAVE_Z);
+    // reference_state.shouldSaveZ(SAVE_Z);
+    // drone_pose.shouldSaveZ(SAVE_Z);
+    // gt_reference.shouldSaveZ(SAVE_Z);
 
-    reference_state.initStateLog();
-    drone_pose.initStateLog();    
-    #if SAVE_Z
-    gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
-    #else
-    gt_reference.init("Time\tpose.x\tpose.y");
-    #endif
-    #endif
+    // reference_state.initStateLog();
+    // drone_pose.initStateLog();    
+    // #if SAVE_Z
+    // gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
+    // #else
+    // gt_reference.init("Time\tpose.x\tpose.y");
+    // #endif
+    // #endif
     approaching_t0 = this->now();
-    completion_count =0;
+    completion_count = 0;
 }
 
 bool InteractOperation::hasFinishedExecution() const {
@@ -142,10 +148,10 @@ bool InteractOperation::hasFinishedExecution() const {
 }
 
 void InteractOperation::ekfModulePoseCallback(
-                const mavros_msgs::msg::PositionTarget module_state) {
-    mast.updateFromEkf(module_state);
-    //Tells code that we are ready to try arate_int
-    }
+                const mavros_msgs::msg::PositionTarget::SharedPtr module_state) {
+    mast.updateFromEkf(*module_state);
+    rcvd_module_pose = true;
+}
 
 void InteractOperation::gt_modulePoseCallbackWithCov(
     const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr module_pose_ptr) {
@@ -174,7 +180,7 @@ void InteractOperation::gt_modulePoseCallback(
             vec.x = module_pose.pose.position.x + smooth_rotated_offset.position.x;
             vec.y = module_pose.pose.position.y + smooth_rotated_offset.position.y;
             vec.z = module_pose.pose.position.z + smooth_rotated_offset.position.z;
-            gt_reference.saveVector3(vec);
+            //gt_reference.saveVector3(vec);
         #endif
         if(!EKF){
             const geometry_msgs::msg::Vector3 received_eul_angle = Util::quaternion_to_euler_angle(module_pose.pose.orientation);
@@ -184,8 +190,8 @@ void InteractOperation::gt_modulePoseCallback(
     }
 }
 
-void InteractOperation::FaceHuggerCallback(const std_msgs::msg::Bool released){
-    if (released.data && !faceHugger_is_set){
+void InteractOperation::FaceHuggerCallback(const std_msgs::msg::Bool::SharedPtr released){
+    if (released->data && !faceHugger_is_set){
         RCLCPP_INFO(rclcpp::get_logger("interact_operation"), "CONGRATULATION, FaceHugger set on the mast! We can now exit the mast");
         interaction_state =  InteractionState::EXIT;
         faceHugger_is_set = true;
@@ -201,8 +207,8 @@ void InteractOperation::FaceHuggerCallback(const std_msgs::msg::Bool released){
     }
 }
 
-void InteractOperation::closeTrackingCallback(std_msgs::msg::Bool ready){
-    close_tracking_is_ready = ready.data; 
+void InteractOperation::closeTrackingCallback(std_msgs::msg::Bool::SharedPtr ready){
+    close_tracking_is_ready = ready->data; 
 }
 
 
@@ -535,27 +541,12 @@ void InteractOperation::tick() {
 
     altitude_and_yaw_pub->publish(setpoint);
     
-    #if SAVE_DATA
-        reference_state.saveStateLog(ref);
-        geometry_msgs::msg::Vector3 drone_acc = rotate2<geometry_msgs::msg::Vector3>(getCurrentAccel(),getCurrentYaw());
-        drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,drone_acc);
-    #endif
+    // #if SAVE_DATA
+    //     reference_state.saveStateLog(ref);
+    //     geometry_msgs::msg::Vector3 drone_acc = rotate2<geometry_msgs::msg::Vector3>(getCurrentAccel(),getCurrentYaw());
+    //     drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,drone_acc);
+    // #endif
 }
-
-// void InteractOperation::perform(std::function<bool(void)> should_tick) {
-
-//     // rclcpp::Rate rate(rate_int);
-//     // initialize();
-
-//     // do {
-//     //     tick();
-//     //     if (autoPublish)
-//     //         publishSetpoint();
-//     //     //rclcpp::spin(this);
-//     //     rate.sleep();
-//     // } while (rclcpp::ok() && ((should_halt_if_steady && steady) || !hasFinishedExecution()) && should_tick());
-//     return;
-// }
 
 geometry_msgs::msg::Vector3 InteractOperation::orientation_to_acceleration(geometry_msgs::msg::Quaternion orientation)
 {

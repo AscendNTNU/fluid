@@ -19,7 +19,8 @@
 #include <std_srvs/srv/trigger.hpp>
 
 #include "fluid/mast.hpp"
-#include "fluid/data_file.hpp"
+//#include "fluid/data_file.hpp"
+
 struct MastNodeConfiguration {
     /**
      * @brief whether ekf is used or not
@@ -165,9 +166,9 @@ class InteractOperation : public rclcpp::Node {
 
     Mast mast;
 
-    DataFile reference_state;
-    DataFile drone_pose;
-    DataFile gt_reference;
+    //DataFile reference_state;
+    //DataFile drone_pose;
+    //DataFile gt_reference;
 
 
 
@@ -192,12 +193,12 @@ class InteractOperation : public rclcpp::Node {
     bool close_tracking_is_ready;
     
     void ekfStateVectorCallback(const mavros_msgs::msg::DebugValue ekf_state);
-    void ekfModulePoseCallback(const mavros_msgs::msg::PositionTarget module_state);
+    void ekfModulePoseCallback(const mavros_msgs::msg::PositionTarget::SharedPtr module_state);
     void gt_modulePoseCallback(const geometry_msgs::msg::PoseStamped module_pose);
     void gt_modulePoseCallbackWithCov(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr module_pose);
     void gt_modulePoseCallbackWithoutCov(geometry_msgs::msg::PoseStamped::SharedPtr module_pose_ptr);
-    void FaceHuggerCallback(const std_msgs::msg::Bool released);
-    void closeTrackingCallback(std_msgs::msg::Bool ready);
+    void FaceHuggerCallback(const std_msgs::msg::Bool::SharedPtr released);
+    void closeTrackingCallback(std_msgs::msg::Bool::SharedPtr ready);
     
 
     // void gt_modulePoseCallbackWithoutCRCLCPP_INFOsoon as we have received the first interactio pt state
