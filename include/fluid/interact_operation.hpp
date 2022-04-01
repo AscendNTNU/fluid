@@ -135,8 +135,8 @@ class InteractOperation : public rclcpp::Node {
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr fh_state_subscriber;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr close_tracking_ready_subscriber;
     
-    //rclcpp::Client<ascend_msgs::msg::SetInt>::SharedPtr start_close_tracking_client;
-    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr pause_close_tracking_client;
+    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr start_close_tracking_client;
+    rclcpp::Client<std_srvs::srv::Trigger>::SharedPtr stop_close_tracking_client;
 
     rclcpp::Publisher<std_msgs::msg::Int16>::SharedPtr interact_fail_pub;
     rclcpp::Publisher<mavros_msgs::msg::PositionTarget>::SharedPtr altitude_and_yaw_pub;

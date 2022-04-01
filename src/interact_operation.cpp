@@ -7,13 +7,15 @@
 #include "fluid/type_mask.hpp"
 
 #include <functional>
+#include <memory>
 #include <rclcpp/node.hpp>
 #include <rclcpp/rclcpp.hpp>
-//#include <ascend_msgs/SetInt.hpp>
 #include <rclcpp/time.hpp>
+#include <std_srvs/srv/detail/trigger__struct.hpp>
 #include <std_srvs/srv/trigger.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <chrono>
+using std::chrono_literals::operator""s;
 //A list of parameters for the user
 #define MAST_INTERACT false //safety feature to avoid going at close proximity to the mast and set the FH
 #define MAX_DIST_FOR_CLOSE_TRACKING     1.0 //max distance from the mast before activating close tracking
@@ -104,9 +106,8 @@ void InteractOperation::initialize() {
     close_tracking_ready_subscriber = this->create_subscription<std_msgs::msg::Bool>("/close_tracking_running",
                                    10, std::bind(&InteractOperation::closeTrackingCallback, this, _1));
 
-    //start_close_tracking_client = this->create_client<ascend_msgs::msg::SetInt>("start_close_tracking");
-    // ******* FIXED WHEN WE GET ASCENSD_MSGS BACK. REMEMBER TO COMMENT BACK IN
-    pause_close_tracking_client = this->create_client<std_srvs::srv::Trigger>("Pause_close_tracking");
+    start_close_tracking_client = this->create_client<std_srvs::srv::Trigger>("/close_module_tracking/start");
+    stop_close_tracking_client = this->create_client<std_srvs::srv::Trigger>("/close_module_tracking/stop");
 
     interact_fail_pub = this->create_publisher<std_msgs::msg::Int16>("/fluid/interact_fail",10);
     altitude_and_yaw_pub = this->create_publisher<mavros_msgs::msg::PositionTarget>("/mavros/setpoint_raw/local",10);
@@ -388,14 +389,40 @@ void InteractOperation::tick() {
             if(!close_tracking_is_set and (transition_state.finished_bitmask & 0x7) == 0x7){
                 RCLCPP_INFO(rclcpp::get_logger("interact_operation"), ": Turning on close tracking");
                 
+
+            //   auto request = std::make_shared<example_interfaces::srv::AddTwoInts::Request>();
+            //   request->a = atoll(argv[1]);
+            //   request->b = atoll(argv[2]);
+
+            //   while (!client->wait_for_service(1s)) {
+                // if (!rclcpp::ok()) {
+                //   RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
+                //   return 0;
+                // }
+                // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
+            //   }
+
+            //   auto result = client->async_send_request(request);
+            //   // Wait for the result.
+            //   if (rclcpp::spin_until_future_complete(node, result) ==
+                // rclcpp::FutureReturnCode::SUCCESS)
+            //   {
+                // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sum: %ld", result.get()->sum);
+            //   } else {
+                // RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service add_two_ints");
+            //   }
+
                 // send a message to perception to switch close tracking on.
                 if(USE_PERCEPTION){
                     // TODO: COMMENT BACK IN!
-                    // ascend_msgs::msg::SetInt srv;
-                    // srv.request.data = 10;
-                    // if (start_close_tracking_client.call(srv)){
-                        // close_tracking_is_set = true; 
-                    // }
+                    auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+                    while (!start_close_tracking_client->wait_for_service(1s)){
+
+                    }
+                    auto res = start_close_tracking_client->async_send_request(request);
+                    if (res.get()->success){
+                        close_tracking_is_set = true; 
+                    }
                 }
                 else{
                     close_tracking_is_set= true; //Todo, to be removed
