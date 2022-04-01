@@ -60,7 +60,6 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw,
    
     
     setpoint_publisher = this->create_publisher<mavros_msgs::msg::PositionTarget>("mavros/setpoint_raw/local", 10);
-    // setpoint_publisher = this->create_publisher<>("", 10)
     //Change message type, maybe convert to function so its callable.
     
     setpoint.coordinate_frame = mavros_msgs::msg::PositionTarget::FRAME_LOCAL_NED;
@@ -389,32 +388,8 @@ void InteractOperation::tick() {
             if(!close_tracking_is_set and (transition_state.finished_bitmask & 0x7) == 0x7){
                 RCLCPP_INFO(rclcpp::get_logger("interact_operation"), ": Turning on close tracking");
                 
-
-            //   auto request = std::make_shared<example_interfaces::srv::AddTwoInts::Request>();
-            //   request->a = atoll(argv[1]);
-            //   request->b = atoll(argv[2]);
-
-            //   while (!client->wait_for_service(1s)) {
-                // if (!rclcpp::ok()) {
-                //   RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Interrupted while waiting for the service. Exiting.");
-                //   return 0;
-                // }
-                // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "service not available, waiting again...");
-            //   }
-
-            //   auto result = client->async_send_request(request);
-            //   // Wait for the result.
-            //   if (rclcpp::spin_until_future_complete(node, result) ==
-                // rclcpp::FutureReturnCode::SUCCESS)
-            //   {
-                // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sum: %ld", result.get()->sum);
-            //   } else {
-                // RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to call service add_two_ints");
-            //   }
-
                 // send a message to perception to switch close tracking on.
                 if(USE_PERCEPTION){
-                    // TODO: COMMENT BACK IN!
                     auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
                     while (!start_close_tracking_client->wait_for_service(1s)){
 
@@ -500,14 +475,12 @@ void InteractOperation::tick() {
     
             if(close_tracking_is_set){
                 if(USE_PERCEPTION){ //Drone is leaving the mast and perception should turn off close tracking
-                    
-                    //Call service to perception
-                    //TODO;
-
-                    // std_srvs::srv::Trigger::Request req;
-                    // if (pause_close_tracking_client->async_send_request(req)){
-                    //     close_tracking_is_set = false;
-                    // }
+                    auto request = std::make_shared<std_srvs::srv::Trigger::Request>();
+                    while (!stop_close_tracking_client->wait_for_service(1s)){}
+                    auto res = stop_close_tracking_client->async_send_request(request);
+                    if (res.get()->success){
+                        close_tracking_is_set = false;
+                    }
                 }
                 else{
                         close_tracking_is_set = false;
@@ -529,9 +502,9 @@ void InteractOperation::tick() {
                 }
                 else {
                     RCLCPP_INFO(rclcpp::get_logger("interact_operation"), ": Exit -> Approaching");
-                    //ascend_msgs::msg::SetInt interact_fail_srv;
+                    //ascend_msgs::msg::SetInt interact_fail_srv; Apparently not needed (?)
                     number_fail.data++;
-                    //interact_fail_srv.request.data = number_fail;
+                    //interact_fail_srv.request.data = number_fail; Apparently not needed (?)
                     for(int i = 0; i<3 ; i ++) interact_fail_pub->publish(number_fail);
                     interaction_state = InteractionState::APPROACHING;
                     desired_offset.x = 2;
