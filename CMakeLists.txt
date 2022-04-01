@@ -24,8 +24,6 @@ find_package(rclcpp REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-
-# Shit Sindre added at 00:42, mistakes are expected. LGTM, Jakob
 find_package(mavros_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 # uncomment the following section in order to fill in
@@ -63,4 +61,8 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
+)
 ament_package()

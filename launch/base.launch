@@ -1,6 +1,6 @@
 <launch>
   <arg name="ekf"                                     default="false"/>
-  <arg name="use_perception"                         default="false"/>
+  <arg name="use_perception"                          default="false"/>
   <arg name="fcu_url"/>
   <arg name="refresh_rate"                            default="20"/>
   <arg name="should_auto_arm"/>
@@ -22,7 +22,7 @@
   <arg name="fh_offset_z"                             default="-0.10"/>
   
 
-  <node name="fluid" pkg="fluid" type="fluid" output="screen"> 
+  <node name="fluid" pkg="fluid" type="fluid" output="screen">
     <param name="refresh_rate"                        value="$(arg refresh_rate)"/>
     <param name="should_auto_arm"                     value="$(arg should_auto_arm)"/>
     <param name="should_auto_offboard"                value="$(arg should_auto_offboard)"/>
@@ -39,15 +39,15 @@
     <param name="travel_speed"                        value="$(arg travel_speed)"/>
     <param name="travel_accel"                        value="$(arg travel_accel)"/>
 
-    <param name="travel_max_angle"                 value="$(arg travel_max_angle)"/>
-    <param name="travel_speed"                 value="$(arg travel_speed)"/>
-    <param name="travel_accel"                 value="$(arg travel_accel)"/>
+    <param name="travel_max_angle"                    value="$(arg travel_max_angle)"/>
+    <param name="travel_speed"                        value="$(arg travel_speed)"/>
+    <param name="travel_accel"                        value="$(arg travel_accel)"/>
     <param name="fh_offset_x"                         value="$(arg fh_offset_x)"/>
     <param name="fh_offset_y"                         value="$(arg fh_offset_y)"/>
     <param name="fh_offset_z"                         value="$(arg fh_offset_z)"/>
 
   </node>
 
-  <node if="$(arg launch_rviz)" type="rviz" name="rviz" pkg="rviz" args="-d $(find fluid)/rviz_configs/fluid.rviz" />
+  <node if="$(arg launch_rviz)" type="rviz" name="rviz" pkg="rviz" args="-d $(find fluid)/rviz_configs/fluid.rviz"/>
 
 </launch>
