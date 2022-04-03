@@ -71,9 +71,9 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw,
     USE_PERCEPTION = config.use_perception;
     MAX_ACCEL = config.interact_max_acc;
     MAX_VEL = config.interact_max_vel;
-    DIST_FH_DRONE_CENTRE.x = config.fh_offset[0];
-    DIST_FH_DRONE_CENTRE.y = config.fh_offset[1];
-    DIST_FH_DRONE_CENTRE.z = config.fh_offset[2];
+    DIST_FH_DRONE_CENTRE.x = config.fh_offset_x;
+    DIST_FH_DRONE_CENTRE.y = config.fh_offset_y;
+    DIST_FH_DRONE_CENTRE.z = config.fh_offset_z;
 
     //Choose an initial offset. It is the offset for the approaching state.
     //the offset is set in the frame of the mast:    
