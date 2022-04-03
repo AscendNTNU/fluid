@@ -88,8 +88,9 @@ struct MastNodeConfiguration {
     /**
      * @brief 3D offset of the Face_hugger compared to the drone center
      */
-    const float* fh_offset;
-
+    const float fh_offset_x;
+    const float fh_offset_y;
+    const float fh_offset_z;
     /**
      * @brief max speed ardupilot parameter for the travel operation.
      */

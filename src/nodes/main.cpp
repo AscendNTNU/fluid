@@ -28,7 +28,9 @@ int main(int argc, char** argv) {
                                     interact_max_vel,
                                     interact_max_acc,
                                     travel_max_angle,
-                                    fh_offset,
+                                    fh_offset_x,
+                                    fh_offset_y,
+                                    fh_offset_z,
                                     travel_speed,
                                     travel_accel
                                     };
