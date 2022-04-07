@@ -16,24 +16,25 @@ int main(int argc, char** argv) {
 
     const std::string prefix = std::string(node->get_name()) + "/";
    
-    MastNodeConfiguration configuration{ekf,
-                                    use_perception,
-                                    refresh_rate,
-                                    should_auto_arm,
-                                    should_auto_offboard,
-                                    distance_completion_threshold,
-                                    velocity_completion_threshold,
-                                    default_height,
-                                    interaction_show_prints,
-                                    interaction_max_vel,
-                                    interaction_max_acc,
-                                    travel_max_angle,
-                                    fh_offset_x,
-                                    fh_offset_y,
-                                    fh_offset_z,
-                                    travel_speed,
-                                    travel_accel
-                                    };
+    MastNodeConfiguration configuration{
+        ekf,
+        use_perception,
+        refresh_rate,
+        should_auto_arm,
+        should_auto_offboard,
+        distance_completion_threshold,
+        velocity_completion_threshold,
+        default_height,
+        interaction_show_prints,
+        interaction_max_vel,
+        interaction_max_acc,
+        travel_max_angle,
+        fh_offset_x,
+        fh_offset_y,
+        fh_offset_z,
+        travel_speed,
+        travel_accel
+    };
 
     int rate_int = (int)configuration.refresh_rate;
     rclcpp::Rate rate(rate_int);
