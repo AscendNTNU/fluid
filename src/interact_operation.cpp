@@ -85,11 +85,9 @@ InteractOperation::InteractOperation(const float& fixed_mast_yaw,
 void InteractOperation::initialize() {
 
     if(EKF){
-        // ekf_module_pose_subscriber = this->create_subscription<mavros_msgs::msg::PositionTarget>("/ekf/module/state",
-                                    //  1, std::bind(&InteractOperation::ekfModulePoseCallback, this, _1));
         ekf_module_pose_subscriber = this->create_subscription<mavros_msgs::msg::PositionTarget>("/ekf/module/state",
                                      10, std::bind(&InteractOperation::ekfModulePoseCallback, this, _1));
-        //ekf_state_vector_subscriber = this->create_subscription<mavros_msgs::msg::DebugValue>("/ekf/state",
+        // ekf_state_vector_subscriber = this->create_subscription<mavros_msgs::msg::DebugValue>("/ekf/state",
         //                             10, std::bind(&InteractOperation::ekfStateVectorCallback, this, _1));
         gt_module_pose_subscriber = this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>("/simulator/module/ground_truth/pose",
                                      1, std::bind(&InteractOperation::gt_modulePoseCallbackWithCov, this, _1));
@@ -122,23 +120,6 @@ void InteractOperation::initialize() {
     close_tracking_is_set = false;
     close_tracking_is_ready = false;
 
-    // #if SAVE_DATA
-    // reference_state = DataFile("reference_state.txt");
-    // drone_pose = DataFile("drone_pose.txt");
-    // gt_reference = DataFile("gt_reference.txt");
-
-    // reference_state.shouldSaveZ(SAVE_Z);
-    // drone_pose.shouldSaveZ(SAVE_Z);
-    // gt_reference.shouldSaveZ(SAVE_Z);
-
-    // reference_state.initStateLog();
-    // drone_pose.initStateLog();    
-    // #if SAVE_Z
-    // gt_reference.init("Time\tpose.x\tpose.y\tpose.z");
-    // #else
-    // gt_reference.init("Time\tpose.x\tpose.y");
-    // #endif
-    // #endif
     approaching_t0 = this->now();
     completion_count = 0;
 }
@@ -540,12 +521,6 @@ void InteractOperation::tick() {
     setpoint.velocity = ref.velocity;
 
     altitude_and_yaw_pub->publish(setpoint);
-    
-    // #if SAVE_DATA
-    //     reference_state.saveStateLog(ref);
-    //     geometry_msgs::msg::Vector3 drone_acc = rotate2<geometry_msgs::msg::Vector3>(getCurrentAccel(),getCurrentYaw());
-    //     drone_pose.saveStateLog( getCurrentPose().pose.position,getCurrentTwist().twist.linear,drone_acc);
-    // #endif
 }
 
 geometry_msgs::msg::Vector3 InteractOperation::orientation_to_acceleration(geometry_msgs::msg::Quaternion orientation)
