@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     rclcpp::Rate rate(rate_int);
 
     rclcpp::executors::SingleThreadedExecutor executor;
-    auto interact_ptr = std::make_shared<InteractOperation>(0.0,true, configuration,3.0);
+    auto interact_ptr = std::make_shared<InteractOperation>(0.0, true, configuration, 3.0);
     interact_ptr->initialize();
     executor.add_node(interact_ptr);
     do {
