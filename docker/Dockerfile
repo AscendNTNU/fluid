@@ -4,6 +4,7 @@ SHELL ["/bin/bash", "-c"]
 CMD ["bash"]
 
 # installing dependencies
+RUN sudo apt-get update
 RUN sudo apt-get install -y ros-foxy-geometry-msgs ros-foxy-std-msgs ros-foxy-mavros-msgs ros-foxy-nav-msgs
 
 # Deploy image contains a ready-built version of the workspace
