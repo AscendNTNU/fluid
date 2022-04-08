@@ -39,15 +39,17 @@ int main(int argc, char** argv) {
     int rate_int = (int)configuration.refresh_rate;
     rclcpp::Rate rate(rate_int);
 
-
+    rclcpp::executors::SingleThreadedExecutor executor;
     auto interact_ptr = std::make_shared<InteractOperation>(0.0,true, configuration,3.0);
     interact_ptr->initialize();
+    executor.add_node(interact_ptr);
     do {
         interact_ptr->tick();
         if (interact_ptr->autoPublish)
             interact_ptr->publishSetpoint();
-        rclcpp::spin_some(interact_ptr);
+        executor.spin_once();
         rate.sleep();
+
     } while (rclcpp::ok() || (!interact_ptr->hasFinishedExecution()));
     return 0;
 }
