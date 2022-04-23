@@ -39,8 +39,9 @@ int main(int argc, char** argv) {
     int rate_int = (int)configuration.refresh_rate;
     rclcpp::Rate rate(rate_int);
 
+    float mast_yaw = 0.0; // get yaw from fsm!
     rclcpp::executors::SingleThreadedExecutor executor;
-    auto interact_ptr = std::make_shared<InteractOperation>(0.0, true, configuration, 3.0);
+    auto interact_ptr = std::make_shared<InteractOperation>(mast_yaw, true, configuration, 3.0); // make someone launch node with mast_yaw argument
     interact_ptr->initialize();
     executor.add_node(interact_ptr);
     do {
